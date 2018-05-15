@@ -2,6 +2,8 @@
 
 Adds syntax highlight and snippets for [Ren'Py](https://www.renpy.org/) to [Vsiaul Studio Code](https://code.visualstudio.com/).
 
+**[Visual Studio Marketplace Page](https://marketplace.visualstudio.com/items?itemName=LuqueDaniel.languague-renpy#overview)**
+
 **Converted from** [Ren'Py language support in Atom](https://github.com/renpy/language-renpy)
 
 Feel free to contribute, fork this and open a pull request. :smile:

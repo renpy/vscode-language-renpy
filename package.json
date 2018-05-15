@@ -1,0 +1,79 @@
+{
+    "name": "languague-renpy",
+    "displayName": "Ren'Py Language",
+    "description": "Adds syntax highlighting and snippets to Ren'Py files in Visual Studio Code",
+    "version": "0.0.1",
+    "publisher": "luquedaniel",
+    "license": "MIT",
+    "homepage": "https://github.com/LuqueDaniel/vscode-language-renpy",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/LuqueDaniel/vscode-language-renpy"
+    },
+    "bugs": {
+        "url": "https://github.com/LuqueDaniel/vscode-language-renpy/issues"
+    },
+    "icon": "icon.png",
+    "galleryBanner": {
+        "color": "#dfc0e0",
+        "theme": "dark"
+    },
+    "keywords": [
+        "python",
+        "renpy"
+    ],
+    "categories": [
+        "Programming Languages",
+        "Snippets"
+    ],
+    "engines": {
+        "vscode": "^1.23.0"
+    },
+    "activationEvents": [
+		"*"
+	],
+    "main": "./out/extension",
+    "contributes": {
+        "languages": [
+            {
+                "id": "renpy",
+                "aliases": [
+                    "Ren'Py",
+                    "renpy"
+                ],
+                "extensions": [
+                    ".rpy",
+                    ".rpym"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "renpy",
+                "scopeName": "source.renpy",
+                "path": "./syntaxes/renpy.tmLanguage.json"
+            }
+        ],
+        "snippets": [
+            {
+                "language": "renpy",
+                "path": "./snippets/snippets.json"
+            }
+        ]
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "postinstall": "node ./node_modules/vscode/bin/install",
+        "test": "npm run compile && node ./node_modules/vscode/bin/test"
+    },
+    "devDependencies": {
+        "typescript": "^2.6.1",
+        "vscode": "^1.1.6",
+        "tslint": "^5.8.0",
+        "@types/node": "^7.0.43",
+        "@types/mocha": "^2.2.42"
+    }
+}

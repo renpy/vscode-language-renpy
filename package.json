@@ -2,7 +2,7 @@
     "name": "languague-renpy",
     "displayName": "Ren'Py Language",
     "description": "Adds syntax highlighting and snippets to Ren'Py files in Visual Studio Code",
-    "version": "0.0.4",
+    "version": "0.0.5",
     "publisher": "LuqueDaniel",
     "license": "MIT",
     "homepage": "https://github.com/LuqueDaniel/vscode-language-renpy",

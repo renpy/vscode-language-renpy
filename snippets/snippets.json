@@ -99,6 +99,11 @@
         "body": "with dissolve",
         "description": "Dissolve"
       },
+      "Dspr": {
+        "prefix": "wDspr",
+        "body": "with dspr",
+        "description": "Dspr"
+      },
       "Pixellate": {
         "prefix": "wPixel",
         "body": "with pixellate",

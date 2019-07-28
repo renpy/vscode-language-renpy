@@ -109,6 +109,11 @@
         "body": "with pixellate",
         "description": "Pixellate"
       },
+      "Music": {
+        "prefix": "playMusic",
+        "body": "play music music_list['#selected composition'] fadein 2 #fadein, if need a delay",
+        "description": "Launch a musical composition of your choice"
+      },
       "Move": {
         "prefix": "wMove",
         "body": "with move",
@@ -157,7 +162,7 @@
       "Window": {
         "prefix": "window",
         "body": "window show\n${1:""}:\n${2:window hide}",
-        "description": "Window show (hide)"
+        "description": "Window show - (hide)"
       },
       "Choice Menu": {
         "prefix": "menu",

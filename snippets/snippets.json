@@ -111,7 +111,7 @@
       },
       "Music": {
         "prefix": "playMusic",
-        "body": "play music music_list['#selected composition'] fadein 2 #fadein, if need a delay",
+        "body": "play music music_list['$1 #selected composition'] fadein 2 $2 #fadein, if need a delay",
         "description": "Launch a musical composition of your choice"
       },
       "Move": {
@@ -161,7 +161,7 @@
       },
       "Window": {
         "prefix": "window",
-        "body": "window show\n${1:""}:\n${2:window hide}",
+        "body": "window show\n${1:"#text - author, character or thoughts"}:\n${2:window hide}",
         "description": "Window show - (hide)"
       },
       "Choice Menu": {

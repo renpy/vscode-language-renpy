@@ -6,7 +6,7 @@ Adds syntax highlight and snippets for [Ren'Py](https://www.renpy.org/) to [Visu
 
 **Converted from** [Ren'Py language support in Atom](https://github.com/renpy/language-renpy)
 
-Feel free to contribute, fork this and open a pull request. :smile:
+Feel free to [contribute](https://github.com/LuqueDaniel/vscode-language-renpy/blob/master/Contributing.md), fork this and send a pull request. :smile:
 
 ## Features
 

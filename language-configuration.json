@@ -16,7 +16,8 @@
 		{ "open": "(", "close": ")" },
 		{ "open": "\"", "close": "\"", "notIn": ["string"] },
 		{ "open": "'", "close": "'", "notIn": ["string"] },
-		{ "open": "`", "close": "`", "notIn": ["string"] }
+        { "open": "`", "close": "`", "notIn": ["string"] },
+        { "open": "\"\"\"", "close": "\"\"\"", "notIn": ["string"] }
     ],
     // symbols that that can be used to surround a selection
     "surroundingPairs": [
@@ -24,6 +25,8 @@
         ["[", "]"],
         ["(", ")"],
         ["\"", "\""],
-        ["'", "'"]
+        ["'", "'"],
+        ["`", "`"],
+        ["\"\"\"", "\"\"\""]
     ]
 }

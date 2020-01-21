@@ -161,8 +161,8 @@
       },
       "Window": {
         "prefix": "window",
-        "body": "window show\n${1:"#text - author, character or thoughts"}:\n${2:window hide}",
-        "description": "Window show - (hide)"
+        "body": "window show\n${1:"#text author, character or thoughts"}:\n${2:window hide}",
+        "description": "Window show (hide)"
       },
       "Choice Menu": {
         "prefix": "menu",

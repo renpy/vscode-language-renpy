@@ -1,8 +1,14 @@
+
 # Ren'Py Languague for Visual Studio Code
 
-Adds syntax highlight and snippets for [Ren'Py](https://www.renpy.org/) to [Visual Studio Code](https://code.visualstudio.com/).
+Adds syntax highlight and snippets for [Ren'Py](https://www.renpy.org/) to [Visual Studio Code](https://code.
 
-**[Visual Studio Marketplace Page](https://marketplace.visualstudio.com/items?itemName=LuqueDaniel.languague-renpy#overview)**
+- [![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/luquedaniel.languague-renpy?label=Visual%20Studio%20Marketplace&style=flat-square)](https://marketplace.visualstudio.com/items?itemName=LuqueDaniel.languague-renpy)
+[![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/luquedaniel.languague-renpy?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=LuqueDaniel.languague-renpy&ssr=false#review-details)
+![Visual Studio Marketplace Downloads](https://img.shields.io/visual-studio-marketplace/d/luquedaniel.languague-renpy?style=flat-square)
+- [![Open VSX Version](https://img.shields.io/open-vsx/v/LuqueDaniel/languague-renpy?label=Open%20VSX&style=flat-square)](https://open-vsx.org/extension/LuqueDaniel/languague-renpy)
+[![Open VSX Rating](https://img.shields.io/open-vsx/rating/LuqueDaniel/languague-renpy)](https://open-vsx.org/extension/LuqueDaniel/languague-renpy)
+![Open VSX Downloads](https://img.shields.io/open-vsx/dt/LuqueDaniel/languague-renpy)
 
 **Converted from** [Ren'Py language support in Atom](https://github.com/renpy/language-renpy)
 

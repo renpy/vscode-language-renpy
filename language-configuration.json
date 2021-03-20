@@ -33,6 +33,7 @@
         "markers": {
           "start": "^#region",
           "end": "^#endregion"
-        }
+        },
+        "offSide": true
     }
 }

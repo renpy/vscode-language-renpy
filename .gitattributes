@@ -1,2 +1,4 @@
 # set EOL
 * text eol=lf
+
+*.png   binary

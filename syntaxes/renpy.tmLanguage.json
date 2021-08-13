@@ -129,7 +129,7 @@
       "name": "keyword.operator.assignment.python.renpy"
     },
     {
-      "match": "^\\s*(label)\\s*([a-zA-Z_][a-zA-Z_0-9]*)",
+      "match": "^\\s*(label)\\s+([a-zA-Z_][a-zA-Z_0-9]*)",
       "captures": {
         "1": { "name": "keyword.python.renpy" },
         "2": {
@@ -138,7 +138,7 @@
       }
     },
     {
-      "match": "^\\s*(menu)\\s*([a-zA-Z_][a-zA-Z_0-9]*)",
+      "match": "^\\s*(menu)\\s+([a-zA-Z_][a-zA-Z_0-9]*)",
       "captures": {
         "1": { "name": "keyword.python.renpy" },
         "2": {
@@ -147,7 +147,7 @@
       }
     },
     {
-      "match": "^\\s*(screen)\\s*([a-zA-Z_][a-zA-Z_0-9]*)",
+      "match": "^\\s*(screen)\\s+([a-zA-Z_][a-zA-Z_0-9]*)",
       "captures": {
         "1": { "name": "keyword.python.renpy" },
         "2": {

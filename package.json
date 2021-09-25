@@ -2,7 +2,7 @@
     "name": "languague-renpy",
     "displayName": "Ren'Py Language",
     "description": "Adds syntax highlighting and snippets to Ren'Py files in Visual Studio Code",
-    "version": "1.1.0",
+    "version": "2.0.0",
     "publisher": "LuqueDaniel",
     "license": "MIT",
     "homepage": "https://github.com/LuqueDaniel/vscode-language-renpy",
@@ -59,6 +59,64 @@
             {
                 "language": "renpy",
                 "path": "./snippets/snippets.json"
+            }
+        ],
+        "commands": [
+            {
+                "command": "renpy.refreshNavigationData",
+                "title": "Refresh Ren'Py Navigation Data"
+            },
+            {
+                "command": "renpy.compileNavigationData",
+                "title": "Compile Ren'Py Navigation Data"
+            }
+            ,
+            {
+                "command": "renpy.refreshDiagnostics",
+                "title": "Refresh Ren'Py diagnostics for the active editor window"
+            }
+        ],
+        "configuration": [
+            {
+                "title": "Ren'Py",
+                "properties": {
+                    "renpy.excludeRpycFilesFromWorkspace": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Exclude *.rpyc (compiled Ren'Py script) files from the workspace folder list. (This will add a .vscode settings file to your workspace.)"
+                    },
+                    "renpy.watchFoldersForChanges": {
+                        "type": "boolean",
+                        "default": false,
+                        "description": "Watch resource folders, such as images and audio, for file changes. (This may not be fully supported on all platforms.)"
+                    },
+                    "renpy.showAutomaticImagesInCompletion": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Show Automatic Images in the displayable auto-completion list. If not checked (false), only images defined in the script will be shown. If checked (true), both script-defined images and images detected in the images folders will be shown."
+                    },
+                    "renpy.warnOnObsoleteMethods": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Enable obsolete method warnings. If checked (true), obsolete methods (e.g., im.Crop) will be marked with a warning in the editor."
+                    },
+                    "renpy.warnOnUndefinedPersistents": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Enable undefined persistent warnings. If checked (true), persistent variables will be marked with a warning in the editor if they haven't been defaulted/defined."
+                    },
+                    "renpy.warnOnIndentationAndSpacingIssues": {
+                        "type": "string",
+                        "default": "Error",
+                        "enum": ["Error", "Warning", "Disabled"],
+                        "enumDescriptions": [
+                            "Display indentation issues as errors",
+                            "Display indentation issues as warnings",
+                            "Ignore indentation issues"
+                        ],
+                        "description": "Enable indentation and inconsistent spacing checks. If set to Error or Warning, tab characters and inconsistent indentation spacing will be marked in the editor. If set to Disabled, indentation issues will be ignored."
+                    }
+                }
             }
         ]
     },

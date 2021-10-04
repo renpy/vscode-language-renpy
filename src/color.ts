@@ -20,31 +20,28 @@ export function getColorInformation(document: TextDocument): ColorInformation[] 
 				let start = 0;
 				for (let idx in matches) {
 					const match = matches[idx];
-					const range = new Range(line.lineNumber, text.indexOf(match, start), line.lineNumber, text.indexOf(match, start) + match.length);
+					let range = new Range(line.lineNumber, text.indexOf(match, start), line.lineNumber, text.indexOf(match, start) + match.length);
+					let color;
+					
 					if (match.startsWith('"#')) {
-						const color = convertHtmlToColor(match);
-						if (color) {
-							colors.push(new ColorInformation(range, color));
-						}
+						color = convertHtmlToColor(match);
 					} else if (match.startsWith('rgb')) {
-						const color = convertRgbColorToColor(match);
-						if (color) {
-							colors.push(new ColorInformation(range, color));
-						}
+						color = convertRgbColorToColor(match);
 					} else if (match.startsWith('color')) {
-						const color = convertRenpyColorToColor(match);
-						if (color) {
-							colors.push(new ColorInformation(range, color));
-						}
+						color = convertRenpyColorToColor(match);
 					} else if (match.startsWith('Color(')) {
 						// match is Color((r, g, b[, a]))
-						const color = convertRenpyColorToColor(match);
+						color = convertRenpyColorToColor(match);
 						if (color) {
 							// shift the range so the color block is inside the Color() declaration
-							const shifted = new Range(range.start.line, range.start.character + 6, range.end.line, range.end.character);
-							colors.push(new ColorInformation(shifted, color));
+							range = new Range(range.start.line, range.start.character + 6, range.end.line, range.end.character);
 						}
 					}
+
+					if (color) {
+						colors.push(new ColorInformation(range, color));
+					}
+
 					start = text.indexOf(match, start) + 1;
 				}
 			}
@@ -72,33 +69,27 @@ export function getColorPresentations(color: Color, document: TextDocument, rang
 	const colB = Math.round(color.blue * 255);
 	const colA = Math.round(color.alpha * 255);
 
+	let colorLabel: string = "";
 	if (text.startsWith('"#')) {
-		let hex: string = "";
 		if (colA === 255 && (text.length === 6 || text.length === 9)) {
-			hex = convertRgbToHex(colR, colG, colB) || "";
+			colorLabel = convertRgbToHex(colR, colG, colB) || "";
 		} else {
-			hex = convertRgbToHex(colR, colG, colB, colA) || "";
+			colorLabel = convertRgbToHex(colR, colG, colB, colA) || "";
 		}
-
-		let hexColorPres = new ColorPresentation(`${hex}`);
-		hexColorPres.textEdit = new TextEdit(oldRange, `"${hex}"`);
-		colors.push(hexColorPres);
 	} else if (text.startsWith('rgb')) {
-		const rgbTuple = convertColorToRgbTuple(color);
-		let rgbColorPres = new ColorPresentation(rgbTuple);
-		rgbColorPres.textEdit = new TextEdit(oldRange, rgbTuple);
-		colors.push(rgbColorPres);
+		colorLabel = convertColorToRgbTuple(color);
 	} else if (text.startsWith('color')) {
-		const rgbTuple = `color=(${colR}, ${colG}, ${colB}, ${colA})`;
-		let rgbColorPres = new ColorPresentation(rgbTuple);
-		rgbColorPres.textEdit = new TextEdit(oldRange, rgbTuple);
-		colors.push(rgbColorPres);
+		colorLabel = `color=(${colR}, ${colG}, ${colB}, ${colA})`;
 	} else if (text.startsWith('(') && text.endsWith(')')) {
-		const rgbTuple = `(${colR}, ${colG}, ${colB}, ${colA})`;
-		let rgbColorPres = new ColorPresentation(rgbTuple);
-		rgbColorPres.textEdit = new TextEdit(oldRange, rgbTuple);
+		colorLabel = `(${colR}, ${colG}, ${colB}, ${colA})`;
+	}
+
+	if (colorLabel.length > 0) {
+		let rgbColorPres = new ColorPresentation(colorLabel);
+		rgbColorPres.textEdit = new TextEdit(oldRange, colorLabel);
 		colors.push(rgbColorPres);
 	}
+
 	return colors;
 }
 
@@ -217,12 +208,12 @@ export function convertRenpyColorToColor(renpy: string): Color | null {
  * Returns a Color provider object based on the given Ren'Py rgb tuple
  * @remarks
  * The rgb tuple values should be numeric values between 0.0 and 1.0 (e.g., `rgb=(1.0, 0.0, 0.0)`)
- * @param renpy - Renpy `rgb` tuple (e.g., `rgb=(r, g, b)`)
+ * @param renpyColor - Renpy `rgb` color tuple (e.g., `rgb=(r, g, b)`)
  * @returns The `Color` provider object
  */
-export function convertRgbColorToColor(renpy: string): Color | null {
+export function convertRgbColorToColor(renpyColor: string): Color | null {
 	try {
-		const colorTuple = renpy.replace("rgb", "").replace("=", "").replace(" ", "").replace('(','[').replace(')',']');
+		const colorTuple = renpyColor.replace("rgb", "").replace("=", "").replace(" ", "").replace('(','[').replace(')',']');
 		const result = JSON.parse(colorTuple);
 		if (result.length === 3) {
 			return new Color(

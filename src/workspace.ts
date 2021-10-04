@@ -1,9 +1,8 @@
 // Workspace and file functions
 'use strict';
 
-import { Location, Position, TextDocument, workspace } from "vscode";
+import { workspace } from "vscode";
 import * as fs from 'fs';
-import { NavigationData } from "./navigationdata";
 
 /**
  * Returns the filename.extension for the given fully qualified path 
@@ -102,21 +101,38 @@ export function getFileWithPath(filename: string) {
 	}
 }
 
-export function findReferenceMatches(keyword: string, document: TextDocument): Location[] {
-	let locations: Location[] = [];
-	const rx = RegExp(`[^a-zA-Z_](${keyword.replace('.','/.')})[^a-zA-Z_]`, 'g');
-
-	let index = 0;
-	while (index < document.lineCount) {
-		let line = NavigationData.filterStringLiterals(document.lineAt(index).text);
-		let matches = rx.exec(line);
-		if (matches) {
-			let position = new Position(index, matches.index);
-			const loc = new Location(document.uri, position);
-			locations.push(loc);
-		}
-		index++;
+/**
+ * Returns the path to the images folder including the workspace folder
+ * @returns The full path to the game/images folder
+ */
+export function getImagesFolder() {
+	const workspaceFolder = getWorkspaceFolder();
+	let path = workspaceFolder + '/game/images';
+	if (!fs.existsSync(path)) {
+		path = workspaceFolder + '/images';
 	}
+	return path;
+}
 
-	return locations;
+/**
+ * Returns the path to the audio folder including the workspace folder
+ * @returns The full path to the game/audio folder
+ */
+export function getAudioFolder() {
+	const workspaceFolder = getWorkspaceFolder();
+	let path = workspaceFolder + '/game/audio';
+	if (!fs.existsSync(path)) {
+		path = workspaceFolder + '/audio';
+	}
+	return path;
+}
+
+/**
+ * Returns the path to the game/saves/navigation.json file including the workspace folder
+ * @returns The full path to the navigation.json file
+ */
+export function getNavigationJsonFilepath() {
+	const filename = "saves/navigation.json";
+	const filepath = getFileWithPath(filename);
+	return filepath;
 }

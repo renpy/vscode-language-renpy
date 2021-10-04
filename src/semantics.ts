@@ -33,10 +33,6 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
             parent_type = '';
         }
 
-        // if (line.indexOf('def trophy_count') > 0) {
-        // 	console.log('stop');
-        // }
-
         append_line = i;
         if (line.match(rxKeywordList)) {
             // check for unterminated parenthesis for multiline declarations	
@@ -95,7 +91,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
             if (parent_args.length > 0) {
                 for (let a of parent_args) {
                     try {
-                        const token = a.replace(/\./g, '\\.').replace(/\*/g, '\\*');
+                        const token = escapeRegExp(a);
                         const rx = RegExp(`[^a-zA-Z_](${token})($|[^a-zA-Z_])`, 'g');
                         let matches;
                         while ((matches = rx.exec(line)) !== null) {
@@ -122,7 +118,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
             if (parent_local.length > 0) {
                 for (let a of parent_local) {
                     try {
-                        const token = a[0].replace(/\./g, '\\.').replace(/\*/g, '\\*');
+                        const token = escapeRegExp(a[0]);
                         const rx = RegExp(`[^a-zA-Z_](${token})($|[^a-zA-Z_])`, 'g');
                         let matches;
                         while ((matches = rx.exec(line)) !== null) {
@@ -221,4 +217,8 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
     }
 
     return tokensBuilder.build();
+}
+
+function escapeRegExp(string: string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }

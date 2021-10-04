@@ -8,6 +8,17 @@ import { extractFilename } from "./workspace";
 // Renpy Store Variables (https://www.renpy.org/doc/html/store_variables.html)
 // These variables do not begin with '_' but should be ignored by store warnings because they are pre-defined by Ren'Py
 const renpy_store = ['adv','default_mouse','main_menu','menu','mouse_visible','name_only','narrator','say','save_name'];
+// Python Reserved Names (https://www.renpy.org/doc/html/reserved.html)
+const rxReservedPythonCheck = /^\s*(default|define)\s+(ArithmeticError|AssertionError|AttributeError|BaseException|BufferError|BytesWarning|DeprecationWarning|EOFError|Ellipsis|EnvironmentError|Exception|False|FloatingPointError|FutureWarning|GeneratorExit|IOError|ImportError|ImportWarning|IndentationError|IndexError|KeyError|KeyboardInterrupt|LookupError|MemoryError|NameError|None|NoneType|NotImplemented|NotImplementedError|OSError|OverflowError|PPP|PendingDeprecationWarning|ReferenceError|RuntimeError|RuntimeWarning|StandardError|StopIteration|SyntaxError|SyntaxWarning|SystemError|SystemExit|TabError|True|TypeError|UnboundLocalError|UnicodeDecodeError|UnicodeEncodeError|UnicodeError|UnicodeTranslateError|UnicodeWarning|UserWarning|ValueError|Warning|ZeroDivisionError|abs|all|any|apply|basestring|bin|bool|buffer|bytearray|bytes|callable|chr|classmethod|cmp|coerce|compile|complex|copyright|credits|delattr|dict|dir|divmod|enumerate|eval|execfile|exit|file|filter|float|format|frozenset|getattr|globals|hasattr|hash|help|hex|id|input|int|intern|isinstance|issubclass|iter|len|license|list|locals|long|map|max|memoryview|min|next|object|oct|open|ord|pow|print|property|quit|range|raw_input|reduce|reload|repr|reversed|round|set|setattr|slice|sorted|staticmethod|str|sum|super|tuple|type|unichr|unicode|vars|xrange|zip)\s*=/g;
+// Obsolete Methods
+const rxObsoleteCheck = /[\s\(=]+(LiveCrop|LiveComposite|Tooltip|im\.Rotozoom|im\.ImageBase|im\.ramp|im\.Map|im\.Flip|im\.math|im\.expands_bounds|im\.threading|im\.zipfile|im\.Recolor|im\.Color|im\.io|im\.Alpha|im\.Data|im\.Image|im\.Twocolor|im\.MatrixColor|im\.free_memory|im\.Tile|im\.FactorScale|im\.Sepia|im\.Crop|im\.AlphaMask|im\.Blur|im\.tobytes|im\.matrix|im\.Grayscale|ui\.add|ui\.bar|ui\.imagebutton|ui\.input|ui\.key|ui\.label|ui\.null|ui\.text|ui\.textbutton|ui\.timer|ui\.vbar|ui\.hotspot|ui\.hotbar|ui\.spritemanager|ui\.button|ui\.frame|ui\.transform|ui\.window|ui\.drag|ui\.fixed|ui\.grid|ui\.hbox|ui\.side|ui\.vbox|ui\.imagemap|ui\.draggroup)[^a-zA-Z]/g;
+
+const rxVariableCheck = /^\s*(default|define)\s+([^a-zA-Z\s][a-zA-Z0-9_]*)\s+=/g;
+const rxPersistentDefines = /^\s*(default|define)\s*persistent.(\w*)\s.*=\s*(.*$)/g;
+const rxPersistentCheck = /\s+persistent\.(\w+)[^a-zA-Z]/g;
+const rxStoreCheck = /\s+store\.(\w+)[^a-zA-Z]/g;
+const rxTabCheck = /^(\t+)/g;
+const rsComparisonCheck = /\s+(if|while)\s+(\w+)\s*(=)\s*(\w+)\s*/g;
 
 /**
  * Analyzes the text document for problems. 
@@ -47,28 +58,16 @@ const renpy_store = ['adv','default_mouse','main_menu','menu','mouse_visible','n
     }
 
     let firstIndentation = 0;
-    const rxVariableCheck = /^\s*(default|define)\s+([^a-zA-Z\s][a-zA-Z0-9_]*)\s+=/g;
-    const rxObsoleteCheck = /[\s\(=]+(LiveCrop|LiveComposite|Tooltip|im\.Rotozoom|im\.ImageBase|im\.ramp|im\.Map|im\.Flip|im\.math|im\.expands_bounds|im\.threading|im\.zipfile|im\.Recolor|im\.Color|im\.io|im\.Alpha|im\.Data|im\.Image|im\.Twocolor|im\.MatrixColor|im\.free_memory|im\.Tile|im\.FactorScale|im\.Sepia|im\.Crop|im\.AlphaMask|im\.Blur|im\.tobytes|im\.matrix|im\.Grayscale|ui\.add|ui\.bar|ui\.imagebutton|ui\.input|ui\.key|ui\.label|ui\.null|ui\.text|ui\.textbutton|ui\.timer|ui\.vbar|ui\.hotspot|ui\.hotbar|ui\.spritemanager|ui\.button|ui\.frame|ui\.transform|ui\.window|ui\.drag|ui\.fixed|ui\.grid|ui\.hbox|ui\.side|ui\.vbox|ui\.imagemap|ui\.draggroup)[^a-zA-Z]/g;
-    const rxPersistentDefines = /^\s*(default|define)\s*persistent.(\w*)\s.*=\s*(.*$)/g;
-    const rxPersistentCheck = /\s+persistent\.(\w+)[^a-zA-Z]/g;
-    const rxStoreCheck = /\s+store\.(\w+)[^a-zA-Z]/g;
-    const rxTabCheck = /^(\t+)/g;
     
     for (let lineIndex = 0; lineIndex < doc.lineCount; lineIndex++) {
-		const line = doc.lineAt(lineIndex).text;
-        //const line = NavigationData.filterStringLiterals(doc.lineAt(lineIndex).text);
+        const line = NavigationData.filterStringLiterals(doc.lineAt(lineIndex).text);
 
-        // check line for invalid define/default variable names
-        // Variables must begin with a letter or number, and may not begin with '_'
-
-        let matches;
-        while ((matches = rxVariableCheck.exec(line)) !== null) {
-            const offset = matches.index + matches[0].indexOf(matches[2]);
-            const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
-            const diagnostic = new Diagnostic(range, `"${matches[2]}": Variables must begin with a letter (and may contain numbers, letters, or underscores). Variables may not begin with '_' as Ren'Py reserves such variables for its own purposes.`, DiagnosticSeverity.Error);
-            diagnostics.push(diagnostic);
+        if (line.trim().length === 0) {
+            continue;
         }
 
+        // check for inconsistent spacing
+        let matches;
         const checkSpacing: string = config.warnOnIndentationAndSpacingIssues;
         if (checkSpacing.toLowerCase() !== "disabled") {
             let severity = DiagnosticSeverity.Error;
@@ -95,46 +94,22 @@ const renpy_store = ['adv','default_mouse','main_menu','menu','mouse_visible','n
             }
         }
 
-        // check line for obsolete methods
+        checkInvalidVariableNames(diagnostics, line, lineIndex);
+
+        checkReservedPythonNames(diagnostics, line, lineIndex);
+
+        checkComparisonVsAssignment(diagnostics, line, lineIndex);
+
+        checkStrayDollarSigns(diagnostics, line, lineIndex);
+
+        checkStoreVariables(diagnostics, line, lineIndex);
+
         if (config.warnOnObsoleteMethods) {
-            while ((matches = rxObsoleteCheck.exec(line)) !== null) {
-                const offset = matches.index + matches[0].indexOf(matches[1]);
-                const range = new Range(lineIndex, offset, lineIndex, offset + matches[1].length);
-                const diagnostic = new Diagnostic(range, `"${matches[1]}": This function is obsolete or outdated.`, DiagnosticSeverity.Warning);
-                diagnostics.push(diagnostic);
-            }
+            checkObsoleteMethods(diagnostics, line, lineIndex);
         }
 
-        // check store prefixed variables have been defaulted
-        const defaults = NavigationData.gameObjects['define_types'];
-        if (defaults) {
-            const filtered = Object.keys(defaults).filter(key => defaults[key].define === 'default');
-            while ((matches = rxStoreCheck.exec(line)) !== null) {
-                if (!matches[1].startsWith('_') && !filtered.includes(matches[1]) && !renpy_store.includes(matches[1])) {
-                    const offset = matches.index + matches[0].indexOf(matches[1]);
-                    const range = new Range(lineIndex, offset, lineIndex, offset + matches[1].length);
-                    const diagnostic = new Diagnostic(range, `"store.${matches[1]}": Use of a store variable that has not been defaulted.`, DiagnosticSeverity.Warning);
-                    diagnostics.push(diagnostic);
-                }
-            }
-        }
-
-        // check persistents
         if (config.warnOnUndefinedPersistents) {
-            while ((matches = rxPersistentCheck.exec(line)) !== null) {
-                if (line.match(rxPersistentDefines)) {
-                    if (!persistents.includes(matches[1])) {
-                        persistents.push(matches[1]);
-                        continue;
-                    }
-                }
-                if (!matches[1].startsWith('_') && !persistents.includes(matches[1])) {
-                    const offset = matches.index + matches[0].indexOf(matches[1]);
-                    const range = new Range(lineIndex, offset, lineIndex, offset + matches[1].length);
-                    const diagnostic = new Diagnostic(range, `"persistent.${matches[1]}": This persistent variable has not been defaulted or defined.`, DiagnosticSeverity.Warning);
-                    diagnostics.push(diagnostic);
-                }
-            }
+            checkUndefinedPersistent(diagnostics, persistents, line, lineIndex);
         }
 	}
 
@@ -161,4 +136,93 @@ export function subscribeToDocumentChanges(context: ExtensionContext, diagnostic
 	context.subscriptions.push(
 		workspace.onDidCloseTextDocument(doc => diagnostics.delete(doc.uri))
 	);
+}
+
+function checkObsoleteMethods(diagnostics: Diagnostic[], line: string, lineIndex: number) {
+    let matches;
+    while ((matches = rxObsoleteCheck.exec(line)) !== null) {
+        const offset = matches.index + matches[0].indexOf(matches[1]);
+        const range = new Range(lineIndex, offset, lineIndex, offset + matches[1].length);
+        const diagnostic = new Diagnostic(range, `"${matches[1]}": This function is obsolete or outdated.`, DiagnosticSeverity.Warning);
+        diagnostics.push(diagnostic);
+    }
+}
+
+function checkComparisonVsAssignment(diagnostics: Diagnostic[], line: string, lineIndex: number) {
+    // check for equality/assignment errors
+    let matches;
+    while ((matches = rsComparisonCheck.exec(line)) !== null) {
+        const offset = matches.index + matches[0].indexOf(matches[3]);
+        const range = new Range(lineIndex, offset, lineIndex, offset + matches[3].length);
+        const diagnostic = new Diagnostic(range, `"=" is the equality operator. Use "==" for comparison.`, DiagnosticSeverity.Warning);
+        diagnostics.push(diagnostic);
+    }
+}
+
+function checkReservedPythonNames(diagnostics: Diagnostic[], line: string, lineIndex: number) {
+    // check for default/define variables that are Python reserved names
+    let matches;
+    while ((matches = rxReservedPythonCheck.exec(line)) !== null) {
+        const offset = matches.index + matches[0].indexOf(matches[2]);
+        const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
+        const diagnostic = new Diagnostic(range, `"${matches[2]}" is a Python reserved name, type, or function. Using it as a variable can lead to obscure problems or unpredictable behavior.`, DiagnosticSeverity.Error);
+        diagnostics.push(diagnostic);
+    }
+}
+
+function checkStrayDollarSigns(diagnostics: Diagnostic[], line: string, lineIndex: number) {
+    // check for '$' character not at the beginning of the line
+    if (line.trim().indexOf('$') >= 1) {
+        const offset = line.indexOf('$');
+        const range = new Range(lineIndex, offset, lineIndex, offset + 1);
+        const diagnostic = new Diagnostic(range, `"$" starts a one-line Python statement, but was found in the middle of the line.`, DiagnosticSeverity.Warning);
+        diagnostics.push(diagnostic);
+    }
+}
+
+function checkInvalidVariableNames(diagnostics: Diagnostic[], line: string, lineIndex: number) {
+    // check line for invalid define/default variable names
+    // Variables must begin with a letter or number, and may not begin with '_'
+    let matches;
+    while ((matches = rxVariableCheck.exec(line)) !== null) {
+        const offset = matches.index + matches[0].indexOf(matches[2]);
+        const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
+        const diagnostic = new Diagnostic(range, `"${matches[2]}": Variables must begin with a letter (and may contain numbers, letters, or underscores). Variables may not begin with '_' as Ren'Py reserves such variables for its own purposes.`, DiagnosticSeverity.Error);
+        diagnostics.push(diagnostic);
+    }
+}
+
+function checkStoreVariables(diagnostics: Diagnostic[], line: string, lineIndex: number) {
+    // check store prefixed variables have been defaulted
+    const defaults = NavigationData.gameObjects['define_types'];
+    if (defaults) {
+        const filtered = Object.keys(defaults).filter(key => defaults[key].define === 'default');
+        let matches;
+        while ((matches = rxStoreCheck.exec(line)) !== null) {
+            if (!matches[1].startsWith('_') && !filtered.includes(matches[1]) && !renpy_store.includes(matches[1])) {
+                const offset = matches.index + matches[0].indexOf(matches[1]);
+                const range = new Range(lineIndex, offset, lineIndex, offset + matches[1].length);
+                const diagnostic = new Diagnostic(range, `"store.${matches[1]}": Use of a store variable that has not been defaulted.`, DiagnosticSeverity.Warning);
+                diagnostics.push(diagnostic);
+            }
+        }
+    }
+}
+
+function checkUndefinedPersistent(diagnostics: Diagnostic[], persistents: string[], line: string, lineIndex: number) {
+    let matches;
+    while ((matches = rxPersistentCheck.exec(line)) !== null) {
+        if (line.match(rxPersistentDefines)) {
+            if (!persistents.includes(matches[1])) {
+                persistents.push(matches[1]);
+                continue;
+            }
+        }
+        if (!matches[1].startsWith('_') && !persistents.includes(matches[1])) {
+            const offset = matches.index + matches[0].indexOf(matches[1]);
+            const range = new Range(lineIndex, offset, lineIndex, offset + matches[1].length);
+            const diagnostic = new Diagnostic(range, `"persistent.${matches[1]}": This persistent variable has not been defaulted or defined.`, DiagnosticSeverity.Warning);
+            diagnostics.push(diagnostic);
+        }
+    }
 }

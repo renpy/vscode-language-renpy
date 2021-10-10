@@ -23,8 +23,11 @@ export function getColorInformation(document: TextDocument): ColorInformation[] 
 					let range = new Range(line.lineNumber, text.indexOf(match, start), line.lineNumber, text.indexOf(match, start) + match.length);
 					let color;
 					
-					if (match.startsWith('"#')) {
-						color = convertHtmlToColor(match);
+					if (match.startsWith('"#') || match.startsWith("'#")) {
+						const quote = match.substr(0, 1);
+						if (match.endsWith(quote)) {
+							color = convertHtmlToColor(match);
+						}
 					} else if (match.startsWith('rgb')) {
 						color = convertRgbColorToColor(match);
 					} else if (match.startsWith('color')) {
@@ -70,12 +73,14 @@ export function getColorPresentations(color: Color, document: TextDocument, rang
 	const colA = Math.round(color.alpha * 255);
 
 	let colorLabel: string = "";
-	if (text.startsWith('"#')) {
+	if (text.startsWith('"#') || text.startsWith("'#")) {
+		const quote = text.substr(0, 1);
 		if (colA === 255 && (text.length === 6 || text.length === 9)) {
 			colorLabel = convertRgbToHex(colR, colG, colB) || "";
 		} else {
 			colorLabel = convertRgbToHex(colR, colG, colB, colA) || "";
 		}
+		colorLabel = quote + colorLabel + quote;
 	} else if (text.startsWith('rgb')) {
 		colorLabel = convertColorToRgbTuple(color);
 	} else if (text.startsWith('color')) {
@@ -103,7 +108,7 @@ export function getColorPresentations(color: Color, document: TextDocument, rang
  * @returns A `RegExpMatchArray` containing any color matches
  */
 export function findColorMatches(text: string): RegExpMatchArray | null {
-	let rx = /("#)[0-9a-fA-F]{8}(")|("#)[0-9a-fA-F]{6}(")|("#)[0-9a-fA-F]{4}(")|("#)[0-9a-fA-F]{3}(")|Color\(\((\d+),\s*(\d+),\s*(\d+)?\)|Color\(\((\d+),\s*(\d+),\s*(\d+),\s*(\d+)?\)|rgb\s*=\s*\(([.\d]+),\s*([.\d]+),\s*([.\d]+)?\)|color\s*=\s*\((\d+),\s*(\d+),\s*(\d+)?\)|color\s*=\s*\((\d+),\s*(\d+),\s*(\d+),\s*(\d+)?\)/ig;
+	let rx = /(["']#)[0-9a-fA-F]{8}(["'])|(["']#)[0-9a-fA-F]{6}(["'])|(["']#)[0-9a-fA-F]{4}(["'])|(["']#)[0-9a-fA-F]{3}(["'])|Color\(\((\d+),\s*(\d+),\s*(\d+)?\)|Color\(\((\d+),\s*(\d+),\s*(\d+),\s*(\d+)?\)|rgb\s*=\s*\(([.\d]+),\s*([.\d]+),\s*([.\d]+)?\)|color\s*=\s*\((\d+),\s*(\d+),\s*(\d+)?\)|color\s*=\s*\((\d+),\s*(\d+),\s*(\d+),\s*(\d+)?\)/ig;
 	let matches = text.match(rx);
 	return matches;
 }
@@ -148,7 +153,7 @@ export function convertColorToRgbTuple(color: Color): string {
  * @returns The `Color` provider object
  */
 export function convertHtmlToColor(hex: string) : Color | null {
-	hex = hex.replace(/"/g, '');
+	hex = hex.replace(/"/g, '').replace(/'/g, '');
 	// Add alpha value if not supplied
 	if (hex.length === 4) {
 		hex = hex + 'f';

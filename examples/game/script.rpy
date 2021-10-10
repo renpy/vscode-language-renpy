@@ -6,7 +6,7 @@
 define e = Character("Eileen", who_color="#c8ffc8")
 
 # sample colors
-image red = Solid("#FF0000FF")
+image red = Solid('#FF0000FF')
 image green = Solid("#00FF00")
 image white = Solid("#fff")
 image translucent = Solid("#fff8")

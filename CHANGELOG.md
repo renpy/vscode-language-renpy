@@ -1,5 +1,21 @@
 # Changelog
 
+## 2.0.0 (2021/09/01)
+
+### Features
+
+* Extension Settings - Allows you to enable/disable certain new functionality
+* Hover - Hovering over a keyword will display the selected item's source file/location as well as documentation if available
+* Definition - Adds support for right-click Go To Definition (F12), which will jump to the selected keyword's source
+* Document Symbols - Document Symbols are displayed in the Outline window in the sidebar
+* Signature Help - Shows the documentation pop-up as you enter a function's arguments
+* Completion - Displays a pop-up auto-complete menu with appropriate choices as you type your script
+* Document Color - Displays a color block next to detected colors in your script and allows you to pick new colors with a click
+* Reference - Adds support for Go To Reference, which searches your documents for the selected keyword
+* Folding - Adds folding support to collapse logical sections of your script in the editor
+* Semantic Tokens - Detects parameters and variables in screens and functions and colorizes them correctly
+* Diagnostics - Adds support for detection of issues with indentation or invalid filenames/variable names and marks them as errors or warnings in the editor
+
 ## 1.1.0 (2021/08/13)
 
 ### Features

@@ -1,8 +1,10 @@
 # Changelog
 
-## 2.0.0 (2021/09/01)
+## 2.0.0 (2021/10/16)
 
 ### Features
+
+These features have been added by [@rdurfee](https://github.com/rdurfee) - PR [#21](https://github.com/LuqueDaniel/vscode-language-renpy/pull/21).
 
 * Extension Settings - Allows you to enable/disable certain new functionality
 * Hover - Hovering over a keyword will display the selected item's source file/location as well as documentation if available

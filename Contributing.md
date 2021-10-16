@@ -6,7 +6,7 @@ Please note we have a [code of conduct](https://github.com/LuqueDaniel/vscode-la
 
 ## Reporting bugs or proposing features
 
-Always open one issue for one bug or feature. Create one new issue for each bug or feature.
+Open a new issue for each bug or feature you want to propose.
 
 1. Before reporting a bug :mag: **[check](https://github.com/LuqueDaniel/vscode-language-renpy/issues)** if it has
    already been reported.

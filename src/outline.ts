@@ -25,9 +25,11 @@ export function getDocumentSymbols(document: TextDocument): DocumentSymbol[] | u
         for (let key in category) {
             if (category[key][0] === documentFilename) {
                 const childRange = new Range(category[key][1] - 1, 0, category[key][1] - 1, 0);
-                parentSymbol.children.push(
-                    new DocumentSymbol(key, `:${category[key][1]}`, getDocumentSymbolKind(type, true), childRange, childRange)
-                );
+                let classParent = new DocumentSymbol(key, `:${category[key][1]}`, getDocumentSymbolKind(type, true), childRange, childRange);
+                if (type === 'class') {                                        
+                    getClassDocumentSymbols(classParent, key);
+                }
+                parentSymbol.children.push(classParent);
             }
         }
         if (parentSymbol.children.length > 0) {
@@ -69,4 +71,39 @@ function getDocumentSymbolKind(category: string, child: boolean) : SymbolKind {
 		default:
 			return SymbolKind.Variable;
 	}
+}
+
+function getClassDocumentSymbols(classParent: DocumentSymbol, key: string) {
+    const callables = NavigationData.data.location['callable'];
+    if (callables) {
+        const filtered = Object.keys(callables).filter(k => k.indexOf(key) === 0);
+        if (filtered) {
+            for (let callable of filtered) {
+                const label = callable.substr(key.length + 1);
+                const line = callables[callable][1];
+                const childRange = new Range(line - 1, 0, line - 1, 0);
+                classParent.children.push(
+                    new DocumentSymbol(label, `:${line}`, SymbolKind.Method, childRange, childRange)
+                );
+            }
+        }
+    }
+    const fields = NavigationData.gameObjects['fields'][key];
+    if (fields) {
+        for (let f of fields) {
+            const childRange = new Range(f.location - 1, 0, f.location - 1, 0);
+            classParent.children.push(
+                new DocumentSymbol(f.keyword, `:${f.location}`, SymbolKind.Field, childRange, childRange)
+            );
+        }
+    }
+    const props = NavigationData.gameObjects['properties'][key];
+    if (props) {
+        for (let p of props) {
+            const childRange = new Range(p.location - 1, 0, p.location - 1, 0);
+            classParent.children.push(
+                new DocumentSymbol(p.keyword, `:${p.location}`, SymbolKind.Property, childRange, childRange)
+            );
+        }
+    }
 }

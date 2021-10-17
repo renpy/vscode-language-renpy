@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.1 (2021/10/17)
+
+### Fixes
+* The extension now works with most features even when navigation.json is not found
+* Fixed missing command errors when navigation.json is not found
+* Warnings for undefined store variables can now be disabled
+* Hover documentation displays properly for python function defs spanning multiple lines
+* Completion now works properly with user-defined stores
+* Document Symbols (Outline) for Classes now display properties, fields, and methods
+
 ## 2.0.0 (2021/09/01)
 
 ### Features

@@ -2,14 +2,14 @@
 'use strict';
 
 import { Position, Range, SemanticTokens, SemanticTokensBuilder, SemanticTokensLegend, TextDocument } from "vscode";
-import { Navigation, splitParameters, rangeAsString } from "./navigation";
-import { NavigationData } from "./navigationdata";
+import { Navigation, splitParameters, rangeAsString, getCurrentContext } from "./navigation";
+import { NavigationData, updateNavigationData } from "./navigationdata";
 import { stripWorkspaceFromFile } from "./workspace";
 
 export function getSemanticTokens(document: TextDocument, legend: SemanticTokensLegend): SemanticTokens {
     const tokensBuilder = new SemanticTokensBuilder(legend);
     const rxKeywordList = /\s*(screen|label|transform|def)\s+/;
-    const rxParameterList = /\s*(screen|label|transform|def)\s+([a-zA-Z0-9_]+)\((.*)\):/s;
+    const rxParameterList = /\s*(screen|label|transform|def)\s+([a-zA-Z0-9_]+)\((.*)\):|\s*(label)\s+([a-zA-Z0-9_]+)\s*:/s;
     const filename = stripWorkspaceFromFile(document.uri.path);
     let parent = '';
     let parent_line = 0;
@@ -75,6 +75,16 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                     NavigationData.gameObjects['semantic'][key] = navigation;
                     start += m.length + 1;
                 }
+                if (matches[1] === 'def') {
+                    const context = getCurrentContext(document, new Position(i - 1, indent_level));
+                    if (context === undefined) {
+                        updateNavigationData('callable', matches[2], filename, i);
+                    } else if (context.startsWith('store.')) {
+                        updateNavigationData('callable', `${context.split('.')[1]}.${matches[2]}`, filename, i);
+                    }
+                } else {
+                    updateNavigationData(matches[1], matches[2], filename, i);
+                }
             } else if (matches[1] === 'screen' || matches[1] === 'def') {
                 // parent screen or function def with no parameters
                 indent_level = line.length - line.trimLeft().length;
@@ -84,6 +94,23 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                 parent_args = [];
                 parent_local = [];
                 parent_defaults = {};
+
+                if (matches[1] === 'def') {
+                    const context = getCurrentContext(document, new Position(i - 1, indent_level));
+                    if (context === undefined) {
+                        updateNavigationData('callable', matches[2], filename, i);
+                    } else if (context.startsWith('store.')) {
+                        updateNavigationData('callable', `${context.split('.')[1]}.${matches[2]}`, filename, i);
+                    }
+                } else {
+                    updateNavigationData(matches[1], matches[2], filename, i);
+                }
+            } else if (matches[4] === 'label') {
+                indent_level = line.length - line.trimLeft().length;
+                const context = getCurrentContext(document, new Position(i - 1, indent_level));
+                if (context === undefined) {
+                    updateNavigationData('label', matches[5], filename, i);
+                }
             }
         } else if (parent !== '') {
             // we are still inside a parent block
@@ -131,6 +158,9 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                                 // create a Navigation dictionary entry for this token range
                                 const key = rangeAsString(filename, range);
                                 const parent_nav = parent_defaults[`${parent_type}.${parent}.${matches[1]}`];
+                                if (parent_nav === undefined) {
+                                    continue;
+                                }
                                 let nav_source = 'variable';
                                 if (a[1] === 'sv') {
                                     nav_source = 'screen variable';
@@ -142,7 +172,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                             }
                         }
                     } catch (error) {
-                        console.log(error);
+                        console.log(`error at ${filename}:${i}: ${error}`);
                     }
                 }
             }
@@ -208,7 +238,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                                 start += m.length + 1;
                             }
                         } catch (error) {
-                            console.log(error);
+                            console.log(`error at ${filename}:${i}: ${error}`);
                         }
                     }
                 }

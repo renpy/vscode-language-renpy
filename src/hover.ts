@@ -147,9 +147,9 @@ export function getHoverMarkdownString(locations: Navigation[]) : MarkdownString
 			documentation = formatDocumentationAsMarkdown(documentation);
 			const split = documentation.split('::');
 			if (split.length > 1) {				
-				contents.appendCodeblock(split[1]);
-				contents.appendMarkdown('\n\n---\n\n');
 				contents.appendMarkdown(split[0]);
+				contents.appendMarkdown('\n\n---\n\n');
+				contents.appendCodeblock(split[1]);
 			} else {
 				contents.appendMarkdown(split[0]);
 			}
@@ -193,9 +193,7 @@ export function getDefinitionFromFile(filename: string, line: number): Navigatio
 			}
 
 			let docs = "";
-			if (lines[line].indexOf('"""') >= 0) {
-				docs = getPyDocsAtLine(lines, line);
-			}
+			docs = getPyDocsAtLine(lines, line - 1);
 			
 			let args = "";
 			if (text.indexOf('(') > 0) {

@@ -1,11 +1,10 @@
 # More information: https://github.com/HaaLeo/publish-vscode-extension
 
-name: "Publish Extension"
+name: Publish Extension
 
 on:
-  push:
-    tags:
-      - "*"
+  release:
+    types: [created]
 
 jobs:
   deploy:

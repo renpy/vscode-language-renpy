@@ -2,7 +2,7 @@
     "name": "languague-renpy",
     "displayName": "Ren'Py Language",
     "description": "Adds syntax highlighting and snippets to Ren'Py files in Visual Studio Code",
-    "version": "2.0.0",
+    "version": "2.0.1",
     "publisher": "LuqueDaniel",
     "license": "MIT",
     "homepage": "https://github.com/LuqueDaniel/vscode-language-renpy",
@@ -104,6 +104,11 @@
                         "type": "boolean",
                         "default": true,
                         "description": "Enable undefined persistent warnings. If checked (true), persistent variables will be marked with a warning in the editor if they haven't been defaulted/defined."
+                    },
+                    "renpy.warnOnUndefinedStoreVariables": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Enable undefined store variable warnings. If checked (true), store variables will be marked with a warning in the editor if they haven't been defaulted/defined."
                     },
                     "renpy.warnOnIndentationAndSpacingIssues": {
                         "type": "string",

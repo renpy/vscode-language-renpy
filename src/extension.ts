@@ -5,7 +5,7 @@
 
 import { ExtensionContext, languages, commands, window, IndentAction, TextDocument, Position, CancellationToken, ProviderResult, HoverProvider, Hover, DefinitionProvider, Range, Location, Uri, workspace, CompletionContext, CompletionItemProvider, CompletionItem, DocumentSymbol, DocumentSymbolProvider, DocumentColorProvider, ColorInformation, ColorPresentation, Color, Definition, StatusBarItem, StatusBarAlignment, ConfigurationTarget, SignatureHelpProvider, SignatureHelp, SignatureHelpContext, ReferenceContext, ReferenceProvider, DocumentSemanticTokensProvider, SemanticTokens, SemanticTokensLegend, FoldingRangeProvider, FoldingContext, FoldingRange } from 'vscode';
 import { getColorInformation, getColorPresentations } from './color';
-import { NavigationData } from './navigationdata';
+import { getStatusBarText, NavigationData } from './navigationdata';
 import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from './workspace';
 import { refreshDiagnostics, subscribeToDocumentChanges } from './diagnostics';
 import { getSemanticTokens } from './semantics';
@@ -33,8 +33,9 @@ export async function activate(context: ExtensionContext): Promise<any> {
 	});
 
 	const filepath = getNavigationJsonFilepath();
-	if (!fs.existsSync(filepath)) {
-		return;
+	const jsonFileExists = fs.existsSync(filepath);
+	if (!jsonFileExists) {
+		console.log("Navigation.json file is missing.");
 	}
 
 	// hide rpyc files if the setting is enabled
@@ -190,11 +191,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 				const filename = stripWorkspaceFromFile(uri.path);
 				NavigationData.clearScannedDataForFile(filename);
 				NavigationData.scanDocumentForClasses(filename, document);
-				if (NavigationData.data) {
-					updateStatusBar(`${NavigationData.data.name} v${NavigationData.data.version}`);
-				} else {
-					updateStatusBar("");
-				}
+				updateStatusBar(getStatusBarText());
 			}
 		})
 	);
@@ -212,11 +209,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 		} catch (error) {
 			console.log(error);
 		} finally {
-			if (NavigationData.data) {
-				updateStatusBar(`${NavigationData.data.name} v${NavigationData.data.version}`);
-			} else {
-				updateStatusBar("");
-			}
+			updateStatusBar(getStatusBarText());
 		}
 	});
 	context.subscriptions.push(refreshCommand);
@@ -271,11 +264,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 	// Detect file system change to the navigation.json file and trigger a refresh
 	updateStatusBar("$(sync~spin) Initializing Ren'Py static data...");
 	await NavigationData.init(context.extensionPath);
-	if (NavigationData.data) {
-		updateStatusBar(`${NavigationData.data.name} v${NavigationData.data.version}`);
-	} else {
-		updateStatusBar("");
-	}
+	updateStatusBar(getStatusBarText());
 
 	try {
 		fs.watch(getNavigationJsonFilepath(), async (event, filename) => {
@@ -287,11 +276,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 				} catch (error) {
 					console.log(`${Date()}: error refreshing NavigationData: ${error}`);
 				} finally {
-					if (NavigationData.data) {
-						updateStatusBar(`${NavigationData.data.name} v${NavigationData.data.version}`);
-					} else {
-						updateStatusBar("");
-					}
+					updateStatusBar(getStatusBarText());
 				}
 			}
 		});
@@ -419,11 +404,7 @@ function ExecuteRenpyCompile(): boolean {
 			return false;
 		} finally {
 			NavigationData.isCompiling = false;
-			if (NavigationData.data) {
-				updateStatusBar(`${NavigationData.data.name} v${NavigationData.data.version}`);
-			} else {
-				updateStatusBar("");
-			}
+			updateStatusBar(getStatusBarText());
 		}
 		return true;
 	}

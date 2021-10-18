@@ -64,11 +64,17 @@ export class NavigationData {
 		NavigationData.isImporting = true;
 		try {
 			NavigationData.data = readNavigationJson();
+
 			if (NavigationData.data.error) {
 				window.showWarningMessage("Navigation data is empty. Ren'Py could not compile your project. Please check your project can start successfully.");
 			}
 			if (NavigationData.data.location === undefined) {
 				NavigationData.data.location = {};
+				NavigationData.data.location['callable'] = {};
+				NavigationData.data.location['screen'] = {};
+				NavigationData.data.location['define'] = {};
+				NavigationData.data.location['transform'] = {};
+				NavigationData.data.location['label'] = {};
 			}
 			NavigationData.data.location['class'] = {};
 			NavigationData.data.location['displayable'] = {};
@@ -135,6 +141,13 @@ export class NavigationData {
 				const data = type[keyword];
 				if (data instanceof Navigation) { //!data.length
 					locations.push(data);
+				} else if (data instanceof Displayable) {
+					locations.push(new Navigation(
+						key,
+						keyword,
+						data.filename,
+						data.location
+					));
 				} else {
 					locations.push(new Navigation(
 						key,
@@ -265,14 +278,14 @@ export class NavigationData {
 						continue;
 					}
 				}
-			} else if (c === "[") {
+			} else if (c === "[" && (insideSingleQuote || insideDoubleQuote)) {
 				if (insideBracket) {
 					// a second bracket
 					insideBracket = false;
 				} else {
 					insideBracket = true;
 				}
-			} else if (c === "]") {
+			} else if (c === "]" && (insideSingleQuote || insideDoubleQuote)) {
 				insideBracket = false;
 				parsed += c;
 				continue;
@@ -425,6 +438,8 @@ export class NavigationData {
 						if (current_def[1] !== index + 1) {
 							current_def[1] = index + 1;
 						}
+					} else {
+						NavigationData.data.location['callable'][define_keyword] = [filename, index + 1];
 					}
 				}
 
@@ -629,20 +644,38 @@ export class NavigationData {
      * @param document - The TextDocument for the script file
      */
 	static scanDocumentForClasses(filename: string, document: TextDocument) {
+		const rxKeywordList = /\s*(register_channel|register_statement|default|define|class)[\s\()]+/;
 		const rxClass = /^\s*class\s+(\w*).*:/;
-		const rxDisplayable = /^\s*(image)\s+([^=.]*)\s*[=]\s*(.+)|(layeredimage)\s+(.+):/;
-		const rxChannels = /.*renpy.(audio|music).register_channel\s*\("(\w+)"(.*)\)/;
+		const rxDisplayable = /^\s*(image)\s+([^=.]*)\s*[=]\s*(.+)|(layeredimage)\s+(.+):|(image)\s+([^=.:]*)\s*:/;
+		const rxChannels = /.*renpy.(audio|music).register_channel\s*\(\s*"(\w+)"(.*)/;
 		const rxPersistent = /^\s*(default|define)\s*persistent.(\w*)\s.*=\s*(.*$)/;
-		const rxDefaultDefine = /^(default|define)\s+(\w*)\s*=\s*([\w'"`\[{]*)/;
-		const rxCharacters = /^\s*(define)\s*(\w*)\s*=\s*(Character|DynamicCharacter)\s*\((.*)\)/;
+		const rxDefaultDefine = /^(default|define)\s+([a-zA-Z0-9._]+)\s*=\s*([\w'"`\[{]*)/;
+		const rxCharacters = /^\s*(define)\s*(\w*)\s*=\s*(Character|DynamicCharacter)\s*\((.*)/;
 		const rxStatements = /.*renpy.register_statement\s*\("(\w+)"(.*)\)/;
 		const rxOutlines = /[\s_]*outlines\s+(\[.*\])/;
-
+		const gameFilename = stripWorkspaceFromFile(document.uri.path);
 		const internal = NavigationData.renpyFunctions.internal;
 		let transitions = Object.keys(internal).filter(key => internal[key][0] === 'transitions');
 
 		for (let i = 0; i < document.lineCount; ++i) {
-			const line = document.lineAt(i).text;
+			let line = document.lineAt(i).text;
+
+			let append_line = i;
+			let containsKeyword = line.match(rxKeywordList);
+			if (containsKeyword) {
+				// check for unterminated parenthesis for multiline declarations	
+				let no_string = NavigationData.filterStringLiterals(line);
+				let open_count = (no_string.match(/\(/g)||[]).length;
+				let close_count = (no_string.match(/\)/g)||[]).length;
+				while (open_count > close_count && append_line < document.lineCount - 1 && append_line < 10) {
+					append_line++;
+					line = line + document.lineAt(append_line).text + '\n';
+					no_string = NavigationData.filterStringLiterals(line);
+					open_count = (no_string.match(/\(/g)||[]).length;
+					close_count = (no_string.match(/\)/g)||[]).length;
+				}
+			}
+
 			// match class definitions
 			const matches = line.match(rxClass);
 			if (matches) {
@@ -653,7 +686,7 @@ export class NavigationData {
 					NavigationData.gameObjects['properties'][match] = properties;
 				}
 				const initData = NavigationData.data.location['callable'][`${match}.__init__`];
-				if (initData && initData[0] === stripWorkspaceFromFile(document.uri.path)) {
+				if (initData && initData[0] === gameFilename) {
 					const fields = NavigationData.getClassFields(match, document, initData[1]);
 					if (fields) {
 						NavigationData.gameObjects['fields'][match] = fields;
@@ -673,6 +706,10 @@ export class NavigationData {
 					// layered image match
 					match = displayables[5].trim();
 					image_type = displayables[4].trim();
+				} else if (displayables[7]) {
+					// atl image match
+					match = displayables[7].trim();
+					image_type = displayables[6].trim();
 				}
 				if (match.length > 0) {
 					const displayable = new Displayable(match, image_type, displayables[3], filename, i + 1);
@@ -718,6 +755,7 @@ export class NavigationData {
 				const datatype = new DataType(defaults[2], defaults[1], defaults[3]);
 				datatype.checkTypeArray('transitions', transitions);
 				NavigationData.gameObjects['define_types'][defaults[2]] = datatype;
+				updateNavigationData('define', defaults[2], filename, i);
 			}
 			// match characters
 			const characters = line.match(rxCharacters);
@@ -902,4 +940,32 @@ export function readNavigationJson() {
 	} catch (error) {
 		window.showErrorMessage(`readNavigationJson error: ${error}`);
 	}	
+}
+
+export function updateNavigationData(type: string, keyword: string, filename: string, line: number) {
+    if (type === 'define' || type === 'screen' || type === 'label' || type === 'transform' || type === 'callable') {
+        let category = NavigationData.data.location[type];
+        if (category[keyword]) {
+            let entry = category[keyword];
+            if (entry) {
+                if (entry[0] === filename && entry[1] !== line + 1) {
+                    entry[1] = line + 1;
+                }
+            }
+        } else {
+            category[keyword] = [filename, line + 1];
+        }
+    }
+}
+
+export function getStatusBarText() {
+	if (NavigationData.data) {
+		if (NavigationData.data.name !== undefined) {
+			return `${NavigationData.data.name} v${NavigationData.data.version}`;
+		} else {
+			return "(Uncompiled Game)";
+		}
+	} else {
+		return "";
+	}
 }

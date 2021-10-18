@@ -32,10 +32,6 @@ export function getCompletionList(document: TextDocument, position: Position, co
             return getAutoCompleteList('renpy.music.');
         } else if (linePrefix.endsWith('renpy.audio.')) {
             return getAutoCompleteList('renpy.audio.');
-        } else if (linePrefix.endsWith('persistent.')) {
-            return getAutoCompleteList('persistent.');
-        } else if (linePrefix.endsWith('store.')) {
-            return getAutoCompleteList('store.');
         } else {
             const prefixPosition = new Position(position.line, position.character - 1);
             const range = document.getWordRangeAtPosition(prefixPosition);
@@ -82,14 +78,14 @@ export function getAutoCompleteList(prefix: string, parent: string = "", context
             }
         }
         return newlist;
-    } else if (prefix === 'persistent.') {
+    } else if (prefix === 'persistent') {
         // get list of persistent definitions
         const gameObjects = NavigationData.data.location['persistent'];
         for (let key in gameObjects) {
             newlist.push(new CompletionItem(key, CompletionItemKind.Value));
         }
         return newlist;
-    } else if (prefix === 'store.') {
+    } else if (prefix === 'store') {
         // get list of default variables
         const defaults = NavigationData.gameObjects['define_types'];
         const filtered = Object.keys(defaults).filter(key => defaults[key].define === 'default');
@@ -137,6 +133,8 @@ export function getAutoCompleteList(prefix: string, parent: string = "", context
         if (className) {
             return NavigationData.getClassAutoComplete(className);
         }
+    } else if (isCallableContainer(prefix)) {
+        return getCallableAutoComplete(prefix);
     } else if (context === 'label' && characters.includes(parent)) {
         // get attributes for character if we're in the context of a label
         const category = NavigationData.gameObjects['attributes'][parent];
@@ -476,4 +474,32 @@ function getDisplayableAutoComplete(quoted: boolean = false): CompletionItem[] {
     } else {
         return NavigationData.displayableAutoComplete;
     }
+}
+
+function isCallableContainer(keyword: string): boolean {
+    const prefix = keyword + '.';
+    const callables = NavigationData.data.location['callable'];
+    if (callables) {
+        return Object.keys(callables).some(key => key.indexOf(prefix) === 0);
+    }
+    return false;
+}
+
+function getCallableAutoComplete(keyword: string): CompletionItem[] | undefined {
+    let newlist: CompletionItem[] = [];
+    const prefix = keyword + '.';
+
+    // get the list of callables
+    const callables = NavigationData.data.location['callable'];
+    if (callables) {
+        const filtered = Object.keys(callables).filter(key => key.indexOf(prefix) === 0);
+        if (filtered) {
+            for (let key in filtered) {
+                const label = filtered[key].substr(prefix.length);
+                newlist.push(new CompletionItem(label, CompletionItemKind.Method));
+            }
+        }
+    }
+
+    return newlist;
 }

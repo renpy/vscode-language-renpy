@@ -67,55 +67,89 @@ export class DataType {
 export function getPyDocsAtLine(lines: string[], line: number): string {
 	let lb: string[] = [];
 	let index: number = line;
-	
-	const margin = lines[index].length - lines[index].trimLeft().length;
-	let text = lines[index].replace('"""', '').trim();
-	if (text.indexOf('"""')) {
-		text = text.replace('"""', '').trim();
-		if (text.length > 0) {
-			return text;
-		}
-	}
+	let finished = false;
+	let insideComment: boolean = false;
 
-	index++;
-	while (lines[index].indexOf('"""') < 0 && index < lines.length) {
-		let line = lines[index].trim();
-		if (line.length === 0 || lines[index].length - lines[index].trimLeft().length >= margin + 3) {
-			line = '\n\n' + line;
+	let text = lines[index].replace(/[\n\r]/g,'');
+	let spacing = text.length - text.trimLeft().length;
+	let margin = 0;
+
+	while (!finished && index < lines.length) {
+		text = lines[index].replace(/[\n\r]/g,'');
+		if (text.length > 0 && (text.length - text.trimLeft().length <= spacing) && index > line) {
+			finished = true;
+			break;
 		}
 
-		lb.push(line);
+		if (text.indexOf('"""') >= 0) {
+			if (insideComment) {
+				finished = true;
+			} else {
+				insideComment = true;
+				margin = text.indexOf('"""');
+				text = text.substring(margin + 3);
+				if (text.length > 0) {
+					if (text.indexOf('"""') >= 0) {
+						return text.replace('"""', '');
+					}
+					lb.push(text);
+				}
+			}
+		} else if (insideComment) {
+			if (text.length === 0 || text.length - text.trimLeft().length >= margin + 3) {
+				lb.push('\n' + text.substr(margin));
+			} else {
+				lb.push(text.substr(margin));
+			}
+		}
 		index++;
 	}
 
-	return lb.join(" ").trim();
+	return lb.join("\n").trim();
 }
 
 export function getPyDocsFromTextDocumentAtLine(document: TextDocument, line: number): string {
 	let lb: string[] = [];
 	let index: number = line;
+	let finished = false;
+	let insideComment: boolean = false;
 
 	let text = document.lineAt(index).text;
-	if (text.indexOf('"""') < 0) {
-		return '';
-	}
+	let spacing = text.length - text.trimLeft().length;
+	let margin = 0;
 
-	text = text.replace('"""', '').trim();
-	if (text.indexOf('"""') > 0) {
-		// this is a single line comment
-		text = text.replace('"""', '').trim();
-		if (text.length > 0) {
-			return text;
+	while (!finished && index < document.lineCount) {
+		text = document.lineAt(index).text;
+		if (text.length > 0 && (text.length - text.trimLeft().length <= spacing) && index > line) {
+			finished = true;
+			break;
 		}
-	}
 
-	index++;
-	while (document.lineAt(index).text.indexOf('"""') < 0 && index < document.lineCount - 1) {
-		lb.push(document.lineAt(index).text.trim());
+		if (text.indexOf('"""') >= 0) {
+			if (insideComment) {
+				finished = true;
+			} else {
+				insideComment = true;
+				margin = text.indexOf('"""');
+				text = text.substring(margin + 3);
+				if (text.length > 0) {
+					if (text.indexOf('"""') >= 0) {
+						return text.replace('"""', '');
+					}
+					lb.push(text);
+				}
+			}
+		} else if (insideComment) {
+			if (text.length === 0 || text.length - text.trimLeft().length >= margin + 3) {
+				lb.push('\n' + text.substr(margin));
+			} else {
+				lb.push(text.substr(margin));
+			}
+		}
 		index++;
 	}
 
-	return lb.join(" ").trim();
+	return lb.join("\n").trim();
 }
 
 export function getBaseTypeFromDefine(keyword: string, line: string): string | undefined {
@@ -335,13 +369,22 @@ export function rangeAsString(filename: string, range: Range): string {
 
 export function getCurrentContext(document: TextDocument, position: Position): string | undefined {
 	const rxParentTypes = /\s*(screen|label|transform|def|class|style)\s+([a-zA-Z0-9_]+)\s*(\((.*)\):|:)/;
+	const rxInitStore = /^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):/;
 
 	let i = position.line;
 	while (i >= 0) {
 		let line = NavigationData.filterStringLiterals(document.lineAt(i).text);
-		//let indent_level = line.length - line.trimLeft().length;
+
+		const storeMatch = line.match(rxInitStore);
+		if (storeMatch) {
+			return `store.${storeMatch[3]}`;
+		} else if ((line.startsWith('python ') || line.startsWith('init ')) && line.trim().endsWith(':')){
+			return;
+		}
+
+		let indent_level = line.length - line.trimLeft().length;
 		let match = line.match(rxParentTypes);
-		if (match) {
+		if (match && indent_level < position.character) {
 			return match[1];
 		}
 		i--;

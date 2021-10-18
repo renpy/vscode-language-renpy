@@ -16,7 +16,7 @@ const rxObsoleteCheck = /[\s\(=]+(LiveCrop|LiveComposite|Tooltip|im\.Rotozoom|im
 const rxVariableCheck = /^\s*(default|define)\s+([^a-zA-Z\s][a-zA-Z0-9_]*)\s+=/g;
 const rxPersistentDefines = /^\s*(default|define)\s*persistent.(\w*)\s.*=\s*(.*$)/g;
 const rxPersistentCheck = /\s+persistent\.(\w+)[^a-zA-Z]/g;
-const rxStoreCheck = /\s+store\.(\w+)[^a-zA-Z]/g;
+const rxStoreCheck = /\s+store\.(\w+)[^a-zA-Z_]?/g;
 const rxTabCheck = /^(\t+)/g;
 const rsComparisonCheck = /\s+(if|while)\s+(\w+)\s*(=)\s*(\w+)\s*/g;
 

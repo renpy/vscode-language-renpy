@@ -1,14 +1,17 @@
 # Changelog
 
-## 2.0.1 (2021/10/17)
+## 2.0.1 (2021/10/19)
 
 ### Fixes
-* The extension now works with most features even when navigation.json is not found
-* Fixed missing command errors when navigation.json is not found
-* Warnings for undefined store variables can now be disabled
-* Hover documentation displays properly for python function defs spanning multiple lines
-* Completion now works properly with user-defined stores
-* Document Symbols (Outline) for Classes now display properties, fields, and methods
+
+* Providers fixes by [@rdurfee](https://github.com/rdurfee) in [#26](https://github.com/LuqueDaniel/vscode-language-renpy/pull/26)
+  * The extension now works with most features even when navigation.json is not found
+  * Fixed missing command errors when navigation.json is not found
+  * Warnings for undefined store variables can now be disabled
+  * Hover documentation displays properly for python function defs spanning multiple lines
+  * Completion now works properly with user-defined stores
+  * Document Symbols (Outline) for Classes now display properties, fields, and methods
+* Fix variable parsing ending prematurely by [@joe69-96](https://github.com/joe69-96) in [#29](https://github.com/LuqueDaniel/vscode-language-renpy/pull/29).
 
 ## 2.0.0 (2021/10/16)
 

@@ -6,9 +6,13 @@ import { TextDocument, FoldingRange } from "vscode";
 export function getFoldingRanges(document: TextDocument): FoldingRange[] {
     let ranges: FoldingRange[] = [];
     const rxFolding = /\s*(screen|label|class|layeredimage|def)\s+([a-zA-Z_]+)\((.*)\)\s*:|\s*(screen|label|class|layeredimage|def)\s+([a-zA-Z_]+)\s*:/;
+    const rxRegionFolding = /#region[\S]*\s*/;
+    const rxendRegionFolding = /#endregion[\S]*\s*/;
     let parent = '';
     let parent_line = 0;
     let indent_level = 0;
+    
+    let region_start_line = 0;
 
     for (let i = 0; i < document.lineCount; ++i) {
         try {
@@ -26,6 +30,8 @@ export function getFoldingRanges(document: TextDocument): FoldingRange[] {
                 parent_line = 0;
             }
             const matches = line.match(rxFolding);
+            const rs_matches = line.match(rxRegionFolding);
+            const rd_matches = line.match(rxendRegionFolding);
             if (matches) {
                 if (indent_level > 0 && line.length - line.trimLeft().length > indent_level) {
                     continue;
@@ -38,6 +44,12 @@ export function getFoldingRanges(document: TextDocument): FoldingRange[] {
                 }
                 parent_line = i;
                 indent_level = line.length - line.trimLeft().length;
+            } else if (rs_matches) {
+                region_start_line = i;
+            } else if (rd_matches) {
+                if (end_line > region_start_line) {
+                    ranges.push(new FoldingRange(region_start_line, end_line + 1));
+                }
             }
         } catch (error) {
             console.log(`foldingProvider error: ${error}`);

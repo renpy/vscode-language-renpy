@@ -12,7 +12,6 @@ export function getFoldingRanges(document: TextDocument): FoldingRange[] {
     let levels: {[name: number]: number} = {};
 
     let indent_level = 0;
-
     let last_real_line = 0;
 
     let region_start_line = 0;
@@ -50,6 +49,10 @@ export function getFoldingRanges(document: TextDocument): FoldingRange[] {
         } catch (error) {
             console.log(`foldingProvider error: ${error}`);
         }
+    }
+
+    for (let start of Object.values(levels)) {
+        ranges.push(new FoldingRange(start, last_real_line));
     }
 
     return ranges;

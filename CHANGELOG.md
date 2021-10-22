@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.2 (2021/10/22)
+
+### Fixes
+* Diagnostic warnings can now be disabled for reserved variable names, invalid variable names, or invalid filenames.
+* Reserved Ren'Py variables such as _window_subtitle no longer flag an error or warning
+* Variable names with numbers now highlight properly in Python functions
+
 ## 2.0.1 (2021/10/19)
 
 ### Fixes

@@ -7,7 +7,7 @@ import { extractFilename } from "./workspace";
 
 // Renpy Store Variables (https://www.renpy.org/doc/html/store_variables.html)
 // These variables do not begin with '_' but should be ignored by store warnings because they are pre-defined by Ren'Py
-const renpy_store = ['adv','default_mouse','main_menu','menu','mouse_visible','name_only','narrator','say','save_name','persistent'];
+const renpy_store = ['adv','default_mouse','main_menu','menu','mouse_visible','name_only','narrator','say','save_name','persistent','_autosave','_confirm_quit','_dismiss_pause','_game_menu_screen','_history','_history_list','_ignore_action','_menu','_quit_slot','_rollback','_screenshot_pattern','_skipping','_version','_window','_window_auto','_window_subtitle'];
 // Python Reserved Names (https://www.renpy.org/doc/html/reserved.html)
 const rxReservedPythonCheck = /^\s*(default|define)\s+(ArithmeticError|AssertionError|AttributeError|BaseException|BufferError|BytesWarning|DeprecationWarning|EOFError|Ellipsis|EnvironmentError|Exception|False|FloatingPointError|FutureWarning|GeneratorExit|IOError|ImportError|ImportWarning|IndentationError|IndexError|KeyError|KeyboardInterrupt|LookupError|MemoryError|NameError|None|NoneType|NotImplemented|NotImplementedError|OSError|OverflowError|PPP|PendingDeprecationWarning|ReferenceError|RuntimeError|RuntimeWarning|StandardError|StopIteration|SyntaxError|SyntaxWarning|SystemError|SystemExit|TabError|True|TypeError|UnboundLocalError|UnicodeDecodeError|UnicodeEncodeError|UnicodeError|UnicodeTranslateError|UnicodeWarning|UserWarning|ValueError|Warning|ZeroDivisionError|abs|all|any|apply|basestring|bin|bool|buffer|bytearray|bytes|callable|chr|classmethod|cmp|coerce|compile|complex|copyright|credits|delattr|dict|dir|divmod|enumerate|eval|execfile|exit|file|filter|float|format|frozenset|getattr|globals|hasattr|hash|help|hex|id|input|int|intern|isinstance|issubclass|iter|len|license|list|locals|long|map|max|memoryview|min|next|object|oct|open|ord|pow|print|property|quit|range|raw_input|reduce|reload|repr|reversed|round|set|setattr|slice|sorted|staticmethod|str|sum|super|tuple|type|unichr|unicode|vars|xrange|zip)\s*=/g;
 // Obsolete Methods
@@ -35,13 +35,21 @@ const rsComparisonCheck = /\s+(if|while)\s+(\w+)\s*(=)\s*(\w+)\s*/g;
 
     //Filenames must begin with a letter or number,
     //and may not begin with "00", as Ren'Py uses such files for its own purposes.
-    const filename = extractFilename(doc.uri.path);
-    if (filename) {
-        if (!filename.match(/^[a-zA-Z0-9]/) || filename.startsWith('00')) {
-            let invalidRange = new Range(0, 0, doc.lineCount, 0);
-            let range = doc.validateRange(invalidRange);
-            const diagnostic = new Diagnostic(range, "Filenames must begin with a letter or number, but may not begin with '00' as Ren'Py uses such files for its own purposes.", DiagnosticSeverity.Error);
-            diagnostics.push(diagnostic);
+    const checkFilenames: string = config.warnOnInvalidFilenameIssues;
+    if (checkFilenames.toLowerCase() !== "disabled") {
+        let severity = DiagnosticSeverity.Error;
+        if (checkFilenames.toLowerCase() === "warning") {
+            severity = DiagnosticSeverity.Warning;
+        }
+
+        const filename = extractFilename(doc.uri.path);
+        if (filename) {
+            if (!filename.match(/^[a-zA-Z0-9]/) || filename.startsWith('00')) {
+                let invalidRange = new Range(0, 0, doc.lineCount, 0);
+                let range = doc.validateRange(invalidRange);
+                const diagnostic = new Diagnostic(range, "Filenames must begin with a letter or number, but may not begin with '00' as Ren'Py uses such files for its own purposes.", severity);
+                diagnostics.push(diagnostic);
+            }
         }
     }
 
@@ -94,9 +102,18 @@ const rsComparisonCheck = /\s+(if|while)\s+(\w+)\s*(=)\s*(\w+)\s*/g;
             }
         }
 
-        checkInvalidVariableNames(diagnostics, line, lineIndex);
+        const checkVariables: string = config.warnOnInvalidVariableNames;
+        if (checkVariables.toLowerCase() !== "disabled") {
+            let severity = DiagnosticSeverity.Error;
+            if (checkVariables.toLowerCase() === "warning") {
+                severity = DiagnosticSeverity.Warning;
+            }
+            checkInvalidVariableNames(diagnostics, line, lineIndex, severity);
+        }
 
-        checkReservedPythonNames(diagnostics, line, lineIndex);
+        if (config.warnOnReservedVariableNames) {
+            checkReservedPythonNames(diagnostics, line, lineIndex);
+        }
 
         checkComparisonVsAssignment(diagnostics, line, lineIndex);
 
@@ -182,15 +199,18 @@ function checkStrayDollarSigns(diagnostics: Diagnostic[], line: string, lineInde
     }
 }
 
-function checkInvalidVariableNames(diagnostics: Diagnostic[], line: string, lineIndex: number) {
+function checkInvalidVariableNames(diagnostics: Diagnostic[], line: string, lineIndex: number, severity: DiagnosticSeverity) {
     // check line for invalid define/default variable names
     // Variables must begin with a letter or number, and may not begin with '_'
     let matches;
     while ((matches = rxVariableCheck.exec(line)) !== null) {
-        const offset = matches.index + matches[0].indexOf(matches[2]);
-        const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
-        const diagnostic = new Diagnostic(range, `"${matches[2]}": Variables must begin with a letter (and may contain numbers, letters, or underscores). Variables may not begin with '_' as Ren'Py reserves such variables for its own purposes.`, DiagnosticSeverity.Error);
-        diagnostics.push(diagnostic);
+        if (!renpy_store.includes(matches[2]))
+        {
+            const offset = matches.index + matches[0].indexOf(matches[2]);
+            const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
+            const diagnostic = new Diagnostic(range, `"${matches[2]}": Variables must begin with a letter (and may contain numbers, letters, or underscores). Variables may not begin with '_' as Ren'Py reserves such variables for its own purposes.`, severity);
+            diagnostics.push(diagnostic);
+        }
     }
 }
 

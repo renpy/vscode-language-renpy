@@ -198,7 +198,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
             } else if (parent_type === 'def') {
                 // check if this line is a global variable declaration in a function
                 // mark the token as a variable
-                const rxPatterns = [/^\s*(global)\s+(\w*)/g, /\s*(for)\s+([a-zA-Z_]+)\s+in\s+/g, /(\s*)([a-zA-Z_, ]+)\s+=[a-zA-Z_\s]/g];
+                const rxPatterns = [/^\s*(global)\s+(\w*)/g, /\s*(for)\s+([a-zA-Z0-9_]+)\s+in\s+/g, /(\s*)([a-zA-Z0-9_, ]+)\s+=[a-zA-Z_\s]/g];
                 for (let rx of rxPatterns) {
                     let matches;
                     while ((matches = rx.exec(line)) !== null) {

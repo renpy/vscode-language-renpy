@@ -2,7 +2,7 @@
     "name": "languague-renpy",
     "displayName": "Ren'Py Language",
     "description": "Adds syntax highlighting and snippets to Ren'Py files in Visual Studio Code",
-    "version": "2.0.1",
+    "version": "2.0.2",
     "publisher": "LuqueDaniel",
     "license": "MIT",
     "homepage": "https://github.com/LuqueDaniel/vscode-language-renpy",
@@ -110,6 +110,22 @@
                         "default": true,
                         "description": "Enable undefined store variable warnings. If checked (true), store variables will be marked with a warning in the editor if they haven't been defaulted/defined."
                     },
+                    "renpy.warnOnReservedVariableNames": {
+                        "type": "boolean",
+                        "default": true,
+                        "description": "Enable reserved variable warnings. If checked (true), variables will be marked with an error in the editor if they are in the list of names reserved by Python."
+                    },
+                    "renpy.warnOnInvalidVariableNames": {
+                        "type": "string",
+                        "default": "Error",
+                        "enum": ["Error", "Warning", "Disabled"],
+                        "enumDescriptions": [
+                            "Display invalid variable name issues as errors",
+                            "Display invalid variable name issues as warnings",
+                            "Ignore invalid variable name issues"
+                        ],
+                        "description": "Enable invalid variable warnings. Variables must begin with a letter or number. They may contain a '_' but may not begin with '_'. If set to Warning or Error, variables will be flagged in the editor if they do not meet Ren'Py's specifications."
+                    },
                     "renpy.warnOnIndentationAndSpacingIssues": {
                         "type": "string",
                         "default": "Error",
@@ -120,6 +136,17 @@
                             "Ignore indentation issues"
                         ],
                         "description": "Enable indentation and inconsistent spacing checks. If set to Error or Warning, tab characters and inconsistent indentation spacing will be marked in the editor. If set to Disabled, indentation issues will be ignored."
+                    },
+                    "renpy.warnOnInvalidFilenameIssues": {
+                        "type": "string",
+                        "default": "Error",
+                        "enum": ["Error", "Warning", "Disabled"],
+                        "enumDescriptions": [
+                            "Display filename issues as errors",
+                            "Display filename issues as warnings",
+                            "Ignore filename issues"
+                        ],
+                        "description": "Enable filename checks. Filenames must begin with a letter or number, and may not begin with '00', as Ren'Py uses such files for its own purposes. If set to Error or Warning, documents will be marked in the editor if the document filename does not meet Ren'Py's specifications. If set to Disabled, filename issues will be ignored."
                     }
                 }
             }

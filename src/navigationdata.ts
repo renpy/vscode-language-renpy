@@ -648,7 +648,7 @@ export class NavigationData {
 		const rxClass = /^\s*class\s+(\w*).*:/;
 		const rxDisplayable = /^\s*(image)\s+([^=.]*)\s*[=]\s*(.+)|(layeredimage)\s+(.+):|(image)\s+([^=.:]*)\s*:/;
 		const rxChannels = /.*renpy.(audio|music).register_channel\s*\(\s*"(\w+)"(.*)/;
-		const rxPersistent = /^\s*(default|define)\s*persistent.(\w*)\s.*=\s*(.*$)/;
+		const rxPersistent = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*$)/;
 		const rxDefaultDefine = /^(default|define)\s+([a-zA-Z0-9._]+)\s*=\s*([\w'"`\[{]*)/;
 		const rxCharacters = /^\s*(define)\s*(\w*)\s*=\s*(Character|DynamicCharacter)\s*\((.*)/;
 		const rxStatements = /.*renpy.register_statement\s*\("(\w+)"(.*)\)/;

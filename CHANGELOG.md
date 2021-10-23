@@ -6,6 +6,9 @@
 * Diagnostic warnings can now be disabled for reserved variable names, invalid variable names, or invalid filenames.
 * Reserved Ren'Py variables such as _window_subtitle no longer flag an error or warning
 * Variable names with numbers now highlight properly in Python functions
+* Adding default/define variables and persistents are now recognized without a compile [#27](https://github.com/LuqueDaniel/vscode-language-renpy/issues/27)
+* Auto-complete now functions correctly for internal classes such as iap and updater [#36](https://github.com/LuqueDaniel/vscode-language-renpy/issues/36)
+* Documentation for reserved Ren'Py variables such as _window_subtitle now displays correctly [#36](https://github.com/LuqueDaniel/vscode-language-renpy/issues/36)
 
 ## 2.0.1 (2021/10/19)
 

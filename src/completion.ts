@@ -135,6 +135,8 @@ export function getAutoCompleteList(prefix: string, parent: string = "", context
         }
     } else if (isCallableContainer(prefix)) {
         return getCallableAutoComplete(prefix);
+    } else if (isInternalClass(prefix)) {
+        return getInternalClassAutoComplete(prefix);
     } else if (context === 'label' && characters.includes(parent)) {
         // get attributes for character if we're in the context of a label
         const category = NavigationData.gameObjects['attributes'][parent];
@@ -491,6 +493,34 @@ function getCallableAutoComplete(keyword: string): CompletionItem[] | undefined 
 
     // get the list of callables
     const callables = NavigationData.data.location['callable'];
+    if (callables) {
+        const filtered = Object.keys(callables).filter(key => key.indexOf(prefix) === 0);
+        if (filtered) {
+            for (let key in filtered) {
+                const label = filtered[key].substr(prefix.length);
+                newlist.push(new CompletionItem(label, CompletionItemKind.Method));
+            }
+        }
+    }
+
+    return newlist;
+}
+
+function isInternalClass(keyword: string): boolean {
+    const prefix = keyword + '.';
+    const callables = NavigationData.renpyFunctions.internal;    
+    if (callables) {
+        return Object.keys(callables).some(key => key.indexOf(prefix) === 0);
+    }
+    return false;
+}
+
+function getInternalClassAutoComplete(keyword: string): CompletionItem[] | undefined {
+    let newlist: CompletionItem[] = [];
+    const prefix = keyword + '.';
+
+    // get the list of callables
+    const callables = NavigationData.renpyFunctions.internal;
     if (callables) {
         const filtered = Object.keys(callables).filter(key => key.indexOf(prefix) === 0);
         if (filtered) {

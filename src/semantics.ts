@@ -2,7 +2,7 @@
 'use strict';
 
 import { Position, Range, SemanticTokens, SemanticTokensBuilder, SemanticTokensLegend, TextDocument } from "vscode";
-import { Navigation, splitParameters, rangeAsString, getCurrentContext } from "./navigation";
+import { Navigation, splitParameters, rangeAsString, getCurrentContext, DataType } from "./navigation";
 import { NavigationData, updateNavigationData } from "./navigationdata";
 import { stripWorkspaceFromFile } from "./workspace";
 
@@ -10,6 +10,8 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
     const tokensBuilder = new SemanticTokensBuilder(legend);
     const rxKeywordList = /\s*(screen|label|transform|def)\s+/;
     const rxParameterList = /\s*(screen|label|transform|def)\s+([a-zA-Z0-9_]+)\((.*)\):|\s*(label)\s+([a-zA-Z0-9_]+)\s*:/s;
+    const rxVariableDefines = /^\s*(default|define)\s+([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
+    const rxPersistentDefines = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const filename = stripWorkspaceFromFile(document.uri.path);
     let parent = '';
     let parent_line = 0;
@@ -242,6 +244,18 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                         }
                     }
                 }
+            }
+        } else if (parent === '') {
+            let match = line.match(rxVariableDefines);
+            if (match) {
+                const datatype = new DataType(match[2], match[1], match[3]);
+				NavigationData.gameObjects['define_types'][match[2]] = datatype;
+				updateNavigationData('define', match[2], filename, i);
+            }
+            match = line.match(rxPersistentDefines);
+            if (match) {
+                const gameObjects = NavigationData.data.location['persistent'];
+                gameObjects[match[2]] = [filename, i + 1];
             }
         }
     }

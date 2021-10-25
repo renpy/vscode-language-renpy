@@ -463,7 +463,7 @@
     },
     { "match": "\\$", "name": "keyword.python.renpy" },
     {
-      "match": "\\b(\\$|add|always|and|animation|as|assert|at|attribute|auto|bar|behind|block|break|button|call|camera|choice|circles|class|clear|clockwise|contains|continue|counterclockwise|def|default|define|del|drag|draggroup|elif|else|event|except|exec|expression|finally|fixed|for|frame|from|function|global|grid|group|has|hbox|hide|hotbar|hotspot|if|image|imagebutton|imagemap|import|in|index|init|input|is|jump|key|knot|label|lambda|layeredimage|menu|monologue|mousearea|music|new|nointeract|not|null|nvl|offset|old|on|onlayer|or|parallel|pass|pause|play|print|python|queue|raise|repeat|return|rpy|scene|screen|show|showif|side|sound|stop|strings|style|sustain|tag|take|testcase|text|textbutton|time|timer|transclude|transform|translate|try|use|vbar|vbox|viewport|voice|vpgrid|while|window|with|yield|zorder)\\b",
+      "match": "\\b(\\$|add|always|and|animation|as|assert|at|attribute|auto|bar|behind|block|break|button|call|camera|choice|circles|class|clear|clockwise|contains|continue|counterclockwise|def|default|define|del|drag|draggroup|elif|else|event|except|exec|expression|extend|finally|fixed|for|frame|from|function|global|grid|group|has|hbox|hide|hotbar|hotspot|if|image|imagebutton|imagemap|import|in|index|init|input|is|jump|key|knot|label|lambda|layeredimage|menu|monologue|mousearea|music|new|nointeract|not|null|nvl|offset|old|on|onlayer|or|parallel|pass|pause|play|print|python|queue|raise|repeat|return|rpy|scene|screen|show|showif|side|sound|stop|strings|style|sustain|tag|take|testcase|text|textbutton|time|timer|transclude|transform|translate|try|use|vbar|vbox|viewport|voice|vpgrid|while|window|with|yield|zorder)\\b",
       "name": "keyword.python.renpy"
     },
     {

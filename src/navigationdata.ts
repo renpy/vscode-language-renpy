@@ -90,6 +90,7 @@ export class NavigationData {
 			NavigationData.gameObjects['audio'] = {};
 			NavigationData.gameObjects['fonts'] = {};
 			NavigationData.gameObjects['outlines'] = {};
+			NavigationData.gameObjects['stores'] = {};
 			NavigationData.displayableAutoComplete = [];
 			NavigationData.displayableQuotedAutoComplete = [];
 			var scriptResult = await NavigationData.scanForScriptFiles();
@@ -174,6 +175,11 @@ export class NavigationData {
 			locations.push(NavigationData.getNavigationObject("equivalent", keyword, type));
 		}
 
+		if (NavigationData.gameObjects['stores'][keyword]) {
+			let nav = NavigationData.gameObjects['stores'][keyword];
+			locations.push(nav);
+		}
+
 		if (split.length === 2 && NavigationData.gameObjects['properties'][split[0]]) {
 			if (NavigationData.gameObjects['properties'][split[0]]) {
 				const properties = NavigationData.gameObjects['properties'][split[0]];
@@ -184,6 +190,8 @@ export class NavigationData {
 					locations.push(nav);
 				}
 			}
+		}
+		if (split.length === 2 && NavigationData.gameObjects['fields'][split[0]]) {
 			if (NavigationData.gameObjects['fields'][split[0]]) {
 				const fields = NavigationData.gameObjects['fields'][split[0]];
 				const filtered = Object.keys(fields).filter(key => fields[key].keyword === split[1]);
@@ -192,6 +200,13 @@ export class NavigationData {
 					nav.keyword = `${nav.type}.${nav.keyword}`;
 					locations.push(nav);
 				}
+			}
+		}
+		if (split.length === 2 && NavigationData.gameObjects['fields'][`store.${split[0]}`]) {
+			const fields = NavigationData.gameObjects['fields'][`store.${split[0]}`];
+			const filtered: Navigation[] = fields.filter((nav: Navigation) => nav.keyword === keyword);
+			if (filtered && filtered.length > 0) {
+				locations.push(filtered[0]);
 			}
 		}
 
@@ -627,7 +642,7 @@ export class NavigationData {
 		if (NavigationData.data.location === undefined) {
 			NavigationData.data.location = {};
 		}
-		const categories = ['class','displayable','persistent','properties','fields'];
+		const categories = ['class','displayable','persistent','properties','fields','stores'];
 		for (let cat in categories) {
 			let category = NavigationData.data.location[cat];
 			for (let key in category) {
@@ -653,6 +668,7 @@ export class NavigationData {
 		const rxCharacters = /^\s*(define)\s*(\w*)\s*=\s*(Character|DynamicCharacter)\s*\((.*)/;
 		const rxStatements = /.*renpy.register_statement\s*\("(\w+)"(.*)\)/;
 		const rxOutlines = /[\s_]*outlines\s+(\[.*\])/;
+		const rxInitStore = /^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):/;
 		const gameFilename = stripWorkspaceFromFile(document.uri.path);
 		const internal = NavigationData.renpyFunctions.internal;
 		let transitions = Object.keys(internal).filter(key => internal[key][0] === 'transitions');
@@ -756,6 +772,15 @@ export class NavigationData {
 				datatype.checkTypeArray('transitions', transitions);
 				NavigationData.gameObjects['define_types'][defaults[2]] = datatype;
 				updateNavigationData('define', defaults[2], filename, i);
+			}
+			// match stores
+			const stores = line.match(rxInitStore);
+			if (stores) {
+				let match = stores[3];
+				NavigationData.gameObjects['stores'][match] = [filename, i + 1];
+				const datatype = new DataType(stores[3], 'default', 'store');
+				NavigationData.gameObjects['define_types'][match] = datatype;
+				continue;
 			}
 			// match characters
 			const characters = line.match(rxCharacters);

@@ -133,6 +133,8 @@ export function getAutoCompleteList(prefix: string, parent: string = "", context
         if (className) {
             return NavigationData.getClassAutoComplete(className);
         }
+    } else if (isNamedStore(prefix)) {
+        return getNamedStoreAutoComplete(prefix);
     } else if (isCallableContainer(prefix)) {
         return getCallableAutoComplete(prefix);
     } else if (isInternalClass(prefix)) {
@@ -527,6 +529,40 @@ function getInternalClassAutoComplete(keyword: string): CompletionItem[] | undef
             for (let key in filtered) {
                 const label = filtered[key].substr(prefix.length);
                 newlist.push(new CompletionItem(label, CompletionItemKind.Method));
+            }
+        }
+    }
+
+    return newlist;
+}
+
+function isNamedStore(keyword: string): boolean {
+    const stores = NavigationData.gameObjects['stores'][keyword];    
+    if (stores) {
+        return true;
+    }
+    return false;
+}
+
+function getNamedStoreAutoComplete(keyword: string): CompletionItem[] | undefined {
+    let newlist: CompletionItem[] = [];
+
+    // get the list of callables
+    const callables = getCallableAutoComplete(keyword);
+    if (callables) {
+        for (let callable of callables) {
+            newlist.push(callable);
+        }
+    }
+
+    const objKey = `store.${keyword}`;
+    if (NavigationData.gameObjects['fields'][objKey] !== undefined) {
+        var fields = NavigationData.gameObjects['fields'][objKey];
+        for (let field of fields) {
+            const split = field.keyword.split('.');
+            if (split.length === 2) {
+                const label = split[1];
+                newlist.push(new CompletionItem(label, CompletionItemKind.Variable));
             }
         }
     }

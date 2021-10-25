@@ -2,6 +2,7 @@
 'use strict';
 
 import { TextDocument, DocumentSymbol, Uri, Range, SymbolKind } from "vscode";
+import { Navigation } from "./navigation";
 import { NavigationData } from "./navigationdata";
 import { stripWorkspaceFromFile } from "./workspace";
 
@@ -41,6 +42,33 @@ export function getDocumentSymbols(document: TextDocument): DocumentSymbol[] | u
             }
         }
     }
+
+    const stores = NavigationData.gameObjects['stores'];
+    if (stores) {
+        let parentSymbol = new DocumentSymbol("store", "", getDocumentSymbolKind("store", false), range, range);
+        for (let key in stores) {
+            const store = stores[key];
+            if (store instanceof Navigation) {
+                if (store.filename === documentFilename) {
+                    const childRange = new Range(store.location - 1, 0, store.location - 1, 0);
+                    let classParent = new DocumentSymbol(key, `:${store.location}`, getDocumentSymbolKind("store", true), childRange, childRange);
+                    getStoreDocumentSymbols(classParent, key);
+                    parentSymbol.children.push(classParent);
+                }
+            } else {
+                if (store[0] === documentFilename) {
+                    const childRange = new Range(store[1] - 1, 0, store[1] - 1, 0);
+                    let classParent = new DocumentSymbol(key, `:${store[1]}`, getDocumentSymbolKind("store", true), childRange, childRange);
+                    getStoreDocumentSymbols(classParent, key);
+                    parentSymbol.children.push(classParent);
+                }
+            }
+        }
+        if (parentSymbol.children.length > 0) {
+            results.push(parentSymbol);
+        }
+    }
+
     return results;
 }
 
@@ -68,7 +96,9 @@ function getDocumentSymbolKind(category: string, child: boolean) : SymbolKind {
 			return child ? SymbolKind.File : SymbolKind.Module;
 		case "persistent":
 			return child ? SymbolKind.Constant : SymbolKind.Module;
-		default:
+        case "store":
+            return child ? SymbolKind.Module : SymbolKind.Module;
+        default:
 			return SymbolKind.Variable;
 	}
 }
@@ -76,7 +106,7 @@ function getDocumentSymbolKind(category: string, child: boolean) : SymbolKind {
 function getClassDocumentSymbols(classParent: DocumentSymbol, key: string) {
     const callables = NavigationData.data.location['callable'];
     if (callables) {
-        const filtered = Object.keys(callables).filter(k => k.indexOf(key) === 0);
+        const filtered = Object.keys(callables).filter(k => k.indexOf(key + '.') === 0);
         if (filtered) {
             for (let callable of filtered) {
                 const label = callable.substr(key.length + 1);
@@ -103,6 +133,32 @@ function getClassDocumentSymbols(classParent: DocumentSymbol, key: string) {
             const childRange = new Range(p.location - 1, 0, p.location - 1, 0);
             classParent.children.push(
                 new DocumentSymbol(p.keyword, `:${p.location}`, SymbolKind.Property, childRange, childRange)
+            );
+        }
+    }
+}
+
+function getStoreDocumentSymbols(classParent: DocumentSymbol, key: string) {
+    const callables = NavigationData.data.location['callable'];
+    if (callables) {
+        const filtered = Object.keys(callables).filter(k => k.indexOf(key + '.') === 0);
+        if (filtered) {
+            for (let callable of filtered) {
+                const label = callable.substr(key.length + 1);
+                const line = callables[callable][1];
+                const childRange = new Range(line - 1, 0, line - 1, 0);
+                classParent.children.push(
+                    new DocumentSymbol(label, `:${line}`, SymbolKind.Method, childRange, childRange)
+                );
+            }
+        }
+    }
+    const fields = NavigationData.gameObjects['fields'][`store.${key}`];
+    if (fields) {
+        for (let f of fields) {
+            const childRange = new Range(f.location - 1, 0, f.location - 1, 0);
+            classParent.children.push(
+                new DocumentSymbol(f.keyword.substring(key.length + 1), `:${f.location}`, SymbolKind.Field, childRange, childRange)
             );
         }
     }

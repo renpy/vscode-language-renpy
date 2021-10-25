@@ -9,7 +9,7 @@ import { stripWorkspaceFromFile } from "./workspace";
 export function getSemanticTokens(document: TextDocument, legend: SemanticTokensLegend): SemanticTokens {
     const tokensBuilder = new SemanticTokensBuilder(legend);
     const rxKeywordList = /\s*(screen|label|transform|def)\s+/;
-    const rxParameterList = /\s*(screen|label|transform|def)\s+([a-zA-Z0-9_]+)\((.*)\):|\s*(label)\s+([a-zA-Z0-9_]+)\s*:/s;
+    const rxParameterList = /\s*(screen|label|transform|def)\s+([a-zA-Z0-9_]+)\((.*)\):|\s*(label)\s+([a-zA-Z0-9_]+)\s*:|^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):/s;
     const rxVariableDefines = /^\s*(default|define)\s+([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const rxPersistentDefines = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const filename = stripWorkspaceFromFile(document.uri.path);
@@ -113,6 +113,17 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                 if (context === undefined) {
                     updateNavigationData('label', matches[5], filename, i);
                 }
+            } else if (matches[6] === 'init' && matches[8] !== undefined) {
+                // named store (init python in storename)
+                indent_level = line.length - line.trimLeft().length;
+                parent = matches[8];
+                parent_type = 'store';
+                parent_line = i + 1;
+                parent_args = [];
+                parent_local = [];
+                parent_defaults = {};
+                const navigation = new Navigation("store", parent, filename, parent_line, "", "", parent_type, indent_level);
+                NavigationData.gameObjects['stores'][parent] = navigation;
             }
         } else if (parent !== '') {
             // we are still inside a parent block
@@ -197,8 +208,8 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                     NavigationData.gameObjects['semantic'][key] = navigation;
                     parent_defaults[`${parent_type}.${parent}.${matches[2]}`] = navigation;
                 }
-            } else if (parent_type === 'def') {
-                // check if this line is a global variable declaration in a function
+            } else if (parent_type === 'def' || parent_type === 'store') {
+                // check if this line is a variable declaration in a function or store
                 // mark the token as a variable
                 const rxPatterns = [/^\s*(global)\s+(\w*)/g, /\s*(for)\s+([a-zA-Z0-9_]+)\s+in\s+/g, /(\s*)([a-zA-Z0-9_, ]+)\s+=[a-zA-Z_\s]/g];
                 for (let rx of rxPatterns) {
@@ -233,10 +244,28 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                                 tokensBuilder.push(range, 'variable', ['declaration']);
                                 // create a Navigation dictionary entry for this token range
                                 const key = rangeAsString(filename, range);
-                                const docs = `${parent_type} ${parent}()\n    ${line.trim()}`;
+                                let docs = '';
+                                if (parent_type === 'store') {
+                                    docs = `init python in ${parent}:\n    ${line.trim()}`;
+                                } else {
+                                    docs = `${parent_type} ${parent}()\n    ${line.trim()}`;
+                                }
                                 const navigation = new Navigation(source, m.substr(offset), filename, i + 1, docs, "", parent_type, start + offset);
                                 NavigationData.gameObjects['semantic'][key] = navigation;
                                 parent_defaults[`${parent_type}.${parent}.${m.substr(offset)}`] = navigation;
+                                
+                                if (parent_type === 'store') {
+                                    const pKey = `store.${parent}`;
+                                    const objKey = `${parent}.${m.substr(offset)}`;
+                                    const navigation = new Navigation(source, objKey, filename, i + 1, docs, "", parent_type, start + offset);
+
+                                    if (NavigationData.gameObjects['fields'][pKey] === undefined) {
+                                        NavigationData.gameObjects['fields'][pKey] = [];
+                                    }
+                                    NavigationData.gameObjects['fields'][pKey] = NavigationData.gameObjects['fields'][pKey].filter((e: { keyword: string; }) => e.keyword !== objKey);
+                                    NavigationData.gameObjects['fields'][pKey].push(navigation);
+                                }
+                                
                                 start += m.length + 1;
                             }
                         } catch (error) {

@@ -177,7 +177,16 @@ export class NavigationData {
 
 		if (NavigationData.gameObjects['stores'][keyword]) {
 			let nav = NavigationData.gameObjects['stores'][keyword];
-			locations.push(nav);
+			if (nav instanceof Navigation) {
+				locations.push(nav);
+			} else {
+				locations.push(new Navigation(
+					'store',
+					keyword,
+					nav[0],
+					nav[1]
+				));
+			}
 		}
 
 		if (split.length === 2 && NavigationData.gameObjects['properties'][split[0]]) {
@@ -643,11 +652,33 @@ export class NavigationData {
 			NavigationData.data.location = {};
 		}
 		const categories = ['class','displayable','persistent','properties','fields','stores'];
-		for (let cat in categories) {
+		for (let cat of categories) {
 			let category = NavigationData.data.location[cat];
-			for (let key in category) {
-				if (category[key][0] === filename) {
-					delete category[key];
+			if (category) {
+				for (let key in category) {
+					if (category[key] instanceof Navigation) {
+						if (category[key].filename === filename) {
+							delete category[key];
+						}
+					} else {
+						if (category[key][0] === filename) {
+							delete category[key];
+						}
+					}
+				}
+			}
+			category = NavigationData.gameObjects[cat];
+			if (category) {
+				for (let key in category) {
+					if (category[key] instanceof Navigation) {
+						if (category[key].filename === filename) {
+							delete category[key];
+						}
+					} else {
+						if (category[key][0] === filename) {
+							delete category[key];
+						}
+					}
 				}
 			}
 		}
@@ -668,7 +699,7 @@ export class NavigationData {
 		const rxCharacters = /^\s*(define)\s*(\w*)\s*=\s*(Character|DynamicCharacter)\s*\((.*)/;
 		const rxStatements = /.*renpy.register_statement\s*\("(\w+)"(.*)\)/;
 		const rxOutlines = /[\s_]*outlines\s+(\[.*\])/;
-		const rxInitStore = /^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):/;
+		const rxInitStore = /^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):|^python\s+early\s+in\s+(\w+):/;
 		const gameFilename = stripWorkspaceFromFile(document.uri.path);
 		const internal = NavigationData.renpyFunctions.internal;
 		let transitions = Object.keys(internal).filter(key => internal[key][0] === 'transitions');
@@ -776,7 +807,12 @@ export class NavigationData {
 			// match stores
 			const stores = line.match(rxInitStore);
 			if (stores) {
-				let match = stores[3];
+				let match = '';
+				if (stores[4] !== undefined) {
+					match = stores[4];
+				} else {
+					match = stores[3];
+				}
 				NavigationData.gameObjects['stores'][match] = [filename, i + 1];
 				const datatype = new DataType(stores[3], 'default', 'store');
 				NavigationData.gameObjects['define_types'][match] = datatype;

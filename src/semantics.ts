@@ -9,7 +9,7 @@ import { stripWorkspaceFromFile } from "./workspace";
 export function getSemanticTokens(document: TextDocument, legend: SemanticTokensLegend): SemanticTokens {
     const tokensBuilder = new SemanticTokensBuilder(legend);
     const rxKeywordList = /\s*(screen|label|transform|def)\s+/;
-    const rxParameterList = /\s*(screen|label|transform|def)\s+([a-zA-Z0-9_]+)\((.*)\):|\s*(label)\s+([a-zA-Z0-9_]+)\s*:|^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):/s;
+    const rxParameterList = /\s*(screen|label|transform|def)\s+([a-zA-Z0-9_]+)\((.*)\):|\s*(label)\s+([a-zA-Z0-9_]+)\s*:|^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):|^(python)\s+early\s+in\s+(\w+):/s;
     const rxVariableDefines = /^\s*(default|define)\s+([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const rxPersistentDefines = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const filename = stripWorkspaceFromFile(document.uri.path);
@@ -113,10 +113,14 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                 if (context === undefined) {
                     updateNavigationData('label', matches[5], filename, i);
                 }
-            } else if (matches[6] === 'init' && matches[8] !== undefined) {
+            } else if ((matches[6] === 'init' && matches[8] !== undefined) || (matches[9] === 'python' && matches[10] !== undefined)) {
                 // named store (init python in storename)
                 indent_level = line.length - line.trimLeft().length;
-                parent = matches[8];
+                if (matches[10] !== undefined) {
+                    parent = matches[10];
+                } else {
+                    parent = matches[8];
+                }
                 parent_type = 'store';
                 parent_line = i + 1;
                 parent_args = [];

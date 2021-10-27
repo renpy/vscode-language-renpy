@@ -417,7 +417,7 @@ export class NavigationData {
 			}
 
 			if (!location.args || location.args.length === 0) {
-				if (location.source === 'class' && def.args.length === 0) {
+				if (location.source === 'class') {
 					const init = NavigationData.data.location['callable'][`${location.keyword}.__init__`];
 					if (init) {
 						const initData = getDefinitionFromFile(init[0], init[1]);

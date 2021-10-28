@@ -1,14 +1,18 @@
 # Changelog
 
-## 2.0.2 (2021/10/22)
+## 2.0.2 (2021/10/25)
 
-### Fixes
-* Diagnostic warnings can now be disabled for reserved variable names, invalid variable names, or invalid filenames.
-* Reserved Ren'Py variables such as _window_subtitle no longer flag an error or warning
-* Variable names with numbers now highlight properly in Python functions
-* Adding default/define variables and persistents are now recognized without a compile [#27](https://github.com/LuqueDaniel/vscode-language-renpy/issues/27)
-* Auto-complete now functions correctly for internal classes such as iap and updater [#36](https://github.com/LuqueDaniel/vscode-language-renpy/issues/36)
-* Documentation for reserved Ren'Py variables such as _window_subtitle now displays correctly [#36](https://github.com/LuqueDaniel/vscode-language-renpy/issues/36)
+### Changes and improvements
+
+* Improve folding function and grammar by [@joe69-96](https://github.com/joe69-96) in [#32](https://github.com/LuqueDaniel/vscode-language-renpy/pull/32).
+* Add settings for diagnostic warnings by [@rdurfee](https://github.com/rdurfee) in [#35](https://github.com/LuqueDaniel/vscode-language-renpy/pull/35)
+  * Diagnostic warnings can now be disabled for reserved variable names, invalid variable names, or invalid filenames.
+  * Reserved Ren'Py variables such as `_window_subtitle` no longer flag an error or warning
+  * Variable names with numbers now highlight properly in Python functions
+* Defined variables and persistents are now recognized without a compile by [@rdurfee](https://github.com/rdurfee) in [#37](https://github.com/LuqueDaniel/vscode-language-renpy/pull/37)
+  * Adding default/define variables and persistents are now recognized without a compile [#27](https://github.com/LuqueDaniel/vscode-language-renpy/issues/27)
+  * Auto-complete now functions correctly for internal classes such as `iap` and `updater` [#36](https://github.com/LuqueDaniel/vscode-language-renpy/issues/36)
+  * Documentation for reserved Ren'Py variables such as `_window_subtitle` now displays correctly [#36](https://github.com/LuqueDaniel/vscode-language-renpy/issues/36)
 
 ## 2.0.1 (2021/10/19)
 

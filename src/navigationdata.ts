@@ -748,7 +748,7 @@ export class NavigationData {
      */
 	static scanDocumentForClasses(filename: string, document: TextDocument) {
 		const rxKeywordList = /\s*(register_channel|register_statement|default|define|class)[\s\()]+/;
-		const rxClass = /^\s*class\s+(\w*)\s*(\(.*\))*.*:/;
+		const rxClass = /^\s*class\s+(\w*)\s*(\(.*\))?.*:/;
 		const rxDisplayable = /^\s*(image)\s+([^=.]*)\s*[=]\s*(.+)|(layeredimage)\s+(.+):|(image)\s+([^=.:]*)\s*:/;
 		const rxChannels = /.*renpy.(audio|music).register_channel\s*\(\s*"(\w+)"(.*)/;
 		const rxPersistent = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*$)/;

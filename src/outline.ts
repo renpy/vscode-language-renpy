@@ -24,13 +24,24 @@ export function getDocumentSymbols(document: TextDocument): DocumentSymbol[] | u
         const category = NavigationData.data.location[type];
         let parentSymbol = new DocumentSymbol(type, "", getDocumentSymbolKind(type, false), range, range);
         for (let key in category) {
-            if (category[key][0] === documentFilename) {
-                const childRange = new Range(category[key][1] - 1, 0, category[key][1] - 1, 0);
-                let classParent = new DocumentSymbol(key, `:${category[key][1]}`, getDocumentSymbolKind(type, true), childRange, childRange);
-                if (type === 'class') {                                        
-                    getClassDocumentSymbols(classParent, key);
+            if (category[key] instanceof Navigation) {
+                if (category[key].filename === documentFilename) {
+                    const childRange = new Range(category[key].location - 1, 0, category[key].location - 1, 0);
+                    let classParent = new DocumentSymbol(key, `:${category[key].location}`, getDocumentSymbolKind(type, true), childRange, childRange);
+                    if (type === 'class') {                                        
+                        getClassDocumentSymbols(classParent, key);
+                    }
+                    parentSymbol.children.push(classParent);
                 }
-                parentSymbol.children.push(classParent);
+            } else {
+                if (category[key][0] === documentFilename) {
+                    const childRange = new Range(category[key][1] - 1, 0, category[key][1] - 1, 0);
+                    let classParent = new DocumentSymbol(key, `:${category[key][1]}`, getDocumentSymbolKind(type, true), childRange, childRange);
+                    if (type === 'class') {                                        
+                        getClassDocumentSymbols(classParent, key);
+                    }
+                    parentSymbol.children.push(classParent);
+                }
             }
         }
         if (parentSymbol.children.length > 0) {

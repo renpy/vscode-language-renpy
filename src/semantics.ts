@@ -8,8 +8,8 @@ import { stripWorkspaceFromFile } from "./workspace";
 
 export function getSemanticTokens(document: TextDocument, legend: SemanticTokensLegend): SemanticTokens {
     const tokensBuilder = new SemanticTokensBuilder(legend);
-    const rxKeywordList = /\s*(screen|label|transform|def)\s+/;
-    const rxParameterList = /\s*(screen|label|transform|def)\s+([a-zA-Z0-9_]+)\((.*)\):|\s*(label)\s+([a-zA-Z0-9_]+)\s*:|^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):|^(python)\s+early\s+in\s+(\w+):/s;
+    const rxKeywordList = /\s*(screen|label|transform|def|class)\s+/;
+    const rxParameterList = /\s*(screen|label|transform|def|class)\s+([a-zA-Z0-9_]+)\((.*)\):|\s*(label)\s+([a-zA-Z0-9_]+)\s*:|^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):|^(python)\s+early\s+in\s+(\w+):/s;
     const rxVariableDefines = /^\s*(default|define)\s+([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const rxPersistentDefines = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const filename = stripWorkspaceFromFile(document.uri.path);
@@ -53,7 +53,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
         const matches = line.match(rxParameterList);
         if (matches) {
             // this line has a parameter list - tokenize the parameter ranges
-            if (matches[3] && matches[3].length > 0 && matches[2] !== '_') {
+            if (matches[1] !== 'class' && matches[3] && matches[3].length > 0 && matches[2] !== '_') {
                 indent_level = line.length - line.trimLeft().length;
                 parent = matches[2];
                 parent_type = matches[1];
@@ -87,7 +87,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                 } else {
                     updateNavigationData(matches[1], matches[2], filename, i);
                 }
-            } else if (matches[1] === 'screen' || matches[1] === 'def') {
+            } else if (matches[1] === 'screen' || matches[1] === 'def' || matches[1] === 'class') {
                 // parent screen or function def with no parameters
                 indent_level = line.length - line.trimLeft().length;
                 parent = matches[2];
@@ -104,7 +104,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                     } else if (context.startsWith('store.')) {
                         updateNavigationData('callable', `${context.split('.')[1]}.${matches[2]}`, filename, i);
                     }
-                } else {
+                } else if (matches[1] === 'screen') {
                     updateNavigationData(matches[1], matches[2], filename, i);
                 }
             } else if (matches[4] === 'label') {
@@ -212,10 +212,10 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                     NavigationData.gameObjects['semantic'][key] = navigation;
                     parent_defaults[`${parent_type}.${parent}.${matches[2]}`] = navigation;
                 }
-            } else if (parent_type === 'def' || parent_type === 'store') {
+            } else if (parent_type === 'def' || parent_type === 'store' || parent_type === 'class') {
                 // check if this line is a variable declaration in a function or store
                 // mark the token as a variable
-                const rxPatterns = [/^\s*(global)\s+(\w*)/g, /\s*(for)\s+([a-zA-Z0-9_]+)\s+in\s+/g, /(\s*)([a-zA-Z0-9_, ]+)\s+=[a-zA-Z_\s]/g];
+                const rxPatterns = [/^\s*(global)\s+(\w*)/g, /\s*(for)\s+([a-zA-Z0-9_]+)\s+in\s+/g, /(\s*)([a-zA-Z0-9_,]+)\s*=\s*[a-zA-Z0-9_"]+/g];
                 for (let rx of rxPatterns) {
                     let matches;
                     while ((matches = rx.exec(line)) !== null) {

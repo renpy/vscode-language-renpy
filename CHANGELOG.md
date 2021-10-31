@@ -1,5 +1,16 @@
 # Changelog
 
+## 2.0.3 (2021/10/31)
+
+### Changes and improvements
+
+* Add support for named stores [#38](https://github.com/LuqueDaniel/vscode-language-renpy/issues/38)
+
+### Fixes
+
+* Fix class variables not highlighting or showing in completion list [#46](https://github.com/LuqueDaniel/vscode-language-renpy/issues/46)
+* Fix inherited classes not showing completion parameters [#45](https://github.com/LuqueDaniel/vscode-language-renpy/issues/45)
+
 ## 2.0.2 (2021/10/25)
 
 ### Changes and improvements

@@ -54,6 +54,8 @@ export class DataType {
 			this.type = 'set';
 		} else if (baseclass === '{') {
 			this.type = 'dictionary';
+		} else if (baseclass === 'store') {
+			this.type = 'store';
 		}
 	}
 	

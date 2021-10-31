@@ -150,6 +150,8 @@ export function getHoverMarkdownString(locations: Navigation[]) : MarkdownString
 				contents.appendMarkdown(split[0]);
 				contents.appendMarkdown('\n\n---\n\n');
 				contents.appendCodeblock(split[1]);
+			} else if (location.type === 'store') {
+				contents.appendCodeblock(split[0]);
 			} else {
 				contents.appendMarkdown(split[0]);
 			}

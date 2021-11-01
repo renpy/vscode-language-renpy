@@ -9,7 +9,7 @@ import { stripWorkspaceFromFile } from "./workspace";
 export function getSemanticTokens(document: TextDocument, legend: SemanticTokensLegend): SemanticTokens {
     const tokensBuilder = new SemanticTokensBuilder(legend);
     const rxKeywordList = /\s*(screen|label|transform|def|class)\s+/;
-    const rxParameterList = /\s*(screen|label|transform|def|class)\s+([a-zA-Z0-9_]+)\((.*)\):|\s*(label)\s+([a-zA-Z0-9_]+)\s*:|^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):|^(python)\s+early\s+in\s+(\w+):/s;
+    const rxParameterList = /\s*(screen|label|transform|def|class)\s+([a-zA-Z0-9_]+)\((.*)\):|\s*(label)\s+([a-zA-Z0-9_]+)\s*:|^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):|^(python)\s+early\s+in\s+(\w+):|\s*(class)\s+([a-zA-Z0-9_]+)\s*/s;
     const rxVariableDefines = /^\s*(default|define)\s+([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const rxPersistentDefines = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const filename = stripWorkspaceFromFile(document.uri.path);
@@ -50,6 +50,10 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
             }
         }
 
+        if (line.trim().length === 0) {
+            continue;
+        }
+
         const matches = line.match(rxParameterList);
         if (matches) {
             // this line has a parameter list - tokenize the parameter ranges
@@ -67,7 +71,11 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                         length = m.split('=')[0].trimRight().length;
                     }
                     const range = new Range(i, start + offset, i, start + length);
-                    tokensBuilder.push(range, 'parameter', ['declaration']);
+                    if (m.substring(offset, length) === 'self' || m.substring(offset, length) === 'cls') {
+                        tokensBuilder.push(range, 'keyword');
+                    } else {
+                        tokensBuilder.push(range, 'parameter', ['declaration']);
+                    }
                     parent_args.push(line.substr(start + offset, length - offset));
                     parent_defaults[m.substring(offset, length)] = new Navigation("parameter", m.substring(offset, length), filename, i + 1, "", m.trim(), "", start + offset);
                     // create a Navigation dictionary entry for this token range
@@ -87,11 +95,11 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                 } else {
                     updateNavigationData(matches[1], matches[2], filename, i);
                 }
-            } else if (matches[1] === 'screen' || matches[1] === 'def' || matches[1] === 'class') {
+            } else if (matches[1] === 'screen' || matches[1] === 'def' || matches[1] === 'class' || matches[11] === 'class') {
                 // parent screen or function def with no parameters
                 indent_level = line.length - line.trimLeft().length;
-                parent = matches[2];
-                parent_type = matches[1];
+                parent = matches[2] || matches[12];
+                parent_type = matches[1] || matches[11];
                 parent_line = i;
                 parent_args = [];
                 parent_local = [];
@@ -144,7 +152,11 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                             if (NavigationData.positionIsCleanForCompletion(line, new Position(i, matches.index + offset))) {
                                 // push the token into the token builder
                                 const range = new Range(i, matches.index + offset, i, matches.index + offset + length);
-                                tokensBuilder.push(range, 'parameter');
+                                if (token === 'self' || token === 'cls') {
+                                    tokensBuilder.push(range, 'keyword');
+                                } else {
+                                    tokensBuilder.push(range, 'parameter');
+                                }
                                 // create a Navigation dictionary entry for this token range
                                 const key = rangeAsString(filename, range);
                                 const docs = `${parent_type} ${parent}()`;

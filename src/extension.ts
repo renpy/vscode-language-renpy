@@ -133,8 +133,8 @@ export async function activate(context: ExtensionContext): Promise<any> {
 	);
 	context.subscriptions.push(references);
 
-	const tokenTypes = ['class', 'parameter', 'variable'];
-	const tokenModifiers = ['declaration'];
+	const tokenTypes = ['class', 'parameter', 'variable', 'keyword'];
+	const tokenModifiers = ['declaration', 'defaultLibrary'];
 	const legend = new SemanticTokensLegend(tokenTypes, tokenModifiers);
 
 	// Semantic Token Provider

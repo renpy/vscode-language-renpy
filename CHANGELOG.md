@@ -5,12 +5,14 @@
 ### Changes and improvements
 
 * Add support for named stores [#38](https://github.com/LuqueDaniel/vscode-language-renpy/issues/38)
+* Add highlighting for `extend` keyword [#41](https://github.com/LuqueDaniel/vscode-language-renpy/pull/41)
+* Change highlighting for label names [#41](https://github.com/LuqueDaniel/vscode-language-renpy/pull/41)
 
 ### Fixes
 
 * Fix class variables not highlighting or showing in completion list [#46](https://github.com/LuqueDaniel/vscode-language-renpy/issues/46)
 * Fix inherited classes not showing completion parameters [#45](https://github.com/LuqueDaniel/vscode-language-renpy/issues/45)
-* Fix syntax highlighting for self/cls so they are tokenized as keywords [#47](https://github.com/LuqueDaniel/vscode-language-renpy/issues/47)
+* Fix syntax highlighting for `self/cls` so they are tokenized as keywords [#47](https://github.com/LuqueDaniel/vscode-language-renpy/issues/47)
 
 ## 2.0.2 (2021/10/25)
 

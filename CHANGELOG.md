@@ -1,5 +1,11 @@
 # Changelog
 
+## Next release ()
+
+### Fixes
+
+* Fix folding for label starting with a dot [#52](https://github.com/LuqueDaniel/vscode-language-renpy/issues/52)
+
 ## 2.0.3 (2021/10/31)
 
 ### Changes and improvements

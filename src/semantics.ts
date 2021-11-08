@@ -13,6 +13,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
     const rxVariableDefines = /^\s*(default|define)\s+([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const rxPersistentDefines = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const filename = stripWorkspaceFromFile(document.uri.path);
+    let insideComment = false;
     let parent = '';
     let parent_line = 0;
     let parent_type = '';
@@ -21,7 +22,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
     let parent_defaults: { [key: string]: Navigation } = {};
     let indent_level = 0;
     let append_line = 0;
-
+    
     for (let i = 0; i < document.lineCount; ++i) {
         let line = document.lineAt(i).text;
 
@@ -51,6 +52,21 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
         }
 
         if (line.trim().length === 0) {
+            continue;
+        }
+
+        if (line.indexOf('"""') >= 0) {
+            if (insideComment) {
+                insideComment = false;
+            } else {
+                if (line.substring(line.indexOf('"""') + 3).indexOf('"""') < 0) {
+                    insideComment = true;
+                }
+            }
+            continue;
+        }
+
+        if (insideComment) {
             continue;
         }
 

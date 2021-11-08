@@ -780,6 +780,10 @@ export class NavigationData {
 				}
 			}
 
+			if (line.trim().length === 0) {
+				continue;
+			}
+
 			// match class definitions
 			const matches = line.match(rxClass);
 			if (matches) {

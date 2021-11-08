@@ -1,6 +1,11 @@
 # Changelog
 
-## Next release ()
+## 2.0.4 (2021/11/07)
+
+### Changes and improvements
+
+* Ren'Py default transforms are now included in the 'at' autocomplete list [#51](https://github.com/LuqueDaniel/vscode-language-renpy/issues/51)
+* Doc strings are no longer parsed for semantic tokens [#44](https://github.com/LuqueDaniel/vscode-language-renpy/issues/44)
 
 ### Fixes
 

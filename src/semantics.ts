@@ -9,7 +9,7 @@ import { stripWorkspaceFromFile } from "./workspace";
 export function getSemanticTokens(document: TextDocument, legend: SemanticTokensLegend): SemanticTokens {
     const tokensBuilder = new SemanticTokensBuilder(legend);
     const rxKeywordList = /\s*(screen|label|transform|def|class)\s+/;
-    const rxParameterList = /\s*(screen|label|transform|def|class)\s+([a-zA-Z0-9_]+)\((.*)\):|\s*(label)\s+([a-zA-Z0-9_]+)\s*:|^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):|^(python)\s+early\s+in\s+(\w+):|\s*(class)\s+([a-zA-Z0-9_]+)\s*/s;
+    const rxParameterList = /\s*(screen|label|transform|def|class)\s+([a-zA-Z0-9_.]+)\((.*)\):|\s*(label)\s+([a-zA-Z0-9_.]+)\s*:|^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):|^(python)\s+early\s+in\s+(\w+):|\s*(class)\s+([a-zA-Z0-9_]+)\s*/s;
     const rxVariableDefines = /^\s*(default|define)\s+([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const rxPersistentDefines = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const filename = stripWorkspaceFromFile(document.uri.path);
@@ -38,7 +38,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
 
         append_line = i;
         if (line.match(rxKeywordList)) {
-            // check for unterminated parenthesis for multiline declarations	
+            // check for unterminated parenthesis for multiline declarations
             let no_string = NavigationData.filterStringLiterals(line);
             let open_count = (no_string.match(/\(/g)||[]).length;
             let close_count = (no_string.match(/\)/g)||[]).length;
@@ -255,7 +255,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                                 if (parent_args.includes(m.substr(offset))) {
                                     continue;
                                 }
-                                
+
                                 let length = m.length;
                                 let source = 'variable';
                                 if (matches[1] === 'global') {
@@ -285,7 +285,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                                 const navigation = new Navigation(source, m.substr(offset), filename, i + 1, docs, "", parent_type, start + offset);
                                 NavigationData.gameObjects['semantic'][key] = navigation;
                                 parent_defaults[`${parent_type}.${parent}.${m.substr(offset)}`] = navigation;
-                                
+
                                 if (parent_type === 'store') {
                                     const pKey = `store.${parent}`;
                                     const objKey = `${parent}.${m.substr(offset)}`;
@@ -297,7 +297,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                                     NavigationData.gameObjects['fields'][pKey] = NavigationData.gameObjects['fields'][pKey].filter((e: { keyword: string; }) => e.keyword !== objKey);
                                     NavigationData.gameObjects['fields'][pKey].push(navigation);
                                 }
-                                
+
                                 start += m.length + 1;
                             }
                         } catch (error) {

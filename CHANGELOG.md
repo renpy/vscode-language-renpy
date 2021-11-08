@@ -7,6 +7,10 @@
 * Ren'Py default transforms are now included in the 'at' autocomplete list [#51](https://github.com/LuqueDaniel/vscode-language-renpy/issues/51)
 * Doc strings are no longer parsed for semantic tokens [#44](https://github.com/LuqueDaniel/vscode-language-renpy/issues/44)
 
+### Fixes
+
+* Fix folding for label starting with a dot [#52](https://github.com/LuqueDaniel/vscode-language-renpy/issues/52)
+
 ## 2.0.3 (2021/10/31)
 
 ### Changes and improvements

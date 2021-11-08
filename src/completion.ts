@@ -105,29 +105,6 @@ export function getAutoCompleteList(prefix: string, parent: string = "", context
             }
         }
         return newlist;
-    } else if (prefix === 'with') {
-        // get list of Transitions
-        const category = NavigationData.renpyFunctions.internal;
-        newlist.push(new CompletionItem("None", CompletionItemKind.Value));
-        // get the Renpy default transitions and Transition classes
-        let transitions = Object.keys(category).filter(key => category[key][0] === 'transitions');
-        for (let key of transitions) {
-            const detail = category[key][2];
-            newlist.push(new CompletionItem({ label: key, detail: detail }, CompletionItemKind.Value));
-        }
-        // get the user define transitions
-        const defines = NavigationData.gameObjects['define_types'];
-        let deftransitions = Object.keys(defines).filter(key => defines[key].type === 'transitions');
-        for (let key of deftransitions) {
-            newlist.push(new CompletionItem(key, CompletionItemKind.Value));
-        }
-
-    } else if (prefix === 'at') {
-        // get list of Transforms
-        const category = NavigationData.data.location['transform'];
-        for (let key in category) {
-            newlist.push(new CompletionItem(key, CompletionItemKind.Value));
-        }
     } else if (NavigationData.isClass(prefix)) {
         const className = NavigationData.isClass(prefix);
         if (className) {
@@ -146,6 +123,11 @@ export function getAutoCompleteList(prefix: string, parent: string = "", context
             for (let key of category) {
                 newlist.push(new CompletionItem(key, CompletionItemKind.Value));
             }
+        }
+    } else if (isPythonType(prefix)) {
+        const def_type = NavigationData.gameObjects['define_types'][prefix];
+        if (def_type) {
+            return getAutoCompleteKeywords(def_type.type, '', 'python');
         }
     } else {
         return getAutoCompleteKeywords(prefix, parent, context);
@@ -307,6 +289,41 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                         }
                     }
                     continue;
+                } else if (gameDataKey === 'transforms') {
+                    // get the Renpy default Transforms
+                    const internal = NavigationData.renpyFunctions.internal;
+                    let transforms = Object.keys(internal).filter(key => internal[key][0] === 'transforms');
+                    for (let key of transforms) {
+                        const detail = internal[key][2];
+                        newlist.push(new CompletionItem({ label: key, detail: detail }, CompletionItemKind.Value));
+                    }
+                    // get list of defined Transforms
+                    const category = NavigationData.data.location['transform'];
+                    for (let key in category) {
+                        var def_type = NavigationData.gameObjects['define_types'][key];
+                        if (def_type) {
+                            
+                        }
+                        newlist.push(new CompletionItem(key, CompletionItemKind.Value));
+                    }
+                    continue;
+                } else if (gameDataKey === 'transitions') {
+                    // get list of Transitions
+                    const category = NavigationData.renpyFunctions.internal;
+                    newlist.push(new CompletionItem("None", CompletionItemKind.Value));
+                    // get the Renpy default transitions and Transition classes
+                    let transitions = Object.keys(category).filter(key => category[key][0] === 'transitions');
+                    for (let key of transitions) {
+                        const detail = category[key][2];
+                        newlist.push(new CompletionItem({ label: key, detail: detail }, CompletionItemKind.Value));
+                    }
+                    // get the user define transitions
+                    const defines = NavigationData.gameObjects['define_types'];
+                    let deftransitions = Object.keys(defines).filter(key => defines[key].type === 'transitions');
+                    for (let key of deftransitions) {
+                        newlist.push(new CompletionItem(key, CompletionItemKind.Value));
+                    }
+                    continue;
                 }
 
                 const gameObjects = NavigationData.gameObjects[gameDataKey];
@@ -334,6 +351,11 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                 }
             } else {
                 let ci = new CompletionItem(split[index], CompletionItemKind.Constant);
+                if (split[index].indexOf('(') > 0) {
+                    let key = split[index].substring(0, split[index].indexOf('('));
+                    let detail = split[index].substring(split[index].indexOf('('));
+                    ci = new CompletionItem({ label: key, detail: detail }, CompletionItemKind.Method);
+                }
                 ci.sortText = '0' + split[index];
                 newlist.push(ci);
             }
@@ -568,4 +590,15 @@ function getNamedStoreAutoComplete(keyword: string): CompletionItem[] | undefine
     }
 
     return newlist;
+}
+
+function isPythonType(keyword: string): boolean {
+    const defaults = NavigationData.gameObjects['define_types'];
+    if (defaults) {
+        const def_type = defaults[keyword];
+        if (def_type) {
+            return def_type.type !== '';
+        }
+    }
+    return false;
 }

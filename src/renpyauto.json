@@ -89,6 +89,7 @@
     "screen.alternate" : "{action}",
     "screen.hovered" : "{action}",
     "screen.unhovered" : "{action}",
+    "screen.released" : "{action}",
     "unscrollable" : "None|\"insensitive\"|\"hide\"",
     "vscrollbar_unscrollable" : "None|\"insensitive\"|\"hide\"",
     "hscrollbar_unscrollable" : "None|\"insensitive\"|\"hide\"",
@@ -142,5 +143,12 @@
     "screen.Function" : "{function}",
     "parent.screen.on" : "action",
     "parent.screen.timer" : "action|repeat",
-    "screen.spacing" : "0|5|10|15|20|gui.navigation_spacing|gui.pref_spacing"
+    "screen.spacing" : "0|5|10|15|20|gui.navigation_spacing|gui.pref_spacing",
+    "label.at" : "{transforms}",
+    "screen.at" : "{transforms}",
+    "label.with" : "{transitions}",
+    "screen.with" : "{transitions}",
+    "python.list" : "append(item)|count(item)|index(item)|insert(index, item)|remove(item)|pop()|reverse()|sort()",
+    "python.str" : "lower()|upper()|strip()|isalpha()|isdigit()|isspace()|startswith(str)|endswith(str)|find(str)|replace(strx, stry)|split(str)|join(str)",
+    "python.dictionary" : "keys()|values()|items()|get(key, default)"
 }

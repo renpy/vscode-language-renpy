@@ -49,11 +49,13 @@ export class DataType {
 		} else if (!isNaN(+this.baseclass)) {
 			this.type = 'number';
 		} else if (baseclass === '_' || baseclass.startsWith('"') || baseclass.startsWith('`') || baseclass.startsWith("'")) {
-			this.type = 'string';
-		} else if (baseclass === '[') {
-			this.type = 'set';
-		} else if (baseclass === '{') {
+			this.type = 'str';
+		} else if (baseclass.startsWith('[')) {
+			this.type = 'list';
+		} else if (baseclass.startsWith('{')) {
 			this.type = 'dictionary';
+		} else if (baseclass.startsWith('(') && baseclass.endsWith(')')) {
+			this.type = 'tuple';
 		} else if (baseclass === 'store') {
 			this.type = 'store';
 		}

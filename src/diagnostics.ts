@@ -217,11 +217,18 @@ function checkInvalidVariableNames(diagnostics: Diagnostic[], line: string, line
 function checkStoreVariables(diagnostics: Diagnostic[], line: string, lineIndex: number) {
     // check store prefixed variables have been defaulted
     const defaults = NavigationData.gameObjects['define_types'];
+    let classes = [];
+    let callables = [];
+    if (NavigationData.data && NavigationData.data.location) {
+        classes = NavigationData.data.location['class'] || [];
+        callables = NavigationData.data.location['callable'] || [];
+    }
+
     if (defaults) {
         const filtered = Object.keys(defaults).filter(key => defaults[key].define === 'default');
         let matches;
         while ((matches = rxStoreCheck.exec(line)) !== null) {
-            if (!matches[1].startsWith('_') && !filtered.includes(matches[1]) && !renpy_store.includes(matches[1])) {
+            if (!matches[1].startsWith('_') && !filtered.includes(matches[1]) && !renpy_store.includes(matches[1]) && !classes[matches[1]] && !callables[matches[1]]) {
                 const offset = matches.index + matches[0].indexOf(matches[1]);
                 const range = new Range(lineIndex, offset, lineIndex, offset + matches[1].length);
                 const diagnostic = new Diagnostic(range, `"store.${matches[1]}": Use of a store variable that has not been defaulted.`, DiagnosticSeverity.Warning);

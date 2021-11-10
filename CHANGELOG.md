@@ -10,6 +10,7 @@
 ### Fixes
 
 * Fix folding for label starting with a dot [#52](https://github.com/LuqueDaniel/vscode-language-renpy/issues/52)
+* Fix undefined store warnings for Classes and Callables [#56](https://github.com/LuqueDaniel/vscode-language-renpy/issues/56)
 
 ## 2.0.3 (2021/10/31)
 

@@ -1,6 +1,6 @@
 # Changelog
 
-## 2.0.4 (2021/11/07)
+## 2.0.4 (2021/11/14)
 
 ### Changes and improvements
 

@@ -1086,6 +1086,10 @@ export function updateNavigationData(type: string, keyword: string, filename: st
 }
 
 export function getStatusBarText() {
+	if (!window.activeTextEditor || !window.activeTextEditor.document || window.activeTextEditor.document.languageId !== 'renpy') {
+		return "";
+	}
+
 	if (NavigationData.data) {
 		if (NavigationData.data.name !== undefined) {
 			return `${NavigationData.data.name} v${NavigationData.data.version}`;

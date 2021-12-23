@@ -102,7 +102,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                     start += m.length + 1;
                 }
                 if (matches[1] === 'def') {
-                    const context = getCurrentContext(document, new Position(i - 1, indent_level));
+                    const context =  i - 1 < 0 ? undefined : getCurrentContext(document, new Position(i - 1, indent_level));
                     if (context === undefined) {
                         updateNavigationData('callable', matches[2], filename, i);
                     } else if (context.startsWith('store.')) {
@@ -122,7 +122,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                 parent_defaults = {};
 
                 if (matches[1] === 'def') {
-                    const context = getCurrentContext(document, new Position(i - 1, indent_level));
+                    const context =  i - 1 < 0 ? undefined : getCurrentContext(document, new Position(i - 1, indent_level));
                     if (context === undefined) {
                         updateNavigationData('callable', matches[2], filename, i);
                     } else if (context.startsWith('store.')) {
@@ -133,7 +133,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                 }
             } else if (matches[4] === 'label') {
                 indent_level = line.length - line.trimLeft().length;
-                const context = getCurrentContext(document, new Position(i - 1, indent_level));
+                const context = i - 1 < 0 ? undefined : getCurrentContext(document, new Position(i - 1, indent_level));
                 if (context === undefined) {
                     updateNavigationData('label', matches[5], filename, i);
                 }

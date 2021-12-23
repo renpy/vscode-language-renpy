@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.5 (2021/12/24)
+
+### Fixes
+
+* Fix semantic exception when position is negative [#62](https://github.com/LuqueDaniel/vscode-language-renpy/issues/62)
+* Fix (Uncompiled Game) status bar text when editing a non-Renpy workspace/file
+
 ## 2.0.4 (2021/11/14)
 
 ### Changes and improvements

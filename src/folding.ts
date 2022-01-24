@@ -5,7 +5,7 @@ import { TextDocument, FoldingRange } from "vscode";
 
 export function getFoldingRanges(document: TextDocument): FoldingRange[] {
     let ranges: FoldingRange[] = [];
-    const rxFolding = /^\s*(screen|label|class|layeredimage|def|init)\s+([a-zA-Z0-9_.]+)\((.*)\)\s*:|^\s*(screen|label|class|layeredimage|def|init)\s+([a-zA-Z0-9_.]+)\s*:/;
+    const rxFolding = /^\s*([a-zA-Z]|("|'|`)).*:$/;
     const rxRegionFolding = /^\s*#region[\S]*\s*/;
     const rxendRegionFolding = /^\s*#endregion[\S]*\s*/;
 

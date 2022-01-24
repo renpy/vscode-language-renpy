@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.6 (2022/01/26)
+
+### Changes and improvements
+
+* Improvement and simplification of the regular expression of the folding [#68](https://github.com/LuqueDaniel/vscode-language-renpy/pull/68)
+
+### Fixes
+
+* Fix folding class at the end of init python block [#68](https://github.com/LuqueDaniel/vscode-language-renpy/pull/68)
+
 ## 2.0.5 (2021/12/24)
 
 ### Fixes

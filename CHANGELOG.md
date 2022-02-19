@@ -1,5 +1,17 @@
 # Changelog
 
+## 2.0.6 (2022/02/22)
+
+### Changes and improvements
+
+* Allow extension to run in an untrusted workspace [#70](https://github.com/LuqueDaniel/vscode-language-renpy/pull/70).
+* Remove folding provider. More information [#69](https://github.com/LuqueDaniel/vscode-language-renpy/issues/69).
+
+### Fixes
+
+* Fix folding class at the end of init python block [#68](https://github.com/LuqueDaniel/vscode-language-renpy/pull/68).
+* Other issues related to folding: [#66](https://github.com/LuqueDaniel/vscode-language-renpy/issues/66) and [#65](https://github.com/LuqueDaniel/vscode-language-renpy/issues/65).
+
 ## 2.0.5 (2021/12/24)
 
 ### Fixes

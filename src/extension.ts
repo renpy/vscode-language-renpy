@@ -3,13 +3,12 @@
 // Licensed under MIT License. See LICENSE in the project root for license information.
 'use strict';
 
-import { ExtensionContext, languages, commands, window, IndentAction, TextDocument, Position, CancellationToken, ProviderResult, HoverProvider, Hover, DefinitionProvider, Range, Location, Uri, workspace, CompletionContext, CompletionItemProvider, CompletionItem, DocumentSymbol, DocumentSymbolProvider, DocumentColorProvider, ColorInformation, ColorPresentation, Color, Definition, StatusBarItem, StatusBarAlignment, ConfigurationTarget, SignatureHelpProvider, SignatureHelp, SignatureHelpContext, ReferenceContext, ReferenceProvider, DocumentSemanticTokensProvider, SemanticTokens, SemanticTokensLegend, FoldingRangeProvider, FoldingContext, FoldingRange } from 'vscode';
+import { ExtensionContext, languages, commands, window, IndentAction, TextDocument, Position, CancellationToken, ProviderResult, HoverProvider, Hover, DefinitionProvider, Range, Location, Uri, workspace, CompletionContext, CompletionItemProvider, CompletionItem, DocumentSymbol, DocumentSymbolProvider, DocumentColorProvider, ColorInformation, ColorPresentation, Color, Definition, StatusBarItem, StatusBarAlignment, ConfigurationTarget, SignatureHelpProvider, SignatureHelp, SignatureHelpContext, ReferenceContext, ReferenceProvider, DocumentSemanticTokensProvider, SemanticTokens, SemanticTokensLegend } from 'vscode';
 import { getColorInformation, getColorPresentations } from './color';
 import { getStatusBarText, NavigationData } from './navigationdata';
 import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from './workspace';
 import { refreshDiagnostics, subscribeToDocumentChanges } from './diagnostics';
 import { getSemanticTokens } from './semantics';
-import { getFoldingRanges } from './folding';
 import { getHover } from './hover';
 import { getCompletionList } from './completion';
 import { getDefinition } from './definition';
@@ -154,17 +153,6 @@ export async function activate(context: ExtensionContext): Promise<any> {
 	);
 	context.subscriptions.push(semanticTokens);
 
-	let foldingRange = languages.registerFoldingRangeProvider('renpy',
-		new (class implements FoldingRangeProvider {
-			provideFoldingRanges(
-				document: TextDocument, context: FoldingContext, token: CancellationToken
-			): ProviderResult<FoldingRange[]> {
-				return getFoldingRanges(document);
-			}
-		})()
-	);
-	context.subscriptions.push(foldingRange);
-
 	// A TextDocument was changed
 	context.subscriptions.push(workspace.onDidSaveTextDocument(
 		document => {
@@ -184,7 +172,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 					ExecuteRenpyCompile();
 				}
 			}
-			
+
 			if (!NavigationData.isImporting) {
 				updateStatusBar("$(sync~spin) Initializing Ren'Py static data...");
 				const uri = Uri.file(document.fileName);
@@ -337,13 +325,13 @@ export function getKeywordPrefix(document: TextDocument, position: Position, ran
 			if (prevWord !== 'store') {
 				return prevWord;
 			}
-		}	
+		}
 	}
 	return;
 }
 
 function updateStatusBar(text:string) {
-	if (text === "") {		
+	if (text === "") {
 		myStatusBarItem.hide();
 	} else {
 		myStatusBarItem.text = text;

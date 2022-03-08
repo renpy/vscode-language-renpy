@@ -1,0 +1,61 @@
+{
+  "name": "Ren'Py",
+  "scopeName": "source.renpy",
+  "firstLineMatch": "^#!/.*\\brenpy\\b",
+  "patterns": [
+      { "include": "#comments" },
+      { "include": "#python-statements" }
+  ],
+  "repository": {
+    "python-statements": {
+      "name": "embedded.python",
+      "patterns": [
+        {
+          "comments": "Renpy python block",
+          "name": "embedded.python.block",
+          "begin": "^(init\\s-?\\d?\\s?)?(python:)",
+          "beginCaptures": {
+            "0": {
+              "patterns": [{ "include": "#renpy-keywords" }]
+            }
+          },
+          "end": "^(?=\\S)",
+          "patterns": [{ "include": "source.python" }]
+        },
+        {
+          "comment": "Match begin and end of python one line statements",
+          "name": "embedded.python.one-line",
+          "begin": "(?<=(\\$|define|default)\\s)",
+          "end": "\\R$",
+          "patterns": [{ "include": "source.python" }]
+        },
+        {
+          "comment": "Match renpy python one line statements",
+          "match": "^\\s*(\\$|define|default)\\s",
+          "name": "keyword.renpy"
+        }
+      ]
+    },
+    "renpy-keywords": {
+      "patterns": [
+        {
+          "match": "\\b(init|python)\\b",
+          "name": "keyword.control.renpy"
+        }
+      ]
+    },
+    "codetags": {
+      "match": "(?:\\b(NOTE|XXX|HACK|FIXME|BUG|TODO)\\b)",
+      "captures": { "1": { "name": "keyword.codetag.notation.renpy" } }
+    },
+    "comments": {
+      "name": "comment.line.number-sign.renpy",
+      "begin": "(\\#)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.comment.renpy" }
+      },
+      "end": "($)",
+      "patterns": [{ "include": "#codetags" }]
+    }
+  }
+}

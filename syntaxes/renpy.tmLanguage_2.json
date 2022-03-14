@@ -3,8 +3,9 @@
   "scopeName": "source.renpy",
   "firstLineMatch": "^#!/.*\\brenpy\\b",
   "patterns": [
-      { "include": "#comments" },
-      { "include": "#python-statements" }
+    { "include": "#comments" },
+    { "include": "#python-statements" },
+    { "include": "#expressions" }
   ],
   "repository": {
     "python-statements": {
@@ -56,6 +57,109 @@
       },
       "end": "($)",
       "patterns": [{ "include": "#codetags" }]
+    },
+    "expressions": {
+      "patterns": [{ "include": "#strings" }]
+    },
+    "strings": {
+      "patterns": [
+        { "include": "#string-quoted-double" },
+        { "include": "#string-quoted-single" },
+        { "include": "#string-quoted-back" }
+      ]
+    },
+    "string-quoted-double": {
+      "patterns": [
+        {
+          "comment": "double quoted block string",
+          "name": "string.quoted.double.block.renpy",
+          "begin": "(\"\"\")",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.renpy" }
+          },
+          "end": "((?<=\"\"\")(\")\"\"|\"\"\")",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.string.end.renpy" },
+            "2": { "name": "meta.empty-string.double.block.renpy" }
+          }
+        },
+        {
+          "comment": "Dobule quoted single line string",
+          "name": "string.quoted.double.line.renpy",
+          "begin": "(\")",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.string.begin.renpy" }
+          },
+          "end": "((?<=\")(\")|\")",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.string.end.renpy" },
+            "2": { "name": "meta.empty-string.double.renpy" },
+            "3": { "name": "invalid.illegal.unclosed-string.renpy" }
+          }
+        }
+      ]
+    },
+    "string-quoted-single": {
+      "patterns": [
+        {
+          "comment": "Single quoted block string",
+          "name": "string.quoted.single.block.renpy",
+          "begin": "(''')",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.renpy" }
+          },
+          "end": "((?<=''')('|''')|''')",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.string.end.renpy" },
+            "2": { "name": "meta.empty-string.single.block.renpy" }
+          }
+        },
+        {
+          "comment": "Single quoted single line string",
+          "name": "string.quoted.single.line.renpy",
+          "begin": "(')",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.string.begin.renpy" }
+          },
+          "end": "((?<=')(')|')",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.string.end.renpy" },
+            "2": { "name": "meta.empty-string.single.renpy" },
+            "3": { "name": "invalid.illegal.unclosed-string.renpy" }
+          }
+        }
+      ]
+    },
+    "string-quoted-back": {
+      "patterns": [
+        {
+          "comment": "Back quoted block string",
+          "name": "string.quoted.back.block.renpy",
+          "begin": "(```)",
+          "beginCaptures": {
+            "0": { "name": "punctuation.definition.string.begin.renpy" }
+          },
+          "end": "((?<=```)(`)``|```)",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.string.end.renpy" },
+            "2": { "name": "meta.empty-string.back.block.renpy" }
+          }
+        },
+        {
+          "comment": "Back quoted single line string",
+          "name": "string.quoted.back.line.renpy",
+          "begin": "(`)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.string.begin.renpy" }
+          },
+          "end": "((?<=`)(`)|`)",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.string.end.renpy" },
+            "2": { "name": "meta.empty-string.back.renpy" },
+            "3": { "name": "invalid.illegal.unclosed-string.renpy" }
+          }
+        }
+      ]
     }
   }
 }

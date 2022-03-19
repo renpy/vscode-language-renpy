@@ -6,7 +6,7 @@ import { Color, ColorInformation, ColorPresentation, Range, TextDocument, TextEd
 /**
  * Finds all colors in the given document and returns their ranges and color
  * @param document - the TextDocument to search
- * @returns - ColorInformation[] - an array that provides a range and color for each match 
+ * @returns - ColorInformation[] - an array that provides a range and color for each match
  */
 export function getColorInformation(document: TextDocument): ColorInformation[] {
 	// find all colors in the document
@@ -22,9 +22,9 @@ export function getColorInformation(document: TextDocument): ColorInformation[] 
 					const match = matches[idx];
 					let range = new Range(line.lineNumber, text.indexOf(match, start), line.lineNumber, text.indexOf(match, start) + match.length);
 					let color;
-					
+
 					if (match.startsWith('"#') || match.startsWith("'#")) {
-						const quote = match.substr(0, 1);
+						const quote = match.substring(0, 1);
 						if (match.endsWith(quote)) {
 							color = convertHtmlToColor(match);
 						}
@@ -74,7 +74,7 @@ export function getColorPresentations(color: Color, document: TextDocument, rang
 
 	let colorLabel: string = "";
 	if (text.startsWith('"#') || text.startsWith("'#")) {
-		const quote = text.substr(0, 1);
+		const quote = text.substring(0, 1);
 		if (colA === 255 && (text.length === 6 || text.length === 9)) {
 			colorLabel = convertRgbToHex(colR, colG, colB) || "";
 		} else {
@@ -103,7 +103,7 @@ export function getColorPresentations(color: Color, document: TextDocument, rang
  * Search the given text for any color references
  * @remarks
  * This method supports colors in the format `"#rrggbb[aa]"`, `"#rgb[a]"`, `Color((r, g, b[, a]))`, `rgb=(r, g, b)`
- * 
+ *
  * @param text - The text to search
  * @returns A `RegExpMatchArray` containing any color matches
  */
@@ -129,7 +129,7 @@ export function convertRgbToHex(r: number, g: number, b: number, a?: number): st
 	if (a === undefined) {
 		return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
 	} else {
-		return "#" + (256 + r).toString(16).substr(1) + ((1 << 24) + (g << 16) + (b << 8) + a).toString(16).substr(1);
+		return "#" + (256 + r).toString(16).substring(1) + ((1 << 24) + (g << 16) + (b << 8) + a).toString(16).substring(1);
 	}
 }
 
@@ -149,7 +149,7 @@ export function convertColorToRgbTuple(color: Color): string {
 
 /**
  * Returns a Color provider object based on the given html hex color
- * @param hex - The html hex representation 
+ * @param hex - The html hex representation
  * @returns The `Color` provider object
  */
 export function convertHtmlToColor(hex: string) : Color | null {
@@ -227,7 +227,7 @@ export function convertRgbColorToColor(renpyColor: string): Color | null {
 				parseFloat(result[2]),
 				1.0
 				);
-		} 
+		}
 		return null;
 	} catch (error) {
 		return null;

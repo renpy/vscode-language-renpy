@@ -26,7 +26,7 @@ export class NavigationData {
 
 	static async init(extensionPath: string) {
 		console.log(`NavigationData init`);
-		
+
 		const data = require(`${extensionPath}/src/renpy.json`);
 		NavigationData.renpyFunctions = data;
 
@@ -36,9 +36,9 @@ export class NavigationData {
 		NavigationData.renpyAutoComplete = [];
 		for (let key in NavigationData.renpyFunctions.renpy) {
 			if (key.charAt(0) === key.charAt(0).toUpperCase()) {
-				NavigationData.renpyAutoComplete.push(new CompletionItem(key.substr(6), CompletionItemKind.Class));
+				NavigationData.renpyAutoComplete.push(new CompletionItem(key.substring(6), CompletionItemKind.Class));
 			} else {
-				NavigationData.renpyAutoComplete.push(new CompletionItem(key.substr(6), CompletionItemKind.Method));
+				NavigationData.renpyAutoComplete.push(new CompletionItem(key.substring(6), CompletionItemKind.Method));
 			}
 		}
 
@@ -52,7 +52,7 @@ export class NavigationData {
 		for (let key in NavigationData.renpyFunctions.internal) {
 			NavigationData.internalAutoComplete.push(new CompletionItem(key, CompletionItemKind.Class));
 			if (key.startsWith('gui.')) {
-				NavigationData.guiAutoComplete.push(new CompletionItem(key.substr(4), CompletionItemKind.Variable));
+				NavigationData.guiAutoComplete.push(new CompletionItem(key.substring(4), CompletionItemKind.Variable));
 			}
 		}
 
@@ -244,13 +244,13 @@ export class NavigationData {
 	 * Determines if the line position is valid for completion or hover events
 	 * @remarks
 	 * This prevents hover/completion from triggering over keywords inside a comment or inside a string literal
-	 * 
+	 *
 	 * @param line The current line in the TextDocument
 	 * @param position The current position in the TextDocument
 	 * @returns `True` if the position is valid for completion or hover events
 	 */
 	static positionIsCleanForCompletion(line: string, position: Position): boolean {
-		const prefix = line.substr(0, position.character);	
+		const prefix = line.substring(0, position.character);
 		// ignore hover/completion if we're in a comment
 		if (prefix.indexOf('#') >= 0) {
 			return false;
@@ -258,7 +258,7 @@ export class NavigationData {
 
 		// ignore completion if we're inside a quoted strings
 		const filtered = NavigationData.filterStringLiterals(line);
-		if (filtered.substr(position.character, 1) === filterCharacter) {
+		if (filtered.substring(position.character, 1) === filterCharacter) {
 			return false;
 		}
 
@@ -268,7 +268,7 @@ export class NavigationData {
 	/**
 	 * Filters out string literals and comments from the given line of text
 	 * @param line The current line in the TextDocument
-	 * @returns A string with any string constants and comments replaced with an unused character 
+	 * @returns A string with any string constants and comments replaced with an unused character
 	 */
 	static filterStringLiterals(line: string): string {
 		let parsed='';
@@ -361,7 +361,7 @@ export class NavigationData {
 	static getClassAutoComplete(keyword: string): CompletionItem[] | undefined {
 		let newlist: CompletionItem[] = [];
 		const prefix = keyword + '.';
-		
+
 		// get any inherited class items
 		const cls = NavigationData.data.location['class'][keyword];
 		if (cls) {
@@ -384,7 +384,7 @@ export class NavigationData {
 			const filtered = Object.keys(callables).filter(key => key.indexOf(prefix) === 0);
 			if (filtered) {
 				for (let key in filtered) {
-					const label = filtered[key].substr(prefix.length);
+					const label = filtered[key].substring(prefix.length);
 					if (!newlist.some(e => e.label === label)) {
 						newlist.push(new CompletionItem(label, CompletionItemKind.Method));
 					}
@@ -767,7 +767,7 @@ export class NavigationData {
 			let append_line = i;
 			let containsKeyword = line.match(rxKeywordList);
 			if (containsKeyword) {
-				// check for unterminated parenthesis for multiline declarations	
+				// check for unterminated parenthesis for multiline declarations
 				let no_string = NavigationData.filterStringLiterals(line);
 				let open_count = (no_string.match(/\(/g)||[]).length;
 				let close_count = (no_string.match(/\)/g)||[]).length;
@@ -958,7 +958,7 @@ export class NavigationData {
 					if (filtered) {
 						for (let key of filtered) {
 							if (key !== char.image) {
-								const attr = key.substr(char.image.length + 1);
+								const attr = key.substring(char.image.length + 1);
 								if (!attributes.includes(attr)) {
 									attributes.push(attr);
 								}
@@ -1007,7 +1007,7 @@ export class NavigationData {
 						if (filtered) {
 							for (let d of filtered) {
 								if (d !== image_key) {
-									const attr = d.substr(image_key.length);
+									const attr = d.substring(image_key.length);
 									if (attr.indexOf('_') > 0) {
 										const split = attr.split('_');
 										if (!attributes.includes(split[0])) {
@@ -1066,7 +1066,7 @@ export function readNavigationJson() {
 		return json;
 	} catch (error) {
 		window.showErrorMessage(`readNavigationJson error: ${error}`);
-	}	
+	}
 }
 
 export function updateNavigationData(type: string, keyword: string, filename: string, line: number) {

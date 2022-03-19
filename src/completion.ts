@@ -17,7 +17,7 @@ import { NavigationData } from "./navigationdata";
 export function getCompletionList(document: TextDocument, position: Position, context: CompletionContext): CompletionItem[] | undefined {
     if (context.triggerKind === CompletionTriggerKind.TriggerCharacter) {
         const line = document.lineAt(position).text;
-        const linePrefix = line.substr(0, position.character);
+        const linePrefix = line.substring(0, position.character);
         if (!NavigationData.positionIsCleanForCompletion(line, position)) {
             return;
         }
@@ -101,7 +101,7 @@ export function getAutoCompleteList(prefix: string, parent: string = "", context
             const category = NavigationData.data.location['define'];
             let audio = Object.keys(category).filter(key => key.startsWith('audio.'));
             for (let key of audio) {
-                newlist.push(new CompletionItem(key.substr(6), CompletionItemKind.Variable));
+                newlist.push(new CompletionItem(key.substring(6), CompletionItemKind.Variable));
             }
         }
         return newlist;
@@ -302,7 +302,7 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                     for (let key in category) {
                         var def_type = NavigationData.gameObjects['define_types'][key];
                         if (def_type) {
-                            
+
                         }
                         newlist.push(new CompletionItem(key, CompletionItemKind.Value));
                     }
@@ -374,7 +374,7 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
 }
 
 /**
- * Determines if the given string is a normal integer number 
+ * Determines if the given string is a normal integer number
  * @param str - The string containing a numeric value
  * @returns - True if the given string is a normal integer number
  */
@@ -411,7 +411,7 @@ function getAudioChannels(): string[] {
  * Returns an array containing the `config.layer` definitions
  * @remarks
  * This method looks for a user configured `define config.layers` definition, or else it returns the default config.layers definition
- * 
+ *
  * @returns The config.layer configuration as string[] (e.g, `[ 'master', 'transient', 'screens', 'overlay']`)
  */
 function getLayerConfiguration(quoted: boolean = false): CompletionItem[] | undefined {
@@ -468,7 +468,7 @@ function getDisplayableAutoComplete(quoted: boolean = false): CompletionItem[] {
                 let ci = new CompletionItem(key, CompletionItemKind.Folder);
                 ci.sortText = '1' + key;
                 NavigationData.displayableAutoComplete.push(ci);
-                
+
                 ci = new CompletionItem('"' + key + '"', CompletionItemKind.Folder);
                 ci.sortText = '1' + key;
                 NavigationData.displayableQuotedAutoComplete.push(ci);
@@ -521,7 +521,7 @@ function getCallableAutoComplete(keyword: string): CompletionItem[] | undefined 
         const filtered = Object.keys(callables).filter(key => key.indexOf(prefix) === 0);
         if (filtered) {
             for (let key in filtered) {
-                const label = filtered[key].substr(prefix.length);
+                const label = filtered[key].substring(prefix.length);
                 newlist.push(new CompletionItem(label, CompletionItemKind.Method));
             }
         }
@@ -532,7 +532,7 @@ function getCallableAutoComplete(keyword: string): CompletionItem[] | undefined 
 
 function isInternalClass(keyword: string): boolean {
     const prefix = keyword + '.';
-    const callables = NavigationData.renpyFunctions.internal;    
+    const callables = NavigationData.renpyFunctions.internal;
     if (callables) {
         return Object.keys(callables).some(key => key.indexOf(prefix) === 0);
     }
@@ -549,7 +549,7 @@ function getInternalClassAutoComplete(keyword: string): CompletionItem[] | undef
         const filtered = Object.keys(callables).filter(key => key.indexOf(prefix) === 0);
         if (filtered) {
             for (let key in filtered) {
-                const label = filtered[key].substr(prefix.length);
+                const label = filtered[key].substring(prefix.length);
                 newlist.push(new CompletionItem(label, CompletionItemKind.Method));
             }
         }
@@ -559,7 +559,7 @@ function getInternalClassAutoComplete(keyword: string): CompletionItem[] | undef
 }
 
 function isNamedStore(keyword: string): boolean {
-    const stores = NavigationData.gameObjects['stores'][keyword];    
+    const stores = NavigationData.gameObjects['stores'][keyword];
     if (stores) {
         return true;
     }

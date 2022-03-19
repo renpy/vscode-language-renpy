@@ -28,7 +28,7 @@ export function getDocumentSymbols(document: TextDocument): DocumentSymbol[] | u
                 if (category[key].filename === documentFilename) {
                     const childRange = new Range(category[key].location - 1, 0, category[key].location - 1, 0);
                     let classParent = new DocumentSymbol(key, `:${category[key].location}`, getDocumentSymbolKind(type, true), childRange, childRange);
-                    if (type === 'class') {                                        
+                    if (type === 'class') {
                         getClassDocumentSymbols(classParent, key);
                     }
                     parentSymbol.children.push(classParent);
@@ -37,7 +37,7 @@ export function getDocumentSymbols(document: TextDocument): DocumentSymbol[] | u
                 if (category[key][0] === documentFilename) {
                     const childRange = new Range(category[key][1] - 1, 0, category[key][1] - 1, 0);
                     let classParent = new DocumentSymbol(key, `:${category[key][1]}`, getDocumentSymbolKind(type, true), childRange, childRange);
-                    if (type === 'class') {                                        
+                    if (type === 'class') {
                         getClassDocumentSymbols(classParent, key);
                     }
                     parentSymbol.children.push(classParent);
@@ -120,7 +120,7 @@ function getClassDocumentSymbols(classParent: DocumentSymbol, key: string) {
         const filtered = Object.keys(callables).filter(k => k.indexOf(key + '.') === 0);
         if (filtered) {
             for (let callable of filtered) {
-                const label = callable.substr(key.length + 1);
+                const label = callable.substring(key.length + 1);
                 const line = callables[callable][1];
                 const childRange = new Range(line - 1, 0, line - 1, 0);
                 classParent.children.push(
@@ -155,7 +155,7 @@ function getStoreDocumentSymbols(classParent: DocumentSymbol, key: string) {
         const filtered = Object.keys(callables).filter(k => k.indexOf(key + '.') === 0);
         if (filtered) {
             for (let callable of filtered) {
-                const label = callable.substr(key.length + 1);
+                const label = callable.substring(key.length + 1);
                 const line = callables[callable][1];
                 const childRange = new Range(line - 1, 0, line - 1, 0);
                 classParent.children.push(

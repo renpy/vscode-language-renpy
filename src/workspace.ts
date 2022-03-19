@@ -5,8 +5,8 @@ import { workspace } from "vscode";
 import * as fs from 'fs';
 
 /**
- * Returns the filename.extension for the given fully qualified path 
- * @param str - The full path and filename of the file 
+ * Returns the filename.extension for the given fully qualified path
+ * @param str - The full path and filename of the file
  * @returns The filename.ext of the filepath
  */
 export function extractFilename(str: string) {
@@ -18,8 +18,8 @@ export function extractFilename(str: string) {
 }
 
 /**
- * Returns the filename without the path and extension for the given fully qualified path 
- * @param str - The full path and filename of the file 
+ * Returns the filename without the path and extension for the given fully qualified path
+ * @param str - The full path and filename of the file
  * @returns The filename of the filepath
  */
 export function extractFilenameWithoutExtension(str: string) {
@@ -35,7 +35,7 @@ export function extractFilenameWithoutExtension(str: string) {
 
 /**
  * Strips the workspace path from the file, leaving the path relative to the workspace plus filename (e.g., `game/script.rpy`)
- * @param str - The full path and filename of the file 
+ * @param str - The full path and filename of the file
  * @returns The filename of the filepath (e.g., `game/script.rpy`)
  */
 export function stripWorkspaceFromFile(str: string) {
@@ -43,11 +43,11 @@ export function stripWorkspaceFromFile(str: string) {
 
 	let filename = cleanUpPath(str);
 	if (filename.toLowerCase().startsWith(wf.toLowerCase())) {
-		filename = filename.substr(wf.length + 1);
+		filename = filename.substring(wf.length + 1);
 	}
 
 	while (filename.startsWith('/')) {
-		filename = filename.substr(1);
+		filename = filename.substring(1);
 	}
 	return filename;
 }
@@ -69,13 +69,13 @@ export function getWorkspaceFolder() {
  * Gets the full path and filename of the file with invalid characters removed
  * @remarks
  * This removes the leading `/` character that appears before the path on Windows systems (e.g., `/c:/user/Documents/renpy/game/script.rpy`)
- * @param path - The full path and filename of the file 
+ * @param path - The full path and filename of the file
  * @returns The full path and filename of the file with invalid characters removed
  */
 export function cleanUpPath(path: string): string {
-	if (path.startsWith('/') && path.substr(2, 2) === ":/") {
+	if (path.startsWith('/') && path.substring(2, 2) === ":/") {
 		// windows is reporting the path as "/c:/xxx"
-		path = path.substr(1);
+		path = path.substring(1);
 	}
 	return path;
 }

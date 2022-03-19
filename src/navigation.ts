@@ -60,7 +60,7 @@ export class DataType {
 			this.type = 'store';
 		}
 	}
-	
+
 	checkTypeArray(type: string, typeArray: string[]) {
 		if (typeArray.includes(this.baseclass)) {
 			this.type = type;
@@ -101,9 +101,9 @@ export function getPyDocsAtLine(lines: string[], line: number): string {
 			}
 		} else if (insideComment) {
 			if (text.length === 0 || text.length - text.trimLeft().length >= margin + 3) {
-				lb.push('\n' + text.substr(margin));
+				lb.push('\n' + text.substring(margin));
 			} else {
-				lb.push(text.substr(margin));
+				lb.push(text.substring(margin));
 			}
 		}
 		index++;
@@ -145,9 +145,9 @@ export function getPyDocsFromTextDocumentAtLine(document: TextDocument, line: nu
 			}
 		} else if (insideComment) {
 			if (text.length === 0 || text.length - text.trimLeft().length >= margin + 3) {
-				lb.push('\n' + text.substr(margin));
+				lb.push('\n' + text.substring(margin));
 			} else {
-				lb.push(text.substr(margin));
+				lb.push(text.substring(margin));
 			}
 		}
 		index++;
@@ -204,7 +204,7 @@ export function getArgumentParameterInfo(location: Navigation, line: string, pos
 		} else if (c === ']') {
 			insideBrackets = false;
 		} else if (c === '}') {
-			insideBraces = false; 
+			insideBraces = false;
 		} else if (c === ',' && (insideQuote || insideParens || insideBrackets || insideBraces)) {
 			c = ';';
 		}
@@ -214,11 +214,11 @@ export function getArgumentParameterInfo(location: Navigation, line: string, pos
 	// split the user's args
 	const firstParenIndex = parsed.indexOf('(');
 	let parameterStart = firstParenIndex + 1;
-	const parsedIndex = parsed.substr(parameterStart);
+	const parsedIndex = parsed.substring(parameterStart);
 	const split = parsedIndex.split(',');
 
 	const fragment = parsed.substring(0, position);
-	const fragmentSplit = parsed.substr(fragment.indexOf('(') + 1).split(',');
+	const fragmentSplit = parsed.substring(fragment.indexOf('(') + 1).split(',');
 
 	// calculate the current parameter
 	let currentArgument: number = fragmentSplit.length - 1;
@@ -233,10 +233,10 @@ export function getArgumentParameterInfo(location: Navigation, line: string, pos
 	let args = location.args;
 	if (args) {
 		if (args.startsWith('(')) {
-			args = args.substr(1);
+			args = args.substring(1);
 		}
 		if (args.endsWith(')')) {
-			args = args.substr(0, args.length - 1);
+			args = args.substring(0, args.length - 1);
 		}
 
 		const argsList = args.split(',');
@@ -355,14 +355,14 @@ export function getNamedParameter(strings: string[], named: string): string {
 
 export function stripQuotes(value: string): string {
 	if (value.startsWith('"') && value.endsWith('"')) {
-		value = value.substr(1);
-		value = value.substr(0, value.length - 1);
+		value = value.substring(1);
+		value = value.substring(0, value.length - 1);
 	} else if (value.startsWith("'") && value.endsWith("'")) {
-		value = value.substr(1);
-		value = value.substr(0, value.length - 1);
+		value = value.substring(1);
+		value = value.substring(0, value.length - 1);
 	} else if (value.startsWith("`") && value.endsWith("`")) {
-		value = value.substr(1);
-		value = value.substr(0, value.length - 1);
+		value = value.substring(1);
+		value = value.substring(0, value.length - 1);
 	}
 	return value;
 }

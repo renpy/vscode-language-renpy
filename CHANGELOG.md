@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.7 ()
+
+### Fixes
+
+* Fixes `Visual Studio Code.edit.py` opening files containing spaces in the path [#79](https://github.com/LuqueDaniel/vscode-language-renpy/issues/79)
+
 ## 2.0.6 (2022/02/22)
 
 ### Changes and improvements

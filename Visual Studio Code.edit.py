@@ -4,8 +4,9 @@ import sys
 
 import renpy.editor
 
+
 class Editor(renpy.editor.Editor):
-    
+
     has_projects = True
 
     def get_code(self):
@@ -16,10 +17,18 @@ class Editor(renpy.editor.Editor):
         DIR = os.path.abspath(os.path.dirname(__file__))
 
         if renpy.windows:
-            code = "Code.exe"
+            code = "Code.cmd"
         elif renpy.macintosh:
             DIR = os.path.abspath("/Applications")
-            code = os.path.join(DIR, "Visual Studio Code.app", "Contents", "Resources", "app", "bin", "code")
+            code = os.path.join(
+                DIR,
+                "Visual Studio Code.app",
+                "Contents",
+                "Resources",
+                "app",
+                "bin",
+                "code",
+            )
         else:
             code = "code"
 
@@ -31,27 +40,23 @@ class Editor(renpy.editor.Editor):
         self.args.append(filename)
 
     def open_project(self, project):
-        if renpy.windows:
-            project = '"{}"'.format(project)
-        elif renpy.macintosh:
-            project = project.replace(' ', '\ ')
         self.args.append(project)
 
     def begin(self, new_window=False, **kwargs):
-        self.args = [ ]
+        self.args = []
 
     def end(self, **kwargs):
         self.args.reverse()
+        code = self.get_code()
+        args = [code, "-g"] + self.args
+        args = [renpy.exports.fsencode(i) for i in args]
 
-        if renpy.macintosh:
-            code = self.get_code()
-            args = [ code ] + self.args
-            args = [ renpy.exports.fsencode(i) for i in args ]
-            subprocess.Popen(args)
+        if renpy.windows:
+            CREATE_NO_WINDOW = 0x08000000
+            subprocess.Popen(args, creationflags=CREATE_NO_WINDOW)
         else:
-            args = self.args
-            args = [ renpy.exports.fsencode(i) for i in args ]
-            subprocess.call(["code", "-g", args], shell=True)
+            subprocess.Popen(args)
+
 
 def main():
     e = Editor()
@@ -61,6 +66,7 @@ def main():
         e.open(i)
 
     e.end()
+
 
 if __name__ == "__main__":
     main()

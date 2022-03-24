@@ -166,7 +166,7 @@
     "devDependencies": {
         "@types/vscode": "^1.65.0",
         "@types/mocha": "^9.1.0",
-        "@types/node": "^12.12.32",
+        "@types/node": "^17.0.23",
         "tslint": "^6.1.1",
         "typescript": "^3.8.3",
         "vscode-test": "^1.6.1"

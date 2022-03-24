@@ -169,6 +169,6 @@
         "@types/node": "^12.12.32",
         "tslint": "^6.1.1",
         "typescript": "^3.8.3",
-        "vscode-test": "^1.0.2"
+        "vscode-test": "^1.6.1"
     }
 }

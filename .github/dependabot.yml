@@ -6,6 +6,8 @@ updates:
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
-      interval: "daily"
-    reviewers:
-      - "LuqueDaniel"
+      interval: monthly
+    assignees:
+      - LuqueDaniel
+    commit-message:
+      prefix: deps

@@ -22,7 +22,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
     let parent_defaults: { [key: string]: Navigation } = {};
     let indent_level = 0;
     let append_line = 0;
-    
+
     for (let i = 0; i < document.lineCount; ++i) {
         let line = document.lineAt(i).text;
 
@@ -92,7 +92,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                     } else {
                         tokensBuilder.push(range, 'parameter', ['declaration']);
                     }
-                    parent_args.push(line.substr(start + offset, length - offset));
+                    parent_args.push(line.substring(start + offset, length - offset));
                     parent_defaults[m.substring(offset, length)] = new Navigation("parameter", m.substring(offset, length), filename, i + 1, "", m.trim(), "", start + offset);
                     // create a Navigation dictionary entry for this token range
                     const key = rangeAsString(filename, range);
@@ -252,7 +252,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                             const split = matches[2].split(',');
                             for (let m of split) {
                                 const offset = m.length - m.trimLeft().length;
-                                if (parent_args.includes(m.substr(offset))) {
+                                if (parent_args.includes(m.substring(offset))) {
                                     continue;
                                 }
 
@@ -261,11 +261,11 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                                 if (matches[1] === 'global') {
                                     source = 'global variable';
                                 }
-                                if (!parent_local.some(e => e[0] === m.substr(offset))) {
+                                if (!parent_local.some(e => e[0] === m.substring(offset))) {
                                     if (matches[1] === 'global') {
-                                        parent_local.push([m.substr(offset), 'g']);
+                                        parent_local.push([m.substring(offset), 'g']);
                                     } else {
-                                        parent_local.push([m.substr(offset), 'v']);
+                                        parent_local.push([m.substring(offset), 'v']);
                                     }
                                 } else {
                                     continue;
@@ -282,13 +282,13 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                                 } else {
                                     docs = `${parent_type} ${parent}()\n    ${line.trim()}`;
                                 }
-                                const navigation = new Navigation(source, m.substr(offset), filename, i + 1, docs, "", parent_type, start + offset);
+                                const navigation = new Navigation(source, m.substring(offset), filename, i + 1, docs, "", parent_type, start + offset);
                                 NavigationData.gameObjects['semantic'][key] = navigation;
-                                parent_defaults[`${parent_type}.${parent}.${m.substr(offset)}`] = navigation;
+                                parent_defaults[`${parent_type}.${parent}.${m.substring(offset)}`] = navigation;
 
                                 if (parent_type === 'store') {
                                     const pKey = `store.${parent}`;
-                                    const objKey = `${parent}.${m.substr(offset)}`;
+                                    const objKey = `${parent}.${m.substring(offset)}`;
                                     const navigation = new Navigation(source, objKey, filename, i + 1, docs, "", parent_type, start + offset);
 
                                     if (NavigationData.gameObjects['fields'][pKey] === undefined) {

@@ -365,7 +365,7 @@ function ExecuteRenpyCompile(): boolean {
 
 		let wf = getWorkspaceFolder();
 		if (wf.endsWith('/game')) {
-			wf = wf.substr(0, wf.length - 5);
+			wf = wf.substring(0, wf.length - 5);
 		}
 		const navData = getNavigationJsonFilepath();
 		//const args = `${wf} compile --json-dump ${navData}`;

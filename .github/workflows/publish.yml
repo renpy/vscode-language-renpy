@@ -3,8 +3,9 @@
 name: Publish Extension
 
 on:
-  release:
-    types: [created]
+  push:
+    tags:
+      - "v*"
 
 jobs:
   deploy:
@@ -13,9 +14,10 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
-          node-version: 14
+          node-version: 16
       - run: npm ci
       - name: Publish to Open VSX Registry
+        id: publishToOpenVSX
         uses: HaaLeo/publish-vscode-extension@v0
         with:
           pat: ${{ secrets.OVSX_TOKEN }}
@@ -24,3 +26,11 @@ jobs:
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
+          extensionFile: ${{ steps.publishToOpenVSX.outputs.vsixPath }}
+      - name: Create draft GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          draft: true
+          generateReleaseNotes: true
+          artifacts: "${{ steps.publishToOpenVSX.outputs.vsixPath }}"

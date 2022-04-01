@@ -1,0 +1,13 @@
+# Dependabot updates
+# Docs: https://docs.github.com/es/code-security/dependabot/dependabot-version-updates/configuring-dependabot-version-updates
+
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: monthly
+    assignees:
+      - LuqueDaniel
+    commit-message:
+      prefix: deps

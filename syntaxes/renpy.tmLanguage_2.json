@@ -5,14 +5,15 @@
   "patterns": [
     { "include": "#comments" },
     { "include": "#python-statements" },
-    { "include": "#expressions" }
+    { "include": "#expressions" },
+    { "include": "#renpy-keywords"}
   ],
   "repository": {
     "python-statements": {
       "name": "embedded.python",
       "patterns": [
         {
-          "comments": "Renpy python block",
+          "comments": "[TODO: REDO] Renpy python block",
           "name": "embedded.python.block",
           "begin": "^(init\\s-?\\d?\\s?)?(python:)",
           "beginCaptures": {
@@ -29,19 +30,23 @@
           "begin": "(?<=(\\$|define|default)\\s)",
           "end": "\\R$",
           "patterns": [{ "include": "source.python" }]
-        },
-        {
-          "comment": "Match renpy python one line statements",
-          "match": "^\\s*(\\$|define|default)\\s",
-          "name": "keyword.renpy"
         }
       ]
     },
     "renpy-keywords": {
       "patterns": [
+        { "match": "\\$", "name": "keyword.renpy" },
         {
-          "match": "\\b(init|python)\\b",
-          "name": "keyword.control.renpy"
+          "match": "\\b(\\$|init|python|early|in|define|default)\\b",
+          "name": "keyword.renpy"
+        },
+        {
+          "match": "(?<=init\\s)-?\\d+",
+          "name": "constant.numeric"
+        },
+        {
+          "match": "(?<=in\\s)\\w+",
+          "name": "entity.name.namespace"
         }
       ]
     },

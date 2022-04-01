@@ -164,7 +164,7 @@
         "test": "npm run compile && node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "@types/vscode": "^1.65.0",
+        "@types/vscode": "^1.66.0",
         "@types/mocha": "^9.1.0",
         "@types/node": "^17.0.23",
         "tslint": "^6.1.1",

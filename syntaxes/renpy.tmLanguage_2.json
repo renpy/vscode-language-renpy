@@ -14,19 +14,19 @@
       "patterns": [
         {
           "comments": "[TODO: REDO] Renpy python block",
-          "name": "embedded.python.block",
-          "begin": "^(init\\s-?\\d?\\s?)?(python:)",
+          "name": "meta.embedded.python.block",
+          "begin": "^(\\s*)(init\\s-?\\d*\\s?)?(python(\\searly)?(\\sin\\s\\w+)?)",
           "beginCaptures": {
             "0": {
               "patterns": [{ "include": "#renpy-keywords" }]
             }
           },
-          "end": "^(?=\\S)",
+          "end": "^\\1(?=\\S)|^(?=\\S)",
           "patterns": [{ "include": "source.python" }]
         },
         {
           "comment": "Match begin and end of python one line statements",
-          "name": "embedded.python.one-line",
+          "name": "meta.embedded.python.single-line",
           "begin": "(?<=(\\$|define|default)\\s)",
           "end": "\\R$",
           "patterns": [{ "include": "source.python" }]

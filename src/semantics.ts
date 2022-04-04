@@ -9,7 +9,7 @@ import { stripWorkspaceFromFile } from "./workspace";
 export function getSemanticTokens(document: TextDocument, legend: SemanticTokensLegend): SemanticTokens {
     const tokensBuilder = new SemanticTokensBuilder(legend);
     const rxKeywordList = /\s*(screen|label|transform|def|class)\s+/;
-    const rxParameterList = /\s*(screen|label|transform|def|class)\s+([a-zA-Z0-9_.]+)\((.*)\):|\s*(label)\s+([a-zA-Z0-9_.]+)\s*:|^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):|^(python)\s+early\s+in\s+(\w+):|\s*(class)\s+([a-zA-Z0-9_]+)\s*/s;
+    const rxParameterList = /\s*(screen|label|transform|def|class)\s+([a-zA-Z_]\w+)\s*\((.*)\)\s*:|\s*(label)\s+([a-zA-Z0-9_.]+)\s*:|^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):|^(python)\s+early\s+in\s+(\w+):|\s*(class)\s+([a-zA-Z0-9_]+)\s*/s;
     const rxVariableDefines = /^\s*(default|define)\s+([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const rxPersistentDefines = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const filename = stripWorkspaceFromFile(document.uri.path);

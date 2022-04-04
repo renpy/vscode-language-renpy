@@ -2,9 +2,14 @@
 
 ## 2.0.7 ()
 
+### Changes and improvements
+
+* Improved detection of `label`, `transform`, `screen`, `def` and `class` in some special cases.
+* Update dev dependencies.
+
 ### Fixes
 
-* Fixes `Visual Studio Code.edit.py` opening files containing spaces in the path [#79](https://github.com/LuqueDaniel/vscode-language-renpy/issues/79)
+* Fix `Visual Studio Code.edit.py` opening files containing spaces in the path [#79](https://github.com/LuqueDaniel/vscode-language-renpy/issues/79)
 
 ## 2.0.6 (2022/02/22)
 

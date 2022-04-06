@@ -20,6 +20,12 @@ on:
   schedule:
     - cron: '00 00 1 * *'
 
+permissions:
+  security-events: write
+
+paths:
+  - src
+
 jobs:
   analyze:
     name: Analyze

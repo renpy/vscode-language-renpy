@@ -5,7 +5,8 @@
 ### Changes and improvements
 
 * Improved detection of `label`, `transform`, `screen`, `def` and `class` in some special cases.
-* Update dev dependencies.
+* Updated dev dependencies.
+* Updated README.md
 
 ### Fixes
 

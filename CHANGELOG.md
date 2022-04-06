@@ -1,5 +1,9 @@
 # Changelog
 
+## 2.0.8 (2022/04/07)
+
+Fixes a error in our publishing workflow.
+
 ## 2.0.7 (2022/04/07)
 
 ### Changes and improvements

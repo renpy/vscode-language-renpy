@@ -1,177 +1,185 @@
 {
-    "name": "languague-renpy",
-    "displayName": "Ren'Py Language",
-    "description": "Adds syntax highlighting and snippets to Ren'Py files in Visual Studio Code",
-    "version": "2.0.6",
-    "publisher": "LuqueDaniel",
-    "license": "MIT",
-    "homepage": "https://github.com/LuqueDaniel/vscode-language-renpy",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/LuqueDaniel/vscode-language-renpy"
-    },
-    "bugs": {
-        "url": "https://github.com/LuqueDaniel/vscode-language-renpy/issues"
-    },
-    "icon": "icon.png",
-    "galleryBanner": {
-        "color": "#734675",
-        "theme": "dark"
-    },
-    "keywords": [
-        "python",
-        "renpy"
-    ],
-    "categories": [
-        "Programming Languages",
-        "Snippets"
-    ],
-    "engines": {
-        "vscode": "^1.23.0"
-    },
-    "capabilities": {
-        "untrustedWorkspaces": {
-            "supported": true
-        }
-    },
-    "activationEvents": [
-        "*"
-    ],
-    "main": "./out/extension",
-    "contributes": {
-        "languages": [
-            {
-                "id": "renpy",
-                "aliases": [
-                    "Ren'Py",
-                    "renpy"
-                ],
-                "extensions": [
-                    ".rpy",
-                    ".rpym"
-                ],
-                "configuration": "./language-configuration.json"
-            }
-        ],
-        "grammars": [
-            {
-                "language": "renpy",
-                "scopeName": "source.renpy",
-                "path": "./syntaxes/renpy.tmLanguage_2.json",
-                "embeddedLanguages": {
-                    "meta.embedded.python": "python"
-                }
-            }
-        ],
-        "snippets": [
-            {
-                "language": "renpy",
-                "path": "./snippets/snippets.json"
-            }
-        ],
-        "commands": [
-            {
-                "command": "renpy.refreshNavigationData",
-                "title": "Refresh Ren'Py Navigation Data"
-            },
-            {
-                "command": "renpy.compileNavigationData",
-                "title": "Compile Ren'Py Navigation Data"
-            }
-            ,
-            {
-                "command": "renpy.refreshDiagnostics",
-                "title": "Refresh Ren'Py diagnostics for the active editor window"
-            }
-        ],
-        "configuration": [
-            {
-                "title": "Ren'Py",
-                "properties": {
-                    "renpy.excludeRpycFilesFromWorkspace": {
-                        "type": "boolean",
-                        "default": true,
-                        "description": "Exclude *.rpyc (compiled Ren'Py script) files from the workspace folder list. (This will add a .vscode settings file to your workspace.)"
-                    },
-                    "renpy.watchFoldersForChanges": {
-                        "type": "boolean",
-                        "default": false,
-                        "description": "Watch resource folders, such as images and audio, for file changes. (This may not be fully supported on all platforms.)"
-                    },
-                    "renpy.showAutomaticImagesInCompletion": {
-                        "type": "boolean",
-                        "default": true,
-                        "description": "Show Automatic Images in the displayable auto-completion list. If not checked (false), only images defined in the script will be shown. If checked (true), both script-defined images and images detected in the images folders will be shown."
-                    },
-                    "renpy.warnOnObsoleteMethods": {
-                        "type": "boolean",
-                        "default": true,
-                        "description": "Enable obsolete method warnings. If checked (true), obsolete methods (e.g., im.Crop) will be marked with a warning in the editor."
-                    },
-                    "renpy.warnOnUndefinedPersistents": {
-                        "type": "boolean",
-                        "default": true,
-                        "description": "Enable undefined persistent warnings. If checked (true), persistent variables will be marked with a warning in the editor if they haven't been defaulted/defined."
-                    },
-                    "renpy.warnOnUndefinedStoreVariables": {
-                        "type": "boolean",
-                        "default": true,
-                        "description": "Enable undefined store variable warnings. If checked (true), store variables will be marked with a warning in the editor if they haven't been defaulted/defined."
-                    },
-                    "renpy.warnOnReservedVariableNames": {
-                        "type": "boolean",
-                        "default": true,
-                        "description": "Enable reserved variable warnings. If checked (true), variables will be marked with an error in the editor if they are in the list of names reserved by Python."
-                    },
-                    "renpy.warnOnInvalidVariableNames": {
-                        "type": "string",
-                        "default": "Error",
-                        "enum": ["Error", "Warning", "Disabled"],
-                        "enumDescriptions": [
-                            "Display invalid variable name issues as errors",
-                            "Display invalid variable name issues as warnings",
-                            "Ignore invalid variable name issues"
-                        ],
-                        "description": "Enable invalid variable warnings. Variables must begin with a letter or number. They may contain a '_' but may not begin with '_'. If set to Warning or Error, variables will be flagged in the editor if they do not meet Ren'Py's specifications."
-                    },
-                    "renpy.warnOnIndentationAndSpacingIssues": {
-                        "type": "string",
-                        "default": "Error",
-                        "enum": ["Error", "Warning", "Disabled"],
-                        "enumDescriptions": [
-                            "Display indentation issues as errors",
-                            "Display indentation issues as warnings",
-                            "Ignore indentation issues"
-                        ],
-                        "description": "Enable indentation and inconsistent spacing checks. If set to Error or Warning, tab characters and inconsistent indentation spacing will be marked in the editor. If set to Disabled, indentation issues will be ignored."
-                    },
-                    "renpy.warnOnInvalidFilenameIssues": {
-                        "type": "string",
-                        "default": "Error",
-                        "enum": ["Error", "Warning", "Disabled"],
-                        "enumDescriptions": [
-                            "Display filename issues as errors",
-                            "Display filename issues as warnings",
-                            "Ignore filename issues"
-                        ],
-                        "description": "Enable filename checks. Filenames must begin with a letter or number, and may not begin with '00', as Ren'Py uses such files for its own purposes. If set to Error or Warning, documents will be marked in the editor if the document filename does not meet Ren'Py's specifications. If set to Disabled, filename issues will be ignored."
-                    }
-                }
-            }
-        ]
-    },
-    "scripts": {
-        "vscode:prepublish": "npm run compile",
-        "compile": "tsc -p ./",
-        "watch": "tsc -watch -p ./",
-        "test": "npm run compile && node ./node_modules/vscode/bin/test"
-    },
-    "devDependencies": {
-        "@types/vscode": "^1.65.0",
-        "@types/mocha": "^9.1.0",
-        "@types/node": "^17.0.23",
-        "tslint": "^6.1.1",
-        "typescript": "^4.6.3",
-        "vscode-test": "^1.6.1"
+  "name": "languague-renpy",
+  "displayName": "Ren'Py Language",
+  "description": "Adds rich support for the Ren'Py programming language to Visual Studio Code.",
+  "version": "2.0.8",
+  "publisher": "LuqueDaniel",
+  "license": "MIT",
+  "homepage": "https://github.com/LuqueDaniel/vscode-language-renpy",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LuqueDaniel/vscode-language-renpy"
+  },
+  "bugs": {
+    "url": "https://github.com/LuqueDaniel/vscode-language-renpy/issues"
+  },
+  "icon": "icon.png",
+  "galleryBanner": {
+    "color": "#734675",
+    "theme": "dark"
+  },
+  "keywords": [
+    "python",
+    "renpy"
+  ],
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "engines": {
+    "vscode": "^1.50.0"
+  },
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
     }
+  },
+  "activationEvents": [
+    "*"
+  ],
+  "main": "./out/extension",
+  "contributes": {
+    "languages": [
+      {
+        "id": "renpy",
+        "aliases": [
+          "Ren'Py",
+          "renpy"
+        ],
+        "extensions": [
+          ".rpy",
+          ".rpym"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "renpy",
+        "scopeName": "source.renpy",
+        "path": "./syntaxes/renpy.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "renpy",
+        "path": "./snippets/snippets.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "renpy.refreshNavigationData",
+        "title": "Refresh Ren'Py Navigation Data"
+      },
+      {
+        "command": "renpy.compileNavigationData",
+        "title": "Compile Ren'Py Navigation Data"
+      },
+      {
+        "command": "renpy.refreshDiagnostics",
+        "title": "Refresh Ren'Py diagnostics for the active editor window"
+      }
+    ],
+    "configuration": [
+      {
+        "title": "Ren'Py",
+        "properties": {
+          "renpy.excludeRpycFilesFromWorkspace": {
+            "type": "boolean",
+            "default": true,
+            "description": "Exclude *.rpyc (compiled Ren'Py script) files from the workspace folder list. (This will add a .vscode settings file to your workspace.)"
+          },
+          "renpy.watchFoldersForChanges": {
+            "type": "boolean",
+            "default": false,
+            "description": "Watch resource folders, such as images and audio, for file changes. (This may not be fully supported on all platforms.)"
+          },
+          "renpy.showAutomaticImagesInCompletion": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show Automatic Images in the displayable auto-completion list. If not checked (false), only images defined in the script will be shown. If checked (true), both script-defined images and images detected in the images folders will be shown."
+          },
+          "renpy.warnOnObsoleteMethods": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable obsolete method warnings. If checked (true), obsolete methods (e.g., im.Crop) will be marked with a warning in the editor."
+          },
+          "renpy.warnOnUndefinedPersistents": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable undefined persistent warnings. If checked (true), persistent variables will be marked with a warning in the editor if they haven't been defaulted/defined."
+          },
+          "renpy.warnOnUndefinedStoreVariables": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable undefined store variable warnings. If checked (true), store variables will be marked with a warning in the editor if they haven't been defaulted/defined."
+          },
+          "renpy.warnOnReservedVariableNames": {
+            "type": "boolean",
+            "default": true,
+            "description": "Enable reserved variable warnings. If checked (true), variables will be marked with an error in the editor if they are in the list of names reserved by Python."
+          },
+          "renpy.warnOnInvalidVariableNames": {
+            "type": "string",
+            "default": "Error",
+            "enum": [
+              "Error",
+              "Warning",
+              "Disabled"
+            ],
+            "enumDescriptions": [
+              "Display invalid variable name issues as errors",
+              "Display invalid variable name issues as warnings",
+              "Ignore invalid variable name issues"
+            ],
+            "description": "Enable invalid variable warnings. Variables must begin with a letter or number. They may contain a '_' but may not begin with '_'. If set to Warning or Error, variables will be flagged in the editor if they do not meet Ren'Py's specifications."
+          },
+          "renpy.warnOnIndentationAndSpacingIssues": {
+            "type": "string",
+            "default": "Error",
+            "enum": [
+              "Error",
+              "Warning",
+              "Disabled"
+            ],
+            "enumDescriptions": [
+              "Display indentation issues as errors",
+              "Display indentation issues as warnings",
+              "Ignore indentation issues"
+            ],
+            "description": "Enable indentation and inconsistent spacing checks. If set to Error or Warning, tab characters and inconsistent indentation spacing will be marked in the editor. If set to Disabled, indentation issues will be ignored."
+          },
+          "renpy.warnOnInvalidFilenameIssues": {
+            "type": "string",
+            "default": "Error",
+            "enum": [
+              "Error",
+              "Warning",
+              "Disabled"
+            ],
+            "enumDescriptions": [
+              "Display filename issues as errors",
+              "Display filename issues as warnings",
+              "Ignore filename issues"
+            ],
+            "description": "Enable filename checks. Filenames must begin with a letter or number, and may not begin with '00', as Ren'Py uses such files for its own purposes. If set to Error or Warning, documents will be marked in the editor if the document filename does not meet Ren'Py's specifications. If set to Disabled, filename issues will be ignored."
+          }
+        }
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.50.0",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "^17.0.23",
+    "tslint": "^6.1.1",
+    "typescript": "^4.6.3",
+    "vscode-test": "^1.6.1"
+  }
 }

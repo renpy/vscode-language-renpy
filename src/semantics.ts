@@ -27,7 +27,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
         let line = document.lineAt(i).text;
 
         // check if we've outdented out of the parent block
-        if (line.length > 0 && line.length - line.trimLeft().length <= indent_level) {
+        if (line.length > 0 && line.length - line.trimStart().length <= indent_level) {
             parent = '';
             parent_args = [];
             parent_local = [];
@@ -74,17 +74,17 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
         if (matches) {
             // this line has a parameter list - tokenize the parameter ranges
             if (matches[1] !== 'class' && matches[3] && matches[3].length > 0 && matches[2] !== '_') {
-                indent_level = line.length - line.trimLeft().length;
+                indent_level = line.length - line.trimStart().length;
                 parent = matches[2];
                 parent_type = matches[1];
                 parent_line = i + 1;
                 let start = line.indexOf('(') + 1;
                 const split = splitParameters(matches[3], false);
                 for (let m of split) {
-                    const offset = m.length - m.trimLeft().length;
+                    const offset = m.length - m.trimStart().length;
                     let length = m.length;
                     if (m.indexOf('=') > 0) {
-                        length = m.split('=')[0].trimRight().length;
+                        length = m.split('=')[0].trimEnd().length;
                     }
                     const range = new Range(i, start + offset, i, start + length);
                     if (m.substring(offset, length) === 'self' || m.substring(offset, length) === 'cls') {
@@ -113,7 +113,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                 }
             } else if (matches[1] === 'screen' || matches[1] === 'def' || matches[1] === 'class' || matches[11] === 'class') {
                 // parent screen or function def with no parameters
-                indent_level = line.length - line.trimLeft().length;
+                indent_level = line.length - line.trimStart().length;
                 parent = matches[2] || matches[12];
                 parent_type = matches[1] || matches[11];
                 parent_line = i;
@@ -132,14 +132,14 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                     updateNavigationData(matches[1], matches[2], filename, i);
                 }
             } else if (matches[4] === 'label') {
-                indent_level = line.length - line.trimLeft().length;
+                indent_level = line.length - line.trimStart().length;
                 const context = i - 1 < 0 ? undefined : getCurrentContext(document, new Position(i - 1, indent_level));
                 if (context === undefined) {
                     updateNavigationData('label', matches[5], filename, i);
                 }
             } else if ((matches[6] === 'init' && matches[8] !== undefined) || (matches[9] === 'python' && matches[10] !== undefined)) {
                 // named store (init python in storename)
-                indent_level = line.length - line.trimLeft().length;
+                indent_level = line.length - line.trimStart().length;
                 if (matches[10] !== undefined) {
                     parent = matches[10];
                 } else {
@@ -251,7 +251,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                             let start = line.indexOf(matches[2]);
                             const split = matches[2].split(',');
                             for (let m of split) {
-                                const offset = m.length - m.trimLeft().length;
+                                const offset = m.length - m.trimStart().length;
                                 if (parent_args.includes(m.substring(offset))) {
                                     continue;
                                 }

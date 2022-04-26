@@ -94,8 +94,31 @@ screen hello_title():
             linear 0.5 alpha 1.0
 
 # sample python code
+init:
+    "Renpy code block"
+    
+python:
+    renpy.pause(delay)
+
+python in X:
+    renpy.pause(delay)
+
+python hide:
+    renpy.pause(delay)
+
+python early:
+    renpy.pause(delay)
 
 init python:
+    renpy.pause(delay)
+
+init -1 python in N:
+    renpy.pause(delay)
+
+init 99 python hide:
+    renpy.pause(delay)
+
+init python hide early in Namespace:
 
     def sampleFunction(name, delay, position=(0,0)):
         """

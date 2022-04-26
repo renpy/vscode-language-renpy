@@ -21,26 +21,85 @@
     },
 
     "python-statements": {
-      "name": "embedded.python",
       "patterns": [
         {
-          "comments": "[TODO: REDO] Renpy python block",
-          "name": "meta.embedded.python.block",
-          "begin": "^(\\s*)(init\\s-?\\d*\\s?)?(python(\\searly)?(\\sin\\s\\w+)?)",
+          "comment": "Renpy python block",
+          "contentName": "meta.embedded.block.python",
+
+          "begin": "(^[ \\t]+)?\\b(?:(init) (?:(-)?(\\d*) )?)?(python)([\\w \\t]*)(:)",
           "beginCaptures": {
-            "0": {
-              "patterns": [{ "include": "#renpy-keywords" }]
+            "1": {
+              "name": "punctuation.whitespace.embedded.leading.python"
+            },
+            "2": {
+              "comment": "init",
+              "name": "keyword.renpy"
+            },
+            "3": {
+              "comment": "- sign",
+              "name": "keyword.operator.arithmetic.python"
+            },
+            "4": {
+              "comment": "init priority numeric",
+              "name": "constant.numeric.dec.python"
+            },
+            "5": {
+              "comment": "python",
+              "name": "keyword.renpy"
+            },
+            "6": {
+              "comment": "Statement options",
+              "name": "meta.embedded.block.python.options",
+
+              "patterns": [
+                {
+                  "comment": "in statement",
+                  "match": "(?: (in) (\\w+))",
+                  "captures":
+                  {
+                    "1": {
+                      "comment": "in",
+                      "name": "keyword.renpy"
+                    },
+                    "2": {
+                      "comment": "namespace",
+                      "name": "entity.name.namespace"
+                    }
+                  }
+                },
+                {
+                  "comment": "keywords",
+                  "match": "\\b(hide|early|in)\\b",
+                  "name": "keyword.renpy"
+                }
+              ]
+            },
+            "7": {
+              "name": "punctuation.section.python.begin.renpy"
             }
           },
-          "end": "^\\1(?=\\S)|^(?=\\S)",
+          "end":"^(?!(\\1[ \\t]+)|($))",
           "patterns": [{ "include": "source.python" }]
         },
         {
           "comment": "Match begin and end of python one line statements",
-          "name": "meta.embedded.python.single-line",
-          "begin": "(?<=(\\$|define|default)\\s)",
+          "contentName": "meta.embedded.line.python",
+          "begin": "(\\$|\\bdefine|\\bdefault)(?=\\s)",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.renpy"
+            }
+          },
           "end": "\\R$",
-          "patterns": [{ "include": "source.python" }]
+
+          "patterns": [
+            {
+              "comment": "Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)",
+              "match": "(?<!\\.)\\b(\\w+)(?=\\s=\\s)",
+              "name": "variable.other.python"
+            },
+            { "include": "source.python" }
+          ]
         }
       ]
     },

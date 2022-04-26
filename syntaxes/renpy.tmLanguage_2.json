@@ -11,7 +11,7 @@
       "patterns": [
         { "include": "#comments" },
         { "include": "#python-statements" },
-        { "include": "#renpy-keywords" }
+        { "include": "#keywords" }
       ]
     },
     "expressions": {
@@ -103,23 +103,37 @@
         }
       ]
     },
-    "renpy-keywords": {
+
+    "keywords": {
       "patterns": [
-        { "match": "\\$", "name": "keyword.renpy" },
         {
-          "match": "\\b(\\$|init|python|early|in|define|default)\\b",
+          "comment": "Python statement keywords",
+          "match": "\\b(init|python|hide|early|in|define|default)\\b",
           "name": "keyword.renpy"
         },
         {
-          "match": "(?<=init\\s)-?\\d+",
-          "name": "constant.numeric"
+          "comment": "Renpy keywords",
+          "match": "\\b(play|pause|screen|scene|show|image|transform)\\b",
+          "name": "keyword.other.renpy"
         },
         {
-          "match": "(?<=in\\s)\\w+",
-          "name": "entity.name.namespace"
+          "comment": "Conditional control flow keywords",
+          "match": "\\b(if|elif|else)\\b",
+          "name": "keyword.control.conditional.renpy" 
+        },
+        {
+          "comment": "Control flow keywords",
+          "match": "\\b(for|while|pass|return|menu|label|jump|call)\\b",
+          "name": "keyword.control.renpy"
+        },
+        {
+          "comment": "[TODO: Should probably only be a keyword in the expression]Renpy sub expression keywords",
+          "match": "\\b(set|expression|pass|sound|at|with|from)\\b",
+          "name": "keyword.other.renpy"
         }
       ]
     },
+
     "codetags": {
       "match": "(?:\\b(NOTE|XXX|HACK|FIXME|BUG|TODO)\\b)",
       "captures": { "1": { "name": "keyword.codetag.notation.renpy" } }

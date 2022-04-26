@@ -25,7 +25,7 @@
       "patterns": [
         {
           "comment": "Renpy python block",
-          "contentName": "meta.embedded.block.python",
+          "contentName": "source.python meta.embedded.block.python",
 
           "begin": "(^[ \\t]+)?\\b(?:(init) (?:(-)?(\\d*) )?)?(python)([\\w \\t]*)(:)",
           "beginCaptures": {
@@ -84,7 +84,7 @@
         },
         {
           "comment": "Match begin and end of python one line statements",
-          "contentName": "meta.embedded.line.python",
+          "contentName": "source.python meta.embedded.line.python",
           "begin": "(\\$|\\bdefine|\\bdefault)(?=\\s)",
           "beginCaptures": {
             "1": {
@@ -116,7 +116,7 @@
       "patterns": [
         {
           "name": "meta.label.renpy",
-          "begin": "(^[ \\t]+)?\\b(label) +([^_\\d]\\w*)(?= *:)",
+          "begin": "(^[ \\t]+)?\\b(label) +([^_\\d]\\w*)(?=\\s*:)",
           "beginCaptures": {
             "1": {
 							"name": "punctuation.whitespace.label.leading.renpy"
@@ -144,7 +144,7 @@
         {
           "name": "meta.menu.renpy",
           "contentName": "meta.block.menu.renpy",
-          "begin": "^([ \\t]+)?\\b(menu) *(:)",
+          "begin": "^([ \\t]+)?\\b(menu)\\s*(:)",
           "beginCaptures": {
             "1": {
 							"name": "punctuation.whitespace.menu.leading.renpy"
@@ -172,7 +172,7 @@
         {
           "name": "meta.menu-option.renpy",
           "contentName": "meta.block.menu-option.renpy",
-          "begin": "(^[ \\t]+)?((?:\".+\")|(?:'.+')|(?:\"\"\".+\"\"\")) *(:)",
+          "begin": "(^[ \\t]+)?((?:\".+\")|(?:'.+')|(?:\"\"\".+\"\"\"))\\s*(:)",
           "beginCaptures": {
             "1": {
 							"name": "punctuation.whitespace.menu-option.leading.renpy"
@@ -313,31 +313,228 @@
     },
     "constant_placeholder": {
       "patterns": [
-        {
-          "comment": "String tag",
-          "name": "meta.braces.renpy constant.other.placeholder.tags.renpy",
-          "contentName": "meta.tag.renpy",
-          "begin": "{",
-          "beginCaptures": {
-            "0": { "name": "punctuation.section.braces.begin.renpy" }
-          },
-          "end": "}",
-          "endCaptures": {
-            "0": { "name": "punctuation.section.braces.end.renpy" }
-          }
-        },
+        { "include": "#string_tags"},
         {
           "comment": "Python constant placeholder",
           "name": "meta.brackets.renpy constant.other.placeholder.tags.renpy",
           "contentName": "source.python",
           "begin": "\\[",
           "beginCaptures": {
-            "0": { "name": "punctuation.section.brackets.begin.renpy" }
+            "0": { "name": "punctuation.definition.tag.begin.renpy" }
           },
           "end": "\\]",
           "endCaptures": {
-            "0": { "name": "punctuation.section.brackets.end.renpy" }
+            "0": { "name": "punctuation.definition.tag.end.renpy" }
           }
+        }
+      ]
+    },
+
+    "string_tags": {
+      "patterns": [
+        {
+          "comment": "Italic string",
+          "name": "meta.format.string.renpy",
+          "begin": "(?i)({)(i)(?=\\s|})",
+          "beginCaptures": {
+            "0": {
+              "name": "meta.tag.metadata.style.start.renpy"
+            },
+            "1": {
+              "name": "punctuation.definition.tag.begin.renpy"
+            },
+            "2": {
+              "name": "entity.name.tag.renpy"
+            }
+          },
+          "end": "(?i)({/)(i)\\s*(})",
+          "endCaptures": {
+            "0": {
+              "name": "meta.tag.metadata.style.end.renpy"
+            },
+            "1": {
+              "name": "punctuation.definition.tag.begin.renpy"
+            },
+            "2": {
+              "name": "entity.name.tag.renpy"
+            },
+            "3": {
+              "name": "punctuation.definition.tag.end.renpy"
+            }
+          },
+          "patterns": [
+            {
+              "name": "meta.tag.attributes.start.renpy",
+              "begin": "\\G",
+              "end": "(})",
+              "captures": {
+                "1": {
+                  "name": "punctuation.definition.tag.end.renpy"
+                }
+              }
+            },
+            {
+              "begin": "(?!\\G)",
+              "end": "(?={/(?i:i))",
+              "name": "markup.italic.renpy",
+              "patterns": [
+                  { "include": "#escaped_placeholder" },
+                  { "include": "#constant_placeholder" },
+                  { "include": "#escaped_char" }
+              ]
+            }
+          ]
+        },
+        {
+          "comment": "Bold string",
+          "name": "meta.format.string.renpy",
+          "begin": "(?i)({)(b)(?=\\s|})",
+          "beginCaptures": {
+            "0": {
+              "name": "meta.tag.metadata.style.start.renpy"
+            },
+            "1": {
+              "name": "punctuation.definition.tag.begin.renpy"
+            },
+            "2": {
+              "name": "entity.name.tag.renpy"
+            }
+          },
+          "end": "(?i)({/)(b)\\s*(})",
+          "endCaptures": {
+            "0": {
+              "name": "meta.tag.metadata.style.end.renpy"
+            },
+            "1": {
+              "name": "punctuation.definition.tag.begin.renpy"
+            },
+            "2": {
+              "name": "entity.name.tag.renpy"
+            },
+            "3": {
+              "name": "punctuation.definition.tag.end.renpy"
+            }
+          },
+          "patterns": [
+            {
+              "name": "meta.tag.attributes.start.renpy",
+              "begin": "\\G",
+              "end": "(})",
+              "captures": {
+                "1": {
+                  "name": "punctuation.definition.tag.end.renpy"
+                }
+              }
+            },
+            {
+              "begin": "(?!\\G)",
+              "end": "(?={/(?i:b))",
+              "name": "markup.bold.renpy",
+              "patterns": [
+                  { "include": "#escaped_placeholder" },
+                  { "include": "#constant_placeholder" },
+                  { "include": "#escaped_char" }
+              ]
+            }
+          ]
+        },
+        {
+          "comment": "Underline string",
+          "name": "meta.format.string.renpy",
+          "begin": "(?i)({)(u)(?=\\s|})",
+          "beginCaptures": {
+            "0": {
+              "name": "meta.tag.metadata.style.start.renpy"
+            },
+            "1": {
+              "name": "punctuation.definition.tag.begin.renpy"
+            },
+            "2": {
+              "name": "entity.name.tag.renpy"
+            }
+          },
+          "end": "(?i)({/)(u)\\s*(})",
+          "endCaptures": {
+            "0": {
+              "name": "meta.tag.metadata.style.end.renpy"
+            },
+            "1": {
+              "name": "punctuation.definition.tag.begin.renpy"
+            },
+            "2": {
+              "name": "entity.name.tag.renpy"
+            },
+            "3": {
+              "name": "punctuation.definition.tag.end.renpy"
+            }
+          },
+          "patterns": [
+            {
+              "name": "meta.tag.attributes.start.renpy",
+              "begin": "\\G",
+              "end": "(})",
+              "captures": {
+                "1": {
+                  "name": "punctuation.definition.tag.end.renpy"
+                }
+              }
+            },
+            {
+              "begin": "(?!\\G)",
+              "end": "(?={/(?i:u))",
+              "name": "markup.underline.renpy",
+              "patterns": [
+                  { "include": "#escaped_placeholder" },
+                  { "include": "#constant_placeholder" },
+                  { "include": "#escaped_char" }
+              ]
+            }
+          ]
+        },
+        {
+          "comment": "Other tagged string",
+          "name": "meta.format.string.renpy",
+          "contentName": "meta.tag.custom.content.renpy",
+          
+          "begin": "(?i)({)(\\w*)([^}]*)(})",
+          "beginCaptures": {
+            "0":{
+              "name": "meta.tag.metadata.style.start.renpy"
+            },
+            "1": {
+              "name": "punctuation.definition.tag.begin.renpy"
+            },
+            "2": {
+              "name": "entity.name.tag.renpy"
+            },
+            "3": {
+              "name": "meta.tag.attributes.start.renpy"
+            },
+            "4": {
+              "name": "punctuation.definition.tag.end.renpy"
+            }
+          },
+          
+          "end": "({\/)(\\2)(})",
+          "endCaptures": {
+            "0":{
+              "name": "meta.tag.metadata.style.end.renpy"
+            },
+            "1": {
+              "name": "punctuation.definition.tag.begin.renpy"
+            },
+            "2": {
+              "name": "entity.name.tag.renpy"
+            },
+            "3": {
+              "name": "punctuation.definition.tag.end.renpy"
+            }
+          },
+          "patterns": [
+              { "include": "#escaped_placeholder" },
+              { "include": "#constant_placeholder" },
+              { "include": "#escaped_char" }
+          ]
         },
         {
           "comment": "Self-closing string tag",
@@ -345,8 +542,8 @@
           "contentName": "meta.tag.self-closing.renpy",
           "match": "({)[^}]*(})",
           "captures": {
-            "1": { "name": "punctuation.section.braces.begin.renpy" },
-            "2": { "name": "punctuation.section.braces.end.renpy" }
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "punctuation.definition.tag.end.renpy" }
           }
         }
       ]

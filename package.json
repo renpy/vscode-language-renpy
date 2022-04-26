@@ -57,7 +57,11 @@
       {
         "language": "renpy",
         "scopeName": "source.renpy",
-        "path": "./syntaxes/renpy.tmLanguage_2.json"
+        "path": "./syntaxes/renpy.tmLanguage_2.json",
+        "embeddedLanguages": {
+          "meta.embedded.line.python": "python",
+          "meta.embedded.block.python": "python"
+        }
       }
     ],
     "snippets": [

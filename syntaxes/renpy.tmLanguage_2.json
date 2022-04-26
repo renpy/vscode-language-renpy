@@ -107,7 +107,8 @@
 
     "renpy-statements": {
       "patterns": [
-        { "include": "#label" }
+        { "include": "#label" },
+        { "include": "#menu" }
       ]
     },
 
@@ -134,6 +135,64 @@
               "name": "punctuation.section.label.begin.renpy"
             }
           }
+        }
+      ]
+    },
+
+    "menu": {
+      "patterns": [
+        {
+          "name": "meta.menu.renpy",
+          "contentName": "meta.block.menu.renpy",
+          "begin": "^([ \\t]+)?\\b(menu) *(:)",
+          "beginCaptures": {
+            "1": {
+							"name": "punctuation.whitespace.menu.leading.renpy"
+						},
+            "2": { 
+              "name": "keyword.control.renpy" 
+            },
+            "3": {
+              "name": "punctuation.section.menu.begin.renpy"
+            },
+            "4": {
+              "name": "meta.block.menu.renpy"
+            }
+          },
+          "end":"^(?!(\\1[ \\t]+)|($))",
+          "patterns": [
+            { "include": "#strings" },
+            { "include": "#menu-option" }
+          ]
+        }
+      ]
+    },
+    "menu-option": {
+      "patterns": [
+        {
+          "name": "meta.menu-option.renpy",
+          "contentName": "meta.block.menu-option.renpy",
+          "begin": "(^[ \\t]+)?((?:\".+\")|(?:'.+')|(?:\"\"\".+\"\"\")) *(:)",
+          "beginCaptures": {
+            "1": {
+							"name": "punctuation.whitespace.menu-option.leading.renpy"
+						},
+            "2": {
+              "name": "meta.choice.renpy",
+              "patterns": [
+                { "include": "#strings" }
+              ]
+            },
+            "3": { 
+              "name": "punctuation.section.menu-option.begin.renpy"
+            }
+          },
+          "end":"^(?!(\\1[ \\t]+)|($))",
+
+          "patterns": [
+            { "include": "#statements" },
+            { "include": "#expressions" }
+          ]
         }
       ]
     },

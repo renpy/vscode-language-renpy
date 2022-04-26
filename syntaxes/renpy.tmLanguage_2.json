@@ -10,6 +10,7 @@
     "statements": {
       "patterns": [
         { "include": "#comments" },
+        { "include": "#renpy-statements" },
         { "include": "#python-statements" },
         { "include": "#keywords" }
       ]
@@ -100,6 +101,39 @@
             },
             { "include": "source.python" }
           ]
+        }
+      ]
+    },
+
+    "renpy-statements": {
+      "patterns": [
+        { "include": "#label" }
+      ]
+    },
+
+    "label": {
+      "patterns": [
+        {
+          "name": "meta.label.renpy",
+          "begin": "(^[ \\t]+)?\\b(label) +([^_\\d]\\w*)(?= *:)",
+          "beginCaptures": {
+            "1": {
+							"name": "punctuation.whitespace.label.leading.renpy"
+						},
+            "2": { 
+              "name": "keyword.control.renpy" 
+            },
+            "3":{
+              "name": "entity.name.function.renpy"
+            }
+          },
+          
+          "end": "(:|(?=[#'\"\\n]))",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.section.label.begin.renpy"
+            }
+          }
         }
       ]
     },

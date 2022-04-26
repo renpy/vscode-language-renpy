@@ -3,12 +3,23 @@
   "scopeName": "source.renpy",
   "firstLineMatch": "^#!/.*\\brenpy\\b",
   "patterns": [
-    { "include": "#comments" },
-    { "include": "#python-statements" },
-    { "include": "#expressions" },
-    { "include": "#renpy-keywords"}
+    { "include": "#statements" },
+    { "include": "#expressions" }
   ],
   "repository": {
+    "statements": {
+      "patterns": [
+        { "include": "#comments" },
+        { "include": "#python-statements" },
+        { "include": "#renpy-keywords" }
+      ]
+    },
+    "expressions": {
+      "patterns": [
+        { "include": "#strings" }
+      ]
+    },
+
     "python-statements": {
       "name": "embedded.python",
       "patterns": [
@@ -63,9 +74,7 @@
       "end": "($)",
       "patterns": [{ "include": "#codetags" }]
     },
-    "expressions": {
-      "patterns": [{ "include": "#strings" }]
-    },
+    
     "strings": {
       "patterns": [
         { "include": "#string-quoted-double" },

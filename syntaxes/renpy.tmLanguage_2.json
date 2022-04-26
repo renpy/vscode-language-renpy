@@ -120,8 +120,8 @@
             "1": {
               "name": "punctuation.whitespace.label.leading.renpy"
             },
-            "2": { 
-              "name": "keyword.renpy storage.type.function.renpy" 
+            "2": {
+              "name": "keyword.renpy storage.type.function.renpy"
             },
             "3":{
               "name": "meta.label.renpy",
@@ -138,7 +138,7 @@
               "name": "punctuation.section.label.begin.renpy"
             }
           },
-          
+
           "end": "(:|(?=[#'\"\\n]))",
           "endCaptures": {
             "1": {
@@ -164,7 +164,7 @@
         {
           "comment": "Conditional control flow keywords",
           "match": "\\b(if|elif|else)\\b",
-          "name": "keyword.control.conditional.renpy" 
+          "name": "keyword.control.conditional.renpy"
         },
         {
           "comment": "Control flow keywords",
@@ -179,7 +179,7 @@
       ]
     },
 
-    "codetags": {
+    "code-tags": {
       "match": "(?:\\b(NOTE|XXX|HACK|FIXME|BUG|TODO)\\b)",
       "captures": { "1": { "name": "keyword.codetag.notation.renpy" } }
     },
@@ -190,9 +190,9 @@
         "1": { "name": "punctuation.definition.comment.renpy" }
       },
       "end": "($)",
-      "patterns": [{ "include": "#codetags" }]
+      "patterns": [{ "include": "#code-tags" }]
     },
-    
+
     "strings": {
       "patterns": [
         { "include": "#string-quoted-double" },
@@ -200,11 +200,115 @@
         { "include": "#string-quoted-back" }
       ]
     },
+
+    "escaped_placeholder": {
+      "match": "\\{\\{|\\[\\[",
+      "name": "constant.character.escape.placeholder.python.renpy"
+    },
+    "escaped_char": {
+      "match": "(\\\\x[0-9A-F]{2})|(\\\\[0-7]{3})|(\\\\\\n)|(\\\\\\\\)|(\\\\\\\")|(\\\\')|(\\\\a)|(\\\\b)|(\\\\f)|(\\\\n)|(\\\\r)|(\\\\t)|(\\\\v)",
+      "captures": {
+        "1": {
+          "name": "constant.character.escape.hex.python.renpy"
+        },
+        "2": {
+          "name": "constant.character.escape.octal.python.renpy"
+        },
+        "3": {
+          "name": "constant.character.escape.newline.python.renpy"
+        },
+        "4": {
+          "name": "constant.character.escape.backlash.python.renpy"
+        },
+        "5": {
+          "name": "constant.character.escape.double-quote.python.renpy"
+        },
+        "6": {
+          "name": "constant.character.escape.single-quote.python.renpy"
+        },
+        "7": {
+          "name": "constant.character.escape.bell.python.renpy"
+        },
+        "8": {
+          "name": "constant.character.escape.backspace.python.renpy"
+        },
+        "9": {
+          "name": "constant.character.escape.formfeed.python.renpy"
+        },
+        "10": {
+          "name": "constant.character.escape.linefeed.python.renpy"
+        },
+        "11": {
+          "name": "constant.character.escape.return.python.renpy"
+        },
+        "12": {
+          "name": "constant.character.escape.tab.python.renpy"
+        },
+        "13": {
+          "name": "constant.character.escape.vertical-tab.python.renpy"
+        }
+      }
+    },
+    "escaped_unicode_char": {
+      "match": "(\\\\U[0-9A-Fa-f]{8})|(\\\\u[0-9A-Fa-f]{4})|(\\\\N\\{[a-zA-Z ]+\\})",
+      "captures": {
+        "1": {
+          "name": "constant.character.escape.unicode.16-bit-hex.python.renpy"
+        },
+        "2": {
+          "name": "constant.character.escape.unicode.32-bit-hex.python.renpy"
+        },
+        "3": {
+          "name": "constant.character.escape.unicode.name.python.renpy"
+        }
+      }
+    },
+    "constant_placeholder": {
+      "patterns": [
+        {
+          "comment": "String tag",
+          "name": "meta.braces.renpy constant.other.placeholder.tags.renpy",
+          "contentName": "meta.tag.renpy",
+          "begin": "{",
+          "beginCaptures": {
+            "0": { "name": "punctuation.section.braces.begin.renpy" }
+          },
+          "end": "}",
+          "endCaptures": {
+            "0": { "name": "punctuation.section.braces.end.renpy" }
+          }
+        },
+        {
+          "comment": "Python constant placeholder",
+          "name": "meta.brackets.renpy constant.other.placeholder.tags.renpy",
+          "contentName": "source.python",
+          "begin": "\\[",
+          "beginCaptures": {
+            "0": { "name": "punctuation.section.brackets.begin.renpy" }
+          },
+          "end": "\\]",
+          "endCaptures": {
+            "0": { "name": "punctuation.section.brackets.end.renpy" }
+          }
+        },
+        {
+          "comment": "Self-closing string tag",
+          "name": "markup.underline meta.braces.renpy constant.other.placeholder.tags.renpy",
+          "contentName": "meta.tag.self-closing.renpy",
+          "match": "({)[^}]*(})",
+          "captures": {
+            "1": { "name": "punctuation.section.braces.begin.renpy" },
+            "2": { "name": "punctuation.section.braces.end.renpy" }
+          }
+        }
+      ]
+    },
+
     "string-quoted-double": {
       "patterns": [
         {
-          "comment": "double quoted block string",
-          "name": "string.quoted.double.block.renpy",
+          "comment": "Triple quoted block string",
+          "name": "string.quoted.triple.block.renpy",
           "begin": "(\"\"\")",
           "beginCaptures": {
             "0": { "name": "punctuation.definition.string.begin.renpy" }
@@ -212,11 +316,16 @@
           "end": "((?<=\"\"\")(\")\"\"|\"\"\")",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.renpy" },
-            "2": { "name": "meta.empty-string.double.block.renpy" }
-          }
+            "2": { "name": "meta.empty-string.triple.block.renpy" }
+          },
+          "patterns": [
+            { "include": "#escaped_placeholder" },
+            { "include": "#constant_placeholder" },
+            { "include": "#escaped_char" }
+          ]
         },
         {
-          "comment": "Dobule quoted single line string",
+          "comment": "Double quoted single line string",
           "name": "string.quoted.double.line.renpy",
           "begin": "(\")",
           "beginCaptures": {
@@ -227,7 +336,12 @@
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.double.renpy" },
             "3": { "name": "invalid.illegal.unclosed-string.renpy" }
-          }
+          },
+          "patterns": [
+            { "include": "#escaped_placeholder" },
+            { "include": "#constant_placeholder" },
+            { "include": "#escaped_char" }
+          ]
         }
       ]
     },
@@ -244,7 +358,12 @@
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.single.block.renpy" }
-          }
+          },
+          "patterns": [
+            { "include": "#escaped_placeholder" },
+            { "include": "#constant_placeholder" },
+            { "include": "#escaped_char" }
+          ]
         },
         {
           "comment": "Single quoted single line string",
@@ -258,7 +377,12 @@
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.single.renpy" },
             "3": { "name": "invalid.illegal.unclosed-string.renpy" }
-          }
+          },
+          "patterns": [
+            { "include": "#escaped_placeholder" },
+            { "include": "#constant_placeholder" },
+            { "include": "#escaped_char" }
+          ]
         }
       ]
     },
@@ -275,7 +399,12 @@
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.back.block.renpy" }
-          }
+          },
+          "patterns": [
+            { "include": "#escaped_placeholder" },
+            { "include": "#constant_placeholder" },
+            { "include": "#escaped_char" }
+          ]
         },
         {
           "comment": "Back quoted single line string",
@@ -289,7 +418,12 @@
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.back.renpy" },
             "3": { "name": "invalid.illegal.unclosed-string.renpy" }
-          }
+          },
+          "patterns": [
+            { "include": "#escaped_placeholder" },
+            { "include": "#constant_placeholder" },
+            { "include": "#escaped_char" }
+          ]
         }
       ]
     }

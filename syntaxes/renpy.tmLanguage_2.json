@@ -55,7 +55,7 @@
               "patterns": [
                 {
                   "comment": "in statement",
-                  "match": "(?: (in) (\\w+))",
+                  "match": "(?: (in) ([a-zA-Z_]\\w+))",
                   "captures":
                   {
                     "1": {
@@ -115,16 +115,27 @@
       "patterns": [
         {
           "name": "meta.label.renpy",
-          "begin": "(^[ \\t]+)?\\b(label) +([^_\\d]\\w*)(?= *:)",
+          "begin": "(^[ \\t]+)?\\b(label)\\s+([a-zA-Z_.]\\w*(?:\\(.*\\))?)(:)",
           "beginCaptures": {
             "1": {
-							"name": "punctuation.whitespace.label.leading.renpy"
-						},
+              "name": "punctuation.whitespace.label.leading.renpy"
+            },
             "2": { 
-              "name": "keyword.control.renpy" 
+              "name": "keyword.renpy storage.type.function.renpy" 
             },
             "3":{
-              "name": "entity.name.function.renpy"
+              "name": "meta.label.renpy",
+              "patterns": [
+                {
+                  "comment": "Function name",
+                  "match": "([a-zA-Z_.]\\w*)",
+                  "name": "entity.name.function.renpy"
+                },
+                { "include": "source.python#parameters" }
+              ]
+            },
+            "4": {
+              "name": "punctuation.section.label.begin.renpy"
             }
           },
           
@@ -147,7 +158,7 @@
         },
         {
           "comment": "Renpy keywords",
-          "match": "\\b(play|pause|screen|scene|show|image|transform)\\b",
+          "match": "\\b(label|play|pause|screen|scene|show|image|transform)\\b",
           "name": "keyword.other.renpy"
         },
         {
@@ -157,7 +168,7 @@
         },
         {
           "comment": "Control flow keywords",
-          "match": "\\b(for|while|pass|return|menu|label|jump|call)\\b",
+          "match": "\\b(for|while|pass|return|menu|jump|call)\\b",
           "name": "keyword.control.renpy"
         },
         {

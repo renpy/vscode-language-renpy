@@ -3,53 +3,182 @@
   "scopeName": "source.renpy",
   "firstLineMatch": "^#!/.*\\brenpy\\b",
   "patterns": [
-    { "include": "#comments" },
-    { "include": "#python-statements" },
-    { "include": "#expressions" },
-    { "include": "#renpy-keywords"}
+    { "include": "#statements" },
+    { "include": "#expressions" }
   ],
   "repository": {
+    "statements": {
+      "patterns": [
+        { "include": "#comments" },
+        { "include": "#renpy-statements" },
+        { "include": "#python-statements" },
+        { "include": "#keywords" }
+      ]
+    },
+    "expressions": {
+      "patterns": [
+        { "include": "#strings" }
+      ]
+    },
+
     "python-statements": {
-      "name": "embedded.python",
       "patterns": [
         {
-          "comments": "[TODO: REDO] Renpy python block",
-          "name": "meta.embedded.python.block",
-          "begin": "^(\\s*)(init\\s-?\\d*\\s?)?(python(\\searly)?(\\sin\\s\\w+)?)",
+          "comment": "Renpy python block",
+          "contentName": "meta.embedded.block.python",
+
+          "begin": "(^[ \\t]+)?\\b(?:(init) (?:(-)?(\\d*) )?)?(python)([\\w \\t]*)(:)",
           "beginCaptures": {
-            "0": {
-              "patterns": [{ "include": "#renpy-keywords" }]
+            "1": {
+              "name": "punctuation.whitespace.embedded.leading.python"
+            },
+            "2": {
+              "comment": "init",
+              "name": "keyword.renpy"
+            },
+            "3": {
+              "comment": "- sign",
+              "name": "keyword.operator.arithmetic.python"
+            },
+            "4": {
+              "comment": "init priority numeric",
+              "name": "constant.numeric.dec.python"
+            },
+            "5": {
+              "comment": "python",
+              "name": "keyword.renpy"
+            },
+            "6": {
+              "comment": "Statement options",
+              "name": "meta.embedded.block.python.options",
+
+              "patterns": [
+                {
+                  "comment": "in statement",
+                  "match": "(?: (in) ([a-zA-Z_]\\w+))",
+                  "captures":
+                  {
+                    "1": {
+                      "comment": "in",
+                      "name": "keyword.renpy"
+                    },
+                    "2": {
+                      "comment": "namespace",
+                      "name": "entity.name.namespace"
+                    }
+                  }
+                },
+                {
+                  "comment": "keywords",
+                  "match": "\\b(hide|early|in)\\b",
+                  "name": "keyword.renpy"
+                }
+              ]
+            },
+            "7": {
+              "name": "punctuation.section.python.begin.renpy"
             }
           },
-          "end": "^\\1(?=\\S)|^(?=\\S)",
+          "end":"^(?!(\\1[ \\t]+)|($))",
           "patterns": [{ "include": "source.python" }]
         },
         {
           "comment": "Match begin and end of python one line statements",
-          "name": "meta.embedded.python.single-line",
-          "begin": "(?<=(\\$|define|default)\\s)",
+          "contentName": "meta.embedded.line.python",
+          "begin": "(\\$|\\bdefine|\\bdefault)(?=\\s)",
+          "beginCaptures": {
+            "1": {
+              "name": "keyword.renpy"
+            }
+          },
           "end": "\\R$",
-          "patterns": [{ "include": "source.python" }]
+
+          "patterns": [
+            {
+              "comment": "Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)",
+              "match": "(?<!\\.)\\b(\\w+)(?=\\s=\\s)",
+              "name": "variable.other.python"
+            },
+            { "include": "source.python" }
+          ]
         }
       ]
     },
-    "renpy-keywords": {
+
+    "renpy-statements": {
       "patterns": [
-        { "match": "\\$", "name": "keyword.renpy" },
+        { "include": "#label" }
+      ]
+    },
+
+    "label": {
+      "patterns": [
         {
-          "match": "\\b(\\$|init|python|early|in|define|default)\\b",
+          "name": "meta.label.renpy",
+          "begin": "(^[ \\t]+)?\\b(label)\\s+([a-zA-Z_.]\\w*(?:\\(.*\\))?)(?=\\s*)(:)",
+          "beginCaptures": {
+            "1": {
+              "name": "punctuation.whitespace.label.leading.renpy"
+            },
+            "2": { 
+              "name": "keyword.renpy storage.type.function.renpy" 
+            },
+            "3":{
+              "name": "meta.label.renpy",
+              "patterns": [
+                {
+                  "comment": "Function name",
+                  "match": "([a-zA-Z_.]\\w*)",
+                  "name": "entity.name.function.renpy"
+                },
+                { "include": "source.python#parameters" }
+              ]
+            },
+            "4": {
+              "name": "punctuation.section.label.begin.renpy"
+            }
+          },
+          
+          "end": "(:|(?=[#'\"\\n]))",
+          "endCaptures": {
+            "1": {
+              "name": "punctuation.section.label.begin.renpy"
+            }
+          }
+        }
+      ]
+    },
+
+    "keywords": {
+      "patterns": [
+        {
+          "comment": "Python statement keywords",
+          "match": "\\b(init|python|hide|early|in|define|default)\\b",
           "name": "keyword.renpy"
         },
         {
-          "match": "(?<=init\\s)-?\\d+",
-          "name": "constant.numeric"
+          "comment": "Renpy keywords",
+          "match": "\\b(label|play|pause|screen|scene|show|image|transform)\\b",
+          "name": "keyword.other.renpy"
         },
         {
-          "match": "(?<=in\\s)\\w+",
-          "name": "entity.name.namespace"
+          "comment": "Conditional control flow keywords",
+          "match": "\\b(if|elif|else)\\b",
+          "name": "keyword.control.conditional.renpy" 
+        },
+        {
+          "comment": "Control flow keywords",
+          "match": "\\b(for|while|pass|return|menu|jump|call)\\b",
+          "name": "keyword.control.renpy"
+        },
+        {
+          "comment": "[TODO: Should probably only be a keyword in the expression]Renpy sub expression keywords",
+          "match": "\\b(set|expression|pass|sound|at|with|from)\\b",
+          "name": "keyword.other.renpy"
         }
       ]
     },
+
     "codetags": {
       "match": "(?:\\b(NOTE|XXX|HACK|FIXME|BUG|TODO)\\b)",
       "captures": { "1": { "name": "keyword.codetag.notation.renpy" } }
@@ -63,9 +192,7 @@
       "end": "($)",
       "patterns": [{ "include": "#codetags" }]
     },
-    "expressions": {
-      "patterns": [{ "include": "#strings" }]
-    },
+    
     "strings": {
       "patterns": [
         { "include": "#string-quoted-double" },

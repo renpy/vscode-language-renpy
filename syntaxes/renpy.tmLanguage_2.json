@@ -115,7 +115,7 @@
       "patterns": [
         {
           "name": "meta.label.renpy",
-          "begin": "(^[ \\t]+)?\\b(label)\\s+([a-zA-Z_.]\\w*(?:\\(.*\\))?)(:)",
+          "begin": "(^[ \\t]+)?\\b(label)\\s+([a-zA-Z_.]\\w*(?:\\(.*\\))?)(?=\\s*)(:)",
           "beginCaptures": {
             "1": {
               "name": "punctuation.whitespace.label.leading.renpy"

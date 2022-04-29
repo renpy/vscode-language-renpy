@@ -30,10 +30,27 @@
         ["\"\"\"", "\"\"\""]
     ],
     "folding": {
+        "offSide": true,
         "markers": {
-          "start": "^#region",
-          "end": "^#endregion"
+          "start": "^\\s*#\\s*region\\b",
+          "end": "^\\s*#\\s*endregion\\b"
+        }
+    },
+    "onEnterRules": [
+        //Renpy keywords
+        {
+            "beforeText": "^\\s*\\b(?:label|menu|python|init|screen|transform)\\b.*:\\s*$",
+            "action": { "indent": "indent" }
         },
-        "offSide": true
-    }
+        //Python keywords available in renpy code
+        {
+            "beforeText": "^\\s*\\b(?:for|if|elif|else|while)\\b.*:\\s*$",
+            "action": { "indent": "indent" }
+        },
+        //For menu's
+        {
+            "beforeText": "^\\s+(?:\".*?\"|\\'.*?\\')\\s*:\\s*$",
+            "action": { "indent": "indent" }
+        }
+    ]
 }

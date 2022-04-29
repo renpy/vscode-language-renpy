@@ -1,10 +1,25 @@
 // Place your settings in this file to overwrite default and user settings.
 {
-    "files.exclude": {
-        "**/*.rpyc": true
-    },
-    "search.exclude": {
-        "out": true // set this to false to include "out" folder in search results
-    },
-    "cmake.configureOnOpen": true
+  "files.exclude": {
+    "**/*.rpyc": true
+  },
+  "search.exclude": {
+    "out": true // set this to false to include "out" folder in search results
+  },
+  "cmake.configureOnOpen": true,
+  "editor.formatOnPaste": true,
+  "editor.formatOnSave": true,
+
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[python]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
 }

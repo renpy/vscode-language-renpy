@@ -1,0 +1,17 @@
+# top-most EditorConfig file
+root = true
+
+# Unix-style newlines with a newline ending every file
+[*]
+end_of_line = lf
+max_line_length = 240
+trim_trailing_whitespace = true
+indent_style = space
+
+# 4 space indentation
+[*.{ts,py}]
+indent_size = 4
+
+# 2 space indentation
+[*.json]
+indent_size = 2

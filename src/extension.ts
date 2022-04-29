@@ -343,7 +343,7 @@ function hideRpycFilesFromWorkspace() {
 	var jsonDumpFile = getNavigationJsonFilepath();
 	if (fs.existsSync(jsonDumpFile)) {
 		const config = workspace.getConfiguration("files");
-		if (config["exclude"]["**/*.rpc"] === undefined) {
+		if (config["exclude"]["**/*.rpyc"] === undefined) {
 			config.update("exclude", { "**/*.rpyc": true }, ConfigurationTarget.Workspace);
 		}
 	}

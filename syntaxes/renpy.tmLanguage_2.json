@@ -42,8 +42,7 @@
                 {
                   "comment": "in statement",
                   "match": "(?:\\s*(in)\\s*([a-zA-Z_]\\w*)\\b)",
-                  "captures":
-                  {
+                  "captures": {
                     "1": {
                       "name": "keyword.renpy"
                     },

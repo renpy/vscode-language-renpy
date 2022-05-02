@@ -1,39 +1,56 @@
 {
-    "comments": {
-        // symbol used for single line comment. Remove this entry if your language does not support line comments
-        "lineComment": "#"
-    },
-    // symbols used as brackets
-    "brackets": [
-        ["{", "}"],
-        ["[", "]"],
-        ["(", ")"]
-    ],
-    // symbols that are auto closed when typing
-    "autoClosingPairs": [
-		{ "open": "{", "close": "}" },
-		{ "open": "[", "close": "]" },
-		{ "open": "(", "close": ")" },
-		{ "open": "\"", "close": "\"", "notIn": ["string"] },
-		{ "open": "'", "close": "'", "notIn": ["string"] },
-        { "open": "`", "close": "`", "notIn": ["string"] },
-        { "open": "\"\"\"", "close": "\"\"\"", "notIn": ["string"] }
-    ],
-    // symbols that that can be used to surround a selection
-    "surroundingPairs": [
-        ["{", "}"],
-        ["[", "]"],
-        ["(", ")"],
-        ["\"", "\""],
-        ["'", "'"],
-        ["`", "`"],
-        ["\"\"\"", "\"\"\""]
-    ],
-    "folding": {
-        "markers": {
-          "start": "^#region",
-          "end": "^#endregion"
-        },
-        "offSide": true
+  "comments": {
+    // symbol used for single line comment. Remove this entry if your language does not support line comments
+    "lineComment": "#"
+  },
+  // symbols used as brackets
+  "brackets": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"]
+  ],
+  // symbols that are auto closed when typing
+  "autoClosingPairs": [
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+    { "open": "\"", "close": "\"", "notIn": ["string"] },
+    { "open": "'", "close": "'", "notIn": ["string"] },
+    { "open": "`", "close": "`", "notIn": ["string"] },
+    { "open": "\"\"\"", "close": "\"\"\"", "notIn": ["string"] }
+  ],
+  // symbols that that can be used to surround a selection
+  "surroundingPairs": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"],
+    ["\"", "\""],
+    ["'", "'"],
+    ["`", "`"],
+    ["\"\"\"", "\"\"\""]
+  ],
+  "folding": {
+    "offSide": true,
+    "markers": {
+      "start": "^\\s*#\\s*region\\b",
+      "end": "^\\s*#\\s*endregion\\b"
     }
+  },
+  "onEnterRules": [
+    //Renpy keywords
+    {
+      "beforeText": "^\\s*\\b(?:label|menu|python|init|screen|transform)\\b.*:\\s*$",
+      "action": { "indent": "indent" }
+    },
+    //Python keywords available in renpy code
+    {
+      "beforeText": "^\\s*\\b(?:for|if|elif|else|while)\\b.*:\\s*$",
+      "action": { "indent": "indent" }
+    },
+    //For menu's
+    {
+      "beforeText": "^\\s+(?:\".*?\"|\\'.*?\\')\\s*:\\s*$",
+      "action": { "indent": "indent" }
+    }
+  ]
 }

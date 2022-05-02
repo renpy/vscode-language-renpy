@@ -18,7 +18,7 @@
           "comment": "Renpy python block",
           "contentName": "meta.embedded.block.python",
 
-          "begin": "(^[ \\t]+)?\\b(?:(init) (?:(-)?(\\d*) )?)?(python)([\\w \\t]*)(:)",
+          "begin": "(^[ \\t]+)?(?:\\b(init)\\b\\s+(?:(-)?(\\d*)\\s+)?)?\\b(python)\\b(.*?)(:)",
           "beginCaptures": {
             "1": {
               "name": "punctuation.whitespace.embedded.leading.python"
@@ -36,12 +36,12 @@
               "name": "keyword.renpy"
             },
             "6": {
-              "name": "meta.embedded.block.python.options",
+              "name": "meta.python.block.arguments.renpy",
 
               "patterns": [
                 {
                   "comment": "in statement",
-                  "match": "(?: (in) ([a-zA-Z_]\\w+))",
+                  "match": "(?:\\s*(in)\\s*([a-zA-Z_]\\w*)\\b)",
                   "captures": {
                     "1": {
                       "name": "keyword.renpy"

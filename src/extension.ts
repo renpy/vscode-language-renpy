@@ -61,16 +61,6 @@ let myStatusBarItem: StatusBarItem;
 export async function activate(context: ExtensionContext): Promise<any> {
     console.log("Ren'Py extension activated");
 
-    languages.setLanguageConfiguration("renpy", {
-        onEnterRules: [
-            {
-                // indentation for Ren'Py and Python blocks
-                beforeText: /^\s*(?:def|class|for|if|elif|else|while|try|with|finally|except|label|menu|init|\":|\':|python|).*?:\s*$/,
-                action: { indentAction: IndentAction.Indent },
-            },
-        ],
-    });
-
     const filepath = getNavigationJsonFilepath();
     const jsonFileExists = fs.existsSync(filepath);
     if (!jsonFileExists) {

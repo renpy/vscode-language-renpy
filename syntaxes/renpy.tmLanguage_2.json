@@ -3,23 +3,13 @@
   "name": "Ren'Py",
   "scopeName": "source.renpy",
   "firstLineMatch": "^#!/.*\\brenpy\\b",
-  "patterns": [
-    { "include": "#statements" },
-    { "include": "#expressions" }
-  ],
+  "patterns": [{ "include": "#statements" }, { "include": "#expressions" }],
   "repository": {
     "statements": {
-      "patterns": [
-        { "include": "#comments" },
-        { "include": "#renpy-statements" },
-        { "include": "#python-statements" },
-        { "include": "#keywords" }
-      ]
+      "patterns": [{ "include": "#comments" }, { "include": "#renpy-statements" }, { "include": "#python-statements" }, { "include": "#keywords" }]
     },
     "expressions": {
-      "patterns": [
-        { "include": "#strings" }
-      ]
+      "patterns": [{ "include": "#strings" }]
     },
 
     "python-statements": {
@@ -52,8 +42,7 @@
                 {
                   "comment": "in statement",
                   "match": "(?: (in) ([a-zA-Z_]\\w+))",
-                  "captures":
-                  {
+                  "captures": {
                     "1": {
                       "name": "keyword.renpy"
                     },
@@ -73,7 +62,7 @@
               "name": "punctuation.section.python.begin.renpy"
             }
           },
-          "end":"^(?!(\\1[ \\t]+)|($))",
+          "end": "^(?!(\\1[ \\t]+)|($))",
           "patterns": [{ "include": "source.python" }]
         },
         {
@@ -100,9 +89,7 @@
     },
 
     "renpy-statements": {
-      "patterns": [
-        { "include": "#label" }
-      ]
+      "patterns": [{ "include": "#label" }]
     },
 
     "label": {
@@ -117,7 +104,7 @@
             "2": {
               "name": "keyword.renpy storage.type.function.renpy"
             },
-            "3":{
+            "3": {
               "name": "meta.label.renpy",
               "patterns": [
                 {
@@ -188,18 +175,11 @@
     },
 
     "strings": {
-      "patterns": [
-        { "include": "#string-quoted-double" },
-        { "include": "#string-quoted-single" },
-        { "include": "#string-quoted-back" }
-      ]
+      "patterns": [{ "include": "#string-quoted-double" }, { "include": "#string-quoted-single" }, { "include": "#string-quoted-back" }]
     },
 
     "strings-interior": {
-      "patterns": [
-        { "include": "#escaped_char" },
-        { "include": "#constant_placeholder" }
-      ]
+      "patterns": [{ "include": "#escaped_char" }, { "include": "#constant_placeholder" }]
     },
     "escaped_char": {
       "match": "(\\\\\")|(\\\\')|(\\\\ )|(\\\\n)|(\\\\\\\\)|(\\[\\[)|({{)",
@@ -243,7 +223,7 @@
     },
     "constant_placeholder": {
       "patterns": [
-        { "include": "#string_tags"},
+        { "include": "#string_tags" },
         {
           "comment": "Python value interpolation using [ ... ]",
           "name": "meta.brackets.renpy constant.other.placeholder.tags.renpy",
@@ -259,22 +239,22 @@
     "hex_literal": {
       "comment": "Note: This pattern has no end check. Only use as include pattern!",
       "patterns": [
-          { 
-            "comment": "rgb, rgba, rrggbb, rrggbbaa",
-            "match": "(?i)#(?:[a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{3,4})\\b",
-            "name": "support.constant.color.renpy"
-          },
-          { 
-            "match": "(?i)#[a-f0-9]+\\b",
-            "name": "invalid.illegal.unexpected-number-of-hex-values.renpy"
-          },
-          {
-            "match": "(?i)(?:#[a-f0-9]*)?(.+)",
-            "name": "support.constant.color.renpy",
-            "captures": {
-              "1": { "name": "invalid.illegal.character-not-allowed-here.renpy" }
-            }
+        {
+          "comment": "rgb, rgba, rrggbb, rrggbbaa",
+          "match": "(?i)#(?:[a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{3,4})\\b",
+          "name": "support.constant.color.renpy"
+        },
+        {
+          "match": "(?i)#[a-f0-9]+\\b",
+          "name": "invalid.illegal.unexpected-number-of-hex-values.renpy"
+        },
+        {
+          "match": "(?i)(?:#[a-f0-9]*)?(.+)",
+          "name": "support.constant.color.renpy",
+          "captures": {
+            "1": { "name": "invalid.illegal.character-not-allowed-here.renpy" }
           }
+        }
       ]
     },
 
@@ -361,9 +341,7 @@
             "2": { "name": "entity.name.tag.$2.renpy" },
             "3": { "name": "punctuation.definition.tag.end.renpy" }
           },
-          "patterns": [
-              { "include": "#strings-interior" }
-          ]
+          "patterns": [{ "include": "#strings-interior" }]
         },
         {
           "comment": "Valid tags with numeric params (close required)",
@@ -393,9 +371,7 @@
               "name": "punctuation.definition.tag.end.renpy"
             }
           },
-          "patterns": [
-              { "include": "#strings-interior" }
-          ]
+          "patterns": [{ "include": "#strings-interior" }]
         },
         {
           "comment": "Valid tags with numeric params (close required)",
@@ -425,9 +401,7 @@
               "name": "punctuation.definition.tag.end.renpy"
             }
           },
-          "patterns": [
-              { "include": "#strings-interior" }
-          ]
+          "patterns": [{ "include": "#strings-interior" }]
         },
         {
           "comment": "Color tag",
@@ -438,11 +412,9 @@
             "1": { "name": "punctuation.definition.tag.begin.renpy" },
             "2": { "name": "entity.name.tag.$2.renpy" },
             "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
-            "4": { 
+            "4": {
               "name": "support.constant.property-value",
-              "patterns": [
-                  { "include": "#hex_literal" }
-              ] 
+              "patterns": [{ "include": "#hex_literal" }]
             },
             "5": { "name": "punctuation.definition.tag.end.renpy" }
           },
@@ -461,9 +433,7 @@
               "name": "punctuation.definition.tag.end.renpy"
             }
           },
-          "patterns": [
-              { "include": "#strings-interior" }
-          ]
+          "patterns": [{ "include": "#strings-interior" }]
         },
         {
           "comment": "a tag",
@@ -474,10 +444,9 @@
             "1": { "name": "punctuation.definition.tag.begin.renpy" },
             "2": { "name": "entity.name.tag.$2.renpy" },
             "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
-            "4": { 
+            "4": {
               "name": "support.constant.property-value string.unquoted.renpy",
-              "patterns": [
-              ] 
+              "patterns": []
             },
             "5": { "name": "punctuation.definition.tag.end.renpy" }
           },
@@ -496,9 +465,7 @@
               "name": "punctuation.definition.tag.end.renpy"
             }
           },
-          "patterns": [
-              { "include": "#strings-interior" }
-          ]
+          "patterns": [{ "include": "#strings-interior" }]
         },
         {
           "comment": "Unknown tag (Single line support only cus \\R does not work) (Since we don't know if a tag is self closing, we can't assume that an end pattern exists)",
@@ -511,9 +478,7 @@
             "5": { "name": "meta.tag.$2.start.renpy punctuation.definition.tag.end.renpy" },
             "6": {
               "name": "renpy.meta.tag.custom.$2",
-              "patterns": [
-              { "include": "#strings-interior" }
-              ]
+              "patterns": [{ "include": "#strings-interior" }]
             },
             "7": { "name": "meta.tag.$2.end.renpy punctuation.definition.tag.begin.renpy" },
             "8": { "name": "renpy.meta.u meta.tag.$2.end.renpy entity.name.tag.$2.renpy" },
@@ -528,10 +493,9 @@
             "1": { "name": "punctuation.definition.tag.begin.renpy" },
             "2": { "name": "renpy.meta.u entity.name.tag.$2.renpy" },
             "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
-            "4": { 
+            "4": {
               "name": "support.constant.property-value constant.other.placeholder.tags.renpy",
-              "patterns": [
-              ] 
+              "patterns": []
             },
             "5": { "name": "punctuation.definition.tag.end.renpy" }
           }
@@ -563,9 +527,7 @@
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.triple.block.renpy" }
           },
-          "patterns": [
-              { "include": "#strings-interior" }
-          ]
+          "patterns": [{ "include": "#strings-interior" }]
         },
         {
           "comment": "Double quoted single line string",
@@ -580,9 +542,7 @@
             "2": { "name": "meta.empty-string.double.renpy" },
             "3": { "name": "invalid.illegal.unclosed-string.renpy" }
           },
-          "patterns": [
-              { "include": "#strings-interior" }
-          ]
+          "patterns": [{ "include": "#strings-interior" }]
         }
       ]
     },
@@ -600,9 +560,7 @@
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.single.block.renpy" }
           },
-          "patterns": [
-              { "include": "#strings-interior" }
-          ]
+          "patterns": [{ "include": "#strings-interior" }]
         },
         {
           "comment": "Single quoted single line string",
@@ -617,9 +575,7 @@
             "2": { "name": "meta.empty-string.single.renpy" },
             "3": { "name": "invalid.illegal.unclosed-string.renpy" }
           },
-          "patterns": [
-              { "include": "#strings-interior" }
-          ]
+          "patterns": [{ "include": "#strings-interior" }]
         }
       ]
     },
@@ -637,9 +593,7 @@
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.back.block.renpy" }
           },
-          "patterns": [
-              { "include": "#strings-interior" }
-          ]
+          "patterns": [{ "include": "#strings-interior" }]
         },
         {
           "comment": "Back quoted single line string",
@@ -654,9 +608,7 @@
             "2": { "name": "meta.empty-string.back.renpy" },
             "3": { "name": "invalid.illegal.unclosed-string.renpy" }
           },
-          "patterns": [
-              { "include": "#strings-interior" }
-          ]
+          "patterns": [{ "include": "#strings-interior" }]
         }
       ]
     }

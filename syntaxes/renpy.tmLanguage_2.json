@@ -1,24 +1,15 @@
 {
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "Ren'Py",
   "scopeName": "source.renpy",
   "firstLineMatch": "^#!/.*\\brenpy\\b",
-  "patterns": [
-    { "include": "#statements" },
-    { "include": "#expressions" }
-  ],
+  "patterns": [{ "include": "#statements" }, { "include": "#expressions" }],
   "repository": {
     "statements": {
-      "patterns": [
-        { "include": "#comments" },
-        { "include": "#renpy-statements" },
-        { "include": "#python-statements" },
-        { "include": "#keywords" }
-      ]
+      "patterns": [{ "include": "#comments" }, { "include": "#renpy-statements" }, { "include": "#python-statements" }, { "include": "#keywords" }]
     },
     "expressions": {
-      "patterns": [
-        { "include": "#strings" }
-      ]
+      "patterns": [{ "include": "#strings" }]
     },
 
     "python-statements": {
@@ -33,37 +24,29 @@
               "name": "punctuation.whitespace.embedded.leading.python"
             },
             "2": {
-              "comment": "init",
               "name": "keyword.renpy"
             },
             "3": {
-              "comment": "- sign",
               "name": "keyword.operator.arithmetic.python"
             },
             "4": {
-              "comment": "init priority numeric",
               "name": "constant.numeric.dec.python"
             },
             "5": {
-              "comment": "python",
               "name": "keyword.renpy"
             },
             "6": {
-              "comment": "Statement options",
               "name": "meta.embedded.block.python.options",
 
               "patterns": [
                 {
                   "comment": "in statement",
                   "match": "(?: (in) ([a-zA-Z_]\\w+))",
-                  "captures":
-                  {
+                  "captures": {
                     "1": {
-                      "comment": "in",
                       "name": "keyword.renpy"
                     },
                     "2": {
-                      "comment": "namespace",
                       "name": "entity.name.namespace"
                     }
                   }
@@ -79,7 +62,7 @@
               "name": "punctuation.section.python.begin.renpy"
             }
           },
-          "end":"^(?!(\\1[ \\t]+)|($))",
+          "end": "^(?!(\\1[ \\t]+)|($))",
           "patterns": [{ "include": "source.python" }]
         },
         {
@@ -106,9 +89,7 @@
     },
 
     "renpy-statements": {
-      "patterns": [
-        { "include": "#label" }
-      ]
+      "patterns": [{ "include": "#label" }]
     },
 
     "label": {
@@ -120,10 +101,10 @@
             "1": {
               "name": "punctuation.whitespace.label.leading.renpy"
             },
-            "2": { 
-              "name": "keyword.renpy storage.type.function.renpy" 
+            "2": {
+              "name": "keyword.renpy storage.type.function.renpy"
             },
-            "3":{
+            "3": {
               "name": "meta.label.renpy",
               "patterns": [
                 {
@@ -138,7 +119,7 @@
               "name": "punctuation.section.label.begin.renpy"
             }
           },
-          
+
           "end": "(:|(?=[#'\"\\n]))",
           "endCaptures": {
             "1": {
@@ -164,7 +145,7 @@
         {
           "comment": "Conditional control flow keywords",
           "match": "\\b(if|elif|else)\\b",
-          "name": "keyword.control.conditional.renpy" 
+          "name": "keyword.control.conditional.renpy"
         },
         {
           "comment": "Control flow keywords",
@@ -179,7 +160,7 @@
       ]
     },
 
-    "codetags": {
+    "code-tags": {
       "match": "(?:\\b(NOTE|XXX|HACK|FIXME|BUG|TODO)\\b)",
       "captures": { "1": { "name": "keyword.codetag.notation.renpy" } }
     },
@@ -190,44 +171,378 @@
         "1": { "name": "punctuation.definition.comment.renpy" }
       },
       "end": "($)",
-      "patterns": [{ "include": "#codetags" }]
+      "patterns": [{ "include": "#code-tags" }]
     },
-    
+
     "strings": {
+      "patterns": [{ "include": "#string-quoted-double" }, { "include": "#string-quoted-single" }, { "include": "#string-quoted-back" }]
+    },
+
+    "strings-interior": {
+      "patterns": [{ "include": "#escaped_char" }, { "include": "#constant_placeholder" }]
+    },
+    "escaped_char": {
+      "match": "(\\\\\")|(\\\\')|(\\\\ )|(\\\\n)|(\\\\\\\\)|(\\[\\[)|({{)",
+      "captures": {
+        "1": {
+          "name": "constant.character.escape.double-quote.python.renpy"
+        },
+        "2": {
+          "name": "constant.character.escape.single-quote.python.renpy"
+        },
+        "3": {
+          "name": "constant.character.escape.space.python.renpy"
+        },
+        "4": {
+          "name": "constant.character.escape.newline.python.renpy"
+        },
+        "5": {
+          "name": "constant.character.escape.backslash.python.renpy"
+        },
+        "6": {
+          "name": "constant.character.escape.placeholder.python.renpy"
+        },
+        "7": {
+          "name": "constant.character.escape.placeholder.python.renpy"
+        }
+      }
+    },
+    "escaped_unicode_char": {
+      "match": "(\\\\U[0-9A-Fa-f]{8})|(\\\\u[0-9A-Fa-f]{4})|(\\\\N\\{[a-zA-Z ]+\\})",
+      "captures": {
+        "1": {
+          "name": "constant.character.escape.unicode.16-bit-hex.python.renpy"
+        },
+        "2": {
+          "name": "constant.character.escape.unicode.32-bit-hex.python.renpy"
+        },
+        "3": {
+          "name": "constant.character.escape.unicode.name.python.renpy"
+        }
+      }
+    },
+    "constant_placeholder": {
       "patterns": [
-        { "include": "#string-quoted-double" },
-        { "include": "#string-quoted-single" },
-        { "include": "#string-quoted-back" }
+        { "include": "#string_tags" },
+        {
+          "comment": "Python value interpolation using [ ... ]",
+          "name": "meta.brackets.renpy constant.other.placeholder.tags.renpy",
+          "match": "(\\[)((?:.*\\[.*?\\])*.*?)(\\])",
+          "captures": {
+            "1": { "name": "constant.character.format.placeholder.other.renpy" },
+            "2": { "name": "meta.embedded.line.python source.python" },
+            "3": { "name": "constant.character.format.placeholder.other.renpy" }
+          }
+        }
       ]
     },
+    "hex_literal": {
+      "comment": "Note: This pattern has no end check. Only use as include pattern!",
+      "patterns": [
+        {
+          "comment": "rgb, rgba, rrggbb, rrggbbaa",
+          "match": "(?i)#(?:[a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{3,4})\\b",
+          "name": "support.constant.color.renpy"
+        },
+        {
+          "match": "(?i)#[a-f0-9]+\\b",
+          "name": "invalid.illegal.unexpected-number-of-hex-values.renpy"
+        },
+        {
+          "match": "(?i)(?:#[a-f0-9]*)?(.+)",
+          "name": "support.constant.color.renpy",
+          "captures": {
+            "1": { "name": "invalid.illegal.character-not-allowed-here.renpy" }
+          }
+        }
+      ]
+    },
+
+    "string_tags": {
+      "patterns": [
+        {
+          "comment": "Valid tags without params (self-closing)",
+          "match": "({)\\s*(nw|done|fast|p|w|clear)\\s*(})",
+          "captures": {
+            "0": { "name": "meta.tag.$2.self-closing.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.$2.renpy" },
+            "3": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Valid tags with numeric params (self-closing)",
+          "name": "meta.tag.$2.self-closing.renpy",
+          "match": "({)\\s*(p|w)(=)(\\+?)(\\d+(?:.\\d+)?)\\s*(})",
+          "captures": {
+            "0": { "name": "meta.tag.$2.self-closing.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.$2.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": { "name": "keyword.operator.arithmetic.renpy" },
+            "5": { "name": "support.constant.property-value constant.numeric.float.renpy" },
+            "6": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Valid tags with numeric params (self-closing)",
+          "name": "meta.tag.$2.self-closing.renpy",
+          "match": "({)\\s*(v?space)(=)(\\+?)(\\d+)\\s*(})",
+          "captures": {
+            "0": { "name": "meta.tag.$2.self-closing.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.$2.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": { "name": "keyword.operator.arithmetic.renpy" },
+            "5": { "name": "support.constant.property-value constant.numeric.integer.renpy" },
+            "6": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Hashtag tag (self-closing)",
+          "name": "meta.tag.$2.self-closing.renpy",
+          "match": "({)\\s*(#)\\s*(.*?)\\s*(})",
+          "captures": {
+            "0": { "name": "meta.tag.$2.self-closing.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.$2.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": { "name": "support.constant.property-value string.unquoted.renpy" },
+            "5": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Valid tags with file param",
+          "name": "meta.tag.$2.self-closing.renpy",
+          "match": "({)\\s*(font|image)(=)([\\w.]+)\\s*(})",
+          "captures": {
+            "0": { "name": "meta.tag.$2.self-closing.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.$2.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": { "name": "support.constant.property-value string.unquoted.renpy" },
+            "5": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Valid tags without params (close required)",
+          "contentName": "renpy.meta.$2",
+          "begin": "({)\\s*(u|i|b|s|plain|alt|noalt|art|rb|rt)\\s*(})",
+          "beginCaptures": {
+            "0": { "name": "meta.tag.$2.start.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.$2.renpy" },
+            "3": { "name": "punctuation.definition.tag.end.renpy" }
+          },
+          "end": "({/)\\s*(\\2)\\s*(})",
+          "endCaptures": {
+            "0": { "name": "meta.tag.$2.end.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.$2.renpy" },
+            "3": { "name": "punctuation.definition.tag.end.renpy" }
+          },
+          "patterns": [{ "include": "#strings-interior" }]
+        },
+        {
+          "comment": "Valid tags with numeric params (close required)",
+          "contentName": "renpy.meta.$2",
+          "begin": "({)\\s*(alpha|cps|k)(=)([*\\-+]?)(\\d+(?:.\\d+)?)\\s*(})",
+          "beginCaptures": {
+            "0": { "name": "meta.tag.$2.start.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.$2.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": { "name": "keyword.operator.arithmetic.renpy" },
+            "5": { "name": "support.constant.property-value constant.numeric.renpy" },
+            "6": { "name": "punctuation.definition.tag.end.renpy" }
+          },
+          "end": "({/)\\s*(\\2)\\s*(})",
+          "endCaptures": {
+            "0": {
+              "name": "meta.tag.$2.end.renpy"
+            },
+            "1": {
+              "name": "punctuation.definition.tag.begin.renpy"
+            },
+            "2": {
+              "name": "entity.name.tag.$2.renpy"
+            },
+            "3": {
+              "name": "punctuation.definition.tag.end.renpy"
+            }
+          },
+          "patterns": [{ "include": "#strings-interior" }]
+        },
+        {
+          "comment": "Valid tags with numeric params (close required)",
+          "contentName": "renpy.meta.$2",
+          "begin": "({)\\s*(size)(=)([\\-+]?)(\\d+)\\s*(})",
+          "beginCaptures": {
+            "0": { "name": "meta.tag.$2.start.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.$2.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": { "name": "keyword.operator.arithmetic.renpy" },
+            "5": { "name": "support.constant.property-value constant.numeric.integer.renpy" },
+            "6": { "name": "punctuation.definition.tag.end.renpy" }
+          },
+          "end": "({/)\\s*(\\2)\\s*(})",
+          "endCaptures": {
+            "0": {
+              "name": "meta.tag.$2.end.renpy"
+            },
+            "1": {
+              "name": "punctuation.definition.tag.begin.renpy"
+            },
+            "2": {
+              "name": "entity.name.tag.$2.renpy"
+            },
+            "3": {
+              "name": "punctuation.definition.tag.end.renpy"
+            }
+          },
+          "patterns": [{ "include": "#strings-interior" }]
+        },
+        {
+          "comment": "Color tag",
+          "contentName": "renpy.meta.$2.$4",
+          "begin": "({)\\s*(color|outlinecolor)(=)(#?[a-zA-Z0-9]+)\\s*(})",
+          "beginCaptures": {
+            "0": { "name": "meta.tag.$2.start.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.$2.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": {
+              "name": "support.constant.property-value",
+              "patterns": [{ "include": "#hex_literal" }]
+            },
+            "5": { "name": "punctuation.definition.tag.end.renpy" }
+          },
+          "end": "({/)\\s*(\\2)\\s*(})",
+          "endCaptures": {
+            "0": {
+              "name": "meta.tag.$2.end.renpy"
+            },
+            "1": {
+              "name": "punctuation.definition.tag.begin.renpy"
+            },
+            "2": {
+              "name": "entity.name.tag.$2.renpy"
+            },
+            "3": {
+              "name": "punctuation.definition.tag.end.renpy"
+            }
+          },
+          "patterns": [{ "include": "#strings-interior" }]
+        },
+        {
+          "comment": "a tag",
+          "contentName": "renpy.meta.$2",
+          "begin": "({)\\s*(a)(=)(.*?)\\s*(})",
+          "beginCaptures": {
+            "0": { "name": "meta.tag.$2.start.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.$2.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": {
+              "name": "support.constant.property-value string.unquoted.renpy",
+              "patterns": []
+            },
+            "5": { "name": "punctuation.definition.tag.end.renpy" }
+          },
+          "end": "({/)\\s*(\\2)\\s*(})",
+          "endCaptures": {
+            "0": {
+              "name": "meta.tag.$2.end.renpy"
+            },
+            "1": {
+              "name": "punctuation.definition.tag.begin.renpy"
+            },
+            "2": {
+              "name": "entity.name.tag.$2.renpy"
+            },
+            "3": {
+              "name": "punctuation.definition.tag.end.renpy"
+            }
+          },
+          "patterns": [{ "include": "#strings-interior" }]
+        },
+        {
+          "comment": "Unknown tag (Single line support only cus \\R does not work) (Since we don't know if a tag is self closing, we can't assume that an end pattern exists)",
+          "match": "({)\\s*(\\w+)\\b(?:(=)(.*?))?\\s*(})((?:.|\\R)+?)\\s*({/)\\s*(\\2)\\s*(})",
+          "captures": {
+            "1": { "name": "meta.tag.$2.start.renpy punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "renpy.meta.u meta.tag.$2.start.renpy entity.name.tag.$2.renpy" },
+            "3": { "name": "meta.tag.$2.start.renpy punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": { "name": "meta.tag.$2.start.renpy constant.other.placeholder.tags.renpy" },
+            "5": { "name": "meta.tag.$2.start.renpy punctuation.definition.tag.end.renpy" },
+            "6": {
+              "name": "renpy.meta.tag.custom.$2",
+              "patterns": [{ "include": "#strings-interior" }]
+            },
+            "7": { "name": "meta.tag.$2.end.renpy punctuation.definition.tag.begin.renpy" },
+            "8": { "name": "renpy.meta.u meta.tag.$2.end.renpy entity.name.tag.$2.renpy" },
+            "9": { "name": "meta.tag.$2.end.renpy punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Unknown tag start",
+          "match": "({)\\s*(\\w*)(?:(=)(.*?))?\\s*(})",
+          "captures": {
+            "0": { "name": "meta.tag.$2.start.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "renpy.meta.u entity.name.tag.$2.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": {
+              "name": "support.constant.property-value constant.other.placeholder.tags.renpy",
+              "patterns": []
+            },
+            "5": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Unknown tag end",
+          "match": "({/)\\s*(\\w*?)\\b\\s*(})",
+          "captures": {
+            "0": { "name": "meta.tag.$2.end.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "renpy.meta.u entity.name.tag.$2.renpy" },
+            "3": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        }
+      ]
+    },
+
     "string-quoted-double": {
       "patterns": [
         {
-          "comment": "double quoted block string",
-          "name": "string.quoted.double.block.renpy",
+          "comment": "Triple quoted block string",
+          "name": "string.quoted.triple.block.renpy",
           "begin": "(\"\"\")",
           "beginCaptures": {
             "0": { "name": "punctuation.definition.string.begin.renpy" }
           },
-          "end": "((?<=\"\"\")(\")\"\"|\"\"\")",
+          "end": "(?<!\\\\)((?<=\"\"\")(\")\"\"|\"\"\")",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.renpy" },
-            "2": { "name": "meta.empty-string.double.block.renpy" }
-          }
+            "2": { "name": "meta.empty-string.triple.block.renpy" }
+          },
+          "patterns": [{ "include": "#strings-interior" }]
         },
         {
-          "comment": "Dobule quoted single line string",
+          "comment": "Double quoted single line string",
           "name": "string.quoted.double.line.renpy",
           "begin": "(\")",
           "beginCaptures": {
             "1": { "name": "punctuation.definition.string.begin.renpy" }
           },
-          "end": "((?<=\")(\")|\")",
+          "end": "(?<!\\\\)((?<=\")(\")|\")",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.double.renpy" },
             "3": { "name": "invalid.illegal.unclosed-string.renpy" }
-          }
+          },
+          "patterns": [{ "include": "#strings-interior" }]
         }
       ]
     },
@@ -240,11 +555,12 @@
           "beginCaptures": {
             "0": { "name": "punctuation.definition.string.begin.renpy" }
           },
-          "end": "((?<=''')('|''')|''')",
+          "end": "(?<!\\\\)((?<=''')('|''')|''')",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.single.block.renpy" }
-          }
+          },
+          "patterns": [{ "include": "#strings-interior" }]
         },
         {
           "comment": "Single quoted single line string",
@@ -253,12 +569,13 @@
           "beginCaptures": {
             "1": { "name": "punctuation.definition.string.begin.renpy" }
           },
-          "end": "((?<=')(')|')",
+          "end": "(?<!\\\\)((?<=')(')|')",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.single.renpy" },
             "3": { "name": "invalid.illegal.unclosed-string.renpy" }
-          }
+          },
+          "patterns": [{ "include": "#strings-interior" }]
         }
       ]
     },
@@ -271,11 +588,12 @@
           "beginCaptures": {
             "0": { "name": "punctuation.definition.string.begin.renpy" }
           },
-          "end": "((?<=```)(`)``|```)",
+          "end": "(?<!\\\\)((?<=```)(`)``|```)",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.back.block.renpy" }
-          }
+          },
+          "patterns": [{ "include": "#strings-interior" }]
         },
         {
           "comment": "Back quoted single line string",
@@ -284,12 +602,13 @@
           "beginCaptures": {
             "1": { "name": "punctuation.definition.string.begin.renpy" }
           },
-          "end": "((?<=`)(`)|`)",
+          "end": "(?<!\\\\)((?<=`)(`)|`)",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.back.renpy" },
             "3": { "name": "invalid.illegal.unclosed-string.renpy" }
-          }
+          },
+          "patterns": [{ "include": "#strings-interior" }]
         }
       ]
     }

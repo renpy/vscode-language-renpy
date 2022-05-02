@@ -1,5 +1,5 @@
 // References Provider
-'use strict';
+"use strict";
 
 import { TextDocument, Position, ReferenceContext, Location, workspace } from "vscode";
 import { getKeywordPrefix } from "./extension";
@@ -21,13 +21,13 @@ export async function findAllReferences(document: TextDocument, position: Positi
 
     if (range) {
         const prefix = getKeywordPrefix(document, position, range);
-        if (prefix && prefix !== 'store') {
+        if (prefix && prefix !== "store") {
             keyword = `${prefix}.${keyword}`;
         }
     }
 
     let references: Location[] = [];
-    const files = await workspace.findFiles('**/*.rpy');
+    const files = await workspace.findFiles("**/*.rpy");
     if (files && files.length > 0) {
         for (let file of files) {
             document = await workspace.openTextDocument(file);
@@ -50,20 +50,20 @@ export async function findAllReferences(document: TextDocument, position: Positi
  * @returns An array of Locations that match the keyword in the given document
  */
 export function findReferenceMatches(keyword: string, document: TextDocument): Location[] {
-	let locations: Location[] = [];
-	const rx = RegExp(`[^a-zA-Z_](${keyword.replace('.','/.')})[^a-zA-Z_]`, 'g');
+    let locations: Location[] = [];
+    const rx = RegExp(`[^a-zA-Z_](${keyword.replace(".", "/.")})[^a-zA-Z_]`, "g");
 
-	let index = 0;
-	while (index < document.lineCount) {
-		let line = NavigationData.filterStringLiterals(document.lineAt(index).text);
-		let matches = rx.exec(line);
-		if (matches) {
-			let position = new Position(index, matches.index);
-			const loc = new Location(document.uri, position);
-			locations.push(loc);
-		}
-		index++;
-	}
+    let index = 0;
+    while (index < document.lineCount) {
+        let line = NavigationData.filterStringLiterals(document.lineAt(index).text);
+        let matches = rx.exec(line);
+        if (matches) {
+            let position = new Position(index, matches.index);
+            const loc = new Location(document.uri, position);
+            locations.push(loc);
+        }
+        index++;
+    }
 
-	return locations;
+    return locations;
 }

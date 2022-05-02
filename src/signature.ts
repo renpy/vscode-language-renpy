@@ -1,5 +1,5 @@
 // Signature Provider
-'use strict';
+"use strict";
 
 import { TextDocument, Position, SignatureHelp, SignatureHelpContext } from "vscode";
 import { getKeywordPrefix } from "./extension";
@@ -11,7 +11,7 @@ import { NavigationData } from "./navigationdata";
  * @param document - The current TextDocument
  * @param position - The current position
  * @param context - The current context
- * @returns A SignatureHelp that describes the current method and the current argument 
+ * @returns A SignatureHelp that describes the current method and the current argument
  */
 export function getSignatureHelp(document: TextDocument, position: Position, context: SignatureHelpContext): SignatureHelp | undefined {
     let triggerWord = "";
@@ -19,14 +19,14 @@ export function getSignatureHelp(document: TextDocument, position: Position, con
     //find the keyword before the last '(' character before the current position
     const currentLine = document.lineAt(position.line).text;
     const currentLinePrefix = currentLine.substring(0, position.character);
-    const openParenthesis = currentLinePrefix.lastIndexOf('(');
+    const openParenthesis = currentLinePrefix.lastIndexOf("(");
     if (openParenthesis) {
         const prevPosition = new Position(position.line, openParenthesis - 1);
         const prevRange = document.getWordRangeAtPosition(prevPosition);
         if (!prevRange) {
             return;
         }
-        triggerWord = document.getText(prevRange);					
+        triggerWord = document.getText(prevRange);
         const prefix = getKeywordPrefix(document, position, prevRange);
         if (prefix) {
             triggerWord = `${prefix}.${triggerWord}`;

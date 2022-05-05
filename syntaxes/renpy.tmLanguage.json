@@ -1,7 +1,7 @@
 {
   "scopeName": "source.renpy",
   "name": "Ren'Py",
-  "fileTypes": [ "rpy", "rpym" ],
+  "fileTypes": ["rpy", "rpym"],
   "firstLineMatch": "^#!/.*\\brenpy\\b",
   "patterns": [
     {
@@ -151,7 +151,7 @@
           "begin": "(?=[A-Za-z_][A-Za-z0-9_]*)",
           "contentName": "entity.name.function.python.renpy",
           "end": "(?![A-Za-z0-9_])",
-          "patterns": [ { "include": "#entity_name_function" } ]
+          "patterns": [{ "include": "#entity_name_function" }]
         },
         {
           "begin": "(\\()",
@@ -223,7 +223,7 @@
           "begin": "(?=[A-Za-z_][A-Za-z0-9_]*)",
           "contentName": "entity.name.function.python.renpy.screen.renpy",
           "end": "(?![A-Za-z0-9_])",
-          "patterns": [ { "include": "#entity_name_function" } ]
+          "patterns": [{ "include": "#entity_name_function" }]
         },
         {
           "begin": "(\\()",
@@ -298,7 +298,7 @@
         }
       },
       "name": "meta.class.old-style.python.renpy",
-      "patterns": [ { "include": "#entity_name_class" } ]
+      "patterns": [{ "include": "#entity_name_class" }]
     },
     {
       "begin": "^\\s*(class)\\s+(?=[a-zA-Z_][a-zA-Z_0-9]*\\s*\\()",
@@ -323,7 +323,7 @@
           "begin": "(?=[A-Za-z_][A-Za-z0-9_]*)",
           "contentName": "entity.name.type.class.python.renpy",
           "end": "(?![A-Za-z0-9_])",
-          "patterns": [ { "include": "#entity_name_class" } ]
+          "patterns": [{ "include": "#entity_name_class" }]
         },
         {
           "begin": "(\\()",
@@ -344,7 +344,7 @@
                   "name": "punctuation.separator.inheritance.python.renpy"
                 }
               },
-              "patterns": [ { "include": "$self" } ]
+              "patterns": [{ "include": "$self" }]
             }
           ]
         }
@@ -370,7 +370,7 @@
           "begin": "(?=[A-Za-z_][A-Za-z0-9_]*)",
           "contentName": "entity.name.type.class.python.renpy",
           "end": "(?![A-Za-z0-9_])",
-          "patterns": [ { "include": "#entity_name_function" } ]
+          "patterns": [{ "include": "#entity_name_function" }]
         }
       ]
     },
@@ -397,7 +397,7 @@
           "begin": "(?=[A-Za-z_][A-Za-z0-9_]*)",
           "contentName": "entity.name.function.python.renpy",
           "end": "(?![A-Za-z0-9_])",
-          "patterns": [ { "include": "#entity_name_function" } ]
+          "patterns": [{ "include": "#entity_name_function" }]
         },
         {
           "begin": "(\\()",
@@ -445,7 +445,7 @@
           "begin": "(?=[A-Za-z_][A-Za-z0-9_]*)",
           "contentName": "entity.name.function.python.renpy",
           "end": "(?![A-Za-z0-9_])",
-          "patterns": [ { "include": "#entity_name_function" } ]
+          "patterns": [{ "include": "#entity_name_function" }]
         }
       ]
     },
@@ -552,7 +552,7 @@
           },
           "contentName": "entity.name.function.decorator.python.renpy",
           "end": "(?=\\s*\\()",
-          "patterns": [ { "include": "#dotted_name" } ]
+          "patterns": [{ "include": "#dotted_name" }]
         },
         {
           "begin": "(\\()",
@@ -563,10 +563,7 @@
           },
           "contentName": "meta.function.decorator.arguments.python.renpy",
           "end": "(?=\\))",
-          "patterns": [
-            { "include": "#keyword_arguments" },
-            { "include": "$self" }
-          ]
+          "patterns": [{ "include": "#keyword_arguments" }, { "include": "$self" }]
         }
       ]
     },
@@ -584,7 +581,7 @@
             }
           },
           "end": "(?=\\s|$\\n?|#)",
-          "patterns": [ { "include": "#dotted_name" } ]
+          "patterns": [{ "include": "#dotted_name" }]
         }
       ]
     },
@@ -603,10 +600,7 @@
         }
       },
       "name": "meta.function-call.python.renpy",
-      "patterns": [
-        { "include": "#keyword_arguments" },
-        { "include": "$self" }
-      ]
+      "patterns": [{ "include": "#keyword_arguments" }, { "include": "$self" }]
     },
     {
       "begin": "(?=[A-Za-z_][A-Za-z0-9_]*(?:\\.[a-zA-Z_][a-zA-Z_0-9]*)*\\s*\\()",
@@ -621,7 +615,7 @@
         {
           "begin": "(?=[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*\\()",
           "end": "(?=\\s*\\()",
-          "patterns": [ { "include": "#dotted_name" } ]
+          "patterns": [{ "include": "#dotted_name" }]
         },
         {
           "begin": "(\\()",
@@ -632,10 +626,7 @@
           },
           "contentName": "meta.function-call.arguments.python.renpy",
           "end": "(?=\\))",
-          "patterns": [
-            { "include": "#keyword_arguments" },
-            { "include": "$self" }
-          ]
+          "patterns": [{ "include": "#keyword_arguments" }, { "include": "$self" }]
         }
       ]
     },
@@ -652,7 +643,7 @@
         {
           "begin": "(?=[A-Za-z_][A-Za-z0-9_]*(?:\\.[A-Za-z_][A-Za-z0-9_]*)*\\s*\\[)",
           "end": "(?=\\s*\\[)",
-          "patterns": [ { "include": "#dotted_name" } ]
+          "patterns": [{ "include": "#dotted_name" }]
         },
         {
           "begin": "(\\[)",
@@ -663,7 +654,7 @@
           },
           "contentName": "meta.item-access.arguments.python.renpy",
           "end": "(?=\\])",
-          "patterns": [ { "include": "$self" } ]
+          "patterns": [{ "include": "$self" }]
         }
       ]
     },
@@ -682,7 +673,7 @@
         }
       },
       "name": "meta.item-access.python.renpy",
-      "patterns": [ { "include": "$self" } ]
+      "patterns": [{ "include": "$self" }]
     },
     { "include": "#line_continuation" },
     { "include": "#language_variables" },
@@ -696,7 +687,7 @@
     {
       "begin": "(\\()",
       "end": "(\\))",
-      "patterns": [ { "include": "$self" } ]
+      "patterns": [{ "include": "$self" }]
     },
     {
       "captures": {
@@ -734,7 +725,7 @@
               "name": "punctuation.separator.list.python.renpy"
             }
           },
-          "patterns": [ { "include": "$self" } ]
+          "patterns": [{ "include": "$self" }]
         }
       ]
     },
@@ -788,7 +779,7 @@
               "name": "punctuation.separator.valuepair.dictionary.python.renpy"
             }
           },
-          "patterns": [ { "include": "$self" } ]
+          "patterns": [{ "include": "$self" }]
         },
         {
           "begin": "(?<=\\:|^)\\s*",
@@ -799,7 +790,7 @@
               "name": "punctuation.separator.dictionary.python.renpy"
             }
           },
-          "patterns": [ { "include": "$self" } ]
+          "patterns": [{ "include": "$self" }]
         }
       ]
     }
@@ -831,13 +822,13 @@
           "begin": "^\\s*(?=[uU]?[rR]?\"\"\")",
           "end": "(?<=\"\"\")",
           "name": "comment.block.python.renpy",
-          "patterns": [ { "include": "#string_quoted_double" } ]
+          "patterns": [{ "include": "#string_quoted_double" }]
         },
         {
           "begin": "^\\s*(?=[uU]?[rR]?''')",
           "end": "(?<=''')",
           "name": "comment.block.python.renpy",
-          "patterns": [ { "include": "#string_quoted_single" } ]
+          "patterns": [{ "include": "#string_quoted_single" }]
         }
       ]
     },
@@ -848,12 +839,7 @@
         {
           "begin": "(\\.)(?=[A-Za-z_][A-Za-z0-9_]*)",
           "end": "(?![A-Za-z0-9_])",
-          "patterns": [
-            { "include": "#magic_function_names" },
-            { "include": "#magic_variable_names" },
-            { "include": "#illegal_names" },
-            { "include": "#generic_names" }
-          ]
+          "patterns": [{ "include": "#magic_function_names" }, { "include": "#magic_variable_names" }, { "include": "#illegal_names" }, { "include": "#generic_names" }]
         },
         {
           "begin": "(?<!\\.)(?=[A-Za-z_][A-Za-z0-9_]*)",
@@ -872,17 +858,10 @@
       ]
     },
     "entity_name_class": {
-      "patterns": [
-        { "include": "#illegal_names" },
-        { "include": "#generic_names" }
-      ]
+      "patterns": [{ "include": "#illegal_names" }, { "include": "#generic_names" }]
     },
     "entity_name_function": {
-      "patterns": [
-        { "include": "#magic_function_names" },
-        { "include": "#illegal_names" },
-        { "include": "#generic_names" }
-      ]
+      "patterns": [{ "include": "#magic_function_names" }, { "include": "#illegal_names" }, { "include": "#generic_names" }]
     },
     "escaped_char": {
       "captures": {
@@ -943,14 +922,7 @@
       "match": "(\\\\U[0-9A-Fa-f]{8})|(\\\\u[0-9A-Fa-f]{4})|(\\\\N\\{[a-zA-Z ]+\\})"
     },
     "function_name": {
-      "patterns": [
-        { "include": "#magic_function_names" },
-        { "include": "#magic_variable_names" },
-        { "include": "#builtin_exceptions" },
-        { "include": "#builtin_functions" },
-        { "include": "#builtin_types" },
-        { "include": "#generic_names" }
-      ]
+      "patterns": [{ "include": "#magic_function_names" }, { "include": "#magic_variable_names" }, { "include": "#builtin_exceptions" }, { "include": "#builtin_functions" }, { "include": "#builtin_types" }, { "include": "#generic_names" }]
     },
     "generic_names": { "match": "[A-Za-z_][A-Za-z0-9_]*" },
     "illegal_names": {
@@ -973,7 +945,7 @@
           "name": "punctuation.separator.parameters.python.renpy"
         }
       },
-      "patterns": [ { "include": "$self" } ]
+      "patterns": [{ "include": "$self" }]
     },
     "language_variables": {
       "match": "\\b(self|cls)\\b",
@@ -1003,7 +975,7 @@
     "regular_expressions": {
       "comment": "Changed disabled to 1 to turn off syntax highlighting in “r” strings.",
       "disabled": 0,
-      "patterns": [ { "include": "source.regexp.python" } ]
+      "patterns": [{ "include": "source.regexp.python" }]
     },
     "string_quoted_double": {
       "patterns": [
@@ -1026,13 +998,7 @@
             }
           },
           "name": "string.quoted.double.block.unicode-raw-regex.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_unicode_char" },
-            { "include": "#escaped_char" },
-            { "include": "#regular_expressions" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_unicode_char" }, { "include": "#escaped_char" }, { "include": "#regular_expressions" }]
         },
         {
           "begin": "([uU]R)(\"\"\")",
@@ -1053,12 +1019,7 @@
             }
           },
           "name": "string.quoted.double.block.unicode-raw.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_unicode_char" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_unicode_char" }, { "include": "#escaped_char" }]
         },
         {
           "begin": "(r)(\"\"\")",
@@ -1079,12 +1040,7 @@
             }
           },
           "name": "string.quoted.double.block.raw-regex.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_char" },
-            { "include": "#regular_expressions" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_char" }, { "include": "#regular_expressions" }]
         },
         {
           "begin": "(R)(\"\"\")",
@@ -1105,11 +1061,7 @@
             }
           },
           "name": "string.quoted.double.block.raw.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_char" }]
         },
         {
           "begin": "([uU])(\"\"\")",
@@ -1130,12 +1082,7 @@
             }
           },
           "name": "string.quoted.double.block.unicode.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_unicode_char" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_unicode_char" }, { "include": "#escaped_char" }]
         },
         {
           "captures": {
@@ -1144,13 +1091,7 @@
               "name": "punctuation.definition.string.begin.python.renpy"
             },
             "3": {
-              "patterns": [
-                { "include": "#escaped_placeholder" },
-                { "include": "#constant_placeholder" },
-                { "include": "#escaped_unicode_char" },
-                { "include": "#escaped_char" },
-                { "include": "#regular_expressions" }
-              ]
+              "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_unicode_char" }, { "include": "#escaped_char" }, { "include": "#regular_expressions" }]
             },
             "4": {
               "name": "punctuation.definition.string.end.python.renpy"
@@ -1182,12 +1123,7 @@
             }
           },
           "name": "string.quoted.double.single-line.unicode-raw.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_unicode_char" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_unicode_char" }, { "include": "#escaped_char" }]
         },
         {
           "captures": {
@@ -1196,12 +1132,7 @@
               "name": "punctuation.definition.string.begin.python.renpy"
             },
             "3": {
-              "patterns": [
-                { "include": "#escaped_placeholder" },
-                { "include": "#constant_placeholder" },
-                { "include": "#escaped_char" },
-                { "include": "#regular_expressions" }
-              ]
+              "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_char" }, { "include": "#regular_expressions" }]
             },
             "4": {
               "name": "punctuation.definition.string.end.python.renpy"
@@ -1233,11 +1164,7 @@
             }
           },
           "name": "string.quoted.double.single-line.raw.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_char" }]
         },
         {
           "begin": "([uU])(\")",
@@ -1261,12 +1188,7 @@
             }
           },
           "name": "string.quoted.double.single-line.unicode.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_unicode_char" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_unicode_char" }, { "include": "#escaped_char" }]
         },
         {
           "begin": "(\"\"\")",
@@ -1286,11 +1208,7 @@
             }
           },
           "name": "string.quoted.double.block.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_char" }]
         },
         {
           "begin": "(\")",
@@ -1313,11 +1231,7 @@
             }
           },
           "name": "string.quoted.double.single-line.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_char" }]
         }
       ]
     },
@@ -1357,13 +1271,7 @@
             }
           },
           "name": "string.quoted.single.block.unicode-raw-regex.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_unicode_char" },
-            { "include": "#escaped_char" },
-            { "include": "#regular_expressions" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_unicode_char" }, { "include": "#escaped_char" }, { "include": "#regular_expressions" }]
         },
         {
           "begin": "([uU]R)(''')",
@@ -1384,12 +1292,7 @@
             }
           },
           "name": "string.quoted.single.block.unicode-raw.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_unicode_char" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_unicode_char" }, { "include": "#escaped_char" }]
         },
         {
           "begin": "(r)(''')",
@@ -1410,12 +1313,7 @@
             }
           },
           "name": "string.quoted.single.block.raw-regex.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_char" },
-            { "include": "#regular_expressions" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_char" }, { "include": "#regular_expressions" }]
         },
         {
           "begin": "(R)(''')",
@@ -1436,11 +1334,7 @@
             }
           },
           "name": "string.quoted.single.block.raw.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_char" }]
         },
         {
           "begin": "([uU])(''')",
@@ -1461,12 +1355,7 @@
             }
           },
           "name": "string.quoted.single.block.unicode.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_unicode_char" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_unicode_char" }, { "include": "#escaped_char" }]
         },
         {
           "captures": {
@@ -1475,13 +1364,7 @@
               "name": "punctuation.definition.string.begin.python.renpy"
             },
             "3": {
-              "patterns": [
-                { "include": "#escaped_placeholder" },
-                { "include": "#constant_placeholder" },
-                { "include": "#escaped_unicode_char" },
-                { "include": "#escaped_char" },
-                { "include": "#regular_expressions" }
-              ]
+              "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_unicode_char" }, { "include": "#escaped_char" }, { "include": "#regular_expressions" }]
             },
             "4": {
               "name": "punctuation.definition.string.end.python.renpy"
@@ -1510,12 +1393,7 @@
             }
           },
           "name": "string.quoted.single.single-line.unicode-raw.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_unicode_char" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_unicode_char" }, { "include": "#escaped_char" }]
         },
         {
           "captures": {
@@ -1524,12 +1402,7 @@
               "name": "punctuation.definition.string.begin.python.renpy"
             },
             "3": {
-              "patterns": [
-                { "include": "#escaped_placeholder" },
-                { "include": "#constant_placeholder" },
-                { "include": "#escaped_char" },
-                { "include": "#regular_expressions" }
-              ]
+              "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_char" }, { "include": "#regular_expressions" }]
             },
             "4": {
               "name": "punctuation.definition.string.end.python.renpy"
@@ -1558,11 +1431,7 @@
             }
           },
           "name": "string.quoted.single.single-line.raw.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_char" }]
         },
         {
           "begin": "([uU])(')",
@@ -1583,12 +1452,7 @@
             }
           },
           "name": "string.quoted.single.single-line.unicode.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_unicode_char" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_unicode_char" }, { "include": "#escaped_char" }]
         },
         {
           "begin": "(''')",
@@ -1608,11 +1472,7 @@
             }
           },
           "name": "string.quoted.single.block.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_char" }]
         },
         {
           "begin": "(')",
@@ -1632,19 +1492,12 @@
             }
           },
           "name": "string.quoted.single.single-line.python.renpy",
-          "patterns": [
-            { "include": "#escaped_placeholder" },
-            { "include": "#constant_placeholder" },
-            { "include": "#escaped_char" }
-          ]
+          "patterns": [{ "include": "#escaped_placeholder" }, { "include": "#constant_placeholder" }, { "include": "#escaped_char" }]
         }
       ]
     },
     "strings": {
-      "patterns": [
-        { "include": "#string_quoted_double" },
-        { "include": "#string_quoted_single" }
-      ]
+      "patterns": [{ "include": "#string_quoted_double" }, { "include": "#string_quoted_single" }]
     }
   }
 }

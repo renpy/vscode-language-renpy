@@ -1,5 +1,5 @@
 // Document Symbol (Outline) Provider
-'use strict';
+"use strict";
 
 import { TextDocument, DocumentSymbol, Uri, Range, SymbolKind } from "vscode";
 import { Navigation } from "./navigation";
@@ -28,7 +28,7 @@ export function getDocumentSymbols(document: TextDocument): DocumentSymbol[] | u
                 if (category[key].filename === documentFilename) {
                     const childRange = new Range(category[key].location - 1, 0, category[key].location - 1, 0);
                     let classParent = new DocumentSymbol(key, `:${category[key].location}`, getDocumentSymbolKind(type, true), childRange, childRange);
-                    if (type === 'class') {
+                    if (type === "class") {
                         getClassDocumentSymbols(classParent, key);
                     }
                     parentSymbol.children.push(classParent);
@@ -37,7 +37,7 @@ export function getDocumentSymbols(document: TextDocument): DocumentSymbol[] | u
                 if (category[key][0] === documentFilename) {
                     const childRange = new Range(category[key][1] - 1, 0, category[key][1] - 1, 0);
                     let classParent = new DocumentSymbol(key, `:${category[key][1]}`, getDocumentSymbolKind(type, true), childRange, childRange);
-                    if (type === 'class') {
+                    if (type === "class") {
                         getClassDocumentSymbols(classParent, key);
                     }
                     parentSymbol.children.push(classParent);
@@ -45,7 +45,7 @@ export function getDocumentSymbols(document: TextDocument): DocumentSymbol[] | u
             }
         }
         if (parentSymbol.children.length > 0) {
-            if (type === 'class') {
+            if (type === "class") {
                 // put class at the top (before callable)
                 results.unshift(parentSymbol);
             } else {
@@ -54,7 +54,7 @@ export function getDocumentSymbols(document: TextDocument): DocumentSymbol[] | u
         }
     }
 
-    const stores = NavigationData.gameObjects['stores'];
+    const stores = NavigationData.gameObjects["stores"];
     if (stores) {
         let parentSymbol = new DocumentSymbol("store", "", getDocumentSymbolKind("store", false), range, range);
         for (let key in stores) {
@@ -89,88 +89,78 @@ export function getDocumentSymbols(document: TextDocument): DocumentSymbol[] | u
  * @param child - Used to return either the child kind or the parent kind
  * @returns SymbolKind enumeration
  */
-function getDocumentSymbolKind(category: string, child: boolean) : SymbolKind {
-	switch (category) {
-		case "callable":
-			return child ? SymbolKind.Method : SymbolKind.Module;
-		case "screen":
-			return child ? SymbolKind.Struct : SymbolKind.Module;
-		case "define":
-			return child ? SymbolKind.Variable : SymbolKind.Module;
-		case "transform":
-			return child ? SymbolKind.Variable : SymbolKind.Module;
-		case "label":
-			return child ? SymbolKind.String : SymbolKind.Module;
-		case "class":
-			return child ? SymbolKind.Class : SymbolKind.Module;
-		case "displayable":
-			return child ? SymbolKind.File : SymbolKind.Module;
-		case "persistent":
-			return child ? SymbolKind.Constant : SymbolKind.Module;
+function getDocumentSymbolKind(category: string, child: boolean): SymbolKind {
+    switch (category) {
+        case "callable":
+            return child ? SymbolKind.Method : SymbolKind.Module;
+        case "screen":
+            return child ? SymbolKind.Struct : SymbolKind.Module;
+        case "define":
+            return child ? SymbolKind.Variable : SymbolKind.Module;
+        case "transform":
+            return child ? SymbolKind.Variable : SymbolKind.Module;
+        case "label":
+            return child ? SymbolKind.String : SymbolKind.Module;
+        case "class":
+            return child ? SymbolKind.Class : SymbolKind.Module;
+        case "displayable":
+            return child ? SymbolKind.File : SymbolKind.Module;
+        case "persistent":
+            return child ? SymbolKind.Constant : SymbolKind.Module;
         case "store":
             return child ? SymbolKind.Module : SymbolKind.Module;
         default:
-			return SymbolKind.Variable;
-	}
+            return SymbolKind.Variable;
+    }
 }
 
 function getClassDocumentSymbols(classParent: DocumentSymbol, key: string) {
-    const callables = NavigationData.data.location['callable'];
+    const callables = NavigationData.data.location["callable"];
     if (callables) {
-        const filtered = Object.keys(callables).filter(k => k.indexOf(key + '.') === 0);
+        const filtered = Object.keys(callables).filter((k) => k.indexOf(key + ".") === 0);
         if (filtered) {
             for (let callable of filtered) {
                 const label = callable.substring(key.length + 1);
                 const line = callables[callable][1];
                 const childRange = new Range(line - 1, 0, line - 1, 0);
-                classParent.children.push(
-                    new DocumentSymbol(label, `:${line}`, SymbolKind.Method, childRange, childRange)
-                );
+                classParent.children.push(new DocumentSymbol(label, `:${line}`, SymbolKind.Method, childRange, childRange));
             }
         }
     }
-    const fields = NavigationData.gameObjects['fields'][key];
+    const fields = NavigationData.gameObjects["fields"][key];
     if (fields) {
         for (let f of fields) {
             const childRange = new Range(f.location - 1, 0, f.location - 1, 0);
-            classParent.children.push(
-                new DocumentSymbol(f.keyword, `:${f.location}`, SymbolKind.Field, childRange, childRange)
-            );
+            classParent.children.push(new DocumentSymbol(f.keyword, `:${f.location}`, SymbolKind.Field, childRange, childRange));
         }
     }
-    const props = NavigationData.gameObjects['properties'][key];
+    const props = NavigationData.gameObjects["properties"][key];
     if (props) {
         for (let p of props) {
             const childRange = new Range(p.location - 1, 0, p.location - 1, 0);
-            classParent.children.push(
-                new DocumentSymbol(p.keyword, `:${p.location}`, SymbolKind.Property, childRange, childRange)
-            );
+            classParent.children.push(new DocumentSymbol(p.keyword, `:${p.location}`, SymbolKind.Property, childRange, childRange));
         }
     }
 }
 
 function getStoreDocumentSymbols(classParent: DocumentSymbol, key: string) {
-    const callables = NavigationData.data.location['callable'];
+    const callables = NavigationData.data.location["callable"];
     if (callables) {
-        const filtered = Object.keys(callables).filter(k => k.indexOf(key + '.') === 0);
+        const filtered = Object.keys(callables).filter((k) => k.indexOf(key + ".") === 0);
         if (filtered) {
             for (let callable of filtered) {
                 const label = callable.substring(key.length + 1);
                 const line = callables[callable][1];
                 const childRange = new Range(line - 1, 0, line - 1, 0);
-                classParent.children.push(
-                    new DocumentSymbol(label, `:${line}`, SymbolKind.Method, childRange, childRange)
-                );
+                classParent.children.push(new DocumentSymbol(label, `:${line}`, SymbolKind.Method, childRange, childRange));
             }
         }
     }
-    const fields = NavigationData.gameObjects['fields'][`store.${key}`];
+    const fields = NavigationData.gameObjects["fields"][`store.${key}`];
     if (fields) {
         for (let f of fields) {
             const childRange = new Range(f.location - 1, 0, f.location - 1, 0);
-            classParent.children.push(
-                new DocumentSymbol(f.keyword.substring(key.length + 1), `:${f.location}`, SymbolKind.Field, childRange, childRange)
-            );
+            classParent.children.push(new DocumentSymbol(f.keyword.substring(key.length + 1), `:${f.location}`, SymbolKind.Field, childRange, childRange));
         }
     }
 }

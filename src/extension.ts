@@ -52,6 +52,7 @@ import { getDefinition } from "./definition";
 import { getDocumentSymbols } from "./outline";
 import { getSignatureHelp } from "./signature";
 import { findAllReferences } from "./references";
+import { registerDecorator } from "./decorator";
 import * as fs from "fs";
 import * as cp from "child_process";
 
@@ -230,7 +231,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     );
     context.subscriptions.push(semanticTokens);
 
-    // A TextDocument was changed
+    // A TextDocument was saved
     context.subscriptions.push(
         workspace.onDidSaveTextDocument((document) => {
             if (document.languageId !== "renpy") {
@@ -260,6 +261,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
             }
         })
     );
+
+    registerDecorator(context);
 
     // diagnostics (errors and warnings)
     const diagnostics = languages.createDiagnosticCollection("renpy");

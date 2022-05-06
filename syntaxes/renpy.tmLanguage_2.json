@@ -154,7 +154,7 @@
         },
         {
           "comment": "[TODO: Should probably only be a keyword in the expression]Renpy sub expression keywords",
-          "match": "\\b(set|expression|pass|sound|at|with|from)\\b",
+          "match": "\\b(set|expression|sound|at|with|from)\\b",
           "name": "keyword.other.renpy"
         }
       ]
@@ -182,7 +182,7 @@
       "patterns": [{ "include": "#escaped_char" }, { "include": "#constant_placeholder" }]
     },
     "escaped_char": {
-      "match": "(\\\\\")|(\\\\')|(\\\\ )|(\\\\n)|(\\\\\\\\)|(\\[\\[)|({{)",
+      "match": "(\\\\\")|(\\\\')|(\\\\ )|(\\\\n)|(\\\\\\\\)|(?|(\\[\\[)|({{))",
       "captures": {
         "1": {
           "name": "constant.character.escape.double-quote.python.renpy"
@@ -200,9 +200,6 @@
           "name": "constant.character.escape.backslash.python.renpy"
         },
         "6": {
-          "name": "constant.character.escape.placeholder.python.renpy"
-        },
-        "7": {
           "name": "constant.character.escape.placeholder.python.renpy"
         }
       }

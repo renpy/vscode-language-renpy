@@ -73,7 +73,7 @@ export function getWorkspaceFolder() {
  * @returns The full path and filename of the file with invalid characters removed
  */
 export function cleanUpPath(path: string): string {
-    if (path.startsWith("/") && path.substring(2, 2) === ":/") {
+    if (path.startsWith("/") && path.startsWith(":/", 2)) {
         // windows is reporting the path as "/c:/xxx"
         path = path.substring(1);
     }

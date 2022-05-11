@@ -149,42 +149,35 @@ export enum EscapedCharacterTokenType {
     Escaped_OpenBracket, // {{
 }
 
-export type TokenType = StatementToken | ExpressionToken;
+export type TokenBaseType = StatementToken | ExpressionToken;
 export type StatementTokenSubType = KeywordTokenType | EntityTokenType | MetaTokenType;
 export type ExpressionTokenSubType = ConstantToken | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;
-export type TokenSubType = StatementTokenSubType | ExpressionTokenSubType;
+export type TokenType = StatementTokenSubType | ExpressionTokenSubType;
 
 export class Token {
     tokenType: TokenType;
-    tokenSubType: TokenSubType;
     range: Range;
 
-    constructor(tokenType: TokenType, tokenSubType: TokenSubType, range: Range) {
+    constructor(tokenType: TokenType, range: Range) {
         this.range = range;
         this.tokenType = tokenType;
-        this.tokenSubType = tokenSubType;
     }
 }
 
-export type TokenPatternCapture = {
-    [k: string | number]: {
-        token: TokenType;
-        subToken: TokenSubType;
-        patterns?: TokenPattern[];
-    };
-};
+export interface TokenIncludePattern {
+    include: TokenPattern;
+}
 
-export interface ITokenPattern {
+export interface BaseTokenPattern {
     token?: TokenType;
-    subToken?: TokenSubType;
     patterns?: TokenPattern[];
 }
 
-export interface TokenIncludePattern {
-    include?: TokenPattern;
-}
+export type TokenPatternCapture = {
+    [k: string | number]: BaseTokenPattern;
+};
 
-export interface TokenRangePattern extends ITokenPattern {
+export interface TokenRangePattern extends BaseTokenPattern {
     contentToken?: TokenType;
 
     begin: RegExp;
@@ -194,9 +187,21 @@ export interface TokenRangePattern extends ITokenPattern {
     endCaptures?: TokenPatternCapture;
 }
 
-export interface TokenMatchPattern extends ITokenPattern {
+export interface TokenMatchPattern extends BaseTokenPattern {
     match: RegExp;
     captures?: TokenPatternCapture;
 }
 
-export type TokenPattern = TokenIncludePattern | TokenRangePattern | TokenMatchPattern | ITokenPattern;
+export type TokenPattern = TokenIncludePattern | TokenRangePattern | TokenMatchPattern | BaseTokenPattern;
+
+export function isIncludePattern(p: TokenPattern): p is TokenIncludePattern {
+    return (p as TokenIncludePattern).include !== undefined;
+}
+
+export function isRangePattern(p: TokenPattern): p is TokenRangePattern {
+    return (p as TokenRangePattern).begin !== undefined;
+}
+
+export function isMatchPattern(p: TokenPattern): p is TokenMatchPattern {
+    return (p as TokenMatchPattern).match !== undefined;
+}

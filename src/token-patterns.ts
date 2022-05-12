@@ -1,4 +1,4 @@
-import { CharacterTokenType, ConstantToken, EntityTokenType, ExpressionToken, KeywordTokenType, MetaTokenType, OperatorTokenType, StatementToken, Token, TokenPattern } from "./token-definitions";
+import { CharacterTokenType, ConstantTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType, TokenPattern } from "./token-definitions";
 
 // These patterns are converted from the tmLanguage file.
 // Copy the patterns (the contents of the repository group) over and apply the following find and replace patterns:
@@ -22,12 +22,16 @@ import { CharacterTokenType, ConstantToken, EntityTokenType, ExpressionToken, Ke
 // replace with: $1
 
 // find: (?<=(?:^ *|\{ )(?:match|begin|end): )"(.*?)"(?=,?$)
-// replace with: /$1/gd
+// replace with: /$1/dg
 
-// find: (?<=(?:^ *|\{ )(?:match|begin|end): /.*?)\\\\(?=.*?/gd,?$)
+// find: (?<=(?:^ *|\{ )(?:match|begin|end): /.*?)\\\\(?=.*?/dg,?$)
 // replace with: \
 
 // Result should be manually fixed
+
+const pythonParameters: TokenPattern = { patterns: [] };
+
+const pythonSource: TokenPattern = { patterns: [] };
 
 const pythonStatements: TokenPattern = {
     patterns: [
@@ -35,7 +39,7 @@ const pythonStatements: TokenPattern = {
             // Renpy python block
             contentToken: MetaTokenType.PythonBlock,
 
-            begin: /(^[ \t]+)?(?:\b(init)\b\s+(?:(-)?(\d*)\s+)?)?\b(python)\b(.*?)(:)/gd,
+            begin: /(^[ \t]+)?(?:\b(init)\b\s+(?:(-)?(\d*)\s+)?)?\b(python)\b(.*?)(:)/dg,
             beginCaptures: {
                 1: {
                     token: CharacterTokenType.WhiteSpace,
@@ -47,18 +51,18 @@ const pythonStatements: TokenPattern = {
                     token: OperatorTokenType.Plus,
                 },
                 4: {
-                    token: ConstantToken.Integer,
+                    token: ConstantTokenType.Integer,
                 },
                 5: {
                     token: KeywordTokenType.Python,
                 },
                 6: {
-                    token: "meta.python.block.arguments.renpy",
+                    token: MetaTokenType.Arguments,
 
                     patterns: [
                         {
                             // in statement
-                            match: /(?:\s*(in)\s*([a-zA-Z_]\w*)\b)/gd,
+                            match: /(?:\s*(in)\s*([a-zA-Z_]\w*)\b)/dg,
                             captures: {
                                 1: {
                                     token: KeywordTokenType.In,
@@ -70,36 +74,52 @@ const pythonStatements: TokenPattern = {
                         },
                         {
                             // keywords
-                            match: /\b(hide|early|in)\b/gd,
-                            token: KeywordTokenType.,
+                            match: /\b(hide)|(early)|(in)\b/dg,
+                            captures: {
+                                1: {
+                                    token: KeywordTokenType.Hide,
+                                },
+                                2: {
+                                    token: KeywordTokenType.Early,
+                                },
+                                3: {
+                                    token: KeywordTokenType.In,
+                                },
+                            },
                         },
                     ],
                 },
                 7: {
-                    token: "punctuation.section.python.begin.renpy",
+                    token: CharacterTokenType.Colon,
                 },
             },
-            end: /^(?!(\1[ \t]+)|($))/gd,
-            patterns: [{ include: "source.python" }],
+            end: /^(?!(\1[ \t]+)|($))/dg,
+            patterns: [{ include: pythonSource }],
         },
         {
             // Match begin and end of python one line statements
-            contentToken: "meta.embedded.line.python",
-            begin: /(\$|\bdefine|\bdefault)(?=\s)/gd,
+            contentToken: MetaTokenType.PythonLine,
+            begin: /(\$)|\b(define)|\b(default)(?=\s)/dg,
             beginCaptures: {
                 1: {
-                    token: KeywordTokenType.,
+                    token: KeywordTokenType.DollarSign,
+                },
+                2: {
+                    token: KeywordTokenType.Define,
+                },
+                3: {
+                    token: KeywordTokenType.Default,
                 },
             },
-            end: /\R$/gd,
+            end: /\R$/dg,
 
             patterns: [
                 {
                     // Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)
-                    match: /(?<!\.)\b(\w+)(?=\s=\s)/gd,
-                    token: "variable.other.python",
+                    match: /(?<!\.)\b(\w+)(?=\s=\s)/dg,
+                    token: EntityTokenType.Variable,
                 },
-                { include: "source.python" },
+                { include: pythonSource },
             ],
         },
     ],
@@ -108,35 +128,34 @@ const pythonStatements: TokenPattern = {
 const label: TokenPattern = {
     patterns: [
         {
-            token: "meta.label.renpy",
-            begin: /(^[ \t]+)?\b(label)\s+([a-zA-Z_.]\w*(?:\(.*\))?)(?=\s*)(:)/gd,
+            token: MetaTokenType.Block,
+            begin: /(^[ \t]+)?\b(label)\s+([a-zA-Z_.]\w*(?:\(.*\))?)(?=\s*)(:)/dg,
             beginCaptures: {
                 1: {
-                    token: "punctuation.whitespace.label.leading.renpy",
+                    token: CharacterTokenType.WhiteSpace,
                 },
                 2: {
-                    token: "keyword.renpy storage.type.function.renpy",
+                    token: KeywordTokenType.Label,
                 },
                 3: {
-                    token: "meta.label.renpy",
                     patterns: [
                         {
                             // Function name
-                            match: /([a-zA-Z_.]\w*)/gd,
-                            token: "entity.name.function.renpy",
+                            match: /([a-zA-Z_.]\w*)/dg,
+                            token: EntityTokenType.Function,
                         },
-                        { include: "source.python#parameters" },
+                        { include: pythonParameters },
                     ],
                 },
                 4: {
-                    token: "punctuation.section.label.begin.renpy",
+                    token: CharacterTokenType.Colon,
                 },
             },
 
-            end: /(:|(?=[#'\"\n]))/gd,
+            end: /(:|(?=[#'\"\n]))/dg,
             endCaptures: {
                 1: {
-                    token: "punctuation.section.label.begin.renpy",
+                    token: CharacterTokenType.Colon,
                 },
             },
         },
@@ -147,85 +166,173 @@ const keywords: TokenPattern = {
     patterns: [
         {
             // Python statement keywords
-            match: /\b(init|python|hide|early|in|define|default)\b/gd,
-            token: KeywordTokenType.,
+            match: /\b(init)|(python)|(hide)|(early)|(in)|(define)|(default)\b/dg,
+            captures: {
+                1: {
+                    token: KeywordTokenType.Init,
+                },
+                2: {
+                    token: KeywordTokenType.Python,
+                },
+                3: {
+                    token: KeywordTokenType.Hide,
+                },
+                4: {
+                    token: KeywordTokenType.Early,
+                },
+                5: {
+                    token: KeywordTokenType.In,
+                },
+                6: {
+                    token: KeywordTokenType.Define,
+                },
+                7: {
+                    token: KeywordTokenType.Default,
+                },
+            },
         },
         {
             // Renpy keywords
-            match: /\b(label|play|pause|screen|scene|show|image|transform)\b/gd,
-            token: "keyword.other.renpy",
+            match: /\b(label)|(play)|(pause)|(screen)|(scene)|(show)|(image)|(transform)\b/dg,
+            captures: {
+                1: {
+                    token: KeywordTokenType.Label,
+                },
+                2: {
+                    token: KeywordTokenType.Play,
+                },
+                3: {
+                    token: KeywordTokenType.Pause,
+                },
+                4: {
+                    token: KeywordTokenType.Screen,
+                },
+                5: {
+                    token: KeywordTokenType.Scene,
+                },
+                6: {
+                    token: KeywordTokenType.Show,
+                },
+                7: {
+                    token: KeywordTokenType.Image,
+                },
+                8: {
+                    token: KeywordTokenType.Transform,
+                },
+            },
         },
         {
             // Conditional control flow keywords
-            match: /\b(if|elif|else)\b/gd,
-            token: "keyword.control.conditional.renpy",
+            match: /\b(if)|(elif)|(else)\b/dg,
+            captures: {
+                1: {
+                    token: KeywordTokenType.If,
+                },
+                2: {
+                    token: KeywordTokenType.Elif,
+                },
+                3: {
+                    token: KeywordTokenType.Else,
+                },
+            },
         },
         {
             // Control flow keywords
-            match: /\b(for|while|pass|return|menu|jump|call)\b/gd,
-            token: "keyword.control.renpy",
+            match: /\b(for)|(while)|(pass)|(return)|(menu)|(jump)|(call)\b/dg,
+            captures: {
+                1: {
+                    token: KeywordTokenType.For,
+                },
+                2: {
+                    token: KeywordTokenType.While,
+                },
+                3: {
+                    token: KeywordTokenType.Pass,
+                },
+                4: {
+                    token: KeywordTokenType.Return,
+                },
+                5: {
+                    token: KeywordTokenType.Menu,
+                },
+                6: {
+                    token: KeywordTokenType.Jump,
+                },
+                7: {
+                    token: KeywordTokenType.Call,
+                },
+            },
         },
         {
             // [TODO: Should probably only be a keyword in the expression]Renpy sub expression keywords
-            match: /\b(set|expression|sound|at|with|from)\b/gd,
-            token: "keyword.other.renpy",
+            match: /\b(set)|(expression)|(sound)|(at)|(with)|(from)\b/dg,
+            captures: {
+                1: {
+                    token: KeywordTokenType.Set,
+                },
+                2: {
+                    token: KeywordTokenType.Expression,
+                },
+                3: {
+                    token: KeywordTokenType.Sound,
+                },
+                4: {
+                    token: KeywordTokenType.At,
+                },
+                5: {
+                    token: KeywordTokenType.With,
+                },
+                6: {
+                    token: KeywordTokenType.From,
+                },
+                7: {
+                    token: KeywordTokenType.Call,
+                },
+            },
         },
     ],
 };
 
 const codeTags: TokenPattern = {
-    match: /(?:\b(NOTE|XXX|HACK|FIXME|BUG|TODO)\b)/gd,
-    captures: { 1: { token: "keyword.codetag.notation.renpy" } },
+    match: /(?:\b(NOTE|XXX|HACK|FIXME|BUG|TODO)\b)/dg,
+    captures: { 1: { token: MetaTokenType.CommentCodeTag } },
 };
 
 const comments: TokenPattern = {
-    token: "comment.line.number-sign.renpy",
-    begin: /(\#)/gd,
+    token: MetaTokenType.Comment,
+    begin: /(\#)(.*)$/dg,
     beginCaptures: {
-        1: { token: "punctuation.definition.comment.renpy" },
+        1: { token: CharacterTokenType.Hashtag },
     },
-    end: /($)/gd,
+    end: /($)/dg,
     patterns: [{ include: codeTags }],
 };
 
 const escapedChar: TokenPattern = {
-    match: /(\\\")|(\\')|(\\ )|(\\n)|(\\\\)|(?|(\[\[)|({{))/gd,
+    match: /(\\\")|(\\')|(\\ )|(\\n)|(\\\\)|(\[\[)|({{)/dg,
     captures: {
         1: {
-            token: "constant.character.escape.double-quote.python.renpy",
+            token: EscapedCharacterTokenType.Escaped_DoubleQuote,
         },
         2: {
-            token: "constant.character.escape.single-quote.python.renpy",
+            token: EscapedCharacterTokenType.Escaped_Quote,
         },
         3: {
-            token: "constant.character.escape.space.python.renpy",
+            token: EscapedCharacterTokenType.Escaped_Whitespace,
         },
         4: {
-            token: "constant.character.escape.newline.python.renpy",
+            token: EscapedCharacterTokenType.Escaped_Newline,
         },
         5: {
-            token: "constant.character.escape.backslash.python.renpy",
+            token: EscapedCharacterTokenType.Escaped_Backslash,
         },
         6: {
-            token: "constant.character.escape.placeholder.python.renpy",
+            token: EscapedCharacterTokenType.Escaped_OpenBracket,
+        },
+        7: {
+            token: EscapedCharacterTokenType.Escaped_OpenSquareBracket,
         },
     },
-};
-
-const constantPlaceholder: TokenPattern = {
-    patterns: [
-        { include: stringTags },
-        {
-            // Python value interpolation using [ ... ]
-            token: "meta.brackets.renpy constant.other.placeholder.tags.renpy",
-            match: /(\[)((?:.*\[.*?\])*.*?)(\])/gd,
-            captures: {
-                1: { token: "constant.character.format.placeholder.other.renpy" },
-                2: { token: "meta.embedded.line.python source.python" },
-                3: { token: "constant.character.format.placeholder.other.renpy" },
-            },
-        },
-    ],
 };
 
 const hexLiteral: TokenPattern = {
@@ -233,310 +340,326 @@ const hexLiteral: TokenPattern = {
     patterns: [
         {
             // rgb, rgba, rrggbb, rrggbbaa
-            match: /(?i)#(?:[a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{3,4})\b/gd,
-            token: "support.constant.color.renpy",
+            match: /#(?:[a-f0-9]{8}|[a-f0-9]{6}|[a-f0-9]{3,4})\b/dgi,
+            token: ConstantTokenType.Color,
         },
         {
-            match: /(?i)#[a-f0-9]+\b/gd,
-            token: "invalid.illegal.unexpected-number-of-hex-values.renpy",
+            match: /#[a-f0-9]+\b/dgi,
+            token: MetaTokenType.Invalid,
         },
         {
-            match: /(?i)(?:#[a-f0-9]*)?(.+)/gd,
-            token: "support.constant.color.renpy",
+            match: /(?:#[a-f0-9]*)?(.+)/dgi,
+            token: ConstantTokenType.Color,
             captures: {
-                1: { token: "invalid.illegal.character-not-allowed-here.renpy" },
+                1: { token: MetaTokenType.Invalid },
+            },
+        },
+    ],
+};
+
+const constantPlaceholder: TokenPattern = {
+    patterns: [
+        {
+            // Python value interpolation using [ ... ]
+            token: MetaTokenType.Placeholder,
+            match: /(\[)((?:.*\[.*?\])*.*?)(\])/dg,
+            captures: {
+                1: { token: CharacterTokenType.OpenSquareBracket },
+                2: { token: MetaTokenType.PythonLine },
+                3: { token: CharacterTokenType.CloseSquareBracket },
             },
         },
     ],
 };
 
 const stringsInterior: TokenPattern = {
-    patterns: [{ include: escapedChar }, { include: constantPlaceholder }],
+    patterns: [{ include: escapedChar }, { include: constantPlaceholder }], // { include: stringTags } (Recursive pattern. See below)
 };
 
 const stringTags: TokenPattern = {
     patterns: [
         {
             // Valid tags without params (self-closing)
-            match: /({)\s*(nw|done|fast|p|w|clear)\s*(})/gd,
+            match: /({)\s*(nw|done|fast|p|w|clear)\s*(})/dg,
             captures: {
-                0: { token: "meta.tag.$2.self-closing.renpy" },
+                0: { token: MetaTokenType.Tag },
                 1: { token: CharacterTokenType.OpenBracket },
-                2: { token: "entity.name.tag.$2.renpy" },
+                2: { token: EntityTokenType.Tag },
                 3: { token: CharacterTokenType.CloseBracket },
             },
         },
         {
             // Valid tags with numeric params (self-closing)
-            token: "meta.tag.$2.self-closing.renpy",
-            match: /({)\s*(p|w)(=)(\+?)(\d+(?:.\d+)?)\s*(})/gd,
-            captures: {
-                0: { token: "meta.tag.$2.self-closing.renpy" },
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: "entity.name.tag.$2.renpy" },
-                3: { token: "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
-                4: { token: "keyword.operator.arithmetic.renpy" },
-                5: { token: "support.constant.property-value constant.numeric.float.renpy" },
-                6: { token: CharacterTokenType.CloseBracket },
-            },
-        },
-        {
-            // Valid tags with numeric params (self-closing)
-            token: "meta.tag.$2.self-closing.renpy",
-            match: /({)\s*(v?space)(=)(\+?)(\d+)\s*(})/gd,
+            token: MetaTokenType.Tag,
+            match: /({)\s*(p|w)(=)(\+?)(\d+(?:.\d+)?)\s*(})/dg,
             captures: {
                 0: { token: MetaTokenType.Tag },
                 1: { token: CharacterTokenType.OpenBracket },
                 2: { token: EntityTokenType.Tag },
                 3: { token: OperatorTokenType.Assign },
                 4: { token: OperatorTokenType.Plus },
-                5: { token: ConstantToken.Integer },
+                5: { token: ConstantTokenType.Float },
+                6: { token: CharacterTokenType.CloseBracket },
+            },
+        },
+        {
+            // Valid tags with numeric params (self-closing)
+            token: MetaTokenType.Tag,
+            match: /({)\s*(v?space)(=)(\+?)(\d+)\s*(})/dg,
+            captures: {
+                0: { token: MetaTokenType.Tag },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: EntityTokenType.Tag },
+                3: { token: OperatorTokenType.Assign },
+                4: { token: OperatorTokenType.Plus },
+                5: { token: ConstantTokenType.Integer },
                 6: { token: CharacterTokenType.CloseBracket },
             },
         },
         {
             // Hashtag tag (self-closing)
-            token: "meta.tag.$2.self-closing.renpy",
-            match: /({)\s*(#)\s*(.*?)\s*(})/gd,
+            token: MetaTokenType.Tag,
+            match: /({)\s*(#)\s*(.*?)\s*(})/dg,
             captures: {
-                0: { token: "meta.tag.$2.self-closing.renpy" },
-                1: { token: "punctuation.definition.tag.begin.renpy" },
-                2: { token: "entity.name.tag.$2.renpy" },
-                3: { token: "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
-                4: { token: "support.constant.property-value string.unquoted.renpy" },
-                5: { token: "punctuation.definition.tag.end.renpy" },
+                0: { token: MetaTokenType.Tag },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: EntityTokenType.Tag },
+                3: { token: OperatorTokenType.Assign },
+                4: { token: ConstantTokenType.UnquotedString },
+                5: { token: CharacterTokenType.CloseBracket },
             },
         },
         {
             // Valid tags with file param
-            token: "meta.tag.$2.self-closing.renpy",
-            match: /({)\s*(font|image)(=)([\w.]+)\s*(})/gd,
+            token: MetaTokenType.Tag,
+            match: /({)\s*(font|image)(=)([\w.]+)\s*(})/dg,
             captures: {
-                0: { token: "meta.tag.$2.self-closing.renpy" },
-                1: { token: "punctuation.definition.tag.begin.renpy" },
-                2: { token: "entity.name.tag.$2.renpy" },
-                3: { token: "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
-                4: { token: "support.constant.property-value string.unquoted.renpy" },
-                5: { token: "punctuation.definition.tag.end.renpy" },
+                0: { token: MetaTokenType.Tag },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: EntityTokenType.Tag },
+                3: { token: OperatorTokenType.Assign },
+                4: { token: ConstantTokenType.UnquotedString },
+                5: { token: CharacterTokenType.CloseBracket },
             },
         },
         {
             // Valid tags without params (close required)
-            contentToken: "renpy.meta.$2",
-            begin: /({)\s*(u|i|b|s|plain|alt|noalt|art|rb|rt)\s*(})/gd,
+            begin: /({)\s*(u|i|b|s|plain|alt|noalt|art|rb|rt)\s*(})/dg,
             beginCaptures: {
-                0: { token: "meta.tag.$2.start.renpy" },
-                1: { token: "punctuation.definition.tag.begin.renpy" },
-                2: { token: "entity.name.tag.$2.renpy" },
-                3: { token: "punctuation.definition.tag.end.renpy" },
+                0: { token: MetaTokenType.Tag },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: EntityTokenType.Tag },
+                3: { token: CharacterTokenType.CloseBracket },
             },
-            end: /({/)\s*(\2)\s*(})/gd,
+            end: /({\/)\s*(\2)\s*(})/dg,
             endCaptures: {
-                0: { token: "meta.tag.$2.end.renpy" },
-                1: { token: "punctuation.definition.tag.begin.renpy" },
-                2: { token: "entity.name.tag.$2.renpy" },
-                3: { token: "punctuation.definition.tag.end.renpy" },
+                0: { token: MetaTokenType.Tag },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: EntityTokenType.Tag },
+                3: { token: CharacterTokenType.CloseBracket },
             },
             patterns: [{ include: stringsInterior }],
         },
         {
             // Valid tags with numeric params (close required)
-            contentToken: "renpy.meta.$2",
-            begin: /({)\s*(alpha|cps|k)(=)([*\-+]?)(\d+(?:.\d+)?)\s*(})/gd,
+            begin: /({)\s*(alpha|cps|k)(=)(?:(\*)|(\-)|(\+))?(\d+(?:.\d+)?)\s*(})/dg,
             beginCaptures: {
-                0: { token: "meta.tag.$2.start.renpy" },
-                1: { token: "punctuation.definition.tag.begin.renpy" },
-                2: { token: "entity.name.tag.$2.renpy" },
-                3: { token: "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
-                4: { token: "keyword.operator.arithmetic.renpy" },
-                5: { token: "support.constant.property-value constant.numeric.renpy" },
-                6: { token: "punctuation.definition.tag.end.renpy" },
+                0: { token: MetaTokenType.Tag },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: EntityTokenType.Tag },
+                3: { token: OperatorTokenType.Assign },
+                4: { token: OperatorTokenType.Multiply },
+                5: { token: OperatorTokenType.Minus },
+                6: { token: OperatorTokenType.Plus },
+                7: { token: ConstantTokenType.Float },
+                8: { token: CharacterTokenType.CloseBracket },
             },
-            end: /({/)\s*(\2)\s*(})/gd,
+            end: /({\/)\s*(\2)\s*(})/dg,
             endCaptures: {
                 0: {
-                    token: "meta.tag.$2.end.renpy",
+                    token: MetaTokenType.Tag,
                 },
                 1: {
-                    token: "punctuation.definition.tag.begin.renpy",
+                    token: CharacterTokenType.OpenBracket,
                 },
                 2: {
-                    token: "entity.name.tag.$2.renpy",
+                    token: EntityTokenType.Tag,
                 },
                 3: {
-                    token: "punctuation.definition.tag.end.renpy",
+                    token: CharacterTokenType.CloseBracket,
                 },
             },
             patterns: [{ include: stringsInterior }],
         },
         {
             // Valid tags with numeric params (close required)
-            contentToken: "renpy.meta.$2",
-            begin: /({)\s*(size)(=)([\-+]?)(\d+)\s*(})/gd,
+            begin: /({)\s*(size)(=)(?:(\-)|(\+))?(\d+)\s*(})/dg,
             beginCaptures: {
-                0: { token: "meta.tag.$2.start.renpy" },
-                1: { token: "punctuation.definition.tag.begin.renpy" },
-                2: { token: "entity.name.tag.$2.renpy" },
-                3: { token: "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
-                4: { token: "keyword.operator.arithmetic.renpy" },
-                5: { token: "support.constant.property-value constant.numeric.integer.renpy" },
-                6: { token: "punctuation.definition.tag.end.renpy" },
+                0: { token: MetaTokenType.Tag },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: EntityTokenType.Tag },
+                3: { token: OperatorTokenType.Assign },
+                4: { token: OperatorTokenType.Minus },
+                5: { token: OperatorTokenType.Plus },
+                6: { token: ConstantTokenType.Integer },
+                7: { token: CharacterTokenType.CloseBracket },
             },
-            end: /({/)\s*(\2)\s*(})/gd,
+            end: /({\/)\s*(\2)\s*(})/dg,
             endCaptures: {
                 0: {
-                    token: "meta.tag.$2.end.renpy",
+                    token: MetaTokenType.Tag,
                 },
                 1: {
-                    token: "punctuation.definition.tag.begin.renpy",
+                    token: CharacterTokenType.OpenBracket,
                 },
                 2: {
-                    token: "entity.name.tag.$2.renpy",
+                    token: EntityTokenType.Tag,
                 },
                 3: {
-                    token: "punctuation.definition.tag.end.renpy",
+                    token: CharacterTokenType.CloseBracket,
                 },
             },
             patterns: [{ include: stringsInterior }],
         },
         {
             // Color tag
-            contentToken: "renpy.meta.$2.$4",
-            begin: /({)\s*(color|outlinecolor)(=)(#?[a-zA-Z0-9]+)\s*(})/gd,
+            begin: /({)\s*(color|outlinecolor)(=)(#?[a-zA-Z0-9]+)\s*(})/dg,
             beginCaptures: {
-                0: { token: "meta.tag.$2.start.renpy" },
-                1: { token: "punctuation.definition.tag.begin.renpy" },
-                2: { token: "entity.name.tag.$2.renpy" },
-                3: { token: "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+                0: { token: MetaTokenType.Tag },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: EntityTokenType.Tag },
+                3: { token: OperatorTokenType.Assign },
                 4: {
-                    token: "support.constant.property-value",
                     patterns: [{ include: hexLiteral }],
                 },
-                5: { token: "punctuation.definition.tag.end.renpy" },
+                5: { token: CharacterTokenType.CloseBracket },
             },
-            end: /({/)\s*(\2)\s*(})/gd,
+            end: /({\/)\s*(\2)\s*(})/dg,
             endCaptures: {
                 0: {
-                    token: "meta.tag.$2.end.renpy",
+                    token: MetaTokenType.Tag,
                 },
                 1: {
-                    token: "punctuation.definition.tag.begin.renpy",
+                    token: CharacterTokenType.OpenBracket,
                 },
                 2: {
-                    token: "entity.name.tag.$2.renpy",
+                    token: EntityTokenType.Tag,
                 },
                 3: {
-                    token: "punctuation.definition.tag.end.renpy",
+                    token: CharacterTokenType.CloseBracket,
                 },
             },
             patterns: [{ include: stringsInterior }],
         },
         {
             // a tag
-            contentToken: "renpy.meta.$2",
-            begin: /({)\s*(a)(=)(.*?)\s*(})/gd,
+            begin: /({)\s*(a)(=)(.*?)\s*(})/dg,
             beginCaptures: {
-                0: { token: "meta.tag.$2.start.renpy" },
-                1: { token: "punctuation.definition.tag.begin.renpy" },
-                2: { token: "entity.name.tag.$2.renpy" },
-                3: { token: "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+                0: { token: MetaTokenType.Tag },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: EntityTokenType.Tag },
+                3: { token: OperatorTokenType.Assign },
                 4: {
-                    token: "support.constant.property-value string.unquoted.renpy",
+                    token: ConstantTokenType.UnquotedString,
                     patterns: [],
                 },
-                5: { token: "punctuation.definition.tag.end.renpy" },
+                5: { token: CharacterTokenType.CloseBracket },
             },
-            end: /({/)\s*(\2)\s*(})/gd,
+            end: /({\/)\s*(\2)\s*(})/dg,
             endCaptures: {
                 0: {
-                    token: "meta.tag.$2.end.renpy",
+                    token: MetaTokenType.Tag,
                 },
                 1: {
-                    token: "punctuation.definition.tag.begin.renpy",
+                    token: CharacterTokenType.OpenBracket,
                 },
                 2: {
-                    token: "entity.name.tag.$2.renpy",
+                    token: EntityTokenType.Tag,
                 },
                 3: {
-                    token: "punctuation.definition.tag.end.renpy",
+                    token: CharacterTokenType.CloseBracket,
                 },
             },
             patterns: [{ include: stringsInterior }],
         },
         {
             // Unknown tag (Single line support only cus \\R does not work) (Since we don't know if a tag is self closing, we can't assume that an end pattern exists)
-            match: /({)\s*(\w+)\b(?:(=)(.*?))?\s*(})((?:.|\R)+?)\s*({/)\s*(\2)\s*(})/gd,
+            match: /({)\s*(\w+)\b(?:(=)(.*?))?\s*(})((?:.|\R)+?)\s*({\/)\s*(\2)\s*(})/dg,
             captures: {
-                1: { token: "meta.tag.$2.start.renpy punctuation.definition.tag.begin.renpy" },
-                2: { token: "renpy.meta.u meta.tag.$2.start.renpy entity.name.tag.$2.renpy" },
-                3: { token: "meta.tag.$2.start.renpy punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
-                4: { token: "meta.tag.$2.start.renpy constant.other.placeholder.tags.renpy" },
-                5: { token: "meta.tag.$2.start.renpy punctuation.definition.tag.end.renpy" },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: EntityTokenType.Tag },
+                3: { token: OperatorTokenType.Assign },
+                4: { token: MetaTokenType.Arguments },
+                5: { token: CharacterTokenType.CloseBracket },
                 6: {
-                    token: "renpy.meta.tag.custom.$2",
+                    token: MetaTokenType.Tag,
                     patterns: [{ include: stringsInterior }],
                 },
-                7: { token: "meta.tag.$2.end.renpy punctuation.definition.tag.begin.renpy" },
-                8: { token: "renpy.meta.u meta.tag.$2.end.renpy entity.name.tag.$2.renpy" },
-                9: { token: "meta.tag.$2.end.renpy punctuation.definition.tag.end.renpy" },
+                7: { token: CharacterTokenType.OpenBracket },
+                8: { token: EntityTokenType.Tag },
+                9: { token: CharacterTokenType.CloseBracket },
             },
         },
         {
             // Unknown tag start
-            match: /({)\s*(\w*)(?:(=)(.*?))?\s*(})/gd,
+            match: /({)\s*(\w*)(?:(=)(.*?))?\s*(})/dg,
             captures: {
-                0: { token: "meta.tag.$2.start.renpy" },
-                1: { token: "punctuation.definition.tag.begin.renpy" },
-                2: { token: "renpy.meta.u entity.name.tag.$2.renpy" },
-                3: { token: "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+                0: { token: MetaTokenType.Tag },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: EntityTokenType.Tag },
+                3: { token: OperatorTokenType.Assign },
                 4: {
-                    token: "support.constant.property-value constant.other.placeholder.tags.renpy",
+                    token: MetaTokenType.Arguments,
                     patterns: [],
                 },
-                5: { token: "punctuation.definition.tag.end.renpy" },
+                5: { token: CharacterTokenType.CloseBracket },
             },
         },
         {
             // Unknown tag end
-            match: /({/)\s*(\w*?)\b\s*(})/gd,
+            match: /({\/)\s*(\w*?)\b\s*(})/dg,
             captures: {
-                0: { token: "meta.tag.$2.end.renpy" },
-                1: { token: "punctuation.definition.tag.begin.renpy" },
-                2: { token: "renpy.meta.u entity.name.tag.$2.renpy" },
-                3: { token: "punctuation.definition.tag.end.renpy" },
+                0: { token: MetaTokenType.Tag },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: EntityTokenType.Tag },
+                3: { token: CharacterTokenType.CloseBracket },
             },
         },
     ],
 };
 
+stringsInterior.patterns!.push({ include: stringTags });
+
 const stringQuotedDouble: TokenPattern = {
     patterns: [
         {
             // Triple quoted block string
-            token: "string.quoted.triple.block.renpy",
-            begin: '(""")',
+            token: ConstantTokenType.String,
+            begin: /(")(")(")/dg,
             beginCaptures: {
-                0: { token: "punctuation.definition.string.begin.renpy" },
+                1: { token: CharacterTokenType.DoubleQuote },
+                2: { token: CharacterTokenType.DoubleQuote },
+                3: { token: CharacterTokenType.DoubleQuote },
             },
-            end: '(?<!\\\\)((?<=""")(")""|""")',
+            end: /(?<!\\)((?<=""")(")""|""")/dg,
             endCaptures: {
-                1: { token: "punctuation.definition.string.end.renpy" },
-                2: { token: "meta.empty-string.triple.block.renpy" },
+                1: { token: CharacterTokenType.DoubleQuote },
+                2: { token: MetaTokenType.EmptyString },
             },
             patterns: [{ include: stringsInterior }],
         },
         {
             // Double quoted single line string
-            token: "string.quoted.double.line.renpy",
-            begin: '(")',
+            token: ConstantTokenType.String,
+            begin: /(")/dg,
             beginCaptures: {
-                1: { token: "punctuation.definition.string.begin.renpy" },
+                1: { token: CharacterTokenType.DoubleQuote },
             },
-            end: '(?<!\\\\)((?<=")(")|")',
+            end: /(?<!\\)((?<=")(")|")/dg,
             endCaptures: {
-                1: { token: "punctuation.definition.string.end.renpy" },
-                2: { token: "meta.empty-string.double.renpy" },
-                3: { token: "invalid.illegal.unclosed-string.renpy" },
+                1: { token: CharacterTokenType.DoubleQuote },
+                2: { token: MetaTokenType.EmptyString },
+                3: { token: MetaTokenType.Invalid },
             },
             patterns: [{ include: stringsInterior }],
         },
@@ -547,30 +670,30 @@ const stringQuotedSingle: TokenPattern = {
     patterns: [
         {
             // Single quoted block string
-            token: "string.quoted.single.block.renpy",
-            begin: /(''')/gd,
+            token: ConstantTokenType.String,
+            begin: /(''')/dg,
             beginCaptures: {
-                0: { token: "punctuation.definition.string.begin.renpy" },
+                0: { token: CharacterTokenType.Quote },
             },
-            end: /(?<!\\)((?<=''')('|''')|''')/gd,
+            end: /(?<!\\)((?<=''')('|''')|''')/dg,
             endCaptures: {
-                1: { token: "punctuation.definition.string.end.renpy" },
-                2: { token: "meta.empty-string.single.block.renpy" },
+                1: { token: CharacterTokenType.Quote },
+                2: { token: MetaTokenType.EmptyString },
             },
             patterns: [{ include: stringsInterior }],
         },
         {
             // Single quoted single line string
-            token: "string.quoted.single.line.renpy",
-            begin: /(')/gd,
+            token: ConstantTokenType.String,
+            begin: /(')/dg,
             beginCaptures: {
-                1: { token: "punctuation.definition.string.begin.renpy" },
+                1: { token: CharacterTokenType.Quote },
             },
-            end: /(?<!\\)((?<=')(')|')/gd,
+            end: /(?<!\\)((?<=')(')|')/dg,
             endCaptures: {
-                1: { token: "punctuation.definition.string.end.renpy" },
-                2: { token: "meta.empty-string.single.renpy" },
-                3: { token: "invalid.illegal.unclosed-string.renpy" },
+                1: { token: CharacterTokenType.Quote },
+                2: { token: MetaTokenType.EmptyString },
+                3: { token: MetaTokenType.Invalid },
             },
             patterns: [{ include: stringsInterior }],
         },
@@ -581,30 +704,30 @@ const stringQuotedBack: TokenPattern = {
     patterns: [
         {
             // Back quoted block string
-            token: "string.quoted.back.block.renpy",
-            begin: /(```)/gd,
+            token: ConstantTokenType.String,
+            begin: /(```)/dg,
             beginCaptures: {
-                0: { token: "punctuation.definition.string.begin.renpy" },
+                0: { token: CharacterTokenType.BackQuote },
             },
-            end: /(?<!\\)((?<=```)(`)``|```)/gd,
+            end: /(?<!\\)((?<=```)(`)``|```)/dg,
             endCaptures: {
-                1: { token: "punctuation.definition.string.end.renpy" },
-                2: { token: "meta.empty-string.back.block.renpy" },
+                1: { token: CharacterTokenType.BackQuote },
+                2: { token: MetaTokenType.EmptyString },
             },
             patterns: [{ include: stringsInterior }],
         },
         {
             // Back quoted single line string
-            token: "string.quoted.back.line.renpy",
-            begin: /(`)/gd,
+            token: ConstantTokenType.String,
+            begin: /(`)/dg,
             beginCaptures: {
-                1: { token: "punctuation.definition.string.begin.renpy" },
+                1: { token: CharacterTokenType.BackQuote },
             },
-            end: /(?<!\\)((?<=`)(`)|`)/gd,
+            end: /(?<!\\)((?<=`)(`)|`)/dg,
             endCaptures: {
-                1: { token: "punctuation.definition.string.end.renpy" },
-                2: { token: "meta.empty-string.back.renpy" },
-                3: { token: "invalid.illegal.unclosed-string.renpy" },
+                1: { token: CharacterTokenType.BackQuote },
+                2: { token: MetaTokenType.EmptyString },
+                3: { token: MetaTokenType.Invalid },
             },
             patterns: [{ include: stringsInterior }],
         },
@@ -620,10 +743,10 @@ const renpyStatements: TokenPattern = {
 };
 
 const statements: TokenPattern = {
-    patterns: [{ include: comments }, { include: renpyStatements }, { include: pythonStatements }, { include: keywords }],
+    patterns: [{ include: strings }, { include: comments }, { include: renpyStatements }, { include: pythonStatements }],
 };
 const expressions: TokenPattern = {
-    patterns: [{ include: strings }],
+    patterns: [{ include: keywords }],
 };
 
 export const basePatterns: TokenPattern = {

@@ -3,13 +3,13 @@
 
 import { Range } from "vscode";
 
-export enum StatementToken {
+export const enum StatementToken {
     Keyword,
     Entity,
     Meta,
 }
 
-export enum KeywordTokenType {
+export const enum KeywordTokenType {
     // Python statement keywords
     Init,
     Python,
@@ -50,16 +50,17 @@ export enum KeywordTokenType {
     At,
     With,
     From,
+    DollarSign,
 }
 
-export enum EntityTokenType {
+export const enum EntityTokenType {
     Namespace,
     Function,
     Tag,
     Variable,
 }
 
-export enum MetaTokenType {
+export const enum MetaTokenType {
     Comment,
     CommentCodeTag,
     PythonLine,
@@ -67,10 +68,13 @@ export enum MetaTokenType {
     Arguments,
 
     Tag,
+    Placeholder,
     Block,
+    Invalid,
+    EmptyString,
 }
 
-export enum ExpressionToken {
+export const enum ExpressionToken {
     Unknown,
     Constant,
 
@@ -78,15 +82,16 @@ export enum ExpressionToken {
     Character,
 }
 
-export enum ConstantToken {
+export const enum ConstantTokenType {
     String,
+    UnquotedString,
     Color,
     Boolean,
     Integer,
     Float,
 }
 
-export enum OperatorTokenType {
+export const enum OperatorTokenType {
     Assign, // =
     PlusPlus, // ++
     MinMin, // --
@@ -111,7 +116,7 @@ export enum OperatorTokenType {
     LessThanEquals, // <=
 }
 
-export enum CharacterTokenType {
+export const enum CharacterTokenType {
     Unknown,
     WhiteSpace,
 
@@ -138,7 +143,7 @@ export enum CharacterTokenType {
 }
 
 // Only valid inside strings
-export enum EscapedCharacterTokenType {
+export const enum EscapedCharacterTokenType {
     Escaped_Whitespace, // \
     Escaped_Newline, // \n
 
@@ -151,12 +156,12 @@ export enum EscapedCharacterTokenType {
 
 export type TokenBaseType = StatementToken | ExpressionToken;
 export type StatementTokenSubType = KeywordTokenType | EntityTokenType | MetaTokenType;
-export type ExpressionTokenSubType = ConstantToken | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;
+export type ExpressionTokenSubType = ConstantTokenType | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;
 export type TokenType = StatementTokenSubType | ExpressionTokenSubType;
 
 export class Token {
-    tokenType: TokenType;
-    range: Range;
+    readonly tokenType: TokenType;
+    readonly range: Range;
 
     constructor(tokenType: TokenType, range: Range) {
         this.range = range;
@@ -165,34 +170,38 @@ export class Token {
 }
 
 export interface TokenIncludePattern {
-    include: TokenPattern;
-}
-
-export interface BaseTokenPattern {
-    token?: TokenType;
-    patterns?: TokenPattern[];
+    readonly include: TokenPattern;
 }
 
 export type TokenPatternCapture = {
-    [k: string | number]: BaseTokenPattern;
+    readonly [k: string | number]: { readonly token?: TokenType; readonly patterns?: TokenPatternArray };
 };
 
-export interface TokenRangePattern extends BaseTokenPattern {
-    contentToken?: TokenType;
-
-    begin: RegExp;
-    beginCaptures?: TokenPatternCapture;
-
-    end: RegExp;
-    endCaptures?: TokenPatternCapture;
+export interface TokenMatchPattern {
+    readonly token?: TokenType;
+    readonly match: RegExp;
+    readonly captures?: TokenPatternCapture;
 }
 
-export interface TokenMatchPattern extends BaseTokenPattern {
-    match: RegExp;
-    captures?: TokenPatternCapture;
+export interface TokenRangePattern {
+    readonly token?: TokenType;
+    readonly contentToken?: TokenType;
+
+    readonly begin: RegExp;
+    readonly beginCaptures?: TokenPatternCapture;
+
+    readonly end: RegExp;
+    readonly endCaptures?: TokenPatternCapture;
+
+    readonly patterns?: TokenPatternArray;
 }
 
-export type TokenPattern = TokenIncludePattern | TokenRangePattern | TokenMatchPattern | BaseTokenPattern;
+export interface TokenRepoPattern {
+    readonly patterns: TokenPatternArray;
+}
+
+export type TokenPatternArray = Array<TokenIncludePattern | TokenRangePattern | TokenMatchPattern>;
+export type TokenPattern = TokenIncludePattern | TokenRangePattern | TokenMatchPattern | TokenRepoPattern;
 
 export function isIncludePattern(p: TokenPattern): p is TokenIncludePattern {
     return (p as TokenIncludePattern).include !== undefined;
@@ -204,4 +213,8 @@ export function isRangePattern(p: TokenPattern): p is TokenRangePattern {
 
 export function isMatchPattern(p: TokenPattern): p is TokenMatchPattern {
     return (p as TokenMatchPattern).match !== undefined;
+}
+
+export function isRepoPattern(p: TokenPattern): p is TokenRepoPattern {
+    return !isRangePattern(p) && (p as TokenRepoPattern).patterns !== undefined;
 }

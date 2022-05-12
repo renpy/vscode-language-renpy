@@ -1,4 +1,4 @@
-import { DecorationOptions, ExtensionContext, OverviewRulerLane, Range, window, workspace } from "vscode";
+import { DecorationOptions, ExtensionContext, OverviewRulerLane, window, workspace } from "vscode";
 import { tokenizeDocument } from "./tokenizer";
 
 let timeout: NodeJS.Timer | undefined = undefined;

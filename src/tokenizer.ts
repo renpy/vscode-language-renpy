@@ -2,13 +2,15 @@
 "use strict";
 
 import { Range, TextDocument } from "vscode";
-import { Token, TokenPattern, isIncludePattern, isRangePattern, isMatchPattern, TokenPatternCapture, isRepoPattern } from "./token-definitions";
+import { Token, isIncludePattern, isRangePattern, isMatchPattern, isRepoPattern } from "./token-definitions";
 import { basePatterns } from "./token-patterns";
 
 export function tokenizeDocument(document: TextDocument): Token[] {
     const tokenizer: DocumentTokenizer = new DocumentTokenizer(document);
     return tokenizer.tokens;
 }
+
+type ScanResult = { pattern: TokenPattern; matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray } | null;
 
 class DocumentTokenizer {
     private readonly document: TextDocument;
@@ -20,7 +22,7 @@ class DocumentTokenizer {
         const text = document.getText(); // TODO: is there a string view in typescript?
 
         // TODO: while not end of text, continue execute @ lastMatchIndex
-        this.executePattern(basePatterns, text);
+        this.executePattern(basePatterns, text, 0);
     }
 
     private getRange(offsetStart: number, offsetEnd: number): Range {
@@ -29,7 +31,13 @@ class DocumentTokenizer {
         return new Range(startPos, endPos);
     }
 
-    private applyCaptures(captures: TokenPatternCapture, match: RegExpExecArray): boolean {
+    /**
+     * Apply the capture patterns to the match
+     * @param captures The captures to apply
+     * @param match The match to apply the captures on
+     * @param textOffsetStart The character offset in the document where 'text' is located.
+     */
+    private applyCaptures(captures: TokenPatternCapture, match: RegExpExecArray, textOffsetStart: number) {
         for (let i = 0; i < match.indices!.length; i++) {
             if (match.indices![i] === undefined) continue; // If the object at i is undefined, the capture is empty
             if (captures[i] === undefined) {
@@ -37,106 +45,153 @@ class DocumentTokenizer {
                 continue;
             }
 
-            const capturePattern = captures[i];
+            const p = captures[i];
 
-            if (capturePattern.token) {
+            if (p.token) {
                 const [startPos, endPos] = match.indices![i];
-                this.tokens.push(new Token(capturePattern.token, this.getRange(startPos, endPos)));
+                this.tokens.push(new Token(p.token, this.getRange(startPos, endPos)));
             }
 
-            if (capturePattern.patterns) {
-                // TODO: I think it can just be this single line:
-                //executePattern(capturePattern, matchBegin[i], tokens, document);
-
+            if (p.patterns) {
+                const startPos = textOffsetStart + match.indices![i][0];
                 const matchContent = match[i];
-                for (let j = 0; j < capturePattern.patterns.length; j++) {
-                    const pattern = capturePattern.patterns[j];
-                    if (this.executePattern(pattern, matchContent)) {
-                        break; // Once the first pattern has matched, the remainder should be ignored
-                    }
-                }
+                const repo: TokenRepoPattern = { patterns: p.patterns };
+                this.executePattern(repo, matchContent, startPos);
             }
         }
-        return true;
     }
 
-    public executePattern(p: TokenPattern, text: string): boolean {
-        // TODO: add last index as a param to make sure getRange gets the proper characters
-        if (isIncludePattern(p)) return this.executePattern(p.include, text);
+    /**
+     * Scans the text for the best matching pattern.
+     * @param p The pattern to use for matches
+     * @param text The text to match on
+     * @param matchOffsetStart The character offset in 'text' to start the match at.
+     */
+    public scanPattern(p: TokenPattern, text: string, matchOffsetStart: number): ScanResult {
+        if (isIncludePattern(p)) p = p.include;
 
         if (isRepoPattern(p)) {
+            let bestMatchRating = Number.MAX_VALUE;
+            let bestResult: ScanResult = null;
+
             for (let j = 0; j < p.patterns.length; j++) {
                 const pattern = p.patterns[j];
-                if (this.executePattern(pattern, text)) {
-                    return true; // Once the first pattern has matched, the remainder should be ignored
-                    // TODO: It does however, need to continue trying to match after the match's lastIndex
-                }
-            }
-        } else if (isRangePattern(p)) {
-            const reBegin: RegExp = p.begin;
-            const reEnd: RegExp = p.end;
-            if (!reBegin.global || !reEnd.global) console.error("To match this pattern the 'g' flag is required on the begin and end RegExp!");
 
+                const result = this.scanPattern(pattern, text, matchOffsetStart);
+                if (!result) continue;
+
+                const matchRating = result.matchBegin.index;
+                if (matchRating >= bestMatchRating) {
+                    // Patterns are sorted by priority, so the previous pattern had a better or equal priority
+                    continue;
+                }
+
+                bestMatchRating = matchRating;
+                bestResult = result;
+
+                // If true, this match is valid at the first possible location. No need to check further.
+                if (bestMatchRating === matchOffsetStart) break;
+            }
+            return bestResult;
+        } else if (isRangePattern(p)) {
+            if (!p.begin.global || !p.end.global) console.error("To match this pattern the 'g' flag is required on the begin and end RegExp!");
+
+            const reBegin: RegExp = p.begin;
+            reBegin.lastIndex = matchOffsetStart;
             const matchBegin: RegExpExecArray | null = reBegin.exec(text);
-            // TODO: (while match) It does need to continue trying to match after the match's lastIndex
             if (matchBegin) {
+                const reEnd: RegExp = p.end;
                 reEnd.lastIndex = reBegin.lastIndex; // Start end pattern after the last matched character in the begin pattern
                 const matchEnd: RegExpExecArray | null = reEnd.exec(text);
 
                 if (matchEnd) {
-                    if (p.token) {
-                        const startPos = matchBegin.index;
-                        const endPos = matchEnd.index + matchEnd[0].length;
-                        this.tokens.push(new Token(p.token, this.getRange(startPos, endPos)));
-                    }
-                    if (p.contentToken) {
-                        const startPos = matchBegin.index + matchBegin[0].length;
-                        const endPos = matchEnd.index;
-                        this.tokens.push(new Token(p.contentToken, this.getRange(startPos, endPos)));
-                    }
-                    if (p.beginCaptures) {
-                        if (!reBegin.hasIndices) console.error("To match this begin pattern the 'd' flag is required!");
-                        this.applyCaptures(p.beginCaptures, matchBegin);
-                    }
-                    if (p.endCaptures) {
-                        if (!reEnd.hasIndices) console.error("To match this end pattern the 'd' flag is required!");
-                        this.applyCaptures(p.endCaptures, matchEnd);
-                    }
-                    if (p.patterns) {
-                        // The patterns repo inside a range match is expected to execute on the content string on the range
-                        const startPos = matchBegin.index + matchBegin[0].length;
-                        const endPos = matchEnd.index;
-                        const content = this.document.getText(this.getRange(startPos, endPos));
-                        for (let j = 0; j < p.patterns.length; j++) {
-                            const pattern = p.patterns[j];
-                            if (this.executePattern(pattern, content)) {
-                                return true; // Once the first pattern has matched, the remainder should be ignored
-                                // TODO: It does however, need to continue trying to match after the match's lastIndex
-                            }
-                        }
-                    }
+                    return { pattern: p, matchBegin: matchBegin, matchEnd: matchEnd };
                 }
             }
         } else if (isMatchPattern(p)) {
-            const re: RegExp = p.match;
-            if (!re.global) console.error("To match this pattern the 'g' flag is required!");
+            if (!p.match.global) console.error("To match this pattern the 'g' flag is required!");
 
+            const re: RegExp = p.match;
+            re.lastIndex = matchOffsetStart;
             const match: RegExpExecArray | null = re.exec(text);
             if (match) {
-                // TODO: while match, see if(p.patterns)
+                return { pattern: p, matchBegin: match };
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Executes the pattern on 'text', adding tokens to the token list.
+     * @param p The pattern to use for matches.
+     * @param text The text to match on.
+     * @param textOffsetStart The character offset in the document where 'text' is located.
+     * @returns True if the pattern was matched
+     */
+    public executePattern(p: TokenPattern, text: string, textOffsetStart: number) {
+        if (isIncludePattern(p)) p = p.include;
+
+        const lastPos = text.length;
+        for (let lastMatchIndex = 0; lastMatchIndex < lastPos; ++lastMatchIndex) {
+            const bestMatch = this.scanPattern(p, text, lastMatchIndex);
+            if (!bestMatch) continue; // No match was found in the current pattern
+
+            p = bestMatch.pattern;
+            if (isRangePattern(p)) {
+                const matchBegin = bestMatch.matchBegin;
+                const matchEnd = bestMatch.matchEnd!;
+                lastMatchIndex = matchEnd.index + matchEnd[0].length;
+
                 if (p.token) {
-                    const startPos = this.document.positionAt(match.index);
-                    const endPos = this.document.positionAt(match.index + match[0].length);
-                    this.tokens.push(new Token(p.token, new Range(startPos, endPos)));
+                    const startPos = textOffsetStart + matchBegin.index;
+                    const endPos = textOffsetStart + matchEnd.index + matchEnd[0].length;
+                    this.tokens.push(new Token(p.token, this.getRange(startPos, endPos)));
+                }
+                if (p.contentToken) {
+                    const startPos = textOffsetStart + matchBegin.index + matchBegin[0].length;
+                    const endPos = textOffsetStart + matchEnd.index;
+                    this.tokens.push(new Token(p.contentToken, this.getRange(startPos, endPos)));
+                }
+                if (p.beginCaptures) {
+                    if (!p.begin.hasIndices) console.error("To match this begin pattern the 'd' flag is required!");
+
+                    const startPos = textOffsetStart + matchBegin.index + matchBegin[0].length;
+                    this.applyCaptures(p.beginCaptures, matchBegin, startPos);
+                }
+                if (p.endCaptures) {
+                    if (!p.end.hasIndices) console.error("To match this end pattern the 'd' flag is required!");
+
+                    const startPos = textOffsetStart + matchEnd.index + matchEnd[0].length;
+                    this.applyCaptures(p.endCaptures, matchEnd, startPos);
+                }
+                if (p.patterns) {
+                    // The patterns repo inside a range match is expected to execute on the content string on the range
+                    const startPos = textOffsetStart + matchBegin.index + matchBegin[0].length;
+                    const endPos = textOffsetStart + matchEnd.index;
+                    const content = this.document.getText(this.getRange(startPos, endPos));
+
+                    const repo: TokenRepoPattern = { patterns: p.patterns };
+                    this.executePattern(repo, content, startPos);
+                }
+            } else if (isMatchPattern(p)) {
+                const match = bestMatch.matchBegin;
+                lastMatchIndex = match.index + match[0].length;
+
+                if (p.token) {
+                    const startPos = textOffsetStart + match.index;
+                    const endPos = textOffsetStart + match.index + match[0].length;
+                    this.tokens.push(new Token(p.token, this.getRange(startPos, endPos)));
                 }
                 if (p.captures) {
-                    if (!re.hasIndices) console.error("To match this pattern the 'd' flag is required!");
-                    this.applyCaptures(p.captures, match);
+                    if (!p.match.hasIndices) console.error("To match this pattern the 'd' flag is required!");
+
+                    const startPos = textOffsetStart + match.index;
+                    this.applyCaptures(p.captures, match, startPos);
                 }
+            } else {
+                console.error("Should not get here!");
             }
-        } else {
-            console.error("Should not get here!");
         }
-        return false;
     }
 }

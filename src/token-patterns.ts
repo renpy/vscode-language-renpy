@@ -1,5 +1,3 @@
-import { CharacterTokenType, ConstantTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType, TokenPattern } from "./token-definitions";
-
 // These patterns are converted from the tmLanguage file.
 // Copy the patterns (the contents of the repository group) over and apply the following find and replace patterns:
 
@@ -65,7 +63,7 @@ const pythonStatements: TokenPattern = {
                             match: /(?:\s*(in)\s*([a-zA-Z_]\w*)\b)/dg,
                             captures: {
                                 1: {
-                                    token: KeywordTokenType.In,
+                                    token: OperatorTokenType.In,
                                 },
                                 2: {
                                     token: EntityTokenType.Namespace,
@@ -83,7 +81,7 @@ const pythonStatements: TokenPattern = {
                                     token: KeywordTokenType.Early,
                                 },
                                 3: {
-                                    token: KeywordTokenType.In,
+                                    token: OperatorTokenType.In,
                                 },
                             },
                         },
@@ -181,7 +179,7 @@ const keywords: TokenPattern = {
                     token: KeywordTokenType.Early,
                 },
                 5: {
-                    token: KeywordTokenType.In,
+                    token: OperatorTokenType.In,
                 },
                 6: {
                     token: KeywordTokenType.Define,
@@ -300,12 +298,11 @@ const codeTags: TokenPattern = {
 
 const comments: TokenPattern = {
     token: MetaTokenType.Comment,
-    begin: /(\#)(.*)$/dg,
-    beginCaptures: {
+    match: /(\#)(.*)$/dgm,
+    captures: {
         1: { token: CharacterTokenType.Hashtag },
+        2: { patterns: [{ include: codeTags }] },
     },
-    end: /($)/dg,
-    patterns: [{ include: codeTags }],
 };
 
 const escapedChar: TokenPattern = {
@@ -743,7 +740,7 @@ const renpyStatements: TokenPattern = {
 };
 
 const statements: TokenPattern = {
-    patterns: [{ include: strings }, { include: comments }, { include: renpyStatements }, { include: pythonStatements }],
+    patterns: [{ include: comments }, { include: strings }, { include: renpyStatements }, { include: pythonStatements }],
 };
 const expressions: TokenPattern = {
     patterns: [{ include: keywords }],

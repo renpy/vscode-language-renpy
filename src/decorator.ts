@@ -1,5 +1,4 @@
-import { DecorationOptions, ExtensionContext, OverviewRulerLane, window, workspace } from "vscode";
-import { CharacterTokenType, ConstantTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "./token-definitions";
+import { DecorationOptions, ExtensionContext, window, workspace } from "vscode";
 import { tokenizeDocument } from "./tokenizer";
 
 let timeout: NodeJS.Timer | undefined = undefined;
@@ -272,7 +271,7 @@ function updateDecorations() {
             case OperatorTokenType.Multiply:
             case OperatorTokenType.Divide:
             case OperatorTokenType.Modulo:
-            case OperatorTokenType.Exponetiate:
+            case OperatorTokenType.Exponentiate:
             case OperatorTokenType.FloorDivide:
 
             // Bitwise operators
@@ -290,7 +289,7 @@ function updateDecorations() {
             case OperatorTokenType.MultiplyAssign:
             case OperatorTokenType.DivideAssign:
             case OperatorTokenType.ModuloAssign:
-            case OperatorTokenType.ExponetiateAssign:
+            case OperatorTokenType.ExponentiateAssign:
             case OperatorTokenType.FloorDivideAssign:
             case OperatorTokenType.BitwiseAndAssign:
             case OperatorTokenType.BitwiseOrAssign:

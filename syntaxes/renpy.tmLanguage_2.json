@@ -18,7 +18,7 @@
           "comment": "Renpy python block",
           "contentName": "meta.embedded.block.python",
 
-          "begin": "(^[ \\t]+)?(?:\\b(init)\\b\\s+(?:(-)?(\\d*)\\s+)?)?\\b(python)\\b(.*?)(:)",
+          "begin": "(^[ \\t]*)(?:\\b(init)\\b\\s+(?:(-)?(\\d*)\\s+)?)?\\b(python)\\b(.*?)(:)",
           "beginCaptures": {
             "1": {
               "name": "punctuation.whitespace.embedded.leading.python"

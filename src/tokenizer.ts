@@ -3,11 +3,49 @@
 
 import { Range, TextDocument } from "vscode";
 import { Token, isIncludePattern, isRangePattern, isMatchPattern, isRepoPattern } from "./token-definitions";
-import { basePatterns } from "./token-patterns";
+import { basePatterns, endOfFileMark, startOfFileMark } from "./token-patterns";
 
 export function tokenizeDocument(document: TextDocument): Token[] {
+    if (!ValidatePatterns(basePatterns)) return [];
+
     const tokenizer: DocumentTokenizer = new DocumentTokenizer(document);
     return tokenizer.tokens;
+}
+
+function ValidatePatterns(pattern: TokenPattern): boolean {
+    // TODO: Is there some kind of unit test thing that checks this on build?
+
+    if (isIncludePattern(pattern)) pattern = pattern.include;
+    if (isRepoPattern(pattern)) {
+        for (let j = 0; j < pattern.patterns.length; j++) {
+            const valid = ValidatePatterns(pattern.patterns[j]);
+            if (!valid) return false;
+        }
+    } else if (isRangePattern(pattern)) {
+        if (!pattern.begin.global || !pattern.end.global) {
+            console.error("To match this pattern the 'g' flag is required on the begin and end RegExp!");
+            return false;
+        }
+        if (pattern.beginCaptures && !pattern.begin.hasIndices) {
+            console.error("To match this begin pattern the 'd' flag is required!");
+            return false;
+        }
+        if (pattern.endCaptures && !pattern.end.hasIndices) {
+            console.error("To match this end pattern the 'd' flag is required!");
+            return false;
+        }
+    } else if (isMatchPattern(pattern)) {
+        if (!pattern.match.global) {
+            console.error("To match this pattern the 'g' flag is required!");
+            return false;
+        }
+        if (pattern.captures && !pattern.match.hasIndices) {
+            console.error("To match this pattern the 'd' flag is required!");
+            return false;
+        }
+    }
+
+    return true;
 }
 
 type ScanResult = { pattern: TokenPattern; matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray } | null;
@@ -19,15 +57,19 @@ class DocumentTokenizer {
     constructor(document: TextDocument) {
         this.document = document;
 
-        const text = document.getText(); // TODO: is there a string view in typescript?
+        const text = startOfFileMark + document.getText() + endOfFileMark; // TODO: is there a string view in typescript?
 
-        // TODO: while not end of text, continue execute @ lastMatchIndex
-        this.executePattern(basePatterns, text, 0);
+        this.executePattern(basePatterns, text, -startOfFileMark.length);
     }
 
     private getRange(offsetStart: number, offsetEnd: number): Range {
         const startPos = this.document.positionAt(offsetStart);
         const endPos = this.document.positionAt(offsetEnd);
+
+        if (startPos === endPos) {
+            console.warn("Empty token detected!");
+        }
+
         return new Range(startPos, endPos);
     }
 
@@ -49,7 +91,7 @@ class DocumentTokenizer {
 
             if (p.token) {
                 const [startPos, endPos] = match.indices![i];
-                this.tokens.push(new Token(p.token, this.getRange(startPos, endPos)));
+                this.tokens.push(new Token(p.token, this.getRange(textOffsetStart + startPos, textOffsetStart + endPos)));
             }
 
             if (p.patterns) {
@@ -66,6 +108,7 @@ class DocumentTokenizer {
      * @param p The pattern to use for matches
      * @param text The text to match on
      * @param matchOffsetStart The character offset in 'text' to start the match at.
+     * @todo Previous successfull matches could be cached and returned as long as the matchOffsetStart is less then the match index
      */
     public scanPattern(p: TokenPattern, text: string, matchOffsetStart: number): ScanResult {
         if (isIncludePattern(p)) p = p.include;
@@ -75,7 +118,7 @@ class DocumentTokenizer {
             let bestResult: ScanResult = null;
 
             for (let j = 0; j < p.patterns.length; j++) {
-                const pattern = p.patterns[j];
+                const pattern = isIncludePattern(p.patterns[j]) ? p.patterns[j].include! : p.patterns[j];
 
                 const result = this.scanPattern(pattern, text, matchOffsetStart);
                 if (!result) continue;
@@ -90,30 +133,45 @@ class DocumentTokenizer {
                 bestResult = result;
 
                 // If true, this match is valid at the first possible location. No need to check further.
-                if (bestMatchRating === matchOffsetStart) break;
+                if (bestMatchRating === matchOffsetStart) {
+                    break;
+                }
             }
             return bestResult;
         } else if (isRangePattern(p)) {
-            if (!p.begin.global || !p.end.global) console.error("To match this pattern the 'g' flag is required on the begin and end RegExp!");
-
-            const reBegin: RegExp = p.begin;
+            const reBegin = p.begin;
             reBegin.lastIndex = matchOffsetStart;
-            const matchBegin: RegExpExecArray | null = reBegin.exec(text);
+            const matchBegin = reBegin.exec(text);
             if (matchBegin) {
-                const reEnd: RegExp = p.end;
+                let reEndSource = p.end.source;
+
+                // Replace all back references in end source
+                const hasBackref = /[$\\]\d+/g.test(reEndSource);
+                if (hasBackref) {
+                    for (let i = 0; i < matchBegin.length; i++) {
+                        let content = matchBegin[i];
+                        if (content === undefined) content = ""; // If the object at i is undefined, the capture is empty
+
+                        const backRef = new RegExp("[$\\\\]" + i, "g");
+                        reEndSource = reEndSource.replaceAll(backRef, content);
+                    }
+                }
+
+                reEndSource = reEndSource.replaceAll("\\A", "¨0");
+                reEndSource = reEndSource.replaceAll("\\Z", "¨1");
+
+                const reEnd = new RegExp(reEndSource, p.end.flags);
                 reEnd.lastIndex = reBegin.lastIndex; // Start end pattern after the last matched character in the begin pattern
-                const matchEnd: RegExpExecArray | null = reEnd.exec(text);
+                const matchEnd = reEnd.exec(text);
 
                 if (matchEnd) {
                     return { pattern: p, matchBegin: matchBegin, matchEnd: matchEnd };
                 }
             }
         } else if (isMatchPattern(p)) {
-            if (!p.match.global) console.error("To match this pattern the 'g' flag is required!");
-
-            const re: RegExp = p.match;
+            const re = p.match;
             re.lastIndex = matchOffsetStart;
-            const match: RegExpExecArray | null = re.exec(text);
+            const match = re.exec(text);
             if (match) {
                 return { pattern: p, matchBegin: match };
             }
@@ -124,51 +182,46 @@ class DocumentTokenizer {
 
     /**
      * Executes the pattern on 'text', adding tokens to the token list.
-     * @param p The pattern to use for matches.
+     * @param pattern The pattern to use for matches.
      * @param text The text to match on.
-     * @param textOffsetStart The character offset in the document where 'text' is located.
+     * @param textDocumentOffset The character offset in the document where 'text' is located.
      * @returns True if the pattern was matched
+     * @todo Timeout after it was running too long
      */
-    public executePattern(p: TokenPattern, text: string, textOffsetStart: number) {
-        if (isIncludePattern(p)) p = p.include;
+    public executePattern(pattern: TokenPattern, text: string, textDocumentOffset: number) {
+        if (isIncludePattern(pattern)) pattern = pattern.include;
 
         const lastPos = text.length;
         for (let lastMatchIndex = 0; lastMatchIndex < lastPos; ++lastMatchIndex) {
-            const bestMatch = this.scanPattern(p, text, lastMatchIndex);
+            const bestMatch = this.scanPattern(pattern, text, lastMatchIndex);
             if (!bestMatch) continue; // No match was found in the current pattern
 
-            p = bestMatch.pattern;
+            const p = bestMatch.pattern;
             if (isRangePattern(p)) {
                 const matchBegin = bestMatch.matchBegin;
                 const matchEnd = bestMatch.matchEnd!;
-                lastMatchIndex = matchEnd.index + matchEnd[0].length;
+                lastMatchIndex = matchEnd.index + matchEnd[0].length - 1;
 
                 if (p.token) {
-                    const startPos = textOffsetStart + matchBegin.index;
-                    const endPos = textOffsetStart + matchEnd.index + matchEnd[0].length;
+                    const startPos = textDocumentOffset + matchBegin.index;
+                    const endPos = textDocumentOffset + matchEnd.index + matchEnd[0].length;
                     this.tokens.push(new Token(p.token, this.getRange(startPos, endPos)));
                 }
                 if (p.contentToken) {
-                    const startPos = textOffsetStart + matchBegin.index + matchBegin[0].length;
-                    const endPos = textOffsetStart + matchEnd.index;
+                    const startPos = textDocumentOffset + matchBegin.index + matchBegin[0].length;
+                    const endPos = textDocumentOffset + matchEnd.index;
                     this.tokens.push(new Token(p.contentToken, this.getRange(startPos, endPos)));
                 }
                 if (p.beginCaptures) {
-                    if (!p.begin.hasIndices) console.error("To match this begin pattern the 'd' flag is required!");
-
-                    const startPos = textOffsetStart + matchBegin.index + matchBegin[0].length;
-                    this.applyCaptures(p.beginCaptures, matchBegin, startPos);
+                    this.applyCaptures(p.beginCaptures, matchBegin, textDocumentOffset);
                 }
                 if (p.endCaptures) {
-                    if (!p.end.hasIndices) console.error("To match this end pattern the 'd' flag is required!");
-
-                    const startPos = textOffsetStart + matchEnd.index + matchEnd[0].length;
-                    this.applyCaptures(p.endCaptures, matchEnd, startPos);
+                    this.applyCaptures(p.endCaptures, matchEnd, textDocumentOffset);
                 }
                 if (p.patterns) {
                     // The patterns repo inside a range match is expected to execute on the content string on the range
-                    const startPos = textOffsetStart + matchBegin.index + matchBegin[0].length;
-                    const endPos = textOffsetStart + matchEnd.index;
+                    const startPos = textDocumentOffset + matchBegin.index + matchBegin[0].length;
+                    const endPos = textDocumentOffset + matchEnd.index;
                     const content = this.document.getText(this.getRange(startPos, endPos));
 
                     const repo: TokenRepoPattern = { patterns: p.patterns };
@@ -176,18 +229,15 @@ class DocumentTokenizer {
                 }
             } else if (isMatchPattern(p)) {
                 const match = bestMatch.matchBegin;
-                lastMatchIndex = match.index + match[0].length;
+                lastMatchIndex = match.index + match[0].length - 1;
 
                 if (p.token) {
-                    const startPos = textOffsetStart + match.index;
-                    const endPos = textOffsetStart + match.index + match[0].length;
+                    const startPos = textDocumentOffset + match.index;
+                    const endPos = textDocumentOffset + match.index + match[0].length;
                     this.tokens.push(new Token(p.token, this.getRange(startPos, endPos)));
                 }
                 if (p.captures) {
-                    if (!p.match.hasIndices) console.error("To match this pattern the 'd' flag is required!");
-
-                    const startPos = textOffsetStart + match.index;
-                    this.applyCaptures(p.captures, match, startPos);
+                    this.applyCaptures(p.captures, match, textDocumentOffset);
                 }
             } else {
                 console.error("Should not get here!");

@@ -129,32 +129,33 @@ declare const enum OperatorTokenType {
 }
 
 declare const enum CharacterTokenType {
+    Unknown = TokenTypeIndex.UnknownCharacterID,
     // Expression characters
-    OpenParentheses = TokenTypeIndex.CharactersStart, // (
-    CloseParentheses, // )
+    OpenParentheses = TokenTypeIndex.CharactersStart,
+    CloseParentheses,
 
-    OpenBracket, // {
-    CloseBracket, // }
+    OpenBracket,
+    CloseBracket,
 
-    OpenSquareBracket, // [
-    CloseSquareBracket, // ]
+    OpenSquareBracket,
+    CloseSquareBracket,
 
     // Other characters
-    WhiteSpace,
+    WhiteSpace, // Tab or space
 
-    Colon, // :
-    Semicolon, // ;
-    Comma, // ,
+    Colon,
+    Semicolon,
+    Comma,
 
-    Hashtag, // #
+    Hashtag,
 
-    Quote, // '
-    DoubleQuote, // "
-    BackQuote, // `
+    Quote,
+    DoubleQuote,
+    BackQuote,
 
-    Backslash, // \
+    Backslash,
 
-    Unknown = TokenTypeIndex.UnknownCharacterID,
+    NewLine,
 }
 
 // Only valid inside strings
@@ -170,23 +171,20 @@ declare const enum EscapedCharacterTokenType {
 }
 
 declare const enum MetaTokenType {
+    Invalid = TokenTypeIndex.InvalidTokenID,
     Comment = TokenTypeIndex.MetaStart,
     CommentCodeTag,
     PythonLine,
     PythonBlock,
     Arguments,
 
-    Tag,
+    TagBlock,
     Placeholder,
     Block,
     EmptyString,
-
-    Invalid = TokenTypeIndex.InvalidTokenID,
 }
 
-declare type StatementTokenSubType = KeywordTokenType | EntityTokenType | MetaTokenType;
-declare type ExpressionTokenSubType = ConstantTokenType | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;
-declare type TokenType = StatementTokenSubType | ExpressionTokenSubType;
+declare type TokenType = KeywordTokenType | EntityTokenType | MetaTokenType | ConstantTokenType | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;
 
 declare type TokenPatternCapture = {
     readonly [k: string | number]: { readonly token?: TokenType; readonly patterns?: TokenPatternArray };

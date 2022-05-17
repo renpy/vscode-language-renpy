@@ -1,3 +1,4 @@
+import { isNativeError } from "util/types";
 import { DecorationOptions, ExtensionContext, window, workspace } from "vscode";
 import { tokenizeDocument } from "./tokenizer";
 
@@ -145,7 +146,15 @@ function updateDecorations() {
 
     tokens.forEach((token) => {
         const content = activeEditor?.document.getText(token.range);
-        const decoration: DecorationOptions = { range: token.range, hoverMessage: token.tokenType.toString() + ": { " + content + " }" };
+
+        const decoration: DecorationOptions = {
+            range: token.range,
+            hoverMessage: {
+                language: "text",
+                value: tokenTypeToStringMap[token.tokenType] + "(" + token.tokenType + "): {" + content?.replaceAll("\n", "\\n") + "}",
+            },
+        };
+
         switch (token.tokenType) {
             // Python statement keywords
             case KeywordTokenType.Init:
@@ -232,7 +241,7 @@ function updateDecorations() {
             case MetaTokenType.PythonLine:
             case MetaTokenType.PythonBlock:
             case MetaTokenType.Arguments:
-            case MetaTokenType.Tag:
+            case MetaTokenType.TagBlock:
             case MetaTokenType.Placeholder:
             case MetaTokenType.Block:
             case MetaTokenType.EmptyString:
@@ -316,6 +325,7 @@ function updateDecorations() {
             case CharacterTokenType.DoubleQuote:
             case CharacterTokenType.BackQuote:
             case CharacterTokenType.Backslash:
+            case CharacterTokenType.NewLine:
                 characters.push(decoration);
                 break;
 
@@ -342,6 +352,8 @@ function updateDecorations() {
             case MetaTokenType.Invalid:
                 errors.push(decoration);
                 break;
+            default:
+                throw new Error(`Unhandled token case: ${token.tokenType}`);
         }
     });
 
@@ -403,3 +415,137 @@ export function registerDecorator(context: ExtensionContext) {
         })
     );
 }
+
+// NOTE: Everything below is defined solely for this debug decorator.
+// None of this should be used outside of this file! This is for debug purposes only!
+type AllTokenTypes = typeof KeywordTokenType & typeof EntityTokenType & typeof MetaTokenType & typeof ConstantTokenType & typeof OperatorTokenType & typeof CharacterTokenType & typeof EscapedCharacterTokenType;
+
+type EnumToString<Type> = {
+    [P in keyof Type]: { name: P; value: Type[P] };
+};
+
+const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
+    Init: { name: "Init", value: KeywordTokenType.Init },
+    Python: { name: "Python", value: KeywordTokenType.Python },
+    Hide: { name: "Hide", value: KeywordTokenType.Hide },
+    Early: { name: "Early", value: KeywordTokenType.Early },
+    Define: { name: "Define", value: KeywordTokenType.Define },
+    Default: { name: "Default", value: KeywordTokenType.Default },
+    Label: { name: "Label", value: KeywordTokenType.Label },
+    Play: { name: "Play", value: KeywordTokenType.Play },
+    Pause: { name: "Pause", value: KeywordTokenType.Pause },
+    Screen: { name: "Screen", value: KeywordTokenType.Screen },
+    Scene: { name: "Scene", value: KeywordTokenType.Scene },
+    Show: { name: "Show", value: KeywordTokenType.Show },
+    Image: { name: "Image", value: KeywordTokenType.Image },
+    Transform: { name: "Transform", value: KeywordTokenType.Transform },
+    Set: { name: "Set", value: KeywordTokenType.Set },
+    Expression: { name: "Expression", value: KeywordTokenType.Expression },
+    Sound: { name: "Sound", value: KeywordTokenType.Sound },
+    At: { name: "At", value: KeywordTokenType.At },
+    With: { name: "With", value: KeywordTokenType.With },
+    From: { name: "From", value: KeywordTokenType.From },
+    DollarSign: { name: "DollarSign", value: KeywordTokenType.DollarSign },
+    If: { name: "If", value: KeywordTokenType.If },
+    Elif: { name: "Elif", value: KeywordTokenType.Elif },
+    Else: { name: "Else", value: KeywordTokenType.Else },
+    For: { name: "For", value: KeywordTokenType.For },
+    While: { name: "While", value: KeywordTokenType.While },
+    Pass: { name: "Pass", value: KeywordTokenType.Pass },
+    Return: { name: "Return", value: KeywordTokenType.Return },
+    Menu: { name: "Menu", value: KeywordTokenType.Menu },
+    Jump: { name: "Jump", value: KeywordTokenType.Jump },
+    Call: { name: "Call", value: KeywordTokenType.Call },
+
+    Class: { name: "Class", value: EntityTokenType.Class },
+    Namespace: { name: "Namespace", value: EntityTokenType.Namespace },
+    Function: { name: "Function", value: EntityTokenType.Function },
+    Tag: { name: "Tag", value: EntityTokenType.Tag },
+    Variable: { name: "Variable", value: EntityTokenType.Variable },
+
+    String: { name: "String", value: ConstantTokenType.String },
+    UnquotedString: { name: "UnquotedString", value: ConstantTokenType.UnquotedString },
+    Color: { name: "Color", value: ConstantTokenType.Color },
+    Integer: { name: "Integer", value: ConstantTokenType.Integer },
+    Float: { name: "Float", value: ConstantTokenType.Float },
+    Boolean: { name: "Boolean", value: ConstantTokenType.Boolean },
+
+    Plus: { name: "Plus", value: OperatorTokenType.Plus },
+    Minus: { name: "Minus", value: OperatorTokenType.Minus },
+    Multiply: { name: "Multiply", value: OperatorTokenType.Multiply },
+    Divide: { name: "Divide", value: OperatorTokenType.Divide },
+    Modulo: { name: "Modulo", value: OperatorTokenType.Modulo },
+    Exponentiate: { name: "Exponentiate", value: OperatorTokenType.Exponentiate },
+    FloorDivide: { name: "FloorDivide", value: OperatorTokenType.FloorDivide },
+    BitwiseAnd: { name: "BitwiseAnd", value: OperatorTokenType.BitwiseAnd },
+    BitwiseOr: { name: "BitwiseOr", value: OperatorTokenType.BitwiseOr },
+    BitwiseXOr: { name: "BitwiseXOr", value: OperatorTokenType.BitwiseXOr },
+    BitwiseNot: { name: "BitwiseNot", value: OperatorTokenType.BitwiseNot },
+    BitwiseLeftShift: { name: "BitwiseLeftShift", value: OperatorTokenType.BitwiseLeftShift },
+    BitwiseRightShift: { name: "BitwiseRightShift", value: OperatorTokenType.BitwiseRightShift },
+    Assign: { name: "Assign", value: OperatorTokenType.Assign },
+    PlusAssign: { name: "PlusAssign", value: OperatorTokenType.PlusAssign },
+    MinusAssign: { name: "MinusAssign", value: OperatorTokenType.MinusAssign },
+    MultiplyAssign: { name: "MultiplyAssign", value: OperatorTokenType.MultiplyAssign },
+    DivideAssign: { name: "DivideAssign", value: OperatorTokenType.DivideAssign },
+    ModuloAssign: { name: "ModuloAssign", value: OperatorTokenType.ModuloAssign },
+    ExponentiateAssign: { name: "ExponentiateAssign", value: OperatorTokenType.ExponentiateAssign },
+    FloorDivideAssign: { name: "FloorDivideAssign", value: OperatorTokenType.FloorDivideAssign },
+    BitwiseAndAssign: { name: "BitwiseAndAssign", value: OperatorTokenType.BitwiseAndAssign },
+    BitwiseOrAssign: { name: "BitwiseOrAssign", value: OperatorTokenType.BitwiseOrAssign },
+    BitwiseXOrAssign: { name: "BitwiseXOrAssign", value: OperatorTokenType.BitwiseXOrAssign },
+    BitwiseLeftShiftAssign: { name: "BitwiseLeftShiftAssign", value: OperatorTokenType.BitwiseLeftShiftAssign },
+    BitwiseRightShiftAssign: { name: "BitwiseRightShiftAssign", value: OperatorTokenType.BitwiseRightShiftAssign },
+    Equals: { name: "Equals", value: OperatorTokenType.Equals },
+    NotEquals: { name: "NotEquals", value: OperatorTokenType.NotEquals },
+    GreaterThan: { name: "GreaterThan", value: OperatorTokenType.GreaterThan },
+    LessThan: { name: "LessThan", value: OperatorTokenType.LessThan },
+    GreaterThanEquals: { name: "GreaterThanEquals", value: OperatorTokenType.GreaterThanEquals },
+    LessThanEquals: { name: "LessThanEquals", value: OperatorTokenType.LessThanEquals },
+    And: { name: "And", value: OperatorTokenType.And },
+    Or: { name: "Or", value: OperatorTokenType.Or },
+    Not: { name: "Not", value: OperatorTokenType.Not },
+    Is: { name: "Is", value: OperatorTokenType.Is },
+    IsNot: { name: "IsNot", value: OperatorTokenType.IsNot },
+    In: { name: "In", value: OperatorTokenType.In },
+    NotIn: { name: "NotIn", value: OperatorTokenType.NotIn },
+
+    OpenParentheses: { name: "OpenParentheses", value: CharacterTokenType.OpenParentheses },
+    CloseParentheses: { name: "CloseParentheses", value: CharacterTokenType.CloseParentheses },
+    OpenBracket: { name: "OpenBracket", value: CharacterTokenType.OpenBracket },
+    CloseBracket: { name: "CloseBracket", value: CharacterTokenType.CloseBracket },
+    OpenSquareBracket: { name: "OpenSquareBracket", value: CharacterTokenType.OpenSquareBracket },
+    CloseSquareBracket: { name: "CloseSquareBracket", value: CharacterTokenType.CloseSquareBracket },
+    WhiteSpace: { name: "WhiteSpace", value: CharacterTokenType.WhiteSpace },
+    Colon: { name: "Colon", value: CharacterTokenType.Colon },
+    Semicolon: { name: "Semicolon", value: CharacterTokenType.Semicolon },
+    Comma: { name: "Comma", value: CharacterTokenType.Comma },
+    Hashtag: { name: "Hashtag", value: CharacterTokenType.Hashtag },
+    Quote: { name: "Quote", value: CharacterTokenType.Quote },
+    DoubleQuote: { name: "DoubleQuote", value: CharacterTokenType.DoubleQuote },
+    BackQuote: { name: "BackQuote", value: CharacterTokenType.BackQuote },
+    Backslash: { name: "Backslash", value: CharacterTokenType.Backslash },
+    NewLine: { name: "NewLine", value: CharacterTokenType.NewLine },
+    Unknown: { name: "Unknown", value: CharacterTokenType.Unknown },
+
+    Escaped_Whitespace: { name: "Escaped_Whitespace", value: EscapedCharacterTokenType.Escaped_Whitespace },
+    Escaped_Newline: { name: "Escaped_Newline", value: EscapedCharacterTokenType.Escaped_Newline },
+    Escaped_Quote: { name: "Escaped_Quote", value: EscapedCharacterTokenType.Escaped_Quote },
+    Escaped_DoubleQuote: { name: "Escaped_DoubleQuote", value: EscapedCharacterTokenType.Escaped_DoubleQuote },
+    Escaped_Backslash: { name: "Escaped_Backslash", value: EscapedCharacterTokenType.Escaped_Backslash },
+    Escaped_OpenSquareBracket: { name: "Escaped_OpenSquareBracket", value: EscapedCharacterTokenType.Escaped_OpenSquareBracket },
+    Escaped_OpenBracket: { name: "Escaped_OpenBracket", value: EscapedCharacterTokenType.Escaped_OpenBracket },
+
+    Comment: { name: "Comment", value: MetaTokenType.Comment },
+    CommentCodeTag: { name: "CommentCodeTag", value: MetaTokenType.CommentCodeTag },
+    PythonLine: { name: "PythonLine", value: MetaTokenType.PythonLine },
+    PythonBlock: { name: "PythonBlock", value: MetaTokenType.PythonBlock },
+    Arguments: { name: "Arguments", value: MetaTokenType.Arguments },
+    TagBlock: { name: "TagBlock", value: MetaTokenType.TagBlock },
+    Placeholder: { name: "Placeholder", value: MetaTokenType.Placeholder },
+    Block: { name: "Block", value: MetaTokenType.Block },
+    EmptyString: { name: "EmptyString", value: MetaTokenType.EmptyString },
+    Invalid: { name: "Invalid", value: MetaTokenType.Invalid },
+};
+
+export const tokenTypeToStringMap = Object.fromEntries(Object.entries(tokenTypeDefinitions).map(([_, v]) => [v.value, v.name]));

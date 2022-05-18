@@ -2,7 +2,7 @@
 "use strict";
 
 import { MarkdownString, ParameterInformation, Position, Range, SignatureInformation, TextDocument } from "vscode";
-import { NavigationData } from "./navigationdata";
+import { NavigationData } from "./navigation-data";
 
 export class Navigation {
     source: string;

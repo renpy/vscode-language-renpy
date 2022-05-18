@@ -4,7 +4,7 @@
 import { Hover, MarkdownString, Position, Range, TextDocument, Uri } from "vscode";
 import { getKeywordPrefix } from "./extension";
 import { rangeAsString, Navigation, getPyDocsAtLine, formatDocumentationAsMarkdown } from "./navigation";
-import { NavigationData } from "./navigationdata";
+import { NavigationData } from "./navigation-data";
 import { stripWorkspaceFromFile, extractFilename, getFileWithPath } from "./workspace";
 import * as fs from "fs";
 
@@ -33,7 +33,7 @@ export function getHover(document: TextDocument, position: Position): Hover | nu
     const range_key = rangeAsString(filename, range);
     const navigation = NavigationData.gameObjects["semantic"][range_key];
     if (navigation) {
-        let contents = new MarkdownString();
+        const contents = new MarkdownString();
         if (navigation && navigation instanceof Navigation) {
             const args = [{ uri: document.uri, range: navigation.toRange() }];
             const commandUri = Uri.parse(`command:renpy.jumpToFileLocation?${encodeURIComponent(JSON.stringify(args))}`);
@@ -59,7 +59,7 @@ export function getHover(document: TextDocument, position: Position): Hover | nu
 
     const locations = NavigationData.getNavigationDumpEntries(word);
     if (locations) {
-        let contents = getHoverMarkdownString(locations);
+        const contents = getHoverMarkdownString(locations);
         return new Hover(contents);
     }
 
@@ -67,10 +67,10 @@ export function getHover(document: TextDocument, position: Position): Hover | nu
 }
 
 export function getHoverMarkdownString(locations: Navigation[]): MarkdownString {
-    let contents = new MarkdownString();
+    const contents = new MarkdownString();
     let index = 0;
 
-    for (let location of locations) {
+    for (const location of locations) {
         index++;
         if (index > 1) {
             contents.appendMarkdown("\n\n---\n\n");
@@ -105,7 +105,7 @@ export function getHoverMarkdownString(locations: Navigation[]): MarkdownString 
         }
 
         let type = location.source;
-        let character = NavigationData.gameObjects["characters"][location.keyword];
+        const character = NavigationData.gameObjects["characters"][location.keyword];
         if (character) {
             type = "character";
         }
@@ -178,7 +178,7 @@ function getPyType(location: Navigation) {
 export function getDefinitionFromFile(filename: string, line: number): Navigation | undefined {
     const filepath = getFileWithPath(filename);
     try {
-        let data = fs.readFileSync(filepath, "utf-8");
+        const data = fs.readFileSync(filepath, "utf-8");
         const lines = data.split("\n");
         if (line <= lines.length) {
             let text = lines[line - 1].trim();

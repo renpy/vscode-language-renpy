@@ -4,7 +4,7 @@
 import { TextDocument, Position, SignatureHelp, SignatureHelpContext } from "vscode";
 import { getKeywordPrefix } from "./extension";
 import { getArgumentParameterInfo } from "./navigation";
-import { NavigationData } from "./navigationdata";
+import { NavigationData } from "./navigation-data";
 
 /**
  * Gets method signature help for the keyword at the given position in the given document
@@ -34,7 +34,7 @@ export function getSignatureHelp(document: TextDocument, position: Position, con
     }
 
     // show the documentation for the keyword that triggered this signature
-    let signatureHelp: SignatureHelp = new SignatureHelp();
+    const signatureHelp: SignatureHelp = new SignatureHelp();
     const locations = NavigationData.getNavigationDumpEntries(triggerWord);
     if (locations) {
         for (let location of locations) {
@@ -42,7 +42,7 @@ export function getSignatureHelp(document: TextDocument, position: Position, con
                 location = NavigationData.getClassData(location);
             }
             if (location.args && location.args.length > 0) {
-                let signature = getArgumentParameterInfo(location, currentLine, position.character);
+                const signature = getArgumentParameterInfo(location, currentLine, position.character);
                 signatureHelp.activeParameter = 0;
                 signatureHelp.activeSignature = 0;
                 signatureHelp.signatures.push(signature);

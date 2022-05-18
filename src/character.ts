@@ -2,7 +2,7 @@
 "use strict";
 
 import { getDefinitionFromFile } from "./hover";
-import { NavigationData } from "./navigationdata";
+import { NavigationData } from "./navigation-data";
 
 export class Character {
     name: string;

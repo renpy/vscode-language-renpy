@@ -25,7 +25,7 @@ export function extractFilename(str: string) {
 export function extractFilenameWithoutExtension(str: string) {
     if (str) {
         str = str.replace(/\\/g, "/");
-        let filename = str.split("/").pop();
+        const filename = str.split("/").pop();
         if (filename) {
             return filename.replace(/\.[^/.]+$/, "");
         }
@@ -86,7 +86,7 @@ export function cleanUpPath(path: string): string {
  * @returns The filename path including the workspace folder
  */
 export function getFileWithPath(filename: string) {
-    let wf = getWorkspaceFolder();
+    const wf = getWorkspaceFolder();
     if (wf && wf.length > 0) {
         if (filename.startsWith(wf)) {
             return filename;

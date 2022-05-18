@@ -21,8 +21,8 @@ export class NavigationData {
     static displayableAutoComplete: CompletionItem[];
     static displayableQuotedAutoComplete: CompletionItem[];
     static gameObjects: any = {};
-    static isImporting: boolean = false;
-    static isCompiling: boolean = false;
+    static isImporting = false;
+    static isCompiling = false;
 
     static async init(extensionPath: string) {
         console.log(`NavigationData init`);
@@ -59,7 +59,7 @@ export class NavigationData {
         await NavigationData.refresh();
     }
 
-    static async refresh(interactive: boolean = false): Promise<boolean> {
+    static async refresh(interactive = false): Promise<boolean> {
         console.log(`${Date()}: NavigationData refresh`);
         NavigationData.isImporting = true;
         try {

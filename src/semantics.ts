@@ -3,7 +3,7 @@
 
 import { Position, Range, SemanticTokens, SemanticTokensBuilder, SemanticTokensLegend, TextDocument } from "vscode";
 import { Navigation, splitParameters, rangeAsString, getCurrentContext, DataType } from "./navigation";
-import { NavigationData, updateNavigationData } from "./navigationdata";
+import { NavigationData, updateNavigationData } from "./navigation-data";
 import { stripWorkspaceFromFile } from "./workspace";
 
 export function getSemanticTokens(document: TextDocument, legend: SemanticTokensLegend): SemanticTokens {
@@ -81,7 +81,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                 parent_line = i + 1;
                 let start = line.indexOf("(") + 1;
                 const split = splitParameters(matches[3], false);
-                for (let m of split) {
+                for (const m of split) {
                     const offset = m.length - m.trimStart().length;
                     let length = m.length;
                     if (m.indexOf("=") > 0) {
@@ -153,14 +153,14 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
             // we are still inside a parent block
             // check if this line has any tokens that are parameters
             if (parent_args.length > 0) {
-                for (let a of parent_args) {
+                for (const a of parent_args) {
                     try {
                         const token = escapeRegExp(a);
                         const rx = RegExp(`[^a-zA-Z_](${token})($|[^a-zA-Z_])`, "g");
                         let matches;
                         while ((matches = rx.exec(line)) !== null) {
                             const offset = matches[0].indexOf(matches[1]);
-                            let length = matches[1].length;
+                            const length = matches[1].length;
                             if (NavigationData.positionIsCleanForCompletion(line, new Position(i, matches.index + offset))) {
                                 // push the token into the token builder
                                 const range = new Range(i, matches.index + offset, i, matches.index + offset + length);
@@ -184,14 +184,14 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
             }
             // tokenize any local variables
             if (parent_local.length > 0) {
-                for (let a of parent_local) {
+                for (const a of parent_local) {
                     try {
                         const token = escapeRegExp(a[0]);
                         const rx = RegExp(`[^a-zA-Z_](${token})($|[^a-zA-Z_])`, "g");
                         let matches;
                         while ((matches = rx.exec(line)) !== null) {
                             const offset = matches[0].indexOf(matches[1]);
-                            let length = matches[1].length;
+                            const length = matches[1].length;
                             if (NavigationData.positionIsCleanForCompletion(line, new Position(i, matches.index + offset))) {
                                 // push the token into the token builder
                                 const range = new Range(i, matches.index + offset, i, matches.index + offset + length);
@@ -221,7 +221,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
             // check if this line is a default and we're in a screen
             // mark the token as a screen variable
             if (parent_type === "screen") {
-                const rxDefault = /^\s*(default)\s+(\w*)\s*=\s*([\w'"`\[{]*)/;
+                const rxDefault = /^\s*(default)\s+(\w*)\s*=\s*([\w'"`[{]*)/;
                 const matches = rxDefault.exec(line);
                 if (matches) {
                     parent_local.push([matches[2], "sv"]);
@@ -240,19 +240,19 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                 // check if this line is a variable declaration in a function or store
                 // mark the token as a variable
                 const rxPatterns = [/^\s*(global)\s+(\w*)/g, /\s*(for)\s+([a-zA-Z0-9_]+)\s+in\s+/g, /(\s*)([a-zA-Z0-9_,]+)\s*=\s*[a-zA-Z0-9_"]+/g];
-                for (let rx of rxPatterns) {
+                for (const rx of rxPatterns) {
                     let matches;
                     while ((matches = rx.exec(line)) !== null) {
                         try {
                             let start = line.indexOf(matches[2]);
                             const split = matches[2].split(",");
-                            for (let m of split) {
+                            for (const m of split) {
                                 const offset = m.length - m.trimStart().length;
                                 if (parent_args.includes(m.substring(offset))) {
                                     continue;
                                 }
 
-                                let length = m.length;
+                                const length = m.length;
                                 let source = "variable";
                                 if (matches[1] === "global") {
                                     source = "global variable";

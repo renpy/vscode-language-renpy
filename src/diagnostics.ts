@@ -2,7 +2,7 @@
 "use strict";
 
 import { Diagnostic, DiagnosticCollection, DiagnosticSeverity, ExtensionContext, Range, TextDocument, window, workspace } from "vscode";
-import { NavigationData } from "./navigationdata";
+import { NavigationData } from "./navigation-data";
 import { extractFilename } from "./workspace";
 
 // Renpy Store Variables (https://www.renpy.org/doc/html/store_variables.html)
@@ -42,7 +42,7 @@ const rxReservedPythonCheck =
     /^\s*(default|define)\s+(ArithmeticError|AssertionError|AttributeError|BaseException|BufferError|BytesWarning|DeprecationWarning|EOFError|Ellipsis|EnvironmentError|Exception|False|FloatingPointError|FutureWarning|GeneratorExit|IOError|ImportError|ImportWarning|IndentationError|IndexError|KeyError|KeyboardInterrupt|LookupError|MemoryError|NameError|None|NoneType|NotImplemented|NotImplementedError|OSError|OverflowError|PPP|PendingDeprecationWarning|ReferenceError|RuntimeError|RuntimeWarning|StandardError|StopIteration|SyntaxError|SyntaxWarning|SystemError|SystemExit|TabError|True|TypeError|UnboundLocalError|UnicodeDecodeError|UnicodeEncodeError|UnicodeError|UnicodeTranslateError|UnicodeWarning|UserWarning|ValueError|Warning|ZeroDivisionError|abs|all|any|apply|basestring|bin|bool|buffer|bytearray|bytes|callable|chr|classmethod|cmp|coerce|compile|complex|copyright|credits|delattr|dict|dir|divmod|enumerate|eval|execfile|exit|file|filter|float|format|frozenset|getattr|globals|hasattr|hash|help|hex|id|input|int|intern|isinstance|issubclass|iter|len|license|list|locals|long|map|max|memoryview|min|next|object|oct|open|ord|pow|print|property|quit|range|raw_input|reduce|reload|repr|reversed|round|set|setattr|slice|sorted|staticmethod|str|sum|super|tuple|type|unichr|unicode|vars|xrange|zip)\s*=/g;
 // Obsolete Methods
 const rxObsoleteCheck =
-    /[\s\(=]+(LiveCrop|LiveComposite|Tooltip|im\.Rotozoom|im\.ImageBase|im\.ramp|im\.Map|im\.Flip|im\.math|im\.expands_bounds|im\.threading|im\.zipfile|im\.Recolor|im\.Color|im\.io|im\.Alpha|im\.Data|im\.Image|im\.Twocolor|im\.MatrixColor|im\.free_memory|im\.Tile|im\.FactorScale|im\.Sepia|im\.Crop|im\.AlphaMask|im\.Blur|im\.tobytes|im\.matrix|im\.Grayscale|ui\.add|ui\.bar|ui\.imagebutton|ui\.input|ui\.key|ui\.label|ui\.null|ui\.text|ui\.textbutton|ui\.timer|ui\.vbar|ui\.hotspot|ui\.hotbar|ui\.spritemanager|ui\.button|ui\.frame|ui\.transform|ui\.window|ui\.drag|ui\.fixed|ui\.grid|ui\.hbox|ui\.side|ui\.vbox|ui\.imagemap|ui\.draggroup)[^a-zA-Z]/g;
+    /[\s(=]+(LiveCrop|LiveComposite|Tooltip|im\.Rotozoom|im\.ImageBase|im\.ramp|im\.Map|im\.Flip|im\.math|im\.expands_bounds|im\.threading|im\.zipfile|im\.Recolor|im\.Color|im\.io|im\.Alpha|im\.Data|im\.Image|im\.Twocolor|im\.MatrixColor|im\.free_memory|im\.Tile|im\.FactorScale|im\.Sepia|im\.Crop|im\.AlphaMask|im\.Blur|im\.tobytes|im\.matrix|im\.Grayscale|ui\.add|ui\.bar|ui\.imagebutton|ui\.input|ui\.key|ui\.label|ui\.null|ui\.text|ui\.textbutton|ui\.timer|ui\.vbar|ui\.hotspot|ui\.hotbar|ui\.spritemanager|ui\.button|ui\.frame|ui\.transform|ui\.window|ui\.drag|ui\.fixed|ui\.grid|ui\.hbox|ui\.side|ui\.vbox|ui\.imagemap|ui\.draggroup)[^a-zA-Z]/g;
 
 const rxVariableCheck = /^\s*(default|define)\s+([^a-zA-Z\s][a-zA-Z0-9_]*)\s+=/g;
 const rxPersistentDefines = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*$)/g;
@@ -76,8 +76,8 @@ export function refreshDiagnostics(doc: TextDocument, diagnosticCollection: Diag
         const filename = extractFilename(doc.uri.path);
         if (filename) {
             if (!filename.match(/^[a-zA-Z0-9]/) || filename.startsWith("00")) {
-                let invalidRange = new Range(0, 0, doc.lineCount, 0);
-                let range = doc.validateRange(invalidRange);
+                const invalidRange = new Range(0, 0, doc.lineCount, 0);
+                const range = doc.validateRange(invalidRange);
                 const diagnostic = new Diagnostic(range, "Filenames must begin with a letter or number, but may not begin with '00' as Ren'Py uses such files for its own purposes.", severity);
                 diagnostics.push(diagnostic);
             }
@@ -88,10 +88,10 @@ export function refreshDiagnostics(doc: TextDocument, diagnosticCollection: Diag
     const dataLoaded = NavigationData.data && NavigationData.data.location;
 
     // check for persistent variables that have not been defined/defaulted
-    let persistents = [];
+    const persistents = [];
     if (dataLoaded) {
-        const gameObjects = NavigationData.data.location["persistent"];
-        for (let key in gameObjects) {
+        const gameObjects = NavigationData.data.location!["persistent"];
+        for (const key in gameObjects) {
             persistents.push(key);
         }
     }

@@ -101,7 +101,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     ];
 
     const tokensConfig = workspace.getConfiguration("editor");
-    const customTokens: any[] = tokensConfig["tokenColorCustomizations"]["textMateRules"];
+    const customTokens = tokensConfig["tokenColorCustomizations"]["textMateRules"];
     if (customTokens === undefined) {
         tokensConfig.update("tokenColorCustomizations", { textMateRules: rules }, ConfigurationTarget.Workspace);
     } else {

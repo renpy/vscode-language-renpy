@@ -34,7 +34,7 @@ export class NavigationData {
         NavigationData.autoCompleteKeywords = kwData;
 
         NavigationData.renpyAutoComplete = [];
-        for (let key in NavigationData.renpyFunctions.renpy) {
+        for (const key in NavigationData.renpyFunctions.renpy) {
             if (key.charAt(0) === key.charAt(0).toUpperCase()) {
                 NavigationData.renpyAutoComplete.push(new CompletionItem(key.substring(6), CompletionItemKind.Class));
             } else {
@@ -43,13 +43,13 @@ export class NavigationData {
         }
 
         NavigationData.configAutoComplete = [];
-        for (let key in NavigationData.renpyFunctions.config) {
+        for (const key in NavigationData.renpyFunctions.config) {
             NavigationData.configAutoComplete.push(new CompletionItem(key.substring(7), CompletionItemKind.Property));
         }
 
         NavigationData.guiAutoComplete = [];
         NavigationData.internalAutoComplete = [];
-        for (let key in NavigationData.renpyFunctions.internal) {
+        for (const key in NavigationData.renpyFunctions.internal) {
             NavigationData.internalAutoComplete.push(new CompletionItem(key, CompletionItemKind.Class));
             if (key.startsWith("gui.")) {
                 NavigationData.guiAutoComplete.push(new CompletionItem(key.substring(4), CompletionItemKind.Variable));
@@ -93,8 +93,8 @@ export class NavigationData {
             NavigationData.gameObjects["stores"] = {};
             NavigationData.displayableAutoComplete = [];
             NavigationData.displayableQuotedAutoComplete = [];
-            var scriptResult = await NavigationData.scanForScriptFiles();
-            var imageResult = await NavigationData.scanForImages();
+            const scriptResult = await NavigationData.scanForScriptFiles();
+            const imageResult = await NavigationData.scanForImages();
             if (scriptResult && imageResult) {
                 await NavigationData.getCharacterImageAttributes();
             }
@@ -117,8 +117,8 @@ export class NavigationData {
     }
 
     static find(keyword: string): Navigation[] | undefined {
-        let locations: Navigation[] = [];
-        let split = keyword.split(".");
+        const locations: Navigation[] = [];
+        const split = keyword.split(".");
 
         if (split.length === 2 && split[0] === "persistent") {
             const type = NavigationData.data.location[split[0]];
@@ -131,8 +131,8 @@ export class NavigationData {
             }
         }
 
-        for (let key in NavigationData.data.location) {
-            let type = NavigationData.data.location[key];
+        for (const key in NavigationData.data.location) {
+            const type = NavigationData.data.location[key];
             if (type[keyword]) {
                 const data = type[keyword];
                 if (data instanceof Navigation) {
@@ -147,22 +147,22 @@ export class NavigationData {
         }
 
         if (NavigationData.renpyFunctions.internal[keyword]) {
-            let type = NavigationData.renpyFunctions.internal[keyword];
+            const type = NavigationData.renpyFunctions.internal[keyword];
             locations.push(NavigationData.getNavigationObject("internal", keyword, type));
         }
 
         if (NavigationData.renpyFunctions.config[keyword]) {
-            let type = NavigationData.renpyFunctions.config[keyword];
+            const type = NavigationData.renpyFunctions.config[keyword];
             locations.push(NavigationData.getNavigationObject("config", keyword, type));
         }
 
         if (NavigationData.renpyFunctions.renpy[keyword]) {
-            let type = NavigationData.renpyFunctions.renpy[keyword];
+            const type = NavigationData.renpyFunctions.renpy[keyword];
             locations.push(NavigationData.getNavigationObject("equivalent", keyword, type));
         }
 
         if (NavigationData.gameObjects["stores"][keyword]) {
-            let nav = NavigationData.gameObjects["stores"][keyword];
+            const nav = NavigationData.gameObjects["stores"][keyword];
             if (nav instanceof Navigation) {
                 locations.push(nav);
             } else {
@@ -175,7 +175,7 @@ export class NavigationData {
                 const properties = NavigationData.gameObjects["properties"][split[0]];
                 const filtered = Object.keys(properties).filter((key) => properties[key].keyword === split[1]);
                 if (filtered && filtered.length > 0) {
-                    let nav: Navigation = Object.create(properties[filtered[0]]);
+                    const nav: Navigation = Object.create(properties[filtered[0]]);
                     nav.keyword = `${nav.type}.${nav.keyword}`;
                     locations.push(nav);
                 }
@@ -186,7 +186,7 @@ export class NavigationData {
                 const fields = NavigationData.gameObjects["fields"][split[0]];
                 const filtered = Object.keys(fields).filter((key) => fields[key].keyword === split[1]);
                 if (filtered && filtered.length > 0) {
-                    let nav: Navigation = Object.create(fields[filtered[0]]);
+                    const nav: Navigation = Object.create(fields[filtered[0]]);
                     nav.keyword = `${nav.type}.${nav.keyword}`;
                     locations.push(nav);
                 }
@@ -257,7 +257,7 @@ export class NavigationData {
         let insideBracket = false;
         let escaped = false;
 
-        for (let c of line) {
+        for (const c of line) {
             if (c === "\\") {
                 if (!insideBracket && (insideSingleQuote || insideDoubleQuote)) {
                     escaped = true;
@@ -328,9 +328,9 @@ export class NavigationData {
             if (base && base[0].keyword.indexOf(".") > 0) {
                 return base[0].keyword.split(".")[0];
             }
-            const defineType = NavigationData.gameObjects["define_types"][keyword];
-            if (defineType && defineType.baseclass && defineType.baseclass.indexOf("(") > 0) {
-                const base = defineType.baseclass.substring(0, defineType.baseclass.indexOf("("));
+            const defineType: DataType = NavigationData.gameObjects["define_types"][keyword];
+            if (defineType && defineType.baseClass && defineType.baseClass.indexOf("(") > 0) {
+                const base = defineType.baseClass.substring(0, defineType.baseClass.indexOf("("));
                 return this.isClass(base);
             }
         }
@@ -339,7 +339,7 @@ export class NavigationData {
     }
 
     static getClassAutoComplete(keyword: string): CompletionItem[] | undefined {
-        let newlist: CompletionItem[] = [];
+        const newList: CompletionItem[] = [];
         const prefix = keyword + ".";
 
         // get any inherited class items
@@ -347,11 +347,11 @@ export class NavigationData {
         if (cls) {
             if (cls.type && cls.type.length > 0) {
                 const bases = cls.type.split(",");
-                for (let base of bases) {
+                for (const base of bases) {
                     const items = NavigationData.getClassAutoComplete(base.trim());
                     if (items) {
-                        for (let item of items) {
-                            newlist.push(item);
+                        for (const item of items) {
+                            newList.push(item);
                         }
                     }
                 }
@@ -363,10 +363,10 @@ export class NavigationData {
         if (callables) {
             const filtered = Object.keys(callables).filter((key) => key.indexOf(prefix) === 0);
             if (filtered) {
-                for (let key in filtered) {
+                for (const key in filtered) {
                     const label = filtered[key].substring(prefix.length);
-                    if (!newlist.some((e) => e.label === label)) {
-                        newlist.push(new CompletionItem(label, CompletionItemKind.Method));
+                    if (!newList.some((e) => e.label === label)) {
+                        newList.push(new CompletionItem(label, CompletionItemKind.Method));
                     }
                 }
             }
@@ -375,12 +375,12 @@ export class NavigationData {
         // get any properties
         const properties = NavigationData.gameObjects["properties"][keyword];
         if (properties) {
-            for (let p of properties) {
-                if (!newlist.some((e) => e.label === p.keyword)) {
+            for (const p of properties) {
+                if (!newList.some((e) => e.label === p.keyword)) {
                     if (p.source === "property") {
-                        newlist.push(new CompletionItem(p.keyword, CompletionItemKind.Property));
+                        newList.push(new CompletionItem(p.keyword, CompletionItemKind.Property));
                     } else {
-                        newlist.push(new CompletionItem(p.keyword, CompletionItemKind.Variable));
+                        newList.push(new CompletionItem(p.keyword, CompletionItemKind.Variable));
                     }
                 }
             }
@@ -389,14 +389,14 @@ export class NavigationData {
         // get any fields
         const fields = NavigationData.gameObjects["fields"][keyword];
         if (fields) {
-            for (let p of fields) {
-                if (!newlist.some((e) => e.label === p.keyword)) {
-                    newlist.push(new CompletionItem(p.keyword, CompletionItemKind.Field));
+            for (const p of fields) {
+                if (!newList.some((e) => e.label === p.keyword)) {
+                    newList.push(new CompletionItem(p.keyword, CompletionItemKind.Field));
                 }
             }
         }
 
-        return newlist;
+        return newList;
     }
 
     static resolve(keyword: string): Navigation[] | undefined {
@@ -440,7 +440,7 @@ export class NavigationData {
                     } else {
                         // if this class has no __init__ but has a base, look for its __init__
                         const bases = location.type.split(",");
-                        for (let base of bases) {
+                        for (const base of bases) {
                             if (location.args.length === 0) {
                                 const init = NavigationData.data.location["callable"][`${base}.__init__`];
                                 if (init) {
@@ -464,18 +464,18 @@ export class NavigationData {
 
     static getClassProperties(keyword: string, document: TextDocument, location: number): Navigation[] {
         // find @property attributes in the class definition
-        let props: Navigation[] = [];
+        const props: Navigation[] = [];
         const rxDef = /^def\s+(\w*).*:/;
         const rxVariable = /^\s*(\w*)\s*=\s*(.*$)/;
         const filename = stripWorkspaceFromFile(document.uri.path);
         try {
             let index = location;
-            let line = document.lineAt(index - 1).text;
+            const line = document.lineAt(index - 1).text;
             const spacing = line.indexOf("class " + keyword);
             let finished = false;
             while (!finished && index < document.lineCount) {
                 let line = document.lineAt(index).text.replace(/[\n\r]/g, "");
-                let indent = line.length - line.trimLeft().length;
+                const indent = line.length - line.trimLeft().length;
                 if (line.length > 0 && indent <= spacing) {
                     finished = true;
                     break;
@@ -485,8 +485,8 @@ export class NavigationData {
                 const matches = line.match(rxDef);
                 if (matches) {
                     // if document edits moved the callables, then update the location
-                    let define_keyword = `${keyword}.${matches[1]}`;
-                    let current_def = NavigationData.data.location["callable"][define_keyword];
+                    const define_keyword = `${keyword}.${matches[1]}`;
+                    const current_def = NavigationData.data.location["callable"][define_keyword];
                     if (current_def && current_def[0] === filename) {
                         if (current_def[1] !== index + 1) {
                             current_def[1] = index + 1;
@@ -527,7 +527,7 @@ export class NavigationData {
 
     static getClassFields(keyword: string, document: TextDocument, location: number): Navigation[] {
         // find fields in the __init__ method of the class definition
-        let props: Navigation[] = [];
+        const props: Navigation[] = [];
         if (!document || !document.lineCount) {
             return props;
         }
@@ -536,7 +536,7 @@ export class NavigationData {
         const rxDef = /^\s*(self)\.(\w*)\s*=\s*(.*$)/;
         try {
             let index = location;
-            let line = document.lineAt(index - 1).text;
+            const line = document.lineAt(index - 1).text;
             if (!line) {
                 return props;
             }
@@ -572,7 +572,7 @@ export class NavigationData {
 
     static getNavigationObject(source: string, keyword: string, array: any): Navigation {
         /*
-		0 basefile,
+		0 base file,
 		1 kind,
 		2 args,
 		3 class,
@@ -605,8 +605,8 @@ export class NavigationData {
     static async scanForScriptFiles(): Promise<boolean> {
         const files = await workspace.findFiles("**/*.rpy");
         if (files && files.length > 0) {
-            for (let file of files) {
-                let document = await workspace.openTextDocument(file);
+            for (const file of files) {
+                const document = await workspace.openTextDocument(file);
                 const filename = stripWorkspaceFromFile(cleanUpPath(file.path));
                 NavigationData.scanDocumentForClasses(filename, document);
             }
@@ -620,7 +620,7 @@ export class NavigationData {
     static async scanForImages(): Promise<boolean> {
         const files = await workspace.findFiles("**/*.{png,jpg,jpeg,webp}");
         if (files && files.length > 0) {
-            for (let file of files) {
+            for (const file of files) {
                 const filename = stripWorkspaceFromFile(file.path);
                 const displayable = NavigationData.getPythonName(filename);
                 if (displayable) {
@@ -642,7 +642,7 @@ export class NavigationData {
     static async scanForFonts(): Promise<boolean> {
         const files = await workspace.findFiles("**/*.{ttf,otf,ttc}");
         if (files && files.length > 0) {
-            for (let file of files) {
+            for (const file of files) {
                 const filename = stripWorkspaceFromFile(file.path);
                 let key = filename.replace(/^(game\/)/, "");
                 if (key.endsWith(".ttc")) {
@@ -660,7 +660,7 @@ export class NavigationData {
     static async scanForAudio(): Promise<boolean> {
         const files = await workspace.findFiles("**/*.{opus,ogg,mp3,wav}");
         if (files && files.length > 0) {
-            for (let file of files) {
+            for (const file of files) {
                 const filename = stripWorkspaceFromFile(file.path);
 
                 // add the path relative to the workspace/game folder
@@ -692,10 +692,10 @@ export class NavigationData {
             NavigationData.data.location = {};
         }
         const categories = ["callable", "class", "displayable", "persistent", "properties", "fields", "stores"];
-        for (let cat of categories) {
+        for (const cat of categories) {
             let category = NavigationData.data.location[cat];
             if (category) {
-                for (let key in category) {
+                for (const key in category) {
                     if (category[key] instanceof Navigation) {
                         if (category[key].filename === filename) {
                             delete category[key];
@@ -709,7 +709,7 @@ export class NavigationData {
             }
             category = NavigationData.gameObjects[cat];
             if (category) {
-                for (let key in category) {
+                for (const key in category) {
                     if (category[key] instanceof Navigation) {
                         if (category[key].filename === filename) {
                             delete category[key];
@@ -730,25 +730,25 @@ export class NavigationData {
      * @param document - The TextDocument for the script file
      */
     static scanDocumentForClasses(filename: string, document: TextDocument) {
-        const rxKeywordList = /\s*(register_channel|register_statement|default|define|class)[\s\()]+/;
+        const rxKeywordList = /\s*(register_channel|register_statement|default|define|class)[\s()]+/;
         const rxClass = /^\s*class\s+(\w*)\s*(\(.*\))?.*:/;
         const rxDisplayable = /^\s*(image)\s+([^=.]*)\s*[=]\s*(.+)|(layeredimage)\s+(.+):|(image)\s+([^=.:]*)\s*:/;
         const rxChannels = /.*renpy.(audio|music).register_channel\s*\(\s*"(\w+)"(.*)/;
         const rxPersistent = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*$)/;
-        const rxDefaultDefine = /^(default|define)\s+([a-zA-Z0-9._]+)\s*=\s*([\w'"`\[{]*)/;
+        const rxDefaultDefine = /^(default|define)\s+([a-zA-Z0-9._]+)\s*=\s*([\w'"`[{]*)/;
         const rxCharacters = /^\s*(define)\s*(\w*)\s*=\s*(Character|DynamicCharacter)\s*\((.*)/;
         const rxStatements = /.*renpy.register_statement\s*\("(\w+)"(.*)\)/;
         const rxOutlines = /[\s_]*outlines\s+(\[.*\])/;
         const rxInitStore = /^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):|^python\s+early\s+in\s+(\w+):/;
         const gameFilename = stripWorkspaceFromFile(document.uri.path);
         const internal = NavigationData.renpyFunctions.internal;
-        let transitions = Object.keys(internal).filter((key) => internal[key][0] === "transitions");
+        const transitions = Object.keys(internal).filter((key) => internal[key][0] === "transitions");
 
         for (let i = 0; i < document.lineCount; ++i) {
             let line = document.lineAt(i).text;
 
             let append_line = i;
-            let containsKeyword = line.match(rxKeywordList);
+            const containsKeyword = line.match(rxKeywordList);
             if (containsKeyword) {
                 // check for unterminated parenthesis for multiline declarations
                 let no_string = NavigationData.filterStringLiterals(line);
@@ -816,21 +816,21 @@ export class NavigationData {
             // match audio channels created with register_channel
             const channels = line.match(rxChannels);
             if (channels) {
-                let match = channels[2];
+                const match = channels[2];
                 NavigationData.gameObjects["channels"][match] = [filename, i + 1];
                 continue;
             }
             // match persistent definitions (define persistent)
             const persistents = line.match(rxPersistent);
             if (persistents) {
-                let match = persistents[2];
+                const match = persistents[2];
                 NavigationData.data.location["persistent"][match] = [filename, i + 1];
                 continue;
             }
             // match outlines
             const outlines = line.match(rxOutlines);
             if (outlines) {
-                let match = outlines[1];
+                const match = outlines[1];
                 if (!NavigationData.data.location["outlines"]) {
                     NavigationData.data.location["outlines"] = {};
                     NavigationData.data.location["outlines"]["array"] = [];
@@ -873,7 +873,7 @@ export class NavigationData {
                 let char_name = "";
                 let char_image = "";
                 let dynamic = "";
-                let split = splitParameters(characters[4], true);
+                const split = splitParameters(characters[4], true);
                 if (split) {
                     char_name = stripQuotes(split[0]);
                     char_image = getNamedParameter(split, "image");
@@ -885,7 +885,7 @@ export class NavigationData {
                     dynamic = "False";
                 }
 
-                var chr_object = new Character(char_name, char_image, dynamic, split, filename, i);
+                const chr_object = new Character(char_name, char_image, dynamic, split, filename, i);
                 NavigationData.gameObjects["characters"][characters[2]] = chr_object;
                 continue;
             }
@@ -898,7 +898,7 @@ export class NavigationData {
                 let statement_docs = "";
                 const execute = getNamedParameter(statement_args, "execute");
                 if (execute && execute.length > 0) {
-                    let entries = NavigationData.find(execute);
+                    const entries = NavigationData.find(execute);
                     if (entries) {
                         const def = getDefinitionFromFile(entries[0].filename, entries[0].location);
                         if (def) {
@@ -918,9 +918,9 @@ export class NavigationData {
         //console.log("getCharacterImageAttributes");
         const characters = NavigationData.gameObjects["characters"];
         const displayables = NavigationData.data.location["displayable"];
-        for (let key in characters) {
+        for (const key in characters) {
             const char = characters[key];
-            let attributes: string[] = [];
+            const attributes: string[] = [];
             if (char && char.image && char.image.length > 0) {
                 const displayable = displayables[char.image];
                 if (displayable) {
@@ -928,7 +928,7 @@ export class NavigationData {
                     if (displayable.image_type === "layeredimage") {
                         const li_attributes = await NavigationData.getLayeredImageAttributes(displayable.name, displayable.filename, displayable.location);
                         if (li_attributes) {
-                            for (let attr of li_attributes) {
+                            for (const attr of li_attributes) {
                                 if (!attributes.includes(attr)) {
                                     attributes.push(attr);
                                 }
@@ -938,7 +938,7 @@ export class NavigationData {
                     // find defined image attributes
                     const filtered = Object.keys(displayables).filter((key) => displayables[key].tag === char.image);
                     if (filtered) {
-                        for (let key of filtered) {
+                        for (const key of filtered) {
                             if (key !== char.image) {
                                 const attr = key.substring(char.image.length + 1);
                                 if (!attributes.includes(attr)) {
@@ -957,12 +957,12 @@ export class NavigationData {
         // find attributes in the layered image definition
         const displayables = NavigationData.data.location["displayable"];
         const path = getFileWithPath(filename);
-        let document = await workspace.openTextDocument(path);
-        let attributes: string[] = [];
+        const document = await workspace.openTextDocument(path);
+        const attributes: string[] = [];
         const rxAttr = /^\s*attribute\s+(\w*)/;
         try {
             let index = location;
-            let line = document.lineAt(index - 1).text;
+            const line = document.lineAt(index - 1).text;
             const spacing = line.indexOf("layeredimage " + keyword);
             let finished = false;
             while (!finished && index < document.lineCount) {
@@ -987,7 +987,7 @@ export class NavigationData {
                         const image_key = `${keyword}_${match[1]}_`;
                         const filtered = Object.keys(displayables).filter((key) => key.startsWith(image_key));
                         if (filtered) {
-                            for (let d of filtered) {
+                            for (const d of filtered) {
                                 if (d !== image_key) {
                                     const attr = d.substring(image_key.length);
                                     if (attr.indexOf("_") > 0) {
@@ -1020,7 +1020,7 @@ export class NavigationData {
      */
     static getPythonName(filename: string): boolean | undefined {
         const rx = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-        let fn_only = extractFilenameWithoutExtension(filename) || "";
+        const fn_only = extractFilenameWithoutExtension(filename) || "";
         const split = fn_only.split(" ");
         for (let i = 0; i < split.length; i++) {
             const match = split[i].match(rx);
@@ -1052,9 +1052,9 @@ export function readNavigationJson() {
 
 export function updateNavigationData(type: string, keyword: string, filename: string, line: number) {
     if (type === "define" || type === "screen" || type === "label" || type === "transform" || type === "callable") {
-        let category = NavigationData.data.location[type];
+        const category = NavigationData.data.location[type];
         if (category[keyword]) {
-            let entry = category[keyword];
+            const entry = category[keyword];
             if (entry) {
                 if (entry[0] === filename && entry[1] !== line + 1) {
                     entry[1] = line + 1;

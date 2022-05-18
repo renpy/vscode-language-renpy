@@ -90,7 +90,7 @@ export function refreshDiagnostics(doc: TextDocument, diagnosticCollection: Diag
     // check for persistent variables that have not been defined/defaulted
     const persistents = [];
     if (dataLoaded) {
-        const gameObjects = NavigationData.data.location!["persistent"];
+        const gameObjects = NavigationData.data.location["persistent"];
         for (const key in gameObjects) {
             persistents.push(key);
         }

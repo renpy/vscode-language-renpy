@@ -1,4 +1,5 @@
-import { DecorationOptions, ExtensionContext, window, workspace } from "vscode";
+import { DecorationOptions, ExtensionContext, Uri, window, workspace } from "vscode";
+import { Token } from "./token-definitions";
 import { tokenizeDocument } from "./tokenizer";
 
 let timeout: NodeJS.Timer | undefined = undefined;
@@ -112,13 +113,24 @@ const errorDecorationType = window.createTextEditorDecorationType({
     textDecoration: "underline wavy red 2px",
 });
 
+let tokenCache: Token[] = [];
+let documentVersion: number = -1;
+let documentUri: Uri | null = null;
+
 function updateDecorations() {
     let activeEditor = window.activeTextEditor;
     if (!activeEditor) {
         return;
     }
 
-    const tokens = tokenizeDocument(activeEditor.document);
+    if (documentVersion != activeEditor.document.version || documentUri != activeEditor.document.uri || tokenCache.length === 0) {
+        documentVersion = activeEditor.document.version;
+        documentUri = activeEditor.document.uri;
+        // Update tokens only if document has changed
+        tokenCache = tokenizeDocument(activeEditor.document);
+    }
+
+    const tokens = tokenCache;
 
     const keywords: DecorationOptions[] = [];
     const controlKeywords: DecorationOptions[] = [];

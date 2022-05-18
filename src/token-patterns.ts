@@ -161,6 +161,47 @@ const label: TokenPattern = {
     ],
 };
 
+const image: TokenPattern = {
+    patterns: [
+        {
+            token: MetaTokenType.Block,
+            begin: /^([ \t]*)(image)[ \t]+([a-zA-Z_.]\w*(?:\(.*\))?)(?=\s*)(:)/dgm,
+            beginCaptures: {
+                1: {
+                    token: CharacterTokenType.WhiteSpace,
+                },
+                2: {
+                    token: KeywordTokenType.Image,
+                },
+                3: {
+                    patterns: [
+                        {
+                            // Function name
+                            match: /([a-zA-Z_.]\w*)/g,
+                            token: EntityTokenType.Function,
+                        },
+                        { include: pythonParameters },
+                    ],
+                },
+                4: {
+                    token: CharacterTokenType.Colon,
+                },
+            },
+
+            end: /(:|(?=[#'\"\n]))/dg,
+            endCaptures: {
+                1: {
+                    token: CharacterTokenType.Colon,
+                },
+            },
+        },
+    ],
+};
+
+const renpyStatements: TokenPattern = {
+    patterns: [{ include: label }, { include: image }],
+};
+
 const keywords: TokenPattern = {
     patterns: [
         {
@@ -736,89 +777,29 @@ const strings: TokenPattern = {
     patterns: [{ include: stringQuotedDouble }, { include: stringQuotedSingle }, { include: stringQuotedBack }],
 };
 
-const renpyStatements: TokenPattern = {
-    patterns: [{ include: label }],
-};
-
-// Since JavaScript's RegExp doesn't support \A and \Z we need some way to make the start and end of file
-export const startOfFileMark = "¨0";
-export const endOfFileMark = "¨1";
-
 const unmatchedLoseChars: TokenPattern = {
     patterns: [
         {
-            match: new RegExp(startOfFileMark, "g"),
-        },
-        {
-            match: new RegExp(endOfFileMark, "g"),
-        },
-        {
-            token: CharacterTokenType.BackQuote,
-            match: /`/g,
-        },
-        {
-            token: CharacterTokenType.Backslash,
-            match: /\\/g,
-        },
-        {
-            token: CharacterTokenType.OpenBracket,
-            match: /{/g,
-        },
-        {
-            token: CharacterTokenType.CloseBracket,
-            match: /}/g,
-        },
-        {
-            token: CharacterTokenType.OpenSquareBracket,
-            match: /\[/g,
-        },
-        {
-            token: CharacterTokenType.CloseSquareBracket,
-            match: /\]/g,
-        },
-        {
-            token: CharacterTokenType.OpenParentheses,
-            match: /\(/g,
-        },
-        {
-            token: CharacterTokenType.CloseParentheses,
-            match: /\)/g,
-        },
-        {
-            token: CharacterTokenType.Colon,
-            match: /\:/g,
-        },
-        {
-            token: CharacterTokenType.Comma,
-            match: /,/g,
-        },
-        {
-            token: CharacterTokenType.DoubleQuote,
-            match: /"/g,
-        },
-        {
-            token: CharacterTokenType.Quote,
-            match: /'/g,
-        },
-        {
-            token: CharacterTokenType.Semicolon,
-            match: /;/g,
-        },
-        {
-            token: CharacterTokenType.Hashtag,
-            match: /#/g,
-        },
-        {
-            token: CharacterTokenType.NewLine,
-            match: /\n/g,
-        },
-        {
-            token: CharacterTokenType.WhiteSpace,
-            match: /\s+/g,
-        },
-        {
-            token: CharacterTokenType.Unknown,
-            match: /./g,
+            match: /(`)|(\\)|({)|(})|(\[)|(\])|(\()|(\))|(\:)|(,)|(")|(')|(;)|(#)|(\n)|(\s+)|(.)/dg,
+            captures: {
+                1: { token: CharacterTokenType.BackQuote },
+                2: { token: CharacterTokenType.Backslash },
+                3: { token: CharacterTokenType.OpenBracket },
+                4: { token: CharacterTokenType.CloseBracket },
+                5: { token: CharacterTokenType.OpenSquareBracket },
+                6: { token: CharacterTokenType.CloseSquareBracket },
+                7: { token: CharacterTokenType.OpenParentheses },
+                8: { token: CharacterTokenType.CloseParentheses },
+                9: { token: CharacterTokenType.Colon },
+                10: { token: CharacterTokenType.Comma },
+                11: { token: CharacterTokenType.DoubleQuote },
+                12: { token: CharacterTokenType.Quote },
+                13: { token: CharacterTokenType.Semicolon },
+                14: { token: CharacterTokenType.Hashtag },
+                15: { token: CharacterTokenType.NewLine },
+                16: { token: CharacterTokenType.WhiteSpace },
+                17: { token: CharacterTokenType.Unknown },
+            },
         },
     ],
 };

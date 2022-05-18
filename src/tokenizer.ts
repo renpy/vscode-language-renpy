@@ -1,16 +1,21 @@
 // Workspace and file functions
 "use strict";
 
+import { performance, PerformanceEntry, PerformanceObserver } from "perf_hooks";
 import { Range, TextDocument } from "vscode";
 import { Token, isIncludePattern, isRangePattern, isMatchPattern, isRepoPattern } from "./token-definitions";
-import { basePatterns, endOfFileMark, startOfFileMark } from "./token-patterns";
+import { basePatterns } from "./token-patterns";
 
 let currentPatternId: number = 0;
 
 export function tokenizeDocument(document: TextDocument): Token[] {
     if (!setupAndValidatePatterns(basePatterns)) return [];
 
+    const t0 = performance.now();
     const tokenizer: DocumentTokenizer = new DocumentTokenizer(document);
+    const t1 = performance.now();
+    console.log(`DocumentTokenizer took ${t1 - t0} milliseconds to complete.`);
+
     return tokenizer.tokens;
 }
 
@@ -39,7 +44,7 @@ function setupAndValidatePatterns(pattern: TokenPattern): boolean {
                 return false;
             }
 
-            Object.entries(pattern.beginCaptures).forEach(([k, v]) => {
+            Object.entries(pattern.beginCaptures).forEach(([_, v]) => {
                 if (v.patterns) {
                     const repo: TokenRepoPattern = { patterns: v.patterns };
                     setupAndValidatePatterns(repo);
@@ -52,7 +57,7 @@ function setupAndValidatePatterns(pattern: TokenPattern): boolean {
                 return false;
             }
 
-            Object.entries(pattern.endCaptures).forEach(([k, v]) => {
+            Object.entries(pattern.endCaptures).forEach(([_, v]) => {
                 if (v.patterns) {
                     const repo: TokenRepoPattern = { patterns: v.patterns };
                     setupAndValidatePatterns(repo);
@@ -66,9 +71,9 @@ function setupAndValidatePatterns(pattern: TokenPattern): boolean {
         }
 
         let reEndSource = pattern.end.source;
-        pattern._hasBackref = /[$\\]\d+/g.test(reEndSource);
-        reEndSource = reEndSource.replaceAll("\\A", "¨0");
-        reEndSource = reEndSource.replaceAll("\\Z", "¨1");
+        pattern._hasBackref = /\\\d+/.test(reEndSource);
+        //reEndSource = reEndSource.replaceAll("\\A", "¨0");
+        reEndSource = reEndSource.replaceAll("\\Z", "$(?!\\n)(?<!\\n)");
         pattern.end = new RegExp(reEndSource, pattern.end.flags);
     } else if (isMatchPattern(pattern)) {
         if (pattern._pattern_id !== undefined) return true; // This pattern was already validated
@@ -98,19 +103,24 @@ function setupAndValidatePatterns(pattern: TokenPattern): boolean {
     return true;
 }
 
+export function escapeRegExpCharacters(value: string): string {
+    return value.replace(/[\-\\\{\}\*\+\?\|\^\$\.\,\[\]\(\)\#\s]/g, "\\$&");
+}
+
 type ScanResult = { pattern: TokenPattern; matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray } | null;
 type CachedMatch = { matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray } | null;
 
 class DocumentTokenizer {
+    private readonly backrefReplaceRe = /\\(\d+)/g;
     private readonly document: TextDocument;
     public readonly tokens: Token[] = [];
 
     constructor(document: TextDocument) {
         this.document = document;
 
-        const text = startOfFileMark + document.getText() + endOfFileMark; // TODO: is there a string view in typescript?
+        const text = document.getText(); // TODO: is there a string view in typescript?
 
-        this.executePattern(basePatterns, text, -startOfFileMark.length);
+        this.executePattern(basePatterns, text, 0);
     }
 
     private getRange(offsetStart: number, offsetEnd: number): Range {
@@ -134,7 +144,7 @@ class DocumentTokenizer {
         for (let i = 0; i < match.indices!.length; i++) {
             if (match.indices![i] === undefined) continue; // If the object at i is undefined, the capture is empty
             if (captures[i] === undefined) {
-                if (i !== 0) console.warn(`There is no pattern defined for capture group '${i}'.\nThis should probably be added or be a non-capturing group.`);
+                if (i !== 0) console.warn(`There is no pattern defined for capture group '${i}', on a pattern that matched '${match[0]}'.\nThis should probably be added or be a non-capturing group.`);
                 continue;
             }
 
@@ -188,6 +198,7 @@ class DocumentTokenizer {
                     break;
                 }
             }
+
             return bestResult;
         } else if (isRangePattern(p)) {
             const cachedMatch = cache.get(p._pattern_id!);
@@ -211,13 +222,10 @@ class DocumentTokenizer {
                 if (p._hasBackref!) {
                     let reEndSource = p.end.source;
 
-                    for (let i = 0; i < matchBegin.length; i++) {
-                        let content = matchBegin[i];
-                        if (content === undefined) content = ""; // If the object at i is undefined, the capture is empty
-
-                        const backRef = new RegExp("[$\\\\]" + i, "g");
-                        reEndSource = reEndSource.replaceAll(backRef, content);
-                    }
+                    this.backrefReplaceRe.lastIndex = 0;
+                    reEndSource = reEndSource.replace(this.backrefReplaceRe, (_, g1) => {
+                        return escapeRegExpCharacters(matchBegin[parseInt(g1, 10)]);
+                    });
 
                     reEnd = new RegExp(reEndSource, p.end.flags);
                 }
@@ -273,6 +281,7 @@ class DocumentTokenizer {
         const lastPos = text.length;
         for (let lastMatchIndex = 0; lastMatchIndex < lastPos; ++lastMatchIndex) {
             const bestMatch = this.scanPattern(pattern, text, lastMatchIndex, cache);
+
             if (!bestMatch) continue; // No match was found in the current pattern
 
             const p = bestMatch.pattern;

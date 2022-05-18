@@ -1,4 +1,3 @@
-import { isNativeError } from "util/types";
 import { DecorationOptions, ExtensionContext, window, workspace } from "vscode";
 import { tokenizeDocument } from "./tokenizer";
 

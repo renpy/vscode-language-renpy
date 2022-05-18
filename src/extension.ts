@@ -292,7 +292,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     });
     context.subscriptions.push(gotoFileLocationCommand);
 
-    // custom command - refresh diagnositcs
+    // custom command - refresh diagnostics
     let refreshDiagnosticsCommand = commands.registerCommand("renpy.refreshDiagnostics", () => {
         if (window.activeTextEditor) {
             refreshDiagnostics(window.activeTextEditor.document, diagnostics);

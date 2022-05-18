@@ -24,9 +24,9 @@ function setupAndValidatePatterns(pattern: TokenPattern): boolean {
             if (!valid) return false;
         }
     } else if (isRangePattern(pattern)) {
-        if (pattern.pattern_id !== undefined) return true; // This pattern was already validated
+        if (pattern._pattern_id !== undefined) return true; // This pattern was already validated
 
-        pattern.pattern_id = currentPatternId;
+        pattern._pattern_id = currentPatternId;
         currentPatternId++;
 
         if (!pattern.begin.global || !pattern.end.global) {
@@ -66,14 +66,14 @@ function setupAndValidatePatterns(pattern: TokenPattern): boolean {
         }
 
         let reEndSource = pattern.end.source;
-        pattern.hasBackref = /[$\\]\d+/g.test(reEndSource);
+        pattern._hasBackref = /[$\\]\d+/g.test(reEndSource);
         reEndSource = reEndSource.replaceAll("\\A", "¨0");
         reEndSource = reEndSource.replaceAll("\\Z", "¨1");
         pattern.end = new RegExp(reEndSource, pattern.end.flags);
     } else if (isMatchPattern(pattern)) {
-        if (pattern.pattern_id !== undefined) return true; // This pattern was already validated
+        if (pattern._pattern_id !== undefined) return true; // This pattern was already validated
 
-        pattern.pattern_id = currentPatternId;
+        pattern._pattern_id = currentPatternId;
         currentPatternId++;
 
         if (!pattern.match.global) {
@@ -190,12 +190,12 @@ class DocumentTokenizer {
             }
             return bestResult;
         } else if (isRangePattern(p)) {
-            const cachedMatch = cache.get(p.pattern_id!);
+            const cachedMatch = cache.get(p._pattern_id!);
             if (cachedMatch !== undefined) {
                 if (cachedMatch.matchBegin.index >= matchOffsetStart) {
                     return { pattern: p, matchBegin: cachedMatch.matchBegin, matchEnd: cachedMatch.matchEnd };
                 } else {
-                    cache.delete(p.pattern_id!);
+                    cache.delete(p._pattern_id!);
                 }
             }
 
@@ -207,7 +207,7 @@ class DocumentTokenizer {
                 let reEnd = p.end;
 
                 // Replace all back references in end source
-                if (p.hasBackref!) {
+                if (p._hasBackref!) {
                     let reEndSource = p.end.source;
 
                     for (let i = 0; i < matchBegin.length; i++) {
@@ -226,17 +226,17 @@ class DocumentTokenizer {
                 const matchEnd = reEnd.exec(text);
 
                 if (matchEnd) {
-                    cache.set(p.pattern_id!, { matchBegin: matchBegin, matchEnd: matchEnd });
+                    cache.set(p._pattern_id!, { matchBegin: matchBegin, matchEnd: matchEnd });
                     return { pattern: p, matchBegin: matchBegin, matchEnd: matchEnd };
                 }
             }
         } else if (isMatchPattern(p)) {
-            const cachedMatch = cache.get(p.pattern_id!);
+            const cachedMatch = cache.get(p._pattern_id!);
             if (cachedMatch !== undefined) {
                 if (cachedMatch.matchBegin.index >= matchOffsetStart) {
                     return { pattern: p, matchBegin: cachedMatch.matchBegin };
                 } else {
-                    cache.delete(p.pattern_id!);
+                    cache.delete(p._pattern_id!);
                 }
             }
 
@@ -244,7 +244,7 @@ class DocumentTokenizer {
             re.lastIndex = matchOffsetStart;
             const match = re.exec(text);
             if (match) {
-                cache.set(p.pattern_id!, { matchBegin: match });
+                cache.set(p._pattern_id!, { matchBegin: match });
                 return { pattern: p, matchBegin: match };
             }
         }

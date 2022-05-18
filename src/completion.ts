@@ -35,12 +35,12 @@ export function getCompletionList(document: TextDocument, position: Position, co
         } else {
             const prefixPosition = new Position(position.line, position.character - 1);
             const range = document.getWordRangeAtPosition(prefixPosition);
-            const parent_context = getCurrentContext(document, position);
+            const parentContext = getCurrentContext(document, position);
             if (range) {
                 const parentPosition = new Position(position.line, line.length - line.trimStart().length);
                 const parent = document.getText(document.getWordRangeAtPosition(parentPosition));
                 const kwPrefix = document.getText(range);
-                return getAutoCompleteList(kwPrefix, parent, parent_context);
+                return getAutoCompleteList(kwPrefix, parent, parentContext);
             } else if (context.triggerCharacter === "-" || context.triggerCharacter === "@" || context.triggerCharacter === "=" || context.triggerCharacter === " ") {
                 const parentPosition = new Position(position.line, line.length - line.trimStart().length);
                 const parent = document.getText(document.getWordRangeAtPosition(parentPosition));
@@ -48,7 +48,7 @@ export function getCompletionList(document: TextDocument, position: Position, co
                     if (context.triggerCharacter === "=") {
                         return getAutoCompleteList(parent);
                     } else {
-                        return getAutoCompleteList(context.triggerCharacter, parent, parent_context);
+                        return getAutoCompleteList(context.triggerCharacter, parent, parentContext);
                     }
                 }
             }
@@ -129,9 +129,9 @@ export function getAutoCompleteList(prefix: string, parent = "", context = ""): 
             }
         }
     } else if (isPythonType(prefix)) {
-        const def_type = NavigationData.gameObjects["define_types"][prefix];
-        if (def_type) {
-            return getAutoCompleteKeywords(def_type.type, "", "python");
+        const defType = NavigationData.gameObjects["define_types"][prefix];
+        if (defType) {
+            return getAutoCompleteKeywords(defType.type, "", "python");
         }
     } else {
         return getAutoCompleteKeywords(prefix, parent, context);
@@ -165,11 +165,11 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                 let quoted = false;
                 let args = 0;
                 if (gameDataKey.indexOf("!") > 0) {
-                    const split = gameDataKey.split("!");
-                    gameDataKey = split[0];
-                    quoted = split[1] === "q";
-                    if (isNormalInteger(split[1])) {
-                        args = Math.floor(Number(split[1]));
+                    const split2 = gameDataKey.split("!");
+                    gameDataKey = split2[0];
+                    quoted = split2[1] === "q";
+                    if (isNormalInteger(split2[1])) {
+                        args = Math.floor(Number(split2[1]));
                     }
                 }
 
@@ -304,8 +304,8 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                     // get list of defined Transforms
                     const category = NavigationData.data.location["transform"];
                     for (const key in category) {
-                        const def_type = NavigationData.gameObjects["define_types"][key];
-                        if (def_type) {
+                        const defType = NavigationData.gameObjects["define_types"][key];
+                        if (defType) {
                         }
                         newList.push(new CompletionItem(key, CompletionItemKind.Value));
                     }
@@ -424,9 +424,9 @@ function getLayerConfiguration(quoted = false): CompletionItem[] | undefined {
         for (const layer of layers) {
             if (layer.args) {
                 const args = layer.args.replace(/ /g, "").replace(/'/g, '"').replace("=", "").trim();
-                const default_layers = JSON.parse(args);
-                if (default_layers) {
-                    for (let l of default_layers) {
+                const defaultLayers = JSON.parse(args);
+                if (defaultLayers) {
+                    for (let l of defaultLayers) {
                         if (quoted) {
                             l = '"' + l + '"';
                         }
@@ -438,8 +438,8 @@ function getLayerConfiguration(quoted = false): CompletionItem[] | undefined {
                 const docs = getDefinitionFromFile(layer.filename, layer.location);
                 const args = docs?.keyword.replace(/ /g, "").replace(/'/g, '"').replace("defineconfig.layers=", "");
                 if (args) {
-                    const user_layers = JSON.parse(args);
-                    for (let l of user_layers) {
+                    const userLayers = JSON.parse(args);
+                    for (let l of userLayers) {
                         if (quoted) {
                             l = '"' + l + '"';
                         }
@@ -602,9 +602,9 @@ function getNamedStoreAutoComplete(keyword: string): CompletionItem[] | undefine
 function isPythonType(keyword: string): boolean {
     const defaults = NavigationData.gameObjects["define_types"];
     if (defaults) {
-        const def_type = defaults[keyword];
-        if (def_type) {
-            return def_type.type !== "";
+        const defType = defaults[keyword];
+        if (defType) {
+            return defType.type !== "";
         }
     }
     return false;

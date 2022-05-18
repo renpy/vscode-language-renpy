@@ -30,8 +30,8 @@ export function getHover(document: TextDocument, position: Position): Hover | nu
 
     // check if the hover is a Semantic Token
     const filename = stripWorkspaceFromFile(document.uri.path);
-    const range_key = rangeAsString(filename, range);
-    const navigation = NavigationData.gameObjects["semantic"][range_key];
+    const rangeKey = rangeAsString(filename, range);
+    const navigation = NavigationData.gameObjects["semantic"][rangeKey];
     if (navigation) {
         const contents = new MarkdownString();
         if (navigation && navigation instanceof Navigation) {

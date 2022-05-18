@@ -16,39 +16,39 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
     const filename = stripWorkspaceFromFile(document.uri.path);
     let insideComment = false;
     let parent = "";
-    let parent_line = 0;
-    let parent_type = "";
-    let parent_args: string[] = [];
-    let parent_local: string[][] = [];
-    let parent_defaults: { [key: string]: Navigation } = {};
-    let indent_level = 0;
-    let append_line = 0;
+    let parentLine = 0;
+    let parentType = "";
+    let parentArgs: string[] = [];
+    let parentLocal: string[][] = [];
+    let parentDefaults: { [key: string]: Navigation } = {};
+    let indentLevel = 0;
+    let appendLine = 0;
 
     for (let i = 0; i < document.lineCount; ++i) {
         let line = document.lineAt(i).text;
 
         // check if we've outdented out of the parent block
-        if (line.length > 0 && line.length - line.trimStart().length <= indent_level) {
+        if (line.length > 0 && line.length - line.trimStart().length <= indentLevel) {
             parent = "";
-            parent_args = [];
-            parent_local = [];
-            parent_defaults = {};
-            parent_line = 0;
-            parent_type = "";
+            parentArgs = [];
+            parentLocal = [];
+            parentDefaults = {};
+            parentLine = 0;
+            parentType = "";
         }
 
-        append_line = i;
+        appendLine = i;
         if (line.match(rxKeywordList)) {
             // check for unterminated parenthesis for multiline declarations
-            let no_string = NavigationData.filterStringLiterals(line);
-            let open_count = (no_string.match(/\(/g) || []).length;
-            let close_count = (no_string.match(/\)/g) || []).length;
-            while (open_count > close_count && append_line < document.lineCount - 1) {
-                append_line++;
-                line = line + document.lineAt(append_line).text + "\n";
-                no_string = NavigationData.filterStringLiterals(line);
-                open_count = (no_string.match(/\(/g) || []).length;
-                close_count = (no_string.match(/\)/g) || []).length;
+            let noString = NavigationData.filterStringLiterals(line);
+            let openCount = (noString.match(/\(/g) || []).length;
+            let closeCount = (noString.match(/\)/g) || []).length;
+            while (openCount > closeCount && appendLine < document.lineCount - 1) {
+                appendLine++;
+                line = line + document.lineAt(appendLine).text + "\n";
+                noString = NavigationData.filterStringLiterals(line);
+                openCount = (noString.match(/\(/g) || []).length;
+                closeCount = (noString.match(/\)/g) || []).length;
             }
         }
 
@@ -75,10 +75,10 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
         if (matches) {
             // this line has a parameter list - tokenize the parameter ranges
             if (matches[1] !== "class" && matches[3] && matches[3].length > 0 && matches[2] !== "_") {
-                indent_level = line.length - line.trimStart().length;
+                indentLevel = line.length - line.trimStart().length;
                 parent = matches[2];
-                parent_type = matches[1];
-                parent_line = i + 1;
+                parentType = matches[1];
+                parentLine = i + 1;
                 let start = line.indexOf("(") + 1;
                 const split = splitParameters(matches[3], false);
                 for (const m of split) {
@@ -88,17 +88,17 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                         length = m.split("=")[0].trimEnd().length;
                     }
                     const range = new Range(i, start + offset, i, start + length);
-                    parent_args.push(line.substring(start + offset, length - offset));
-                    parent_defaults[m.substring(offset, length)] = new Navigation("parameter", m.substring(offset, length), filename, i + 1, "", m.trim(), "", start + offset);
+                    parentArgs.push(line.substring(start + offset, length - offset));
+                    parentDefaults[m.substring(offset, length)] = new Navigation("parameter", m.substring(offset, length), filename, i + 1, "", m.trim(), "", start + offset);
                     // create a Navigation dictionary entry for this token range
                     const key = rangeAsString(filename, range);
-                    const docs = `${parent_type} ${parent}()`;
-                    const navigation = new Navigation("parameter", matches[1], filename, parent_line, docs, "", parent_type, start + offset);
+                    const docs = `${parentType} ${parent}()`;
+                    const navigation = new Navigation("parameter", matches[1], filename, parentLine, docs, "", parentType, start + offset);
                     NavigationData.gameObjects["semantic"][key] = navigation;
                     start += m.length + 1;
                 }
                 if (matches[1] === "def") {
-                    const context = i - 1 < 0 ? undefined : getCurrentContext(document, new Position(i - 1, indent_level));
+                    const context = i - 1 < 0 ? undefined : getCurrentContext(document, new Position(i - 1, indentLevel));
                     if (context === undefined) {
                         updateNavigationData("callable", matches[2], filename, i);
                     } else if (context.startsWith("store.")) {
@@ -109,16 +109,16 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                 }
             } else if (matches[1] === "screen" || matches[1] === "def" || matches[1] === "class" || matches[11] === "class") {
                 // parent screen or function def with no parameters
-                indent_level = line.length - line.trimStart().length;
+                indentLevel = line.length - line.trimStart().length;
                 parent = matches[2] || matches[12];
-                parent_type = matches[1] || matches[11];
-                parent_line = i;
-                parent_args = [];
-                parent_local = [];
-                parent_defaults = {};
+                parentType = matches[1] || matches[11];
+                parentLine = i;
+                parentArgs = [];
+                parentLocal = [];
+                parentDefaults = {};
 
                 if (matches[1] === "def") {
-                    const context = i - 1 < 0 ? undefined : getCurrentContext(document, new Position(i - 1, indent_level));
+                    const context = i - 1 < 0 ? undefined : getCurrentContext(document, new Position(i - 1, indentLevel));
                     if (context === undefined) {
                         updateNavigationData("callable", matches[2], filename, i);
                     } else if (context.startsWith("store.")) {
@@ -128,32 +128,32 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                     updateNavigationData(matches[1], matches[2], filename, i);
                 }
             } else if (matches[4] === "label") {
-                indent_level = line.length - line.trimStart().length;
-                const context = i - 1 < 0 ? undefined : getCurrentContext(document, new Position(i - 1, indent_level));
+                indentLevel = line.length - line.trimStart().length;
+                const context = i - 1 < 0 ? undefined : getCurrentContext(document, new Position(i - 1, indentLevel));
                 if (context === undefined) {
                     updateNavigationData("label", matches[5], filename, i);
                 }
             } else if ((matches[6] === "init" && matches[8] !== undefined) || (matches[9] === "python" && matches[10] !== undefined)) {
                 // named store (init python in storename)
-                indent_level = line.length - line.trimStart().length;
+                indentLevel = line.length - line.trimStart().length;
                 if (matches[10] !== undefined) {
                     parent = matches[10];
                 } else {
                     parent = matches[8];
                 }
-                parent_type = "store";
-                parent_line = i + 1;
-                parent_args = [];
-                parent_local = [];
-                parent_defaults = {};
-                const navigation = new Navigation("store", parent, filename, parent_line, "", "", parent_type, indent_level);
+                parentType = "store";
+                parentLine = i + 1;
+                parentArgs = [];
+                parentLocal = [];
+                parentDefaults = {};
+                const navigation = new Navigation("store", parent, filename, parentLine, "", "", parentType, indentLevel);
                 NavigationData.gameObjects["stores"][parent] = navigation;
             }
         } else if (parent !== "") {
             // we are still inside a parent block
             // check if this line has any tokens that are parameters
-            if (parent_args.length > 0) {
-                for (const a of parent_args) {
+            if (parentArgs.length > 0) {
+                for (const a of parentArgs) {
                     try {
                         const token = escapeRegExp(a);
                         const rx = RegExp(`[^a-zA-Z_](${token})($|[^a-zA-Z_])`, "g");
@@ -171,9 +171,9 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                                 }
                                 // create a Navigation dictionary entry for this token range
                                 const key = rangeAsString(filename, range);
-                                const docs = `${parent_type} ${parent}()`;
-                                const parent_nav = parent_defaults[matches[1]];
-                                const navigation = new Navigation("parameter", matches[1], filename, parent_line, docs, "", parent_type, parent_nav.character);
+                                const docs = `${parentType} ${parent}()`;
+                                const parentNav = parentDefaults[matches[1]];
+                                const navigation = new Navigation("parameter", matches[1], filename, parentLine, docs, "", parentType, parentNav.character);
                                 NavigationData.gameObjects["semantic"][key] = navigation;
                             }
                         }
@@ -183,8 +183,8 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                 }
             }
             // tokenize any local variables
-            if (parent_local.length > 0) {
-                for (const a of parent_local) {
+            if (parentLocal.length > 0) {
+                for (const a of parentLocal) {
                     try {
                         const token = escapeRegExp(a[0]);
                         const rx = RegExp(`[^a-zA-Z_](${token})($|[^a-zA-Z_])`, "g");
@@ -198,17 +198,17 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                                 tokensBuilder.push(range, "variable");
                                 // create a Navigation dictionary entry for this token range
                                 const key = rangeAsString(filename, range);
-                                const parent_nav = parent_defaults[`${parent_type}.${parent}.${matches[1]}`];
-                                if (parent_nav === undefined) {
+                                const parentNav = parentDefaults[`${parentType}.${parent}.${matches[1]}`];
+                                if (parentNav === undefined) {
                                     continue;
                                 }
-                                let nav_source = "variable";
+                                let navSource = "variable";
                                 if (a[1] === "sv") {
-                                    nav_source = "screen variable";
+                                    navSource = "screen variable";
                                 } else if (a[1] === "g") {
-                                    nav_source = "global variable";
+                                    navSource = "global variable";
                                 }
-                                const navigation = new Navigation(nav_source, matches[1], filename, parent_nav.location, parent_nav.documentation, "", parent_nav.type, parent_nav.character);
+                                const navigation = new Navigation(navSource, matches[1], filename, parentNav.location, parentNav.documentation, "", parentNav.type, parentNav.character);
                                 NavigationData.gameObjects["semantic"][key] = navigation;
                             }
                         }
@@ -220,23 +220,23 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
 
             // check if this line is a default and we're in a screen
             // mark the token as a screen variable
-            if (parent_type === "screen") {
+            if (parentType === "screen") {
                 const rxDefault = /^\s*(default)\s+(\w*)\s*=\s*([\w'"`[{]*)/;
                 const matches = rxDefault.exec(line);
                 if (matches) {
-                    parent_local.push([matches[2], "sv"]);
+                    parentLocal.push([matches[2], "sv"]);
                     // push the token into the token builder
                     const offset = matches[0].indexOf(matches[2]);
                     const range = new Range(i, matches.index + offset, i, matches.index + offset + matches[2].length);
                     tokensBuilder.push(range, "variable", ["declaration"]);
                     // create a Navigation dictionary entry for this token range
                     const key = rangeAsString(filename, range);
-                    const docs = `${parent_type} ${parent}()\n    ${line.trim()}`;
-                    const navigation = new Navigation("screen variable", matches[2], filename, i + 1, docs, "", parent_type, matches.index + offset);
+                    const docs = `${parentType} ${parent}()\n    ${line.trim()}`;
+                    const navigation = new Navigation("screen variable", matches[2], filename, i + 1, docs, "", parentType, matches.index + offset);
                     NavigationData.gameObjects["semantic"][key] = navigation;
-                    parent_defaults[`${parent_type}.${parent}.${matches[2]}`] = navigation;
+                    parentDefaults[`${parentType}.${parent}.${matches[2]}`] = navigation;
                 }
-            } else if (parent_type === "def" || parent_type === "store" || parent_type === "class") {
+            } else if (parentType === "def" || parentType === "store" || parentType === "class") {
                 // check if this line is a variable declaration in a function or store
                 // mark the token as a variable
                 const rxPatterns = [/^\s*(global)\s+(\w*)/g, /\s*(for)\s+([a-zA-Z0-9_]+)\s+in\s+/g, /(\s*)([a-zA-Z0-9_,]+)\s*=\s*[a-zA-Z0-9_"]+/g];
@@ -248,7 +248,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                             const split = matches[2].split(",");
                             for (const m of split) {
                                 const offset = m.length - m.trimStart().length;
-                                if (parent_args.includes(m.substring(offset))) {
+                                if (parentArgs.includes(m.substring(offset))) {
                                     continue;
                                 }
 
@@ -257,11 +257,11 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                                 if (matches[1] === "global") {
                                     source = "global variable";
                                 }
-                                if (!parent_local.some((e) => e[0] === m.substring(offset))) {
+                                if (!parentLocal.some((e) => e[0] === m.substring(offset))) {
                                     if (matches[1] === "global") {
-                                        parent_local.push([m.substring(offset), "g"]);
+                                        parentLocal.push([m.substring(offset), "g"]);
                                     } else {
-                                        parent_local.push([m.substring(offset), "v"]);
+                                        parentLocal.push([m.substring(offset), "v"]);
                                     }
                                 } else {
                                     continue;
@@ -273,19 +273,19 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                                 // create a Navigation dictionary entry for this token range
                                 const key = rangeAsString(filename, range);
                                 let docs = "";
-                                if (parent_type === "store") {
+                                if (parentType === "store") {
                                     docs = `init python in ${parent}:\n    ${line.trim()}`;
                                 } else {
-                                    docs = `${parent_type} ${parent}()\n    ${line.trim()}`;
+                                    docs = `${parentType} ${parent}()\n    ${line.trim()}`;
                                 }
-                                const navigation = new Navigation(source, m.substring(offset), filename, i + 1, docs, "", parent_type, start + offset);
+                                const navigation = new Navigation(source, m.substring(offset), filename, i + 1, docs, "", parentType, start + offset);
                                 NavigationData.gameObjects["semantic"][key] = navigation;
-                                parent_defaults[`${parent_type}.${parent}.${m.substring(offset)}`] = navigation;
+                                parentDefaults[`${parentType}.${parent}.${m.substring(offset)}`] = navigation;
 
-                                if (parent_type === "store") {
+                                if (parentType === "store") {
                                     const pKey = `store.${parent}`;
                                     const objKey = `${parent}.${m.substring(offset)}`;
-                                    const navigation = new Navigation(source, objKey, filename, i + 1, docs, "", parent_type, start + offset);
+                                    const navigation = new Navigation(source, objKey, filename, i + 1, docs, "", parentType, start + offset);
 
                                     if (NavigationData.gameObjects["fields"][pKey] === undefined) {
                                         NavigationData.gameObjects["fields"][pKey] = [];

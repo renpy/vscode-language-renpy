@@ -395,9 +395,9 @@ export function getCurrentContext(document: TextDocument, position: Position): s
             return;
         }
 
-        const indent_level = line.length - line.trimLeft().length;
+        const indentLevel = line.length - line.trimLeft().length;
         const match = line.match(rxParentTypes);
-        if (match && indent_level < position.character) {
+        if (match && indentLevel < position.character) {
             return match[1];
         }
         i--;

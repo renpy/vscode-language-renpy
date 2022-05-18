@@ -7,7 +7,7 @@ import { extractFilename } from "./workspace";
 
 // Renpy Store Variables (https://www.renpy.org/doc/html/store_variables.html)
 // These variables do not begin with '_' but should be ignored by store warnings because they are pre-defined by Ren'Py
-const renpy_store = [
+const renpyStore = [
     "adv",
     "default_mouse",
     "main_menu",
@@ -235,7 +235,7 @@ function checkInvalidVariableNames(diagnostics: Diagnostic[], line: string, line
     // Variables must begin with a letter or number, and may not begin with '_'
     let matches;
     while ((matches = rxVariableCheck.exec(line)) !== null) {
-        if (!renpy_store.includes(matches[2])) {
+        if (!renpyStore.includes(matches[2])) {
             const offset = matches.index + matches[0].indexOf(matches[2]);
             const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
             const diagnostic = new Diagnostic(
@@ -262,7 +262,7 @@ function checkStoreVariables(diagnostics: Diagnostic[], line: string, lineIndex:
         const filtered: string[] = Object.keys(defaults).filter((key: string) => defaults[key].define === "default");
         let matches;
         while ((matches = rxStoreCheck.exec(line)) !== null) {
-            if (!matches[1].startsWith("_") && !filtered.includes(matches[1]) && !renpy_store.includes(matches[1]) && !classes[matches[1]] && !callables[matches[1]]) {
+            if (!matches[1].startsWith("_") && !filtered.includes(matches[1]) && !renpyStore.includes(matches[1]) && !classes[matches[1]] && !callables[matches[1]]) {
                 const offset = matches.index + matches[0].indexOf(matches[1]);
                 const range = new Range(lineIndex, offset, lineIndex, offset + matches[1].length);
                 const diagnostic = new Diagnostic(range, `"store.${matches[1]}": Use of a store variable that has not been defaulted.`, DiagnosticSeverity.Warning);

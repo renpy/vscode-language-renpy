@@ -330,8 +330,8 @@ export class NavigationData {
             }
             const defineType: DataType = NavigationData.gameObjects["define_types"][keyword];
             if (defineType && defineType.baseClass && defineType.baseClass.indexOf("(") > 0) {
-                const base = defineType.baseClass.substring(0, defineType.baseClass.indexOf("("));
-                return this.isClass(base);
+                const baseC = defineType.baseClass.substring(0, defineType.baseClass.indexOf("("));
+                return this.isClass(baseC);
             }
         }
 
@@ -442,9 +442,9 @@ export class NavigationData {
                         const bases = location.type.split(",");
                         for (const base of bases) {
                             if (location.args.length === 0) {
-                                const init = NavigationData.data.location["callable"][`${base}.__init__`];
-                                if (init) {
-                                    const initData = getDefinitionFromFile(init[0], init[1]);
+                                const initFunc = NavigationData.data.location["callable"][`${base}.__init__`];
+                                if (initFunc) {
+                                    const initData = getDefinitionFromFile(initFunc[0], initFunc[1]);
                                     if (initData && initData.args && initData.args.length > 0) {
                                         let args = initData.args.replace("(self, ", "(");
                                         args = args.replace("(self)", "()");
@@ -474,37 +474,37 @@ export class NavigationData {
             const spacing = line.indexOf("class " + keyword);
             let finished = false;
             while (!finished && index < document.lineCount) {
-                let line = document.lineAt(index).text.replace(/[\n\r]/g, "");
-                const indent = line.length - line.trimLeft().length;
-                if (line.length > 0 && indent <= spacing) {
+                let line2 = document.lineAt(index).text.replace(/[\n\r]/g, "");
+                const indent = line2.length - line2.trimStart().length;
+                if (line2.length > 0 && indent <= spacing) {
                     finished = true;
                     break;
                 }
-                line = line.trim();
+                line2 = line2.trim();
 
-                const matches = line.match(rxDef);
+                const matches = line2.match(rxDef);
                 if (matches) {
                     // if document edits moved the callables, then update the location
-                    const define_keyword = `${keyword}.${matches[1]}`;
-                    const current_def = NavigationData.data.location["callable"][define_keyword];
-                    if (current_def && current_def[0] === filename) {
-                        if (current_def[1] !== index + 1) {
-                            current_def[1] = index + 1;
+                    const defineKeyword = `${keyword}.${matches[1]}`;
+                    const currentDef = NavigationData.data.location["callable"][defineKeyword];
+                    if (currentDef && currentDef[0] === filename) {
+                        if (currentDef[1] !== index + 1) {
+                            currentDef[1] = index + 1;
                         }
                     } else {
-                        NavigationData.data.location["callable"][define_keyword] = [filename, index + 1];
+                        NavigationData.data.location["callable"][defineKeyword] = [filename, index + 1];
                     }
                 }
 
                 // class variables and constants
-                const variable = line.match(rxVariable);
+                const variable = line2.match(rxVariable);
                 if (variable && indent === spacing * 2) {
-                    const documentation = `::class ${keyword}:\n    ${line}`;
+                    const documentation = `::class ${keyword}:\n    ${line2}`;
                     const nav = new Navigation("variable", variable[1], filename, index + 2, documentation, "", keyword, variable.index);
                     props.push(nav);
                 }
 
-                if (line.startsWith("@property")) {
+                if (line2.startsWith("@property")) {
                     const matches = document
                         .lineAt(index + 1)
                         .text.trim()
@@ -747,19 +747,19 @@ export class NavigationData {
         for (let i = 0; i < document.lineCount; ++i) {
             let line = document.lineAt(i).text;
 
-            let append_line = i;
+            let appendLine = i;
             const containsKeyword = line.match(rxKeywordList);
             if (containsKeyword) {
                 // check for unterminated parenthesis for multiline declarations
-                let no_string = NavigationData.filterStringLiterals(line);
-                let open_count = (no_string.match(/\(/g) || []).length;
-                let close_count = (no_string.match(/\)/g) || []).length;
-                while (open_count > close_count && append_line < document.lineCount - 1 && append_line < 10) {
-                    append_line++;
-                    line = line + document.lineAt(append_line).text + "\n";
-                    no_string = NavigationData.filterStringLiterals(line);
-                    open_count = (no_string.match(/\(/g) || []).length;
-                    close_count = (no_string.match(/\)/g) || []).length;
+                let noString = NavigationData.filterStringLiterals(line);
+                let openCount = (noString.match(/\(/g) || []).length;
+                let closeCount = (noString.match(/\)/g) || []).length;
+                while (openCount > closeCount && appendLine < document.lineCount - 1 && appendLine < 10) {
+                    appendLine++;
+                    line = line + document.lineAt(appendLine).text + "\n";
+                    noString = NavigationData.filterStringLiterals(line);
+                    openCount = (noString.match(/\(/g) || []).length;
+                    closeCount = (noString.match(/\)/g) || []).length;
                 }
             }
 
@@ -794,21 +794,21 @@ export class NavigationData {
             const displayables = line.match(rxDisplayable);
             if (displayables) {
                 let match = "";
-                let image_type = "image";
+                let imageType = "image";
                 if (displayables[2]) {
                     // image match
                     match = displayables[2].trim();
                 } else if (displayables[5]) {
                     // layered image match
                     match = displayables[5].trim();
-                    image_type = displayables[4].trim();
+                    imageType = displayables[4].trim();
                 } else if (displayables[7]) {
                     // atl image match
                     match = displayables[7].trim();
-                    image_type = displayables[6].trim();
+                    imageType = displayables[6].trim();
                 }
                 if (match.length > 0) {
-                    const displayable = new Displayable(match, image_type, displayables[3], filename, i + 1);
+                    const displayable = new Displayable(match, imageType, displayables[3], filename, i + 1);
                     NavigationData.data.location["displayable"][match] = displayable;
                 }
                 continue;
@@ -835,14 +835,14 @@ export class NavigationData {
                     NavigationData.data.location["outlines"] = {};
                     NavigationData.data.location["outlines"]["array"] = [];
                 }
-                let current_outlines = NavigationData.data.location["outlines"]["array"];
-                if (current_outlines === undefined) {
-                    current_outlines = [];
+                let currentOutlines = NavigationData.data.location["outlines"]["array"];
+                if (currentOutlines === undefined) {
+                    currentOutlines = [];
                 }
-                if (!current_outlines.includes(match)) {
-                    current_outlines.push(match);
+                if (!currentOutlines.includes(match)) {
+                    currentOutlines.push(match);
                 }
-                NavigationData.data.location["outlines"]["array"] = current_outlines;
+                NavigationData.data.location["outlines"]["array"] = currentOutlines;
                 continue;
             }
             // match default/defines
@@ -870,13 +870,13 @@ export class NavigationData {
             // match characters
             const characters = line.match(rxCharacters);
             if (characters) {
-                let char_name = "";
-                let char_image = "";
+                let charName = "";
+                let charImage = "";
                 let dynamic = "";
                 const split = splitParameters(characters[4], true);
                 if (split) {
-                    char_name = stripQuotes(split[0]);
-                    char_image = getNamedParameter(split, "image");
+                    charName = stripQuotes(split[0]);
+                    charImage = getNamedParameter(split, "image");
                     dynamic = getNamedParameter(split, "dynamic");
                 }
                 if (characters[3] === "DynamicCharacter") {
@@ -885,30 +885,30 @@ export class NavigationData {
                     dynamic = "False";
                 }
 
-                const chr_object = new Character(char_name, char_image, dynamic, split, filename, i);
-                NavigationData.gameObjects["characters"][characters[2]] = chr_object;
+                const chrObject = new Character(charName, charImage, dynamic, split, filename, i);
+                NavigationData.gameObjects["characters"][characters[2]] = chrObject;
                 continue;
             }
 
             // creator defined statements
             const statements = line.match(rxStatements);
             if (statements) {
-                const statement_name = statements[1];
-                const statement_args = splitParameters(statements[1] + statements[2], true);
-                let statement_docs = "";
-                const execute = getNamedParameter(statement_args, "execute");
+                const statementName = statements[1];
+                const statementArgs = splitParameters(statements[1] + statements[2], true);
+                let statementDocs = "";
+                const execute = getNamedParameter(statementArgs, "execute");
                 if (execute && execute.length > 0) {
                     const entries = NavigationData.find(execute);
                     if (entries) {
                         const def = getDefinitionFromFile(entries[0].filename, entries[0].location);
                         if (def) {
-                            statement_docs = def.documentation;
+                            statementDocs = def.documentation;
                         }
                     }
                 }
 
-                const statement = new Navigation("statement", statement_name, filename, i + 1, statement_docs, "", "cds", statements.index);
-                NavigationData.data.location["statement"][statement_name] = statement;
+                const statement = new Navigation("statement", statementName, filename, i + 1, statementDocs, "", "cds", statements.index);
+                NavigationData.data.location["statement"][statementName] = statement;
                 continue;
             }
         }
@@ -926,9 +926,9 @@ export class NavigationData {
                 if (displayable) {
                     // find layered image attributes
                     if (displayable.image_type === "layeredimage") {
-                        const li_attributes = await NavigationData.getLayeredImageAttributes(displayable.name, displayable.filename, displayable.location);
-                        if (li_attributes) {
-                            for (const attr of li_attributes) {
+                        const liAttributes = await NavigationData.getLayeredImageAttributes(displayable.name, displayable.filename, displayable.location);
+                        if (liAttributes) {
+                            for (const attr of liAttributes) {
                                 if (!attributes.includes(attr)) {
                                     attributes.push(attr);
                                 }
@@ -984,12 +984,12 @@ export class NavigationData {
                     // auto attributes
                     const match = line.match(/^\s*group\s+(\w*)/);
                     if (match) {
-                        const image_key = `${keyword}_${match[1]}_`;
-                        const filtered = Object.keys(displayables).filter((key) => key.startsWith(image_key));
+                        const imageKey = `${keyword}_${match[1]}_`;
+                        const filtered = Object.keys(displayables).filter((key) => key.startsWith(imageKey));
                         if (filtered) {
                             for (const d of filtered) {
-                                if (d !== image_key) {
-                                    const attr = d.substring(image_key.length);
+                                if (d !== imageKey) {
+                                    const attr = d.substring(imageKey.length);
                                     if (attr.indexOf("_") > 0) {
                                         const split = attr.split("_");
                                         if (!attributes.includes(split[0])) {
@@ -1020,8 +1020,8 @@ export class NavigationData {
      */
     static getPythonName(filename: string): boolean | undefined {
         const rx = /^[a-zA-Z_][a-zA-Z0-9_]*$/;
-        const fn_only = extractFilenameWithoutExtension(filename) || "";
-        const split = fn_only.split(" ");
+        const fnOnly = extractFilenameWithoutExtension(filename) || "";
+        const split = fnOnly.split(" ");
         for (let i = 0; i < split.length; i++) {
             const match = split[i].match(rx);
             if (!match || match.length === 0) {

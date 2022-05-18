@@ -1,12 +1,12 @@
 // Workspace and file functions
 "use strict";
 
-import { performance, PerformanceEntry, PerformanceObserver } from "perf_hooks";
+import { performance } from "perf_hooks";
 import { Range, TextDocument } from "vscode";
-import { Token, isIncludePattern, isRangePattern, isMatchPattern, isRepoPattern } from "./token-definitions";
+import { Token, isRangePattern, isMatchPattern, isRepoPattern } from "./token-definitions";
 import { basePatterns } from "./token-patterns";
 
-let currentPatternId: number = 0;
+let currentPatternId = 0;
 
 export function tokenizeDocument(document: TextDocument): Token[] {
     if (!setupAndValidatePatterns(basePatterns)) return [];
@@ -21,8 +21,6 @@ export function tokenizeDocument(document: TextDocument): Token[] {
 
 function setupAndValidatePatterns(pattern: TokenPattern): boolean {
     // TODO: Is there some kind of unit test thing that applies this on build?
-
-    if (isIncludePattern(pattern)) pattern = pattern.include;
     if (isRepoPattern(pattern)) {
         for (let j = 0; j < pattern.patterns.length; j++) {
             const valid = setupAndValidatePatterns(pattern.patterns[j]);
@@ -44,7 +42,7 @@ function setupAndValidatePatterns(pattern: TokenPattern): boolean {
                 return false;
             }
 
-            Object.entries(pattern.beginCaptures).forEach(([_, v]) => {
+            Object.entries(pattern.beginCaptures).forEach(([, v]) => {
                 if (v.patterns) {
                     const repo: TokenRepoPattern = { patterns: v.patterns };
                     setupAndValidatePatterns(repo);
@@ -57,7 +55,7 @@ function setupAndValidatePatterns(pattern: TokenPattern): boolean {
                 return false;
             }
 
-            Object.entries(pattern.endCaptures).forEach(([_, v]) => {
+            Object.entries(pattern.endCaptures).forEach(([, v]) => {
                 if (v.patterns) {
                     const repo: TokenRepoPattern = { patterns: v.patterns };
                     setupAndValidatePatterns(repo);
@@ -73,7 +71,7 @@ function setupAndValidatePatterns(pattern: TokenPattern): boolean {
         let reEndSource = pattern.end.source;
         pattern._hasBackref = /\\\d+/.test(reEndSource);
         //reEndSource = reEndSource.replaceAll("\\A", "¨0");
-        reEndSource = reEndSource.replaceAll("\\Z", "$(?!\\n)(?<!\\n)");
+        reEndSource = reEndSource.replaceAll("\\Z", "$(?!\\n)"); // This assumes LF with trailig new line right?...
         pattern.end = new RegExp(reEndSource, pattern.end.flags);
     } else if (isMatchPattern(pattern)) {
         if (pattern._pattern_id !== undefined) return true; // This pattern was already validated
@@ -91,7 +89,7 @@ function setupAndValidatePatterns(pattern: TokenPattern): boolean {
                 return false;
             }
 
-            Object.entries(pattern.captures).forEach(([k, v]) => {
+            Object.entries(pattern.captures).forEach(([, v]) => {
                 if (v.patterns) {
                     const repo: TokenRepoPattern = { patterns: v.patterns };
                     setupAndValidatePatterns(repo);
@@ -104,7 +102,7 @@ function setupAndValidatePatterns(pattern: TokenPattern): boolean {
 }
 
 export function escapeRegExpCharacters(value: string): string {
-    return value.replace(/[\-\\\{\}\*\+\?\|\^\$\.\,\[\]\(\)\#\s]/g, "\\$&");
+    return value.replace(/[-\\{}*+?|^$.,[\]()#\s]/g, "\\$&");
 }
 
 type ScanResult = { pattern: TokenPattern; matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray } | null;
@@ -124,6 +122,8 @@ class DocumentTokenizer {
     }
 
     private getRange(offsetStart: number, offsetEnd: number): Range {
+        // const manualPos = new Position(lineNum, charNum);
+
         const startPos = this.document.positionAt(offsetStart);
         const endPos = this.document.positionAt(offsetEnd);
 
@@ -172,14 +172,12 @@ class DocumentTokenizer {
      * @todo Previous successfull matches could be cached and returned as long as the matchOffsetStart is less then the match index
      */
     public scanPattern(p: TokenPattern, text: string, matchOffsetStart: number, cache: Map<number, CachedMatch>): ScanResult {
-        if (isIncludePattern(p)) p = p.include;
-
         if (isRepoPattern(p)) {
             let bestMatchRating = Number.MAX_VALUE;
             let bestResult: ScanResult = null;
 
             for (let j = 0; j < p.patterns.length; j++) {
-                const pattern = isIncludePattern(p.patterns[j]) ? p.patterns[j].include! : p.patterns[j];
+                const pattern = p.patterns[j];
 
                 const result = this.scanPattern(pattern, text, matchOffsetStart, cache);
                 if (!result) continue;
@@ -275,8 +273,6 @@ class DocumentTokenizer {
      * @todo Timeout after it was running too long
      */
     public executePattern(pattern: TokenPattern, text: string, textDocumentOffset: number) {
-        if (isIncludePattern(pattern)) pattern = pattern.include;
-
         const cache = new Map<number, CachedMatch>();
         const lastPos = text.length;
         for (let lastMatchIndex = 0; lastMatchIndex < lastPos; ++lastMatchIndex) {

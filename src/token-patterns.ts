@@ -93,7 +93,7 @@ const pythonStatements: TokenPattern = {
                 },
             },
             end: /^(?!(\1[ \t]+)|$)|\Z/gm,
-            patterns: [{ include: pythonSource }],
+            patterns: [pythonSource],
         },
         {
             // Match begin and end of python one line statements
@@ -116,7 +116,7 @@ const pythonStatements: TokenPattern = {
                             match: /(?<!\.)\b(\w+)(?=\s=\s)/dg,
                             token: EntityTokenType.Variable,
                         },
-                        { include: pythonSource },
+                        pythonSource,
                     ],
                 },
             },
@@ -143,7 +143,7 @@ const label: TokenPattern = {
                             match: /([a-zA-Z_.]\w*)/g,
                             token: EntityTokenType.Function,
                         },
-                        { include: pythonParameters },
+                        pythonParameters,
                     ],
                 },
                 4: {
@@ -180,7 +180,7 @@ const image: TokenPattern = {
                             match: /([a-zA-Z_.]\w*)/g,
                             token: EntityTokenType.Function,
                         },
-                        { include: pythonParameters },
+                        pythonParameters,
                     ],
                 },
                 4: {
@@ -199,7 +199,7 @@ const image: TokenPattern = {
 };
 
 const renpyStatements: TokenPattern = {
-    patterns: [{ include: label }, { include: image }],
+    patterns: [label, image],
 };
 
 const keywords: TokenPattern = {
@@ -343,7 +343,7 @@ const comments: TokenPattern = {
     match: /(\#)(.*)$/dgm,
     captures: {
         1: { token: CharacterTokenType.Hashtag },
-        2: { patterns: [{ include: codeTags }] },
+        2: { patterns: [codeTags] },
     },
 };
 
@@ -412,7 +412,7 @@ const constantPlaceholder: TokenPattern = {
 };
 
 const stringsInterior: TokenPattern = {
-    patterns: [{ include: escapedChar }, { include: constantPlaceholder }], // { include: stringTags } (Recursive pattern. See below)
+    patterns: [escapedChar, constantPlaceholder], // ,stringTags (Recursive pattern. See below)
 };
 
 const stringTags: TokenPattern = {
@@ -497,7 +497,7 @@ const stringTags: TokenPattern = {
                 2: { token: EntityTokenType.Tag },
                 3: { token: CharacterTokenType.CloseBracket },
             },
-            patterns: [{ include: stringsInterior }],
+            patterns: [stringsInterior],
         },
         {
             // Valid tags with numeric params (close required)
@@ -528,7 +528,7 @@ const stringTags: TokenPattern = {
                     token: CharacterTokenType.CloseBracket,
                 },
             },
-            patterns: [{ include: stringsInterior }],
+            patterns: [stringsInterior],
         },
         {
             // Valid tags with numeric params (close required)
@@ -558,7 +558,7 @@ const stringTags: TokenPattern = {
                     token: CharacterTokenType.CloseBracket,
                 },
             },
-            patterns: [{ include: stringsInterior }],
+            patterns: [stringsInterior],
         },
         {
             // Color tag
@@ -569,7 +569,7 @@ const stringTags: TokenPattern = {
                 2: { token: EntityTokenType.Tag },
                 3: { token: OperatorTokenType.Assign },
                 4: {
-                    patterns: [{ include: hexLiteral }],
+                    patterns: [hexLiteral],
                 },
                 5: { token: CharacterTokenType.CloseBracket },
             },
@@ -588,7 +588,7 @@ const stringTags: TokenPattern = {
                     token: CharacterTokenType.CloseBracket,
                 },
             },
-            patterns: [{ include: stringsInterior }],
+            patterns: [stringsInterior],
         },
         {
             // a tag
@@ -619,7 +619,7 @@ const stringTags: TokenPattern = {
                     token: CharacterTokenType.CloseBracket,
                 },
             },
-            patterns: [{ include: stringsInterior }],
+            patterns: [stringsInterior],
         },
         {
             // Unknown tag (Single line support only cus \\R does not work) (Since we don't know if a tag is self closing, we can't assume that an end pattern exists)
@@ -632,7 +632,7 @@ const stringTags: TokenPattern = {
                 5: { token: CharacterTokenType.CloseBracket },
                 6: {
                     token: MetaTokenType.TagBlock,
-                    patterns: [{ include: stringsInterior }],
+                    patterns: [stringsInterior],
                 },
                 7: { token: CharacterTokenType.OpenBracket },
                 8: { token: EntityTokenType.Tag },
@@ -667,7 +667,7 @@ const stringTags: TokenPattern = {
     ],
 };
 
-stringsInterior.patterns!.push({ include: stringTags });
+stringsInterior.patterns!.push(stringTags);
 
 const stringQuotedDouble: TokenPattern = {
     patterns: [
@@ -685,7 +685,7 @@ const stringQuotedDouble: TokenPattern = {
                 1: { token: CharacterTokenType.DoubleQuote },
                 2: { token: MetaTokenType.EmptyString },
             },
-            patterns: [{ include: stringsInterior }],
+            patterns: [stringsInterior],
         },
         {
             // Double quoted single line string
@@ -700,7 +700,7 @@ const stringQuotedDouble: TokenPattern = {
                 2: { token: MetaTokenType.EmptyString },
                 3: { token: MetaTokenType.Invalid },
             },
-            patterns: [{ include: stringsInterior }],
+            patterns: [stringsInterior],
         },
     ],
 };
@@ -719,7 +719,7 @@ const stringQuotedSingle: TokenPattern = {
                 1: { token: CharacterTokenType.Quote },
                 2: { token: MetaTokenType.EmptyString },
             },
-            patterns: [{ include: stringsInterior }],
+            patterns: [stringsInterior],
         },
         {
             // Single quoted single line string
@@ -734,7 +734,7 @@ const stringQuotedSingle: TokenPattern = {
                 2: { token: MetaTokenType.EmptyString },
                 3: { token: MetaTokenType.Invalid },
             },
-            patterns: [{ include: stringsInterior }],
+            patterns: [stringsInterior],
         },
     ],
 };
@@ -753,7 +753,7 @@ const stringQuotedBack: TokenPattern = {
                 1: { token: CharacterTokenType.BackQuote },
                 2: { token: MetaTokenType.EmptyString },
             },
-            patterns: [{ include: stringsInterior }],
+            patterns: [stringsInterior],
         },
         {
             // Back quoted single line string
@@ -768,13 +768,13 @@ const stringQuotedBack: TokenPattern = {
                 2: { token: MetaTokenType.EmptyString },
                 3: { token: MetaTokenType.Invalid },
             },
-            patterns: [{ include: stringsInterior }],
+            patterns: [stringsInterior],
         },
     ],
 };
 
 const strings: TokenPattern = {
-    patterns: [{ include: stringQuotedDouble }, { include: stringQuotedSingle }, { include: stringQuotedBack }],
+    patterns: [stringQuotedDouble, stringQuotedSingle, stringQuotedBack],
 };
 
 const unmatchedLoseChars: TokenPattern = {
@@ -805,12 +805,12 @@ const unmatchedLoseChars: TokenPattern = {
 };
 
 const statements: TokenPattern = {
-    patterns: [{ include: comments }, { include: strings }, { include: renpyStatements }, { include: pythonStatements }],
+    patterns: [comments, strings, renpyStatements, pythonStatements],
 };
 const expressions: TokenPattern = {
-    patterns: [{ include: keywords }, { include: unmatchedLoseChars }],
+    patterns: [keywords, unmatchedLoseChars],
 };
 
 export const basePatterns: TokenPattern = {
-    patterns: [{ include: statements }, { include: expressions }],
+    patterns: [statements, expressions],
 };

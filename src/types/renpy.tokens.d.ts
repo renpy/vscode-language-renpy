@@ -228,21 +228,6 @@ interface TokenRangePattern {
     captures?: never;
 }
 
-interface TokenIncludePattern {
-    readonly include: TokenPattern;
-
-    // These are added to prevent falsy assignment
-    patterns?: never;
-    token?: never;
-    contentToken?: never;
-    match?: never;
-    begin?: never;
-    end?: never;
-    captures?: never;
-    beginCaptures?: never;
-    endCaptures?: never;
-}
-
 interface TokenRepoPattern {
     readonly patterns: TokenPatternArray;
 
@@ -258,5 +243,5 @@ interface TokenRepoPattern {
     endCaptures?: never;
 }
 
-declare type TokenPatternArray = Array<TokenIncludePattern | TokenRangePattern | TokenMatchPattern>;
-declare type TokenPattern = TokenIncludePattern | TokenRangePattern | TokenMatchPattern | TokenRepoPattern;
+declare type TokenPattern = TokenRangePattern | TokenMatchPattern | TokenRepoPattern;
+declare type TokenPatternArray = Array<TokenPattern>;

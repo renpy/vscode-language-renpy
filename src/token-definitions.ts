@@ -13,10 +13,6 @@ export class Token {
     }
 }
 
-export function isIncludePattern(p: TokenPattern): p is TokenIncludePattern {
-    return (p as TokenIncludePattern).include !== undefined;
-}
-
 export function isRangePattern(p: TokenPattern): p is TokenRangePattern {
     return (p as TokenRangePattern).begin !== undefined;
 }

@@ -99,7 +99,7 @@ function setupAndValidatePatterns(pattern: TokenPattern): boolean {
 }
 
 type ScanResult = { pattern: TokenPattern; matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray } | null;
-type CachedMatch = { matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray };
+type CachedMatch = { matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray } | null;
 
 class DocumentTokenizer {
     private readonly document: TextDocument;
@@ -192,6 +192,7 @@ class DocumentTokenizer {
         } else if (isRangePattern(p)) {
             const cachedMatch = cache.get(p._pattern_id!);
             if (cachedMatch !== undefined) {
+                if (cachedMatch === null) return null; // If the cached value is null, no match was found in the entire text
                 if (cachedMatch.matchBegin.index >= matchOffsetStart) {
                     return { pattern: p, matchBegin: cachedMatch.matchBegin, matchEnd: cachedMatch.matchEnd };
                 } else {
@@ -229,10 +230,13 @@ class DocumentTokenizer {
                     cache.set(p._pattern_id!, { matchBegin: matchBegin, matchEnd: matchEnd });
                     return { pattern: p, matchBegin: matchBegin, matchEnd: matchEnd };
                 }
+            } else {
+                cache.set(p._pattern_id!, null);
             }
         } else if (isMatchPattern(p)) {
             const cachedMatch = cache.get(p._pattern_id!);
             if (cachedMatch !== undefined) {
+                if (cachedMatch === null) return null; // If the cached value is null, no match was found in the entire text
                 if (cachedMatch.matchBegin.index >= matchOffsetStart) {
                     return { pattern: p, matchBegin: cachedMatch.matchBegin };
                 } else {
@@ -246,6 +250,8 @@ class DocumentTokenizer {
             if (match) {
                 cache.set(p._pattern_id!, { matchBegin: match });
                 return { pattern: p, matchBegin: match };
+            } else {
+                cache.set(p._pattern_id!, null);
             }
         }
 

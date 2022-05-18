@@ -191,8 +191,10 @@ declare type TokenPatternCapture = {
 };
 
 interface TokenMatchPattern {
+    pattern_id?: number;
+
     readonly token?: TokenType;
-    readonly match: RegExp;
+    match: RegExp;
     readonly captures?: TokenPatternCapture;
 
     // These are added to prevent falsy assignment
@@ -206,13 +208,16 @@ interface TokenMatchPattern {
 }
 
 interface TokenRangePattern {
+    pattern_id?: number;
+    hasBackref?: boolean;
+
     readonly token?: TokenType;
     readonly contentToken?: TokenType;
 
-    readonly begin: RegExp;
+    begin: RegExp;
     readonly beginCaptures?: TokenPatternCapture;
 
-    readonly end: RegExp;
+    end: RegExp;
     readonly endCaptures?: TokenPatternCapture;
 
     readonly patterns?: TokenPatternArray;

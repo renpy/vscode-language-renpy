@@ -5,43 +5,93 @@ import { Range, TextDocument } from "vscode";
 import { Token, isIncludePattern, isRangePattern, isMatchPattern, isRepoPattern } from "./token-definitions";
 import { basePatterns, endOfFileMark, startOfFileMark } from "./token-patterns";
 
+let currentPatternId: number = 0;
+
 export function tokenizeDocument(document: TextDocument): Token[] {
-    if (!ValidatePatterns(basePatterns)) return [];
+    if (!setupAndValidatePatterns(basePatterns)) return [];
 
     const tokenizer: DocumentTokenizer = new DocumentTokenizer(document);
     return tokenizer.tokens;
 }
 
-function ValidatePatterns(pattern: TokenPattern): boolean {
-    // TODO: Is there some kind of unit test thing that checks this on build?
+function setupAndValidatePatterns(pattern: TokenPattern): boolean {
+    // TODO: Is there some kind of unit test thing that applies this on build?
 
     if (isIncludePattern(pattern)) pattern = pattern.include;
     if (isRepoPattern(pattern)) {
         for (let j = 0; j < pattern.patterns.length; j++) {
-            const valid = ValidatePatterns(pattern.patterns[j]);
+            const valid = setupAndValidatePatterns(pattern.patterns[j]);
             if (!valid) return false;
         }
     } else if (isRangePattern(pattern)) {
+        if (pattern.pattern_id !== undefined) return true; // This pattern was already validated
+
+        pattern.pattern_id = currentPatternId;
+        currentPatternId++;
+
         if (!pattern.begin.global || !pattern.end.global) {
             console.error("To match this pattern the 'g' flag is required on the begin and end RegExp!");
             return false;
         }
-        if (pattern.beginCaptures && !pattern.begin.hasIndices) {
-            console.error("To match this begin pattern the 'd' flag is required!");
-            return false;
+        if (pattern.beginCaptures) {
+            if (!pattern.begin.hasIndices) {
+                console.error("To match this begin pattern the 'd' flag is required!");
+                return false;
+            }
+
+            Object.entries(pattern.beginCaptures).forEach(([k, v]) => {
+                if (v.patterns) {
+                    const repo: TokenRepoPattern = { patterns: v.patterns };
+                    setupAndValidatePatterns(repo);
+                }
+            });
         }
-        if (pattern.endCaptures && !pattern.end.hasIndices) {
-            console.error("To match this end pattern the 'd' flag is required!");
-            return false;
+        if (pattern.endCaptures) {
+            if (!pattern.end.hasIndices) {
+                console.error("To match this end pattern the 'd' flag is required!");
+                return false;
+            }
+
+            Object.entries(pattern.endCaptures).forEach(([k, v]) => {
+                if (v.patterns) {
+                    const repo: TokenRepoPattern = { patterns: v.patterns };
+                    setupAndValidatePatterns(repo);
+                }
+            });
         }
+
+        if (pattern.patterns) {
+            const repo: TokenRepoPattern = { patterns: pattern.patterns };
+            setupAndValidatePatterns(repo);
+        }
+
+        let reEndSource = pattern.end.source;
+        pattern.hasBackref = /[$\\]\d+/g.test(reEndSource);
+        reEndSource = reEndSource.replaceAll("\\A", "¨0");
+        reEndSource = reEndSource.replaceAll("\\Z", "¨1");
+        pattern.end = new RegExp(reEndSource, pattern.end.flags);
     } else if (isMatchPattern(pattern)) {
+        if (pattern.pattern_id !== undefined) return true; // This pattern was already validated
+
+        pattern.pattern_id = currentPatternId;
+        currentPatternId++;
+
         if (!pattern.match.global) {
             console.error("To match this pattern the 'g' flag is required!");
             return false;
         }
-        if (pattern.captures && !pattern.match.hasIndices) {
-            console.error("To match this pattern the 'd' flag is required!");
-            return false;
+        if (pattern.captures) {
+            if (!pattern.match.hasIndices) {
+                console.error("To match this pattern the 'd' flag is required!");
+                return false;
+            }
+
+            Object.entries(pattern.captures).forEach(([k, v]) => {
+                if (v.patterns) {
+                    const repo: TokenRepoPattern = { patterns: v.patterns };
+                    setupAndValidatePatterns(repo);
+                }
+            });
         }
     }
 
@@ -49,6 +99,7 @@ function ValidatePatterns(pattern: TokenPattern): boolean {
 }
 
 type ScanResult = { pattern: TokenPattern; matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray } | null;
+type CachedMatch = { matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray };
 
 class DocumentTokenizer {
     private readonly document: TextDocument;
@@ -110,7 +161,7 @@ class DocumentTokenizer {
      * @param matchOffsetStart The character offset in 'text' to start the match at.
      * @todo Previous successfull matches could be cached and returned as long as the matchOffsetStart is less then the match index
      */
-    public scanPattern(p: TokenPattern, text: string, matchOffsetStart: number): ScanResult {
+    public scanPattern(p: TokenPattern, text: string, matchOffsetStart: number, cache: Map<number, CachedMatch>): ScanResult {
         if (isIncludePattern(p)) p = p.include;
 
         if (isRepoPattern(p)) {
@@ -120,7 +171,7 @@ class DocumentTokenizer {
             for (let j = 0; j < p.patterns.length; j++) {
                 const pattern = isIncludePattern(p.patterns[j]) ? p.patterns[j].include! : p.patterns[j];
 
-                const result = this.scanPattern(pattern, text, matchOffsetStart);
+                const result = this.scanPattern(pattern, text, matchOffsetStart, cache);
                 if (!result) continue;
 
                 const matchRating = result.matchBegin.index;
@@ -139,15 +190,26 @@ class DocumentTokenizer {
             }
             return bestResult;
         } else if (isRangePattern(p)) {
+            const cachedMatch = cache.get(p.pattern_id!);
+            if (cachedMatch !== undefined) {
+                if (cachedMatch.matchBegin.index >= matchOffsetStart) {
+                    return { pattern: p, matchBegin: cachedMatch.matchBegin, matchEnd: cachedMatch.matchEnd };
+                } else {
+                    cache.delete(p.pattern_id!);
+                }
+            }
+
             const reBegin = p.begin;
             reBegin.lastIndex = matchOffsetStart;
             const matchBegin = reBegin.exec(text);
+
             if (matchBegin) {
-                let reEndSource = p.end.source;
+                let reEnd = p.end;
 
                 // Replace all back references in end source
-                const hasBackref = /[$\\]\d+/g.test(reEndSource);
-                if (hasBackref) {
+                if (p.hasBackref!) {
+                    let reEndSource = p.end.source;
+
                     for (let i = 0; i < matchBegin.length; i++) {
                         let content = matchBegin[i];
                         if (content === undefined) content = ""; // If the object at i is undefined, the capture is empty
@@ -155,24 +217,34 @@ class DocumentTokenizer {
                         const backRef = new RegExp("[$\\\\]" + i, "g");
                         reEndSource = reEndSource.replaceAll(backRef, content);
                     }
+
+                    reEnd = new RegExp(reEndSource, p.end.flags);
                 }
 
-                reEndSource = reEndSource.replaceAll("\\A", "¨0");
-                reEndSource = reEndSource.replaceAll("\\Z", "¨1");
-
-                const reEnd = new RegExp(reEndSource, p.end.flags);
-                reEnd.lastIndex = reBegin.lastIndex; // Start end pattern after the last matched character in the begin pattern
+                // Start end pattern after the last matched character in the begin pattern
+                reEnd.lastIndex = matchBegin.index + matchBegin[0].length;
                 const matchEnd = reEnd.exec(text);
 
                 if (matchEnd) {
+                    cache.set(p.pattern_id!, { matchBegin: matchBegin, matchEnd: matchEnd });
                     return { pattern: p, matchBegin: matchBegin, matchEnd: matchEnd };
                 }
             }
         } else if (isMatchPattern(p)) {
+            const cachedMatch = cache.get(p.pattern_id!);
+            if (cachedMatch !== undefined) {
+                if (cachedMatch.matchBegin.index >= matchOffsetStart) {
+                    return { pattern: p, matchBegin: cachedMatch.matchBegin };
+                } else {
+                    cache.delete(p.pattern_id!);
+                }
+            }
+
             const re = p.match;
             re.lastIndex = matchOffsetStart;
             const match = re.exec(text);
             if (match) {
+                cache.set(p.pattern_id!, { matchBegin: match });
                 return { pattern: p, matchBegin: match };
             }
         }
@@ -191,9 +263,10 @@ class DocumentTokenizer {
     public executePattern(pattern: TokenPattern, text: string, textDocumentOffset: number) {
         if (isIncludePattern(pattern)) pattern = pattern.include;
 
+        const cache = new Map<number, CachedMatch>();
         const lastPos = text.length;
         for (let lastMatchIndex = 0; lastMatchIndex < lastPos; ++lastMatchIndex) {
-            const bestMatch = this.scanPattern(pattern, text, lastMatchIndex);
+            const bestMatch = this.scanPattern(pattern, text, lastMatchIndex, cache);
             if (!bestMatch) continue; // No match was found in the current pattern
 
             const p = bestMatch.pattern;

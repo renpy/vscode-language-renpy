@@ -27,7 +27,7 @@
     "Snippets"
   ],
   "engines": {
-    "vscode": "^1.50.0"
+    "vscode": "^1.67.2"
   },
   "capabilities": {
     "untrustedWorkspaces": {

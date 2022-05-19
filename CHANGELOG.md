@@ -1,8 +1,22 @@
 # Changelog
 
+## 2.0.9 (2022/05/02)
+
+### Fixes
+
+* Properly remove the leading slash in file path [#98](https://github.com/LuqueDaniel/vscode-language-renpy/pull/98) (fix issue [#91](https://github.com/LuqueDaniel/vscode-language-renpy/issues/91))
+* Don't overwrite the config file [#105](https://github.com/LuqueDaniel/vscode-language-renpy/pull/105)
+
+### Other changes
+
+* Updated development dependencies:
+  * [#106](https://github.com/LuqueDaniel/vscode-language-renpy/pull/106) `@types/node` from `17.0.23` to `17.0.31`
+  * [#107](https://github.com/LuqueDaniel/vscode-language-renpy/pull/107) `@types/mocha` from `9.1.0` to `9.1.1`
+  * [#108](https://github.com/LuqueDaniel/vscode-language-renpy/pull/108) `typescript` from `4.6.3` to `4.6.4`
+
 ## 2.0.8 (2022/04/07)
 
-Fixes a error in our publishing workflow.
+Fixes an error in our publishing workflow.
 
 ## 2.0.7 (2022/04/07)
 

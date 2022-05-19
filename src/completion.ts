@@ -268,8 +268,7 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                     // get defined audio variables
                     const category = NavigationData.data.location["define"];
                     const audio = Object.keys(category).filter((key) => key.startsWith("audio."));
-                    for (let key of audio) {
-                        key = key;
+                    for (const key of audio) {
                         const ci = new CompletionItem(key, CompletionItemKind.Variable);
                         ci.sortText = "0" + key;
                         newList.push(ci);
@@ -306,9 +305,10 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                     for (const key in category) {
                         const defType = NavigationData.gameObjects["define_types"][key];
                         if (defType) {
+                            newList.push(new CompletionItem(key, CompletionItemKind.Value));
                         }
-                        newList.push(new CompletionItem(key, CompletionItemKind.Value));
                     }
+
                     continue;
                 } else if (gameDataKey === "transitions") {
                     // get list of Transitions

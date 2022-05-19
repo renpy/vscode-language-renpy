@@ -2,12 +2,12 @@
 "use strict";
 
 import { getDefinitionFromFile } from "./hover";
-import { NavigationData } from "./navigationdata";
+import { NavigationData } from "./navigation-data";
 
 export class Character {
     name: string;
     image: string;
-    resolved_name: string;
+    resolvedName: string;
     dynamic: boolean;
     arguments: string[];
     filename: string;
@@ -22,16 +22,16 @@ export class Character {
         this.location = location;
 
         if (!this.dynamic) {
-            this.resolved_name = name;
+            this.resolvedName = name;
         } else {
-            this.resolved_name = name;
+            this.resolvedName = name;
             const resolved = NavigationData.data.location["define"][name];
             if (resolved) {
                 const def = getDefinitionFromFile(resolved[0], resolved[1]);
                 if (def) {
                     const split = def.keyword.split("=");
                     if (split && split.length === 2) {
-                        this.resolved_name = split[1].trim();
+                        this.resolvedName = split[1].trim();
                     }
                 }
             }

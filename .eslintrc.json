@@ -12,5 +12,15 @@
     "sourceType": "module"
   },
   "plugins": ["@typescript-eslint"],
-  "rules": {}
+  "rules": {
+    "no-duplicate-imports": "error",
+    "no-self-compare": "error",
+    "no-unused-private-class-members": "warn",
+    "no-use-before-define": ["error", { "functions": false, "classes": false, "variables": true }],
+    "eqeqeq": "warn",
+    "no-shadow": "warn",
+    "prefer-regex-literals": "warn",
+    "require-await": "warn",
+    "camelcase": "error"
+  }
 }

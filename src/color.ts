@@ -10,15 +10,15 @@ import { Color, ColorInformation, ColorPresentation, Range, TextDocument, TextEd
  */
 export function getColorInformation(document: TextDocument): ColorInformation[] {
     // find all colors in the document
-    let colors: ColorInformation[] = [];
+    const colors: ColorInformation[] = [];
     for (let i = 0; i < document.lineCount; ++i) {
         const line = document.lineAt(i);
         if (!line.isEmptyOrWhitespace) {
             const text = line.text;
-            let matches = findColorMatches(text);
+            const matches = findColorMatches(text);
             if (matches) {
                 let start = 0;
-                for (let idx in matches) {
+                for (const idx in matches) {
                     const match = matches[idx];
                     let range = new Range(line.lineNumber, text.indexOf(match, start), line.lineNumber, text.indexOf(match, start) + match.length);
                     let color;
@@ -62,7 +62,7 @@ export function getColorInformation(document: TextDocument): ColorInformation[] 
  */
 export function getColorPresentations(color: Color, document: TextDocument, range: Range): ColorPresentation[] | undefined {
     // user hovered/tapped the color block/return the color they picked
-    let colors: ColorPresentation[] = [];
+    const colors: ColorPresentation[] = [];
     const line = document.lineAt(range.start.line).text;
     const text = line.substring(range.start.character, range.end.character);
     const oldRange = new Range(range.start.line, range.start.character, range.start.line, range.start.character + text.length);
@@ -72,7 +72,7 @@ export function getColorPresentations(color: Color, document: TextDocument, rang
     const colB = Math.round(color.blue * 255);
     const colA = Math.round(color.alpha * 255);
 
-    let colorLabel: string = "";
+    let colorLabel = "";
     if (text.startsWith('"#') || text.startsWith("'#")) {
         const quote = text.substring(0, 1);
         if (colA === 255 && (text.length === 6 || text.length === 9)) {
@@ -90,7 +90,7 @@ export function getColorPresentations(color: Color, document: TextDocument, rang
     }
 
     if (colorLabel.length > 0) {
-        let rgbColorPres = new ColorPresentation(colorLabel);
+        const rgbColorPres = new ColorPresentation(colorLabel);
         rgbColorPres.textEdit = new TextEdit(oldRange, colorLabel);
         colors.push(rgbColorPres);
     }
@@ -107,9 +107,9 @@ export function getColorPresentations(color: Color, document: TextDocument, rang
  * @returns A `RegExpMatchArray` containing any color matches
  */
 export function findColorMatches(text: string): RegExpMatchArray | null {
-    let rx =
+    const rx =
         /(["']#)[0-9a-fA-F]{8}(["'])|(["']#)[0-9a-fA-F]{6}(["'])|(["']#)[0-9a-fA-F]{4}(["'])|(["']#)[0-9a-fA-F]{3}(["'])|Color\(\((\d+),\s*(\d+),\s*(\d+)?\)|Color\(\((\d+),\s*(\d+),\s*(\d+),\s*(\d+)?\)|rgb\s*=\s*\(([.\d]+),\s*([.\d]+),\s*([.\d]+)?\)|color\s*=\s*\((\d+),\s*(\d+),\s*(\d+)?\)|color\s*=\s*\((\d+),\s*(\d+),\s*(\d+),\s*(\d+)?\)/gi;
-    let matches = text.match(rx);
+    const matches = text.match(rx);
     return matches;
 }
 

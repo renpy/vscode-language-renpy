@@ -8,7 +8,6 @@ import {
     languages,
     commands,
     window,
-    IndentAction,
     TextDocument,
     Position,
     CancellationToken,
@@ -43,7 +42,7 @@ import {
     SemanticTokensLegend,
 } from "vscode";
 import { getColorInformation, getColorPresentations } from "./color";
-import { getStatusBarText, NavigationData } from "./navigationdata";
+import { getStatusBarText, NavigationData } from "./navigation-data";
 import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
 import { refreshDiagnostics, subscribeToDocumentChanges } from "./diagnostics";
 import { getSemanticTokens } from "./semantics";
@@ -58,7 +57,7 @@ import * as cp from "child_process";
 
 let myStatusBarItem: StatusBarItem;
 
-export async function activate(context: ExtensionContext): Promise<any> {
+export async function activate(context: ExtensionContext): Promise<void> {
     console.log("Ren'Py extension activated");
 
     const filepath = getNavigationJsonFilepath();
@@ -102,7 +101,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     ];
 
     const tokensConfig = workspace.getConfiguration("editor");
-    const customTokens: any[] = tokensConfig["tokenColorCustomizations"]["textMateRules"];
+    const customTokens = tokensConfig["tokenColorCustomizations"]["textMateRules"];
     if (customTokens === undefined) {
         tokensConfig.update("tokenColorCustomizations", { textMateRules: rules }, ConfigurationTarget.Workspace);
     } else {
@@ -124,7 +123,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     }
 
     // hover provider for code tooltip
-    let hoverProvider = languages.registerHoverProvider(
+    const hoverProvider = languages.registerHoverProvider(
         "renpy",
         new (class implements HoverProvider {
             async provideHover(document: TextDocument, position: Position, token: CancellationToken): Promise<Hover | null | undefined> {
@@ -135,7 +134,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     context.subscriptions.push(hoverProvider);
 
     // provider for Go To Definition
-    let definitionProvider = languages.registerDefinitionProvider(
+    const definitionProvider = languages.registerDefinitionProvider(
         "renpy",
         new (class implements DefinitionProvider {
             provideDefinition(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Definition> {
@@ -146,7 +145,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     context.subscriptions.push(definitionProvider);
 
     // provider for Outline view
-    let symbolProvider = languages.registerDocumentSymbolProvider(
+    const symbolProvider = languages.registerDocumentSymbolProvider(
         "renpy",
         new (class implements DocumentSymbolProvider {
             provideDocumentSymbols(document: TextDocument, token: CancellationToken): ProviderResult<DocumentSymbol[]> {
@@ -157,7 +156,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     context.subscriptions.push(symbolProvider);
 
     // provider for Method Signature Help
-    let signatureProvider = languages.registerSignatureHelpProvider(
+    const signatureProvider = languages.registerSignatureHelpProvider(
         "renpy",
         new (class implements SignatureHelpProvider {
             provideSignatureHelp(document: TextDocument, position: Position, token: CancellationToken, context: SignatureHelpContext): ProviderResult<SignatureHelp> {
@@ -171,7 +170,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     context.subscriptions.push(signatureProvider);
 
     // Completion provider
-    let completionProvider = languages.registerCompletionItemProvider(
+    const completionProvider = languages.registerCompletionItemProvider(
         "renpy",
         new (class implements CompletionItemProvider {
             provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): ProviderResult<CompletionItem[]> {
@@ -187,7 +186,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     context.subscriptions.push(completionProvider);
 
     // Color Provider
-    let colorProvider = languages.registerColorProvider(
+    const colorProvider = languages.registerColorProvider(
         "renpy",
         new (class implements DocumentColorProvider {
             provideDocumentColors(document: TextDocument, token: CancellationToken): ProviderResult<ColorInformation[]> {
@@ -201,7 +200,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     context.subscriptions.push(colorProvider);
 
     // Find All References provider
-    let references = languages.registerReferenceProvider(
+    const references = languages.registerReferenceProvider(
         "renpy",
         new (class implements ReferenceProvider {
             async provideReferences(document: TextDocument, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | null | undefined> {
@@ -216,7 +215,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     const legend = new SemanticTokensLegend(tokenTypes, tokenModifiers);
 
     // Semantic Token Provider
-    let semanticTokens = languages.registerDocumentSemanticTokensProvider(
+    const semanticTokens = languages.registerDocumentSemanticTokensProvider(
         "renpy",
         new (class implements DocumentSemanticTokensProvider {
             provideDocumentSemanticTokens(document: TextDocument, token: CancellationToken): ProviderResult<SemanticTokens> {
@@ -268,7 +267,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     subscribeToDocumentChanges(context, diagnostics);
 
     // custom command - refresh data
-    let refreshCommand = commands.registerCommand("renpy.refreshNavigationData", async () => {
+    const refreshCommand = commands.registerCommand("renpy.refreshNavigationData", async () => {
         updateStatusBar("$(sync~spin) Refreshing Ren'Py navigation data...");
         try {
             await NavigationData.refresh(true);
@@ -281,7 +280,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     context.subscriptions.push(refreshCommand);
 
     // custom command - jump to location
-    let gotoFileLocationCommand = commands.registerCommand("renpy.jumpToFileLocation", (args) => {
+    const gotoFileLocationCommand = commands.registerCommand("renpy.jumpToFileLocation", (args) => {
         const uri = Uri.file(cleanUpPath(args.uri.path));
         const range = new Range(args.range[0].line, args.range[0].character, args.range[0].line, args.range[0].character);
         try {
@@ -293,7 +292,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     context.subscriptions.push(gotoFileLocationCommand);
 
     // custom command - refresh diagnostics
-    let refreshDiagnosticsCommand = commands.registerCommand("renpy.refreshDiagnostics", () => {
+    const refreshDiagnosticsCommand = commands.registerCommand("renpy.refreshDiagnostics", () => {
         if (window.activeTextEditor) {
             refreshDiagnostics(window.activeTextEditor.document, diagnostics);
         }
@@ -301,7 +300,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     context.subscriptions.push(refreshDiagnosticsCommand);
 
     // custom command - call renpy to compile
-    let compileCommand = commands.registerCommand("renpy.compileNavigationData", () => {
+    const compileCommand = commands.registerCommand("renpy.compileNavigationData", () => {
         // check Settings has the path to Ren'Py executable
         // Call Ren'Py with the workspace folder and the json-dump argument
         const config = workspace.getConfiguration("renpy");
@@ -418,7 +417,7 @@ function updateStatusBar(text: string) {
 }
 
 function hideRpycFilesFromWorkspace() {
-    var jsonDumpFile = getNavigationJsonFilepath();
+    const jsonDumpFile = getNavigationJsonFilepath();
     if (fs.existsSync(jsonDumpFile)) {
         const config = workspace.getConfiguration("files");
         if (config["exclude"]["**/*.rpyc"] === undefined) {
@@ -438,8 +437,8 @@ function ExecuteRenpyCompile(): boolean {
     const config = workspace.getConfiguration("renpy");
     const renpy = config.renpyExecutableLocation;
     if (isValidExecutable(renpy)) {
-        let renpyPath = cleanUpPath(Uri.file(renpy).path);
-        let cwd = renpyPath.substring(0, renpyPath.lastIndexOf("/"));
+        const renpyPath = cleanUpPath(Uri.file(renpy).path);
+        const cwd = renpyPath.substring(0, renpyPath.lastIndexOf("/"));
 
         let wf = getWorkspaceFolder();
         if (wf.endsWith("/game")) {
@@ -451,7 +450,7 @@ function ExecuteRenpyCompile(): boolean {
         try {
             NavigationData.isCompiling = true;
             updateStatusBar("$(sync~spin) Compiling Ren'Py navigation data...");
-            let result = cp.spawnSync(renpy, args, { cwd: `${cwd}`, env: { PATH: process.env.PATH }, encoding: "utf-8", windowsHide: true });
+            const result = cp.spawnSync(renpy, args, { cwd: `${cwd}`, env: { PATH: process.env.PATH }, encoding: "utf-8", windowsHide: true });
             if (result.error) {
                 console.log(`renpy spawn error: ${result.error}`);
                 return false;

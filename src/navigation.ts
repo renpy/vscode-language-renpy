@@ -2,7 +2,7 @@
 "use strict";
 
 import { MarkdownString, ParameterInformation, Position, Range, SignatureInformation, TextDocument } from "vscode";
-import { NavigationData } from "./navigationdata";
+import { NavigationData } from "./navigation-data";
 
 export class Navigation {
     source: string;
@@ -14,7 +14,7 @@ export class Navigation {
     type: string;
     documentation: string;
 
-    constructor(source: string, keyword: string, filename: string, location: number, documentation: string = "", args: string = "", type: string = "", character: number = 0) {
+    constructor(source: string, keyword: string, filename: string, location: number, documentation = "", args = "", type = "", character = 0) {
         this.source = source;
         this.keyword = keyword;
         this.filename = filename;
@@ -36,46 +36,46 @@ export class Navigation {
 export class DataType {
     variable: string;
     define: string;
-    baseclass: string;
+    baseClass: string;
     type: string;
 
-    constructor(variable: string, define: string, baseclass: string) {
+    constructor(variable: string, define: string, baseClass: string) {
         this.variable = variable;
         this.define = define;
-        this.baseclass = baseclass;
+        this.baseClass = baseClass;
         this.type = "";
-        if (baseclass === "True" || baseclass === "False") {
+        if (baseClass === "True" || baseClass === "False") {
             this.type = "boolean";
-        } else if (!isNaN(+this.baseclass)) {
+        } else if (!isNaN(+this.baseClass)) {
             this.type = "number";
-        } else if (baseclass === "_" || baseclass.startsWith('"') || baseclass.startsWith("`") || baseclass.startsWith("'")) {
+        } else if (baseClass === "_" || baseClass.startsWith('"') || baseClass.startsWith("`") || baseClass.startsWith("'")) {
             this.type = "str";
-        } else if (baseclass.startsWith("[")) {
+        } else if (baseClass.startsWith("[")) {
             this.type = "list";
-        } else if (baseclass.startsWith("{")) {
+        } else if (baseClass.startsWith("{")) {
             this.type = "dictionary";
-        } else if (baseclass.startsWith("(") && baseclass.endsWith(")")) {
+        } else if (baseClass.startsWith("(") && baseClass.endsWith(")")) {
             this.type = "tuple";
-        } else if (baseclass === "store") {
+        } else if (baseClass === "store") {
             this.type = "store";
         }
     }
 
     checkTypeArray(type: string, typeArray: string[]) {
-        if (typeArray.includes(this.baseclass)) {
+        if (typeArray.includes(this.baseClass)) {
             this.type = type;
         }
     }
 }
 
 export function getPyDocsAtLine(lines: string[], line: number): string {
-    let lb: string[] = [];
+    const lb: string[] = [];
     let index: number = line;
     let finished = false;
-    let insideComment: boolean = false;
+    let insideComment = false;
 
     let text = lines[index].replace(/[\n\r]/g, "");
-    let spacing = text.length - text.trimLeft().length;
+    const spacing = text.length - text.trimLeft().length;
     let margin = 0;
 
     while (!finished && index < lines.length) {
@@ -113,13 +113,13 @@ export function getPyDocsAtLine(lines: string[], line: number): string {
 }
 
 export function getPyDocsFromTextDocumentAtLine(document: TextDocument, line: number): string {
-    let lb: string[] = [];
+    const lb: string[] = [];
     let index: number = line;
     let finished = false;
-    let insideComment: boolean = false;
+    let insideComment = false;
 
     let text = document.lineAt(index).text;
-    let spacing = text.length - text.trimLeft().length;
+    const spacing = text.length - text.trimLeft().length;
     let margin = 0;
 
     while (!finished && index < document.lineCount) {
@@ -168,9 +168,9 @@ export function getBaseTypeFromDefine(keyword: string, line: string): string | u
 }
 
 export function getArgumentParameterInfo(location: Navigation, line: string, position: number): SignatureInformation {
-    let documentation = new MarkdownString();
+    const documentation = new MarkdownString();
     documentation.appendMarkdown(formatDocumentationAsMarkdown(location.documentation));
-    let signature = new SignatureInformation(`${location.keyword}${location.args}`, documentation);
+    const signature = new SignatureInformation(`${location.keyword}${location.args}`, documentation);
 
     let parsed = "";
     let insideQuote = false;
@@ -213,7 +213,7 @@ export function getArgumentParameterInfo(location: Navigation, line: string, pos
 
     // split the user's args
     const firstParenIndex = parsed.indexOf("(");
-    let parameterStart = firstParenIndex + 1;
+    const parameterStart = firstParenIndex + 1;
     const parsedIndex = parsed.substring(parameterStart);
     const split = parsedIndex.split(",");
 
@@ -229,7 +229,7 @@ export function getArgumentParameterInfo(location: Navigation, line: string, pos
     }
 
     // process the method's args
-    let parameters: ParameterInformation[] = [];
+    const parameters: ParameterInformation[] = [];
     let args = location.args;
     if (args) {
         if (args.startsWith("(")) {
@@ -249,7 +249,7 @@ export function getArgumentParameterInfo(location: Navigation, line: string, pos
                 }
             }
 
-            for (let arg of argsList) {
+            for (const arg of argsList) {
                 const split = arg.trim().split("=");
                 let argDocs = "`" + split[0].trim() + "` parameter";
                 if (split.length > 1) {
@@ -296,7 +296,7 @@ export function formatDocumentationAsMarkdown(documentation: string): string {
 }
 
 export function splitParameters(line: string, trim = false): string[] {
-    let args: string[] = [];
+    const args: string[] = [];
 
     let parsed = "";
     let insideQuote = false;
@@ -356,7 +356,7 @@ export function getNamedParameter(strings: string[], named: string): string {
         return str.indexOf(search) === 0;
     });
     if (filtered && filtered.length > 0) {
-        var split = filtered[0].split("=");
+        const split = filtered[0].split("=");
         value = stripQuotes(split[1]);
     }
     return value;
@@ -386,7 +386,7 @@ export function getCurrentContext(document: TextDocument, position: Position): s
 
     let i = position.line;
     while (i >= 0) {
-        let line = NavigationData.filterStringLiterals(document.lineAt(i).text);
+        const line = NavigationData.filterStringLiterals(document.lineAt(i).text);
 
         const storeMatch = line.match(rxInitStore);
         if (storeMatch) {
@@ -395,9 +395,9 @@ export function getCurrentContext(document: TextDocument, position: Position): s
             return;
         }
 
-        let indent_level = line.length - line.trimLeft().length;
-        let match = line.match(rxParentTypes);
-        if (match && indent_level < position.character) {
+        const indentLevel = line.length - line.trimLeft().length;
+        const match = line.match(rxParentTypes);
+        if (match && indentLevel < position.character) {
             return match[1];
         }
         i--;

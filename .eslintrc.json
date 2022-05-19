@@ -21,6 +21,7 @@
     "no-shadow": "warn",
     "prefer-regex-literals": "warn",
     "require-await": "warn",
-    "camelcase": "error"
+    "camelcase": "error",
+    "@typescript-eslint/no-var-requires": "warn"
   }
 }

@@ -175,7 +175,7 @@ function checkComparisonVsAssignment(diagnostics: Diagnostic[], line: string, li
     while ((matches = rsComparisonCheck.exec(line)) !== null) {
         const offset = matches.index + matches[0].indexOf(matches[3]);
         const range = new Range(lineIndex, offset, lineIndex, offset + matches[3].length);
-        const diagnostic = new Diagnostic(range, `"=" is the equality operator. Use "==" for comparison.`, DiagnosticSeverity.Warning);
+        const diagnostic = new Diagnostic(range, `"=" is the assignment operator. Use "==" for comparison.`, DiagnosticSeverity.Warning);
         diagnostics.push(diagnostic);
     }
 }

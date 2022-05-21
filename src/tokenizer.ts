@@ -18,8 +18,10 @@ export function tokenizeDocument(document: TextDocument): Token[] {
     return tokenizer.tokens;
 }
 
-function setupAndValidatePatterns(pattern: TokenPattern): boolean {
-    if (pattern._patternId !== undefined) return true; // This pattern was already validated
+function setupAndValidatePatterns(pattern: TokenPattern) {
+    // TODO: Is there some kind of unit test thing that applies this on build?
+
+    if (pattern._patternId !== undefined) return; // This pattern was already validated
 
     let currentPatternId = 0;
     const stack = new Stack<TokenPattern>();
@@ -32,30 +34,19 @@ function setupAndValidatePatterns(pattern: TokenPattern): boolean {
         p._patternId = currentPatternId;
         currentPatternId++;
 
-        // TODO: Is there some kind of unit test thing that applies this on build?
-
         if (isRepoPattern(p)) {
             for (let i = 0; i < p.patterns.length; ++i) stack.push(p.patterns[i]);
         } else if (isRangePattern(p)) {
-            if (!p.begin.global || !p.end.global) {
-                console.error("To match this pattern the 'g' flag is required on the begin and end RegExp!");
-                return false;
-            }
+            console.assert(p.begin.global && p.end.global, "To match this pattern the 'g' flag is required on the begin and end RegExp!");
             if (p.beginCaptures) {
-                if (!p.begin.hasIndices) {
-                    console.error("To match this begin pattern the 'd' flag is required!");
-                    return false;
-                }
+                console.assert(p.begin.hasIndices, "To match this begin pattern the 'd' flag is required!");
 
                 Object.entries(p.beginCaptures).forEach(([, v]) => {
                     v.patterns?.forEach((x) => stack.push(x));
                 });
             }
             if (p.endCaptures) {
-                if (!p.end.hasIndices) {
-                    console.error("To match this end pattern the 'd' flag is required!");
-                    return false;
-                }
+                console.assert(p.end.hasIndices, "To match this end pattern the 'd' flag is required!");
 
                 Object.entries(p.endCaptures).forEach(([, v]) => {
                     v.patterns?.forEach((x) => stack.push(x));
@@ -70,15 +61,9 @@ function setupAndValidatePatterns(pattern: TokenPattern): boolean {
             reEndSource = reEndSource.replaceAll("\\Z", "$(?!\r\n|\r|\n)"); // This assumes LF without trailig new line right?...
             p.end = new RegExp(reEndSource, p.end.flags);
         } else if (isMatchPattern(p)) {
-            if (!p.match.global) {
-                console.error("To match this pattern the 'g' flag is required!");
-                return false;
-            }
+            console.assert(p.match.global, "To match this pattern the 'g' flag is required!");
             if (p.captures) {
-                if (!p.match.hasIndices) {
-                    console.error("To match this pattern the 'd' flag is required!");
-                    return false;
-                }
+                console.assert(p.match.hasIndices, "To match this pattern the 'd' flag is required!");
 
                 Object.entries(p.captures).forEach(([, v]) => {
                     v.patterns?.forEach((x) => stack.push(x));

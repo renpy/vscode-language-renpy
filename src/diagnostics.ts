@@ -13,7 +13,8 @@ const rxReservedPythonCheck = /^\s*(default|define)\s+(ArithmeticError|Assertion
 // Obsolete Methods
 const rxObsoleteCheck = /[\s\(=]+(LiveCrop|LiveComposite|Tooltip|im\.Rotozoom|im\.ImageBase|im\.ramp|im\.Map|im\.Flip|im\.math|im\.expands_bounds|im\.threading|im\.zipfile|im\.Recolor|im\.Color|im\.io|im\.Alpha|im\.Data|im\.Image|im\.Twocolor|im\.MatrixColor|im\.free_memory|im\.Tile|im\.FactorScale|im\.Sepia|im\.Crop|im\.AlphaMask|im\.Blur|im\.tobytes|im\.matrix|im\.Grayscale|ui\.add|ui\.bar|ui\.imagebutton|ui\.input|ui\.key|ui\.label|ui\.null|ui\.text|ui\.textbutton|ui\.timer|ui\.vbar|ui\.hotspot|ui\.hotbar|ui\.spritemanager|ui\.button|ui\.frame|ui\.transform|ui\.window|ui\.drag|ui\.fixed|ui\.grid|ui\.hbox|ui\.side|ui\.vbox|ui\.imagemap|ui\.draggroup)[^a-zA-Z]/g;
 
-const rxVariableCheck = /^\s*(default|define)\s+([^a-zA-Z\s][a-zA-Z0-9_]*)\s+=/g;
+const rxVariableCheck = /^\s*(default|define)\s+([^a-zA-Z\s_][a-zA-Z0-9_]*)\s+=/g;
+const rxReservedVariableCheck = /\s*(default|define)\s+(_[a-zA-Z0-9]*)\s+=/g;
 const rxPersistentDefines = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*$)/g;
 const rxPersistentCheck = /\s+persistent\.(\w+)[^a-zA-Z]/g;
 const rxStoreCheck = /\s+store\.(\w+)[^a-zA-Z_]?/g;
@@ -112,6 +113,7 @@ const rsComparisonCheck = /\s+(if|while)\s+(\w+)\s*(=)\s*(\w+)\s*/g;
         }
 
         if (config.warnOnReservedVariableNames) {
+            checkReservedRenpyNames(diagnostics, line, lineIndex);
             checkReservedPythonNames(diagnostics, line, lineIndex);
         }
 
@@ -178,13 +180,24 @@ function checkComparisonVsAssignment(diagnostics: Diagnostic[], line: string, li
     }
 }
 
+function checkReservedRenpyNames(diagnostics: Diagnostic[], line: string, lineIndex: number) {
+    // check for default/define variables that are Python reserved names
+    let matches;
+    while ((matches = rxReservedVariableCheck.exec(line)) !== null) {
+        const offset = matches.index + matches[0].indexOf(matches[2]);
+        const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
+        const diagnostic = new Diagnostic(range, `"${matches[2]}": Variables may not begin with a single underscore '_' as Ren'Py reserves such variables for its own purposes.`, DiagnosticSeverity.Warning);
+        diagnostics.push(diagnostic);
+    }
+}
+
 function checkReservedPythonNames(diagnostics: Diagnostic[], line: string, lineIndex: number) {
     // check for default/define variables that are Python reserved names
     let matches;
     while ((matches = rxReservedPythonCheck.exec(line)) !== null) {
         const offset = matches.index + matches[0].indexOf(matches[2]);
         const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
-        const diagnostic = new Diagnostic(range, `"${matches[2]}" is a Python reserved name, type, or function. Using it as a variable can lead to obscure problems or unpredictable behavior.`, DiagnosticSeverity.Error);
+        const diagnostic = new Diagnostic(range, `"${matches[2]}" is a Python reserved name, type, or function. Using it as a variable can lead to obscure problems or unpredictable behavior.`, DiagnosticSeverity.Warning);
         diagnostics.push(diagnostic);
     }
 }
@@ -208,7 +221,7 @@ function checkInvalidVariableNames(diagnostics: Diagnostic[], line: string, line
         {
             const offset = matches.index + matches[0].indexOf(matches[2]);
             const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
-            const diagnostic = new Diagnostic(range, `"${matches[2]}": Variables must begin with a letter (and may contain numbers, letters, or underscores). Variables may not begin with '_' as Ren'Py reserves such variables for its own purposes.`, severity);
+            const diagnostic = new Diagnostic(range, `"${matches[2]}": Variables must begin with a letter (and may contain numbers, letters, or underscores).`, severity);
             diagnostics.push(diagnostic);
         }
     }

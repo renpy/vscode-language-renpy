@@ -143,11 +143,11 @@ declare const enum CharacterTokenType {
 
     // Other characters
     WhiteSpace, // Tab or space
+    NewLine,
 
     Colon, // :
     Semicolon, // ;
     Comma, // ,
-
     Hashtag, // #
 
     Quote, // '
@@ -156,8 +156,6 @@ declare const enum CharacterTokenType {
 
     Backslash, // \
     ForwardSlash, // /
-
-    NewLine,
 }
 
 // Only valid inside strings

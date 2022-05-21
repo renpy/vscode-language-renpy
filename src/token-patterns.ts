@@ -34,9 +34,37 @@ const newLine: TokenPattern = {
     match: /\r\n|\r|\n/g,
 };
 
+const unmatchedLoseChars: TokenPattern = {
+    patterns: [
+        {
+            match: /(\()|(\))|({)|(})|(\[)|(\])|([ \t]+)|(\r\n|\r|\n)|(:)|(;)|(,)|(#)|(')|(")|(`)|(\\)|(\/)|(.)/dg,
+            captures: {
+                1: { token: CharacterTokenType.OpenParentheses },
+                2: { token: CharacterTokenType.CloseParentheses },
+                3: { token: CharacterTokenType.OpenBracket },
+                4: { token: CharacterTokenType.CloseBracket },
+                5: { token: CharacterTokenType.OpenSquareBracket },
+                6: { token: CharacterTokenType.CloseSquareBracket },
+                7: { token: CharacterTokenType.WhiteSpace },
+                8: { token: CharacterTokenType.NewLine },
+                9: { token: CharacterTokenType.Colon },
+                10: { token: CharacterTokenType.Semicolon },
+                11: { token: CharacterTokenType.Comma },
+                12: { token: CharacterTokenType.Hashtag },
+                13: { token: CharacterTokenType.Quote },
+                14: { token: CharacterTokenType.DoubleQuote },
+                15: { token: CharacterTokenType.BackQuote },
+                16: { token: CharacterTokenType.Backslash },
+                17: { token: CharacterTokenType.ForwardSlash },
+                18: { token: CharacterTokenType.Unknown },
+            },
+        },
+    ],
+};
+
 const pythonParameters: TokenPattern = { patterns: [] };
 
-const pythonSource: TokenPattern = { patterns: [newLine] };
+const pythonSource: TokenPattern = { patterns: [unmatchedLoseChars] };
 
 const pythonStatements: TokenPattern = {
     patterns: [
@@ -112,7 +140,7 @@ const pythonStatements: TokenPattern = {
                 },
             },
             // eslint-disable-next-line no-useless-escape
-            end: /^\1(?![ \t]+)(?!$)|$\Z/gm,
+            end: /^(?:\1)(?![ \t]+)(?!$)|$\Z/gm,
             patterns: [pythonSource],
         },
         {
@@ -763,33 +791,6 @@ const stringQuotedBack: TokenPattern = {
 
 const strings: TokenPattern = {
     patterns: [stringQuotedDouble, stringQuotedSingle, stringQuotedBack],
-};
-
-const unmatchedLoseChars: TokenPattern = {
-    patterns: [
-        {
-            match: /(`)|(\\)|({)|(})|(\[)|(\])|(\()|(\))|(:)|(,)|(")|(')|(;)|(#)|(\r\n|\r|\n)|([ \t]+)|(.)/dg,
-            captures: {
-                1: { token: CharacterTokenType.BackQuote },
-                2: { token: CharacterTokenType.Backslash },
-                3: { token: CharacterTokenType.OpenBracket },
-                4: { token: CharacterTokenType.CloseBracket },
-                5: { token: CharacterTokenType.OpenSquareBracket },
-                6: { token: CharacterTokenType.CloseSquareBracket },
-                7: { token: CharacterTokenType.OpenParentheses },
-                8: { token: CharacterTokenType.CloseParentheses },
-                9: { token: CharacterTokenType.Colon },
-                10: { token: CharacterTokenType.Comma },
-                11: { token: CharacterTokenType.DoubleQuote },
-                12: { token: CharacterTokenType.Quote },
-                13: { token: CharacterTokenType.Semicolon },
-                14: { token: CharacterTokenType.Hashtag },
-                15: { token: CharacterTokenType.NewLine },
-                16: { token: CharacterTokenType.WhiteSpace },
-                17: { token: CharacterTokenType.Unknown },
-            },
-        },
-    ],
 };
 
 const statements: TokenPattern = {

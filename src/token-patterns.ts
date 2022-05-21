@@ -1,3 +1,4 @@
+/* eslint-disable no-useless-backreference */
 // These patterns are converted from the tmLanguage file.
 // Copy the patterns (the contents of the repository group) over and apply the following find and replace patterns:
 
@@ -26,10 +27,16 @@
 // replace with: \
 
 // Result should be manually fixed
+// Make sure to include this in internal captures to detect all newline tokens
+
+const newLine: TokenPattern = {
+    token: CharacterTokenType.NewLine,
+    match: /\r\n|\r|\n/g,
+};
 
 const pythonParameters: TokenPattern = { patterns: [] };
 
-const pythonSource: TokenPattern = { patterns: [] };
+const pythonSource: TokenPattern = { patterns: [newLine] };
 
 const pythonStatements: TokenPattern = {
     patterns: [
@@ -38,7 +45,7 @@ const pythonStatements: TokenPattern = {
             token: MetaTokenType.Block,
             contentToken: MetaTokenType.PythonBlock,
 
-            begin: /^([ \t]*)(?:\b(init)\b\s+(?:(-)?(\d*)\s+)?)?\b(python)\b(.*?)(:)$\n/dgm,
+            begin: /^([ \t]+)?(?:(init)(?:([ \t]+)(-)?(\d+))?([ \t]+))?(python)([ \t]+)?(.*)?(:)/dgm,
             beginCaptures: {
                 1: {
                     token: CharacterTokenType.WhiteSpace,
@@ -47,15 +54,24 @@ const pythonStatements: TokenPattern = {
                     token: KeywordTokenType.Init,
                 },
                 3: {
-                    token: OperatorTokenType.Plus,
+                    token: CharacterTokenType.WhiteSpace,
                 },
                 4: {
-                    token: ConstantTokenType.Integer,
+                    token: OperatorTokenType.Minus,
                 },
                 5: {
-                    token: KeywordTokenType.Python,
+                    token: ConstantTokenType.Integer,
                 },
                 6: {
+                    token: CharacterTokenType.WhiteSpace,
+                },
+                7: {
+                    token: KeywordTokenType.Python,
+                },
+                8: {
+                    token: CharacterTokenType.WhiteSpace,
+                },
+                9: {
                     token: MetaTokenType.Arguments,
 
                     patterns: [
@@ -88,27 +104,37 @@ const pythonStatements: TokenPattern = {
                         },
                     ],
                 },
-                7: {
+                10: {
                     token: CharacterTokenType.Colon,
                 },
+                11: {
+                    token: CharacterTokenType.NewLine,
+                },
             },
-            end: /^(?!(\1[ \t]+)|$)|\Z/gm,
+            // eslint-disable-next-line no-useless-escape
+            end: /^\1(?![ \t]+)(?!$)|$\Z/gm,
             patterns: [pythonSource],
         },
         {
             // Match begin and end of python one line statements
-            match: /(?:(\$)|\b(define)|\b(default))(?=\s)(.*)$/dgm,
+            match: /^([ \t]+)?(?:(\$)|(define)|(default))([ \t]+)(.*)$/dgm,
             captures: {
                 1: {
-                    token: KeywordTokenType.DollarSign,
+                    token: CharacterTokenType.WhiteSpace,
                 },
                 2: {
-                    token: KeywordTokenType.Define,
+                    token: KeywordTokenType.DollarSign,
                 },
                 3: {
-                    token: KeywordTokenType.Default,
+                    token: KeywordTokenType.Define,
                 },
                 4: {
+                    token: KeywordTokenType.Default,
+                },
+                5: {
+                    token: CharacterTokenType.WhiteSpace,
+                },
+                6: {
                     token: MetaTokenType.PythonLine,
                     patterns: [
                         {
@@ -128,34 +154,24 @@ const label: TokenPattern = {
     patterns: [
         {
             token: MetaTokenType.Block,
-            begin: /(^[ \t]+)?\b(label)\s+([a-zA-Z_.]\w*(?:\(.*\))?)(?=\s*)(:)/dgm,
-            beginCaptures: {
-                1: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                2: {
-                    token: KeywordTokenType.Label,
-                },
-                3: {
+            match: /^([ \t]+)?(label)([ \t]+)([a-zA-Z_.]\w*(?:\(.*\))?)([ \t]+)?(.*)?(:)/dgm,
+            captures: {
+                1: { token: CharacterTokenType.WhiteSpace },
+                2: { token: KeywordTokenType.Label },
+                3: { token: CharacterTokenType.WhiteSpace },
+                4: {
                     patterns: [
                         {
                             // Function name
-                            match: /([a-zA-Z_.]\w*)/g,
+                            match: /[a-zA-Z_.]\w*/g,
                             token: EntityTokenType.Function,
                         },
                         pythonParameters,
                     ],
                 },
-                4: {
-                    token: CharacterTokenType.Colon,
-                },
-            },
-
-            end: /(:|(?=[#'\"\n]))/dg,
-            endCaptures: {
-                1: {
-                    token: CharacterTokenType.Colon,
-                },
+                5: { token: CharacterTokenType.WhiteSpace },
+                6: { token: CharacterTokenType.WhiteSpace },
+                7: { token: CharacterTokenType.Colon },
             },
         },
     ],
@@ -164,9 +180,8 @@ const label: TokenPattern = {
 const image: TokenPattern = {
     patterns: [
         {
-            token: MetaTokenType.Block,
-            begin: /^([ \t]*)(image)[ \t]+([a-zA-Z_.]\w*(?:\(.*\))?)(?=\s*)(:)/dgm,
-            beginCaptures: {
+            match: /^([ \t]+)?(image)([ \t]+)((?:[a-zA-Z_.]\w*[ \t]+)+)(=)/dgm,
+            captures: {
                 1: {
                     token: CharacterTokenType.WhiteSpace,
                 },
@@ -174,24 +189,23 @@ const image: TokenPattern = {
                     token: KeywordTokenType.Image,
                 },
                 3: {
-                    patterns: [
-                        {
-                            // Function name
-                            match: /([a-zA-Z_.]\w*)/g,
-                            token: EntityTokenType.Function,
-                        },
-                        pythonParameters,
-                    ],
+                    token: CharacterTokenType.WhiteSpace,
                 },
                 4: {
-                    token: CharacterTokenType.Colon,
+                    patterns: [
+                        {
+                            token: CharacterTokenType.WhiteSpace,
+                            match: /[ \t]+/g,
+                        },
+                        {
+                            // image names
+                            token: EntityTokenType.Variable,
+                            match: /[a-zA-Z_.]\w*/g,
+                        },
+                    ],
                 },
-            },
-
-            end: /(:|(?=[#'\"\n]))/dg,
-            endCaptures: {
-                1: {
-                    token: CharacterTokenType.Colon,
+                5: {
+                    token: OperatorTokenType.Assign,
                 },
             },
         },
@@ -340,7 +354,7 @@ const codeTags: TokenPattern = {
 
 const comments: TokenPattern = {
     token: MetaTokenType.Comment,
-    match: /(\#)(.*)$/dgm,
+    match: /(#)(.*)$/dgm,
     captures: {
         1: { token: CharacterTokenType.Hashtag },
         2: { patterns: [codeTags] },
@@ -348,28 +362,28 @@ const comments: TokenPattern = {
 };
 
 const escapedChar: TokenPattern = {
-    match: /(\\\")|(\\')|(\\ )|(\\n)|(\\\\)|(\[\[)|({{)/dg,
+    match: /(\\")|(\\')|(\\ )|(\\n)|(\\\\)|(\[\[)|({{)/dg,
     captures: {
         1: {
-            token: EscapedCharacterTokenType.Escaped_DoubleQuote,
+            token: EscapedCharacterTokenType.EscDoubleQuote,
         },
         2: {
-            token: EscapedCharacterTokenType.Escaped_Quote,
+            token: EscapedCharacterTokenType.EscQuote,
         },
         3: {
-            token: EscapedCharacterTokenType.Escaped_Whitespace,
+            token: EscapedCharacterTokenType.EscWhitespace,
         },
         4: {
-            token: EscapedCharacterTokenType.Escaped_Newline,
+            token: EscapedCharacterTokenType.EscNewline,
         },
         5: {
-            token: EscapedCharacterTokenType.Escaped_Backslash,
+            token: EscapedCharacterTokenType.EscBackslash,
         },
         6: {
-            token: EscapedCharacterTokenType.Escaped_OpenBracket,
+            token: EscapedCharacterTokenType.EscOpenBracket,
         },
         7: {
-            token: EscapedCharacterTokenType.Escaped_OpenSquareBracket,
+            token: EscapedCharacterTokenType.EscOpenSquareBracket,
         },
     },
 };
@@ -412,7 +426,7 @@ const constantPlaceholder: TokenPattern = {
 };
 
 const stringsInterior: TokenPattern = {
-    patterns: [escapedChar, constantPlaceholder], // ,stringTags (Recursive pattern. See below)
+    patterns: [newLine, escapedChar, constantPlaceholder], // ,stringTags (Recursive pattern. See below)
 };
 
 const stringTags: TokenPattern = {
@@ -490,18 +504,21 @@ const stringTags: TokenPattern = {
                 2: { token: EntityTokenType.Tag },
                 3: { token: CharacterTokenType.CloseBracket },
             },
-            end: /({\/)\s*(\2)\s*(})/dg,
+            end: /({)(\/)(\s+)?(\2)(\s+)?(})/dg,
             endCaptures: {
                 0: { token: MetaTokenType.TagBlock },
                 1: { token: CharacterTokenType.OpenBracket },
-                2: { token: EntityTokenType.Tag },
-                3: { token: CharacterTokenType.CloseBracket },
+                2: { token: CharacterTokenType.ForwardSlash },
+                3: { token: CharacterTokenType.WhiteSpace },
+                4: { token: EntityTokenType.Tag },
+                5: { token: CharacterTokenType.WhiteSpace },
+                6: { token: CharacterTokenType.CloseBracket },
             },
             patterns: [stringsInterior],
         },
         {
             // Valid tags with numeric params (close required)
-            begin: /({)\s*(alpha|cps|k)(=)(?:(\*)|(\-)|(\+))?(\d+(?:.\d+)?)\s*(})/dg,
+            begin: /({)\s*(alpha|cps|k)(=)(?:(\*)|(-)|(\+))?(\d+(?:.\d+)?)\s*(})/dg,
             beginCaptures: {
                 0: { token: MetaTokenType.TagBlock },
                 1: { token: CharacterTokenType.OpenBracket },
@@ -513,26 +530,21 @@ const stringTags: TokenPattern = {
                 7: { token: ConstantTokenType.Float },
                 8: { token: CharacterTokenType.CloseBracket },
             },
-            end: /({\/)\s*(\2)\s*(})/dg,
+            end: /({)(\/)(\s+)?(\2)(\s+)?(})/dg,
             endCaptures: {
-                0: {
-                    token: MetaTokenType.TagBlock,
-                },
-                1: {
-                    token: CharacterTokenType.OpenBracket,
-                },
-                2: {
-                    token: EntityTokenType.Tag,
-                },
-                3: {
-                    token: CharacterTokenType.CloseBracket,
-                },
+                0: { token: MetaTokenType.TagBlock },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: CharacterTokenType.ForwardSlash },
+                3: { token: CharacterTokenType.WhiteSpace },
+                4: { token: EntityTokenType.Tag },
+                5: { token: CharacterTokenType.WhiteSpace },
+                6: { token: CharacterTokenType.CloseBracket },
             },
             patterns: [stringsInterior],
         },
         {
             // Valid tags with numeric params (close required)
-            begin: /({)\s*(size)(=)(?:(\-)|(\+))?(\d+)\s*(})/dg,
+            begin: /({)\s*(size)(=)(?:(-)|(\+))?(\d+)\s*(})/dg,
             beginCaptures: {
                 0: { token: MetaTokenType.TagBlock },
                 1: { token: CharacterTokenType.OpenBracket },
@@ -543,20 +555,15 @@ const stringTags: TokenPattern = {
                 6: { token: ConstantTokenType.Integer },
                 7: { token: CharacterTokenType.CloseBracket },
             },
-            end: /({\/)\s*(\2)\s*(})/dg,
+            end: /({)(\/)(\s+)?(\2)(\s+)?(})/dg,
             endCaptures: {
-                0: {
-                    token: MetaTokenType.TagBlock,
-                },
-                1: {
-                    token: CharacterTokenType.OpenBracket,
-                },
-                2: {
-                    token: EntityTokenType.Tag,
-                },
-                3: {
-                    token: CharacterTokenType.CloseBracket,
-                },
+                0: { token: MetaTokenType.TagBlock },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: CharacterTokenType.ForwardSlash },
+                3: { token: CharacterTokenType.WhiteSpace },
+                4: { token: EntityTokenType.Tag },
+                5: { token: CharacterTokenType.WhiteSpace },
+                6: { token: CharacterTokenType.CloseBracket },
             },
             patterns: [stringsInterior],
         },
@@ -573,20 +580,15 @@ const stringTags: TokenPattern = {
                 },
                 5: { token: CharacterTokenType.CloseBracket },
             },
-            end: /({\/)\s*(\2)\s*(})/dg,
+            end: /({)(\/)(\s+)?(\2)(\s+)?(})/dg,
             endCaptures: {
-                0: {
-                    token: MetaTokenType.TagBlock,
-                },
-                1: {
-                    token: CharacterTokenType.OpenBracket,
-                },
-                2: {
-                    token: EntityTokenType.Tag,
-                },
-                3: {
-                    token: CharacterTokenType.CloseBracket,
-                },
+                0: { token: MetaTokenType.TagBlock },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: CharacterTokenType.ForwardSlash },
+                3: { token: CharacterTokenType.WhiteSpace },
+                4: { token: EntityTokenType.Tag },
+                5: { token: CharacterTokenType.WhiteSpace },
+                6: { token: CharacterTokenType.CloseBracket },
             },
             patterns: [stringsInterior],
         },
@@ -604,64 +606,50 @@ const stringTags: TokenPattern = {
                 },
                 5: { token: CharacterTokenType.CloseBracket },
             },
-            end: /({\/)\s*(\2)\s*(})/dg,
+            end: /({)(\/)(\s+)?(\2)(\s+)?(})/dg,
             endCaptures: {
-                0: {
-                    token: MetaTokenType.TagBlock,
-                },
-                1: {
-                    token: CharacterTokenType.OpenBracket,
-                },
-                2: {
-                    token: EntityTokenType.Tag,
-                },
-                3: {
-                    token: CharacterTokenType.CloseBracket,
-                },
+                0: { token: MetaTokenType.TagBlock },
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: CharacterTokenType.ForwardSlash },
+                3: { token: CharacterTokenType.WhiteSpace },
+                4: { token: EntityTokenType.Tag },
+                5: { token: CharacterTokenType.WhiteSpace },
+                6: { token: CharacterTokenType.CloseBracket },
             },
             patterns: [stringsInterior],
         },
         {
-            // Unknown tag (Single line support only cus \\R does not work) (Since we don't know if a tag is self closing, we can't assume that an end pattern exists)
-            match: /({)\s*(\w+)\b(?:(=)(.*?))?\s*(})((?:.|\R)+?)\s*({\/)\s*(\2)\s*(})/dg,
+            match: /({)(\s+)?(\w+)\b(?:(=)(.*?))?(\s+)?(})((?:.|\r\n|\r|\n)+?)({)(\/)(\s+)?(\3)(\s+)?(})/dg,
             captures: {
                 1: { token: CharacterTokenType.OpenBracket },
-                2: { token: EntityTokenType.Tag },
-                3: { token: OperatorTokenType.Assign },
-                4: { token: MetaTokenType.Arguments },
-                5: { token: CharacterTokenType.CloseBracket },
-                6: {
+                2: { token: CharacterTokenType.WhiteSpace },
+                3: { token: EntityTokenType.Tag },
+                4: { token: OperatorTokenType.Assign },
+                5: { token: MetaTokenType.Arguments },
+                6: { token: CharacterTokenType.WhiteSpace },
+                7: { token: CharacterTokenType.CloseBracket },
+                8: {
                     token: MetaTokenType.TagBlock,
                     patterns: [stringsInterior],
                 },
-                7: { token: CharacterTokenType.OpenBracket },
-                8: { token: EntityTokenType.Tag },
-                9: { token: CharacterTokenType.CloseBracket },
+                9: { token: CharacterTokenType.OpenBracket },
+                10: { token: CharacterTokenType.ForwardSlash },
+                11: { token: CharacterTokenType.WhiteSpace },
+                12: { token: EntityTokenType.Tag },
+                13: { token: CharacterTokenType.WhiteSpace },
+                14: { token: CharacterTokenType.CloseBracket },
             },
         },
         {
-            // Unknown tag start
-            match: /({)\s*(\w*)(?:(=)(.*?))?\s*(})/dg,
+            // Empty tag end
+            token: MetaTokenType.Invalid,
+            match: /({)(\/)?(\s+)?(})/dg,
             captures: {
                 0: { token: MetaTokenType.TagBlock },
                 1: { token: CharacterTokenType.OpenBracket },
-                2: { token: EntityTokenType.Tag },
-                3: { token: OperatorTokenType.Assign },
-                4: {
-                    token: MetaTokenType.Arguments,
-                    patterns: [],
-                },
-                5: { token: CharacterTokenType.CloseBracket },
-            },
-        },
-        {
-            // Unknown tag end
-            match: /({\/)\s*(\w*?)\b\s*(})/dg,
-            captures: {
-                0: { token: MetaTokenType.TagBlock },
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: EntityTokenType.Tag },
-                3: { token: CharacterTokenType.CloseBracket },
+                2: { token: CharacterTokenType.ForwardSlash },
+                3: { token: CharacterTokenType.WhiteSpace },
+                4: { token: CharacterTokenType.CloseBracket },
             },
         },
     ],
@@ -780,7 +768,7 @@ const strings: TokenPattern = {
 const unmatchedLoseChars: TokenPattern = {
     patterns: [
         {
-            match: /(`)|(\\)|({)|(})|(\[)|(\])|(\()|(\))|(\:)|(,)|(")|(')|(;)|(#)|(\n)|(\s+)|(.)/dg,
+            match: /(`)|(\\)|({)|(})|(\[)|(\])|(\()|(\))|(:)|(,)|(")|(')|(;)|(#)|(\r\n|\r|\n)|([ \t]+)|(.)/dg,
             captures: {
                 1: { token: CharacterTokenType.BackQuote },
                 2: { token: CharacterTokenType.Backslash },

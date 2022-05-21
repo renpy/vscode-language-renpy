@@ -1,4 +1,4 @@
-import { DecorationOptions, ExtensionContext, Uri, window, workspace } from "vscode";
+import { DecorationOptions, ExtensionContext, MarkdownString, Position, Range, Uri, window, workspace } from "vscode";
 import { Token } from "./token-definitions";
 import { tokenizeDocument } from "./tokenizer";
 
@@ -114,16 +114,16 @@ const errorDecorationType = window.createTextEditorDecorationType({
 });
 
 let tokenCache: Token[] = [];
-let documentVersion: number = -1;
+let documentVersion = -1;
 let documentUri: Uri | null = null;
 
 function updateDecorations() {
-    let activeEditor = window.activeTextEditor;
+    const activeEditor = window.activeTextEditor;
     if (!activeEditor) {
         return;
     }
 
-    if (documentVersion != activeEditor.document.version || documentUri != activeEditor.document.uri || tokenCache.length === 0) {
+    if (documentVersion !== activeEditor.document.version || documentUri !== activeEditor.document.uri || tokenCache.length === 0) {
         documentVersion = activeEditor.document.version;
         documentUri = activeEditor.document.uri;
         // Update tokens only if document has changed
@@ -156,27 +156,52 @@ function updateDecorations() {
     const errors: DecorationOptions[] = [];
 
     tokens.forEach((token) => {
-        const content = activeEditor?.document.getText(token.range);
+        const range = token.getRange();
+        const content = activeEditor?.document.getText(range);
 
         const decoration: DecorationOptions = {
-            range: token.range,
+            range: range,
             hoverMessage: {
                 language: "text",
-                value: tokenTypeToStringMap[token.tokenType] + "(" + token.tokenType + "): {" + content?.replaceAll("\n", "\\n") + "}",
+                value: `${tokenTypeToStringMap[token.tokenType]} Token (id: ${token.tokenType}): 
+Start: {Line: ${range.start.line + 1}, Char: ${range.start.character + 1}}
+End: {Line: ${range.end.line + 1}, Char: ${range.end.character + 1}}
+Content: {${content?.replaceAll("\n", "\\n")}}`,
             },
         };
 
+        // Debug line and char numbers
+        const start = activeEditor?.document.positionAt(token.startPos.charStartOffset);
+        const end = activeEditor?.document.positionAt(token.endPos.charStartOffset);
+        if (range.start.line !== start.line) {
+            console.error(`Start line number is incorrect!. Got: ${range.start.line + 1}, expected: ${start.line + 1}. On token:
+${(decoration.hoverMessage as MarkdownString).value}`);
+        }
+
+        if (range.end.line !== end.line) {
+            console.error(`End line number is incorrect!. Got: ${range.end.line + 1}, expected: ${end.line + 1}. On token:
+${(decoration.hoverMessage as MarkdownString).value}`);
+        }
+
+        // Debug char numbers
+        if (range.start.character !== start.character) {
+            console.error(`Start char number is incorrect!. Got: ${range.start.character + 1}, expected: ${start.character + 1}. On token:
+${(decoration.hoverMessage as MarkdownString).value}`);
+        }
+
+        if (range.end.character !== end.character) {
+            console.error(`End char number is incorrect!. Got: ${range.end.character + 1}, expected: ${end.character + 1}. On token:
+${(decoration.hoverMessage as MarkdownString).value}`);
+        }
+
         switch (token.tokenType) {
-            // Python statement keywords
-            case KeywordTokenType.Init:
+            case KeywordTokenType.Init: // Python statement keywords
             case KeywordTokenType.Python:
             case KeywordTokenType.Hide:
             case KeywordTokenType.Early:
             case KeywordTokenType.Define:
             case KeywordTokenType.Default:
-
-            // Renpy keywords
-            case KeywordTokenType.Label:
+            case KeywordTokenType.Label: // Renpy keywords
             case KeywordTokenType.Play:
             case KeywordTokenType.Pause:
             case KeywordTokenType.Screen:
@@ -184,18 +209,14 @@ function updateDecorations() {
             case KeywordTokenType.Show:
             case KeywordTokenType.Image:
             case KeywordTokenType.Transform:
-
-            // Renpy sub expression keywords
-            case KeywordTokenType.Set:
+            case KeywordTokenType.Set: // Renpy sub expression keywords
             case KeywordTokenType.Expression:
             case KeywordTokenType.Sound:
             case KeywordTokenType.At:
             case KeywordTokenType.With:
             case KeywordTokenType.From:
             case KeywordTokenType.DollarSign:
-
-            // Language keywords
-            case ConstantTokenType.Boolean:
+            case ConstantTokenType.Boolean: // Language keywords
             case OperatorTokenType.And:
             case OperatorTokenType.Or:
             case OperatorTokenType.Not:
@@ -206,13 +227,10 @@ function updateDecorations() {
                 keywords.push(decoration);
                 break;
 
-            // Conditional control flow keywords
-            case KeywordTokenType.If:
+            case KeywordTokenType.If: // Conditional control flow keywords
             case KeywordTokenType.Elif:
             case KeywordTokenType.Else:
-
-            // Control flow keywords
-            case KeywordTokenType.For:
+            case KeywordTokenType.For: // Control flow keywords
             case KeywordTokenType.While:
             case KeywordTokenType.Pass:
             case KeywordTokenType.Return:
@@ -222,8 +240,7 @@ function updateDecorations() {
                 controlKeywords.push(decoration);
                 break;
 
-            // Types
-            case EntityTokenType.Class:
+            case EntityTokenType.Class: // Types
             case EntityTokenType.Namespace:
                 types.push(decoration);
                 break;
@@ -269,7 +286,7 @@ function updateDecorations() {
             case ConstantTokenType.Color:
                 {
                     const colorDecoration: DecorationOptions = {
-                        range: token.range,
+                        range: range,
                         hoverMessage: content,
                         renderOptions: {
                             before: { color: content },
@@ -285,25 +302,20 @@ function updateDecorations() {
                 numbers.push(decoration);
                 break;
 
-            // Arithmatic operators
-            case OperatorTokenType.Plus:
+            case OperatorTokenType.Plus: // Arithmatic operators
             case OperatorTokenType.Minus:
             case OperatorTokenType.Multiply:
             case OperatorTokenType.Divide:
             case OperatorTokenType.Modulo:
             case OperatorTokenType.Exponentiate:
             case OperatorTokenType.FloorDivide:
-
-            // Bitwise operators
-            case OperatorTokenType.BitwiseAnd:
+            case OperatorTokenType.BitwiseAnd: // Bitwise operators
             case OperatorTokenType.BitwiseOr:
             case OperatorTokenType.BitwiseXOr:
             case OperatorTokenType.BitwiseNot:
             case OperatorTokenType.BitwiseLeftShift:
             case OperatorTokenType.BitwiseRightShift:
-
-            // Assignment operators
-            case OperatorTokenType.Assign:
+            case OperatorTokenType.Assign: // Assignment operators
             case OperatorTokenType.PlusAssign:
             case OperatorTokenType.MinusAssign:
             case OperatorTokenType.MultiplyAssign:
@@ -316,9 +328,7 @@ function updateDecorations() {
             case OperatorTokenType.BitwiseXOrAssign:
             case OperatorTokenType.BitwiseLeftShiftAssign:
             case OperatorTokenType.BitwiseRightShiftAssign:
-
-            // Comparison operators
-            case OperatorTokenType.Equals:
+            case OperatorTokenType.Equals: // Comparison operators
             case OperatorTokenType.NotEquals:
             case OperatorTokenType.GreaterThan:
             case OperatorTokenType.LessThan:
@@ -336,6 +346,7 @@ function updateDecorations() {
             case CharacterTokenType.DoubleQuote:
             case CharacterTokenType.BackQuote:
             case CharacterTokenType.Backslash:
+            case CharacterTokenType.ForwardSlash:
             case CharacterTokenType.NewLine:
                 characters.push(decoration);
                 break;
@@ -349,13 +360,13 @@ function updateDecorations() {
                 specialCharacters.push(decoration);
                 break;
 
-            case EscapedCharacterTokenType.Escaped_Whitespace:
-            case EscapedCharacterTokenType.Escaped_Newline:
-            case EscapedCharacterTokenType.Escaped_Quote:
-            case EscapedCharacterTokenType.Escaped_DoubleQuote:
-            case EscapedCharacterTokenType.Escaped_Backslash:
-            case EscapedCharacterTokenType.Escaped_OpenSquareBracket:
-            case EscapedCharacterTokenType.Escaped_OpenBracket:
+            case EscapedCharacterTokenType.EscWhitespace:
+            case EscapedCharacterTokenType.EscNewline:
+            case EscapedCharacterTokenType.EscQuote:
+            case EscapedCharacterTokenType.EscDoubleQuote:
+            case EscapedCharacterTokenType.EscBackslash:
+            case EscapedCharacterTokenType.EscOpenSquareBracket:
+            case EscapedCharacterTokenType.EscOpenBracket:
                 escCharacters.push(decoration);
                 break;
 
@@ -411,7 +422,7 @@ export function registerDecorator(context: ExtensionContext) {
     // A TextDocument was changed
     context.subscriptions.push(
         workspace.onDidChangeTextDocument((event) => {
-            let activeEditor = window.activeTextEditor;
+            const activeEditor = window.activeTextEditor;
 
             if (activeEditor && event.document === activeEditor.document) {
                 triggerUpdateDecorations(true);
@@ -536,16 +547,17 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     DoubleQuote: { name: "DoubleQuote", value: CharacterTokenType.DoubleQuote },
     BackQuote: { name: "BackQuote", value: CharacterTokenType.BackQuote },
     Backslash: { name: "Backslash", value: CharacterTokenType.Backslash },
+    ForwardSlash: { name: "ForwardSlash", value: CharacterTokenType.ForwardSlash },
     NewLine: { name: "NewLine", value: CharacterTokenType.NewLine },
     Unknown: { name: "Unknown", value: CharacterTokenType.Unknown },
 
-    Escaped_Whitespace: { name: "Escaped_Whitespace", value: EscapedCharacterTokenType.Escaped_Whitespace },
-    Escaped_Newline: { name: "Escaped_Newline", value: EscapedCharacterTokenType.Escaped_Newline },
-    Escaped_Quote: { name: "Escaped_Quote", value: EscapedCharacterTokenType.Escaped_Quote },
-    Escaped_DoubleQuote: { name: "Escaped_DoubleQuote", value: EscapedCharacterTokenType.Escaped_DoubleQuote },
-    Escaped_Backslash: { name: "Escaped_Backslash", value: EscapedCharacterTokenType.Escaped_Backslash },
-    Escaped_OpenSquareBracket: { name: "Escaped_OpenSquareBracket", value: EscapedCharacterTokenType.Escaped_OpenSquareBracket },
-    Escaped_OpenBracket: { name: "Escaped_OpenBracket", value: EscapedCharacterTokenType.Escaped_OpenBracket },
+    EscWhitespace: { name: "EscWhitespace", value: EscapedCharacterTokenType.EscWhitespace },
+    EscNewline: { name: "EscNewline", value: EscapedCharacterTokenType.EscNewline },
+    EscQuote: { name: "EscQuote", value: EscapedCharacterTokenType.EscQuote },
+    EscDoubleQuote: { name: "EscDoubleQuote", value: EscapedCharacterTokenType.EscDoubleQuote },
+    EscBackslash: { name: "EscBackslash", value: EscapedCharacterTokenType.EscBackslash },
+    EscOpenSquareBracket: { name: "EscOpenSquareBracket", value: EscapedCharacterTokenType.EscOpenSquareBracket },
+    EscOpenBracket: { name: "EscOpenBracket", value: EscapedCharacterTokenType.EscOpenBracket },
 
     Comment: { name: "Comment", value: MetaTokenType.Comment },
     CommentCodeTag: { name: "CommentCodeTag", value: MetaTokenType.CommentCodeTag },
@@ -559,4 +571,4 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     Invalid: { name: "Invalid", value: MetaTokenType.Invalid },
 };
 
-export const tokenTypeToStringMap = Object.fromEntries(Object.entries(tokenTypeDefinitions).map(([_, v]) => [v.value, v.name]));
+export const tokenTypeToStringMap = Object.fromEntries(Object.entries(tokenTypeDefinitions).map(([, v]) => [v.value, v.name]));

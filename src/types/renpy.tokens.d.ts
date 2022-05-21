@@ -1,3 +1,4 @@
+/* eslint-disable no-shadow */
 // This index is used to make it easier to detect what type of token is currently used.
 // This also makes sure that token types wont have overlapping ID's.
 declare const enum TokenTypeIndex {
@@ -131,43 +132,44 @@ declare const enum OperatorTokenType {
 declare const enum CharacterTokenType {
     Unknown = TokenTypeIndex.UnknownCharacterID,
     // Expression characters
-    OpenParentheses = TokenTypeIndex.CharactersStart,
-    CloseParentheses,
+    OpenParentheses = TokenTypeIndex.CharactersStart, // (
+    CloseParentheses, // )
 
-    OpenBracket,
-    CloseBracket,
+    OpenBracket, // {
+    CloseBracket, // }
 
-    OpenSquareBracket,
-    CloseSquareBracket,
+    OpenSquareBracket, // [
+    CloseSquareBracket, // ]
 
     // Other characters
     WhiteSpace, // Tab or space
 
-    Colon,
-    Semicolon,
-    Comma,
+    Colon, // :
+    Semicolon, // ;
+    Comma, // ,
 
-    Hashtag,
+    Hashtag, // #
 
-    Quote,
-    DoubleQuote,
-    BackQuote,
+    Quote, // '
+    DoubleQuote, // "
+    BackQuote, // `
 
-    Backslash,
+    Backslash, // \
+    ForwardSlash, // /
 
     NewLine,
 }
 
 // Only valid inside strings
 declare const enum EscapedCharacterTokenType {
-    Escaped_Whitespace = TokenTypeIndex.EscapedCharacterStart, // \
-    Escaped_Newline, // \n
+    EscWhitespace = TokenTypeIndex.EscapedCharacterStart,
+    EscNewline, // \n
 
-    Escaped_Quote, // \'
-    Escaped_DoubleQuote, // \"
-    Escaped_Backslash, // \\
-    Escaped_OpenSquareBracket, // [[
-    Escaped_OpenBracket, // {{
+    EscQuote, // \'
+    EscDoubleQuote, // \"
+    EscBackslash, // \\
+    EscOpenSquareBracket, // [[
+    EscOpenBracket, // {{
 }
 
 declare const enum MetaTokenType {
@@ -185,63 +187,3 @@ declare const enum MetaTokenType {
 }
 
 declare type TokenType = KeywordTokenType | EntityTokenType | MetaTokenType | ConstantTokenType | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;
-
-declare type TokenPatternCapture = {
-    readonly [k: string | number]: { readonly token?: TokenType; readonly patterns?: TokenPatternArray };
-};
-
-interface TokenMatchPattern {
-    _pattern_id?: number;
-
-    readonly token?: TokenType;
-    match: RegExp;
-    readonly captures?: TokenPatternCapture;
-
-    // These are added to prevent falsy assignment
-    include?: never;
-    patterns?: never;
-    contentToken?: never;
-    begin?: never;
-    beginCaptures?: never;
-    end?: never;
-    endCaptures?: never;
-}
-
-interface TokenRangePattern {
-    _pattern_id?: number;
-    _hasBackref?: boolean;
-
-    readonly token?: TokenType;
-    readonly contentToken?: TokenType;
-
-    begin: RegExp;
-    readonly beginCaptures?: TokenPatternCapture;
-
-    end: RegExp;
-    readonly endCaptures?: TokenPatternCapture;
-
-    readonly patterns?: TokenPatternArray;
-
-    // These are added to prevent falsy assignment
-    include?: never;
-    match?: never;
-    captures?: never;
-}
-
-interface TokenRepoPattern {
-    readonly patterns: TokenPatternArray;
-
-    // These are added to prevent falsy assignment
-    include?: never;
-    token?: never;
-    contentToken?: never;
-    match?: never;
-    begin?: never;
-    end?: never;
-    captures?: never;
-    beginCaptures?: never;
-    endCaptures?: never;
-}
-
-declare type TokenPattern = TokenRangePattern | TokenMatchPattern | TokenRepoPattern;
-declare type TokenPatternArray = Array<TokenPattern>;

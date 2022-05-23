@@ -181,7 +181,7 @@ function checkComparisonVsAssignment(diagnostics: Diagnostic[], line: string, li
 }
 
 function checkReservedRenpyNames(diagnostics: Diagnostic[], line: string, lineIndex: number) {
-    // check for default/define variables that are Python reserved names
+    // check for default/define variables that are Ren'Py reserved names
     let matches;
     while ((matches = rxReservedVariableCheck.exec(line)) !== null) {
         const offset = matches.index + matches[0].indexOf(matches[2]);
@@ -197,7 +197,7 @@ function checkReservedPythonNames(diagnostics: Diagnostic[], line: string, lineI
     while ((matches = rxReservedPythonCheck.exec(line)) !== null) {
         const offset = matches.index + matches[0].indexOf(matches[2]);
         const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
-        const diagnostic = new Diagnostic(range, `"${matches[2]}" is a Python reserved name, type, or function. Using it as a variable can lead to obscure problems or unpredictable behavior.`, DiagnosticSeverity.Warning);
+        const diagnostic = new Diagnostic(range, `"${matches[2]}": is a Python reserved name, type, or function. Using it as a variable can lead to obscure problems or unpredictable behavior.`, DiagnosticSeverity.Warning);
         diagnostics.push(diagnostic);
     }
 }

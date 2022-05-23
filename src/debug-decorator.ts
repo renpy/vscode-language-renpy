@@ -1,4 +1,4 @@
-import { DecorationOptions, ExtensionContext, MarkdownString, Position, Range, Uri, window, workspace } from "vscode";
+import { DecorationOptions, ExtensionContext, MarkdownString, Uri, window, workspace } from "vscode";
 import { Token } from "./token-definitions";
 import { tokenizeDocument } from "./tokenizer";
 

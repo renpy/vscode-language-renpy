@@ -8,7 +8,7 @@ import { basePatterns } from "./token-patterns";
 import { Stack } from "./utilities/stack";
 
 export function tokenizeDocument(document: TextDocument): Token[] {
-    if (!setupAndValidatePatterns(basePatterns)) return [];
+    setupAndValidatePatterns(basePatterns);
 
     const t0 = performance.now();
     const tokenizer: DocumentTokenizer = new DocumentTokenizer(document);

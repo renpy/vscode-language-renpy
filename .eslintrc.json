@@ -16,12 +16,12 @@
     "no-duplicate-imports": "error",
     "no-self-compare": "error",
     "no-unused-private-class-members": "warn",
-    "no-use-before-define": ["error", { "functions": false, "classes": false, "variables": true }],
     "eqeqeq": "warn",
     "no-shadow": "warn",
     "prefer-regex-literals": "warn",
     "require-await": "warn",
     "camelcase": "error",
-    "@typescript-eslint/no-var-requires": "warn"
+    "@typescript-eslint/no-var-requires": "warn",
+    "no-param-reassign": "warn" // Disable reassign, since this basically means you override the reference from the caller function with a new local version. (It doesn't do what you expect)
   }
 }

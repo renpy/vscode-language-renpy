@@ -52,6 +52,7 @@ import { getDefinition } from "./definition";
 import { getDocumentSymbols } from "./outline";
 import { getSignatureHelp } from "./signature";
 import { findAllReferences } from "./references";
+import { registerDebugDecorator, unregisterDebugDecorator } from "./debug-decorator";
 import * as fs from "fs";
 import * as cp from "child_process";
 
@@ -92,7 +93,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
         { scope: "renpy.meta.color.#000000", settings: { foreground: "#000000" } },
         { scope: "renpy.meta.color.#ffffff", settings: { foreground: "#ffffff" } },
         { scope: "renpy.meta.color.#f00", settings: { foreground: "#f00" } },
-        { scope: "renpy.meta.color.#FF0000", settings: { foreground: "#FF0000" } },
         { scope: "renpy.meta.color.#0f0", settings: { foreground: "#0f0" } },
         { scope: "renpy.meta.color.#0ff", settings: { foreground: "#0ff" } },
         { scope: "renpy.meta.color.#333", settings: { foreground: "#333" } },
@@ -230,7 +230,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     );
     context.subscriptions.push(semanticTokens);
 
-    // A TextDocument was changed
+    // A TextDocument was saved
     context.subscriptions.push(
         workspace.onDidSaveTextDocument((document) => {
             if (document.languageId !== "renpy") {
@@ -298,6 +298,18 @@ export async function activate(context: ExtensionContext): Promise<void> {
         }
     });
     context.subscriptions.push(refreshDiagnosticsCommand);
+
+    // custom command - toggle token debug view
+    let isShowingTokenDebugView = false;
+    const toggleTokenDebugViewCommand = commands.registerCommand("renpy.toggleTokenDebugView", () => {
+        if (!isShowingTokenDebugView) {
+            registerDebugDecorator(context);
+        } else {
+            unregisterDebugDecorator();
+        }
+        isShowingTokenDebugView = !isShowingTokenDebugView;
+    });
+    context.subscriptions.push(toggleTokenDebugViewCommand);
 
     // custom command - call renpy to compile
     const compileCommand = commands.registerCommand("renpy.compileNavigationData", () => {

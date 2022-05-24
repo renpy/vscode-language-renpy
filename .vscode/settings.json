@@ -7,7 +7,7 @@
     "out": true // set this to false to include "out" folder in search results
   },
   "cmake.configureOnOpen": true,
-  "editor.formatOnPaste": true,
+  "editor.formatOnPaste": false,
   "editor.formatOnSave": true,
 
   "[jsonc]": {

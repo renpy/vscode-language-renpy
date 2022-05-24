@@ -154,7 +154,7 @@
         },
         {
           "comment": "[TODO: Should probably only be a keyword in the expression]Renpy sub expression keywords",
-          "match": "\\b(set|expression|pass|sound|at|with|from)\\b",
+          "match": "\\b(set|expression|sound|at|with|from)\\b",
           "name": "keyword.other.renpy"
         }
       ]

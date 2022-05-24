@@ -548,7 +548,7 @@ export class NavigationData {
             let finished = false;
             while (!finished && index < document.lineCount) {
                 let line = document.lineAt(index).text.replace(/[\n\r]/g, "");
-                if (line.length > 0 && line.length - line.trimLeft().length <= spacing) {
+                if (line.length > 0 && line.length - line.trimStart().length <= spacing) {
                     finished = true;
                     break;
                 }

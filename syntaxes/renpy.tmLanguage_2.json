@@ -18,23 +18,13 @@
           "comment": "Renpy python block",
           "contentName": "meta.embedded.block.python",
 
-          "begin": "(^[ \\t]*)(?:\\b(init)\\b\\s+(?:(-)?(\\d*)\\s+)?)?\\b(python)\\b(.*?)(:)",
+          "begin": "^([ \\t]+)?(?:(init)(?:[ \\t]+(-)?(\\d+))?[ \\t]+)?(python)[ \\t]*(.*)?(:)",
           "beginCaptures": {
-            "1": {
-              "name": "punctuation.whitespace.embedded.leading.python"
-            },
-            "2": {
-              "name": "keyword.renpy"
-            },
-            "3": {
-              "name": "keyword.operator.arithmetic.python"
-            },
-            "4": {
-              "name": "constant.numeric.dec.python"
-            },
-            "5": {
-              "name": "keyword.renpy"
-            },
+            "1": { "name": "punctuation.whitespace.embedded.leading.python" },
+            "2": { "name": "keyword.renpy" },
+            "3": { "name": "keyword.operator.arithmetic.python" },
+            "4": { "name": "constant.numeric.dec.python" },
+            "5": { "name": "keyword.renpy" },
             "6": {
               "name": "meta.python.block.arguments.renpy",
 
@@ -43,12 +33,8 @@
                   "comment": "in statement",
                   "match": "(?:\\s*(in)\\s*([a-zA-Z_]\\w*)\\b)",
                   "captures": {
-                    "1": {
-                      "name": "keyword.renpy"
-                    },
-                    "2": {
-                      "name": "entity.name.namespace"
-                    }
+                    "1": { "name": "keyword.renpy" },
+                    "2": { "name": "entity.name.namespace" }
                   }
                 },
                 {
@@ -58,11 +44,9 @@
                 }
               ]
             },
-            "7": {
-              "name": "punctuation.section.python.begin.renpy"
-            }
+            "7": { "name": "punctuation.section.python.begin.renpy" }
           },
-          "end": "^(?!(\\1[ \\t]+)|($))",
+          "end": "(?:(?<!\\1|[^ \\t])|^)(?=(?:[ \\t]|^)(?!$)[^ \\t])",
           "patterns": [{ "include": "source.python" }]
         },
         {

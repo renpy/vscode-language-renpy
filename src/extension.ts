@@ -52,7 +52,7 @@ import { getDefinition } from "./definition";
 import { getDocumentSymbols } from "./outline";
 import { getSignatureHelp } from "./signature";
 import { findAllReferences } from "./references";
-import { registerDebugDecorator, unregisterDebugDecorator } from "./debug-decorator";
+import { registerDebugDecorator, unregisterDebugDecorator } from "./tokenizer/debug-decorator";
 import * as fs from "fs";
 import * as cp from "child_process";
 

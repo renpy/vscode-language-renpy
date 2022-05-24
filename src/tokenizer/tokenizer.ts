@@ -3,25 +3,33 @@
 
 import { assert } from "console";
 import { performance } from "perf_hooks";
-import { TextDocument } from "vscode";
+import { TextDocument, Uri } from "vscode";
 import { Token, isRangePattern, isMatchPattern, isRepoPattern, TokenPosition } from "./token-definitions";
 import { basePatterns } from "./token-patterns";
-import { Stack } from "./utilities/stack";
-import { Vector } from "./utilities/vector";
+import { Stack } from "../utilities/stack";
+import { Vector } from "../utilities/vector";
 
+type ScanResult = { pattern: TokenizerTokenPattern; matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray } | null;
+type TokenCache = { readonly documentVersion: number; readonly tokens: Token[] };
+
+const tokenCache = new Map<Uri, TokenCache>();
 const runBenchmark = false;
-let uniquePatternCount = 0;
+let uniquePatternCount = -1;
 
 export function tokenizeDocument(document: TextDocument): Token[] {
-    uniquePatternCount = setupAndValidatePatterns(basePatterns as ExTokenRepoPattern);
+    setupAndValidatePatterns();
 
     if (runBenchmark) benchmark(document);
 
-    const t0 = performance.now();
-    const tokenizer: DocumentTokenizer = new DocumentTokenizer(document);
-    const t1 = performance.now();
-    console.log(`DocumentTokenizer took ${t1 - t0} milliseconds to complete.`);
-    return tokenizer.tokens.toArray();
+    const cachedTokens = tokenCache.get(document.uri);
+    if (cachedTokens?.documentVersion === document.version) {
+        return cachedTokens.tokens;
+    }
+
+    const tokenizer = new DocumentTokenizer(document);
+    const tokens = tokenizer.tokens.toArray();
+    tokenCache.set(document.uri, { documentVersion: document.version, tokens: tokens });
+    return tokens;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -63,19 +71,19 @@ function benchmark(document: TextDocument) {
     console.log(`DocumentTokenizer took ${avg} avg. milliseconds to complete.`);
 }
 
-function setupAndValidatePatterns(pattern: TokenizerTokenPattern): number {
-    if (pattern._patternId !== undefined && pattern._patternId !== -1) return uniquePatternCount; // This pattern was already validated
+function setupAndValidatePatterns() {
+    if (uniquePatternCount !== -1) return;
 
-    let currentPatternId = 0;
+    uniquePatternCount = 0;
     const stack = new Stack<TokenizerTokenPattern>(32);
-    stack.push(pattern);
+    stack.push(basePatterns as ExTokenRepoPattern);
 
     while (!stack.isEmpty()) {
         const p = stack.pop()!;
 
         if (p._patternId !== undefined && p._patternId !== -1) continue; // This pattern was already validated
-        p._patternId = currentPatternId;
-        currentPatternId++;
+        p._patternId = uniquePatternCount;
+        uniquePatternCount++;
 
         if (isRepoPattern(p)) {
             p._patternType = TokenPatternType.RepoPattern;
@@ -134,14 +142,11 @@ function setupAndValidatePatterns(pattern: TokenizerTokenPattern): number {
             assert(false, "Should not get here!");
         }
     }
-    return currentPatternId;
 }
 
 export function escapeRegExpCharacters(value: string): string {
     return value.replace(/[-\\{}*+?|^$.,[\]()#\s]/g, "\\$&");
 }
-
-type ScanResult = { pattern: TokenizerTokenPattern; matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray } | null;
 
 class DocumentTokenizer {
     private readonly backrefReplaceRe = /\\(\d+)/g;

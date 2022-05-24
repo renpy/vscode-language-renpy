@@ -551,33 +551,15 @@ const pythonStatements: TokenPattern = {
             token: MetaTokenType.Block,
             contentToken: MetaTokenType.PythonBlock,
 
-            begin: /^([ \t]+)?(?:(init)(?:([ \t]+)(-)?(\d+))?([ \t]+))?(python)([ \t]+)?(.*)?(:)/dgm,
+            begin: /^([ \t]+)?(?:(init)(?:[ \t]+(-)?(\d+))?[ \t]+)?(python)[ \t]*(.*)?(:)/dgm,
             beginCaptures: {
-                1: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                2: {
-                    token: KeywordTokenType.Init,
-                },
-                3: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                4: {
-                    token: OperatorTokenType.Minus,
-                },
-                5: {
-                    token: ConstantTokenType.Integer,
-                },
+                0: { patterns: [whiteSpace] },
+                1: {}, // required for end match, but is already named by capture[0]
+                2: { token: KeywordTokenType.Init },
+                3: { token: OperatorTokenType.Minus },
+                4: { token: ConstantTokenType.Integer },
+                5: { token: KeywordTokenType.Python },
                 6: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                7: {
-                    token: KeywordTokenType.Python,
-                },
-                8: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                9: {
                     token: MetaTokenType.Arguments,
 
                     patterns: [
@@ -610,15 +592,12 @@ const pythonStatements: TokenPattern = {
                         },
                     ],
                 },
-                10: {
+                7: {
                     token: CharacterTokenType.Colon,
-                },
-                11: {
-                    token: CharacterTokenType.NewLine,
                 },
             },
             // eslint-disable-next-line no-useless-escape
-            end: /^(?:\1)(?![ \t]+)(?!$)|$\Z/gm,
+            end: /(?:(?<!\1|[^ \t])|^)(?=(?:[ \t]|^)(?!$)[^ \t])|\Z/gm,
             patterns: [pythonSource],
         },
         {

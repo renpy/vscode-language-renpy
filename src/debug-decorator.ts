@@ -1,4 +1,5 @@
-import { DecorationOptions, ExtensionContext, MarkdownString, Uri, window, workspace } from "vscode";
+import { performance } from "node:perf_hooks";
+import { DecorationOptions, Disposable, ExtensionContext, MarkdownString, Uri, window, workspace } from "vscode";
 import { Token } from "./token-definitions";
 import { tokenizeDocument } from "./tokenizer";
 
@@ -113,9 +114,67 @@ const errorDecorationType = window.createTextEditorDecorationType({
     textDecoration: "underline wavy red 2px",
 });
 
+const allDecorationTypes = [
+    keywordDecorationType,
+    controlKeywordDecorationType,
+    typeDecorationType,
+    functionDecorationType,
+    variableDecorationType,
+    entityDecorationType,
+    commentDecorationType,
+    stringDecorationType,
+    metaDecorationType,
+    constantDecorationType,
+    numberDecorationType,
+    colorDecorationType,
+    operatorDecorationType,
+    characterDecorationType,
+    specialCharacterDecorationType,
+    escCharacterDecorationType,
+    errorDecorationType,
+];
+
 let tokenCache: Token[] = [];
 let documentVersion = -1;
 let documentUri: Uri | null = null;
+
+let textChangedEvent: Disposable | null = null;
+let activeEditorChangedEvent: Disposable | null = null;
+
+export function registerDebugDecorator(context: ExtensionContext) {
+    triggerUpdateDecorations();
+
+    // A TextDocument was changed
+    context.subscriptions.push(
+        (textChangedEvent = workspace.onDidChangeTextDocument((event) => {
+            const activeEditor = window.activeTextEditor;
+
+            if (activeEditor && event.document === activeEditor.document) {
+                triggerUpdateDecorations(true);
+            }
+        }))
+    );
+
+    // The active text editor was changed
+    context.subscriptions.push(
+        (activeEditorChangedEvent = window.onDidChangeActiveTextEditor(() => {
+            triggerUpdateDecorations();
+        }))
+    );
+}
+
+export function unregisterDebugDecorator() {
+    textChangedEvent?.dispose();
+    activeEditorChangedEvent?.dispose();
+
+    const activeEditor = window.activeTextEditor;
+    if (!activeEditor) {
+        return;
+    }
+
+    // Clear all decorations
+    allDecorationTypes.forEach((x) => activeEditor.setDecorations(x, []));
+}
 
 function updateDecorations() {
     const activeEditor = window.activeTextEditor;
@@ -126,8 +185,13 @@ function updateDecorations() {
     if (documentVersion !== activeEditor.document.version || documentUri !== activeEditor.document.uri || tokenCache.length === 0) {
         documentVersion = activeEditor.document.version;
         documentUri = activeEditor.document.uri;
+
         // Update tokens only if document has changed
+        const t0 = performance.now();
         tokenCache = tokenizeDocument(activeEditor.document);
+        const t1 = performance.now();
+
+        window.showInformationMessage(`DocumentTokenizer took ${(t1 - t0).toFixed(2)} milliseconds to complete.`);
     }
 
     const tokens = tokenCache;
@@ -414,28 +478,6 @@ function triggerUpdateDecorations(throttle = false) {
     } else {
         updateDecorations();
     }
-}
-
-export function registerDecorator(context: ExtensionContext) {
-    triggerUpdateDecorations();
-
-    // A TextDocument was changed
-    context.subscriptions.push(
-        workspace.onDidChangeTextDocument((event) => {
-            const activeEditor = window.activeTextEditor;
-
-            if (activeEditor && event.document === activeEditor.document) {
-                triggerUpdateDecorations(true);
-            }
-        })
-    );
-
-    // The active text editor was changed
-    context.subscriptions.push(
-        window.onDidChangeActiveTextEditor(() => {
-            triggerUpdateDecorations();
-        })
-    );
 }
 
 // NOTE: Everything below is defined solely for this debug decorator.

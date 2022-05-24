@@ -1,28 +1,27 @@
-declare type TokenPatternCapture = {
-    readonly [k: string | number]: { readonly token?: TokenType; readonly patterns?: TokenPatternArray };
-};
-
-interface TokenMatchPattern {
-    _patternId?: number;
-
+interface TokenCapturePattern {
     readonly token?: TokenType;
-    match: RegExp;
-    readonly captures?: TokenPatternCapture;
+    readonly patterns?: TokenPatternArray;
+}
+
+interface TokenPatternCapture {
+    readonly [k: string | number]: TokenCapturePattern;
+}
+
+interface TokenRepoPattern {
+    readonly patterns: TokenPatternArray;
 
     // These are added to prevent falsy assignment
-    include?: never;
-    patterns?: never;
+    token?: never;
     contentToken?: never;
+    match?: never;
     begin?: never;
-    beginCaptures?: never;
     end?: never;
+    captures?: never;
+    beginCaptures?: never;
     endCaptures?: never;
 }
 
 interface TokenRangePattern {
-    _patternId?: number;
-    _hasBackref?: boolean;
-
     readonly token?: TokenType;
     readonly contentToken?: TokenType;
 
@@ -35,24 +34,21 @@ interface TokenRangePattern {
     readonly patterns?: TokenPatternArray;
 
     // These are added to prevent falsy assignment
-    include?: never;
     match?: never;
     captures?: never;
 }
 
-interface TokenRepoPattern {
-    _patternId?: number;
-    readonly patterns: TokenPatternArray;
+interface TokenMatchPattern {
+    readonly token?: TokenType;
+    match: RegExp;
+    readonly captures?: TokenPatternCapture;
 
     // These are added to prevent falsy assignment
-    include?: never;
-    token?: never;
+    patterns?: never;
     contentToken?: never;
-    match?: never;
     begin?: never;
-    end?: never;
-    captures?: never;
     beginCaptures?: never;
+    end?: never;
     endCaptures?: never;
 }
 

@@ -34,359 +34,88 @@ const newLine: TokenPattern = {
     match: /\r\n|\r|\n/g,
 };
 
+const whiteSpace: TokenPattern = {
+    token: CharacterTokenType.WhiteSpace,
+    match: /[ \t]+/g,
+};
+
+// NOTE: Having these patterns separated increases performance.
+// Benchmark before making a change!
 const unmatchedLoseChars: TokenPattern = {
     patterns: [
+        newLine,
+        whiteSpace,
         {
-            match: /(\()|(\))|({)|(})|(\[)|(\])|([ \t]+)|(\r\n|\r|\n)|(:)|(;)|(,)|(#)|(')|(")|(`)|(\\)|(\/)|(.)/dg,
-            captures: {
-                1: { token: CharacterTokenType.OpenParentheses },
-                2: { token: CharacterTokenType.CloseParentheses },
-                3: { token: CharacterTokenType.OpenBracket },
-                4: { token: CharacterTokenType.CloseBracket },
-                5: { token: CharacterTokenType.OpenSquareBracket },
-                6: { token: CharacterTokenType.CloseSquareBracket },
-                7: { token: CharacterTokenType.WhiteSpace },
-                8: { token: CharacterTokenType.NewLine },
-                9: { token: CharacterTokenType.Colon },
-                10: { token: CharacterTokenType.Semicolon },
-                11: { token: CharacterTokenType.Comma },
-                12: { token: CharacterTokenType.Hashtag },
-                13: { token: CharacterTokenType.Quote },
-                14: { token: CharacterTokenType.DoubleQuote },
-                15: { token: CharacterTokenType.BackQuote },
-                16: { token: CharacterTokenType.Backslash },
-                17: { token: CharacterTokenType.ForwardSlash },
-                18: { token: CharacterTokenType.Unknown },
-            },
+            token: CharacterTokenType.OpenParentheses,
+            match: /\(/g,
+        },
+        {
+            token: CharacterTokenType.CloseParentheses,
+            match: /\)/g,
+        },
+
+        {
+            token: CharacterTokenType.OpenBracket,
+            match: /{/g,
+        },
+        {
+            token: CharacterTokenType.CloseBracket,
+            match: /}/g,
+        },
+
+        {
+            token: CharacterTokenType.OpenSquareBracket,
+            match: /\[/g,
+        },
+        {
+            token: CharacterTokenType.CloseSquareBracket,
+            match: /\]/g,
+        },
+
+        {
+            token: CharacterTokenType.Colon,
+            match: /:/g,
+        },
+        {
+            token: CharacterTokenType.Semicolon,
+            match: /;/g,
+        },
+        {
+            token: CharacterTokenType.Comma,
+            match: /,/g,
+        },
+        {
+            token: CharacterTokenType.Hashtag,
+            match: /#/g,
+        },
+
+        {
+            token: CharacterTokenType.Quote,
+            match: /'/g,
+        },
+        {
+            token: CharacterTokenType.DoubleQuote,
+            match: /"/g,
+        },
+        {
+            token: CharacterTokenType.BackQuote,
+            match: /`/g,
+        },
+
+        {
+            token: CharacterTokenType.Backslash,
+            match: /\\/g,
+        },
+        {
+            token: CharacterTokenType.ForwardSlash,
+            match: /\//g,
+        },
+
+        {
+            token: CharacterTokenType.Unknown,
+            match: /./g,
         },
     ],
-};
-
-const pythonParameters: TokenPattern = { patterns: [] };
-
-const pythonSource: TokenPattern = { patterns: [unmatchedLoseChars] };
-
-const pythonStatements: TokenPattern = {
-    patterns: [
-        {
-            // Renpy python block
-            token: MetaTokenType.Block,
-            contentToken: MetaTokenType.PythonBlock,
-
-            begin: /^([ \t]+)?(?:(init)(?:([ \t]+)(-)?(\d+))?([ \t]+))?(python)([ \t]+)?(.*)?(:)/dgm,
-            beginCaptures: {
-                1: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                2: {
-                    token: KeywordTokenType.Init,
-                },
-                3: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                4: {
-                    token: OperatorTokenType.Minus,
-                },
-                5: {
-                    token: ConstantTokenType.Integer,
-                },
-                6: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                7: {
-                    token: KeywordTokenType.Python,
-                },
-                8: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                9: {
-                    token: MetaTokenType.Arguments,
-
-                    patterns: [
-                        {
-                            // in statement
-                            match: /(?:\s*(in)\s*([a-zA-Z_]\w*)\b)/dg,
-                            captures: {
-                                1: {
-                                    token: OperatorTokenType.In,
-                                },
-                                2: {
-                                    token: EntityTokenType.Namespace,
-                                },
-                            },
-                        },
-                        {
-                            // keywords
-                            match: /\b(hide)|(early)|(in)\b/dg,
-                            captures: {
-                                1: {
-                                    token: KeywordTokenType.Hide,
-                                },
-                                2: {
-                                    token: KeywordTokenType.Early,
-                                },
-                                3: {
-                                    token: OperatorTokenType.In,
-                                },
-                            },
-                        },
-                    ],
-                },
-                10: {
-                    token: CharacterTokenType.Colon,
-                },
-                11: {
-                    token: CharacterTokenType.NewLine,
-                },
-            },
-            // eslint-disable-next-line no-useless-escape
-            end: /^(?:\1)(?![ \t]+)(?!$)|$\Z/gm,
-            patterns: [pythonSource],
-        },
-        {
-            // Match begin and end of python one line statements
-            match: /^([ \t]+)?(?:(\$)|(define)|(default))([ \t]+)(.*)$/dgm,
-            captures: {
-                1: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                2: {
-                    token: KeywordTokenType.DollarSign,
-                },
-                3: {
-                    token: KeywordTokenType.Define,
-                },
-                4: {
-                    token: KeywordTokenType.Default,
-                },
-                5: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                6: {
-                    token: MetaTokenType.PythonLine,
-                    patterns: [
-                        {
-                            // Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)
-                            match: /(?<!\.)\b(\w+)(?=\s=\s)/dg,
-                            token: EntityTokenType.Variable,
-                        },
-                        pythonSource,
-                    ],
-                },
-            },
-        },
-    ],
-};
-
-const label: TokenPattern = {
-    patterns: [
-        {
-            token: MetaTokenType.Block,
-            match: /^([ \t]+)?(label)([ \t]+)([a-zA-Z_.]\w*(?:\(.*\))?)([ \t]+)?(.*)?(:)/dgm,
-            captures: {
-                1: { token: CharacterTokenType.WhiteSpace },
-                2: { token: KeywordTokenType.Label },
-                3: { token: CharacterTokenType.WhiteSpace },
-                4: {
-                    patterns: [
-                        {
-                            // Function name
-                            match: /[a-zA-Z_.]\w*/g,
-                            token: EntityTokenType.Function,
-                        },
-                        pythonParameters,
-                    ],
-                },
-                5: { token: CharacterTokenType.WhiteSpace },
-                6: { token: CharacterTokenType.WhiteSpace },
-                7: { token: CharacterTokenType.Colon },
-            },
-        },
-    ],
-};
-
-const image: TokenPattern = {
-    patterns: [
-        {
-            match: /^([ \t]+)?(image)([ \t]+)((?:[a-zA-Z_.]\w*[ \t]+)+)(=)/dgm,
-            captures: {
-                1: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                2: {
-                    token: KeywordTokenType.Image,
-                },
-                3: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                4: {
-                    patterns: [
-                        {
-                            token: CharacterTokenType.WhiteSpace,
-                            match: /[ \t]+/g,
-                        },
-                        {
-                            // image names
-                            token: EntityTokenType.Variable,
-                            match: /[a-zA-Z_.]\w*/g,
-                        },
-                    ],
-                },
-                5: {
-                    token: OperatorTokenType.Assign,
-                },
-            },
-        },
-    ],
-};
-
-const renpyStatements: TokenPattern = {
-    patterns: [label, image],
-};
-
-const keywords: TokenPattern = {
-    patterns: [
-        {
-            // Python statement keywords
-            match: /\b(?:(init)|(python)|(hide)|(early)|(in)|(define)|(default))\b/dg,
-            captures: {
-                1: {
-                    token: KeywordTokenType.Init,
-                },
-                2: {
-                    token: KeywordTokenType.Python,
-                },
-                3: {
-                    token: KeywordTokenType.Hide,
-                },
-                4: {
-                    token: KeywordTokenType.Early,
-                },
-                5: {
-                    token: OperatorTokenType.In,
-                },
-                6: {
-                    token: KeywordTokenType.Define,
-                },
-                7: {
-                    token: KeywordTokenType.Default,
-                },
-            },
-        },
-        {
-            // Renpy keywords
-            match: /\b(?:(label)|(play)|(pause)|(screen)|(scene)|(show)|(image)|(transform))\b/dg,
-            captures: {
-                1: {
-                    token: KeywordTokenType.Label,
-                },
-                2: {
-                    token: KeywordTokenType.Play,
-                },
-                3: {
-                    token: KeywordTokenType.Pause,
-                },
-                4: {
-                    token: KeywordTokenType.Screen,
-                },
-                5: {
-                    token: KeywordTokenType.Scene,
-                },
-                6: {
-                    token: KeywordTokenType.Show,
-                },
-                7: {
-                    token: KeywordTokenType.Image,
-                },
-                8: {
-                    token: KeywordTokenType.Transform,
-                },
-            },
-        },
-        {
-            // Conditional control flow keywords
-            match: /\b(?:(if)|(elif)|(else))\b/dg,
-            captures: {
-                1: {
-                    token: KeywordTokenType.If,
-                },
-                2: {
-                    token: KeywordTokenType.Elif,
-                },
-                3: {
-                    token: KeywordTokenType.Else,
-                },
-            },
-        },
-        {
-            // Control flow keywords
-            match: /\b(?:(for)|(while)|(pass)|(return)|(menu)|(jump)|(call))\b/dg,
-            captures: {
-                1: {
-                    token: KeywordTokenType.For,
-                },
-                2: {
-                    token: KeywordTokenType.While,
-                },
-                3: {
-                    token: KeywordTokenType.Pass,
-                },
-                4: {
-                    token: KeywordTokenType.Return,
-                },
-                5: {
-                    token: KeywordTokenType.Menu,
-                },
-                6: {
-                    token: KeywordTokenType.Jump,
-                },
-                7: {
-                    token: KeywordTokenType.Call,
-                },
-            },
-        },
-        {
-            // [TODO: Should probably only be a keyword in the expression]Renpy sub expression keywords
-            match: /\b(?:(set)|(expression)|(sound)|(at)|(with)|(from))\b/dg,
-            captures: {
-                1: {
-                    token: KeywordTokenType.Set,
-                },
-                2: {
-                    token: KeywordTokenType.Expression,
-                },
-                3: {
-                    token: KeywordTokenType.Sound,
-                },
-                4: {
-                    token: KeywordTokenType.At,
-                },
-                5: {
-                    token: KeywordTokenType.With,
-                },
-                6: {
-                    token: KeywordTokenType.From,
-                },
-                7: {
-                    token: KeywordTokenType.Call,
-                },
-            },
-        },
-    ],
-};
-
-const codeTags: TokenPattern = {
-    match: /(?:\b(NOTE|XXX|HACK|FIXME|BUG|TODO)\b)/dg,
-    captures: { 1: { token: MetaTokenType.CommentCodeTag } },
-};
-
-const comments: TokenPattern = {
-    token: MetaTokenType.Comment,
-    match: /(#)(.*)$/dgm,
-    captures: {
-        1: { token: CharacterTokenType.Hashtag },
-        2: { patterns: [codeTags] },
-    },
 };
 
 const escapedChar: TokenPattern = {
@@ -793,6 +522,333 @@ const strings: TokenPattern = {
     patterns: [stringQuotedDouble, stringQuotedSingle, stringQuotedBack],
 };
 
+const codeTags: TokenPattern = {
+    match: /(?:\b(NOTE|XXX|HACK|FIXME|BUG|TODO)\b)/dg,
+    captures: { 1: { token: MetaTokenType.CommentCodeTag } },
+};
+
+const comments: TokenPattern = {
+    token: MetaTokenType.Comment,
+    match: /(#)(.*)$/dgm,
+    captures: {
+        1: { token: CharacterTokenType.Hashtag },
+        2: { patterns: [codeTags] },
+    },
+};
+
+const pythonParameters: TokenPattern = {
+    patterns: [whiteSpace],
+};
+
+const pythonSource: TokenPattern = {
+    patterns: [comments, strings, whiteSpace, newLine],
+};
+
+const pythonStatements: TokenPattern = {
+    patterns: [
+        {
+            // Renpy python block
+            token: MetaTokenType.Block,
+            contentToken: MetaTokenType.PythonBlock,
+
+            begin: /^([ \t]+)?(?:(init)(?:([ \t]+)(-)?(\d+))?([ \t]+))?(python)([ \t]+)?(.*)?(:)/dgm,
+            beginCaptures: {
+                1: {
+                    token: CharacterTokenType.WhiteSpace,
+                },
+                2: {
+                    token: KeywordTokenType.Init,
+                },
+                3: {
+                    token: CharacterTokenType.WhiteSpace,
+                },
+                4: {
+                    token: OperatorTokenType.Minus,
+                },
+                5: {
+                    token: ConstantTokenType.Integer,
+                },
+                6: {
+                    token: CharacterTokenType.WhiteSpace,
+                },
+                7: {
+                    token: KeywordTokenType.Python,
+                },
+                8: {
+                    token: CharacterTokenType.WhiteSpace,
+                },
+                9: {
+                    token: MetaTokenType.Arguments,
+
+                    patterns: [
+                        {
+                            // in statement
+                            match: /(?:\s*(in)\s*([a-zA-Z_]\w*)\b)/dg,
+                            captures: {
+                                1: {
+                                    token: OperatorTokenType.In,
+                                },
+                                2: {
+                                    token: EntityTokenType.Namespace,
+                                },
+                            },
+                        },
+                        {
+                            // keywords
+                            match: /\b(hide)|(early)|(in)\b/dg,
+                            captures: {
+                                1: {
+                                    token: KeywordTokenType.Hide,
+                                },
+                                2: {
+                                    token: KeywordTokenType.Early,
+                                },
+                                3: {
+                                    token: OperatorTokenType.In,
+                                },
+                            },
+                        },
+                    ],
+                },
+                10: {
+                    token: CharacterTokenType.Colon,
+                },
+                11: {
+                    token: CharacterTokenType.NewLine,
+                },
+            },
+            // eslint-disable-next-line no-useless-escape
+            end: /^(?:\1)(?![ \t]+)(?!$)|$\Z/gm,
+            patterns: [pythonSource],
+        },
+        {
+            // Match begin and end of python one line statements
+            match: /^([ \t]+)?(?:(\$)|(define)|(default))([ \t]+)(.*)$/dgm,
+            captures: {
+                1: {
+                    token: CharacterTokenType.WhiteSpace,
+                },
+                2: {
+                    token: KeywordTokenType.DollarSign,
+                },
+                3: {
+                    token: KeywordTokenType.Define,
+                },
+                4: {
+                    token: KeywordTokenType.Default,
+                },
+                5: {
+                    token: CharacterTokenType.WhiteSpace,
+                },
+                6: {
+                    token: MetaTokenType.PythonLine,
+                    patterns: [
+                        {
+                            // Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)
+                            match: /(?<!\.)\b\w+(?=\s=\s)/g,
+                            token: EntityTokenType.Variable,
+                        },
+                        pythonSource,
+                    ],
+                },
+            },
+        },
+    ],
+};
+
+const label: TokenPattern = {
+    token: MetaTokenType.Block,
+    match: /^[ \t]*(label)[ \t]+(.*)(:)/dgm,
+    captures: {
+        0: { patterns: [whiteSpace] },
+        1: { token: KeywordTokenType.Label },
+        2: {
+            // label arguments
+            patterns: [
+                whiteSpace,
+                {
+                    // Function name
+                    match: /[a-zA-Z_.]\w*/g,
+                    token: EntityTokenType.Function,
+                },
+                {
+                    match: /\(.*\)/dg,
+                    captures: {
+                        0: { patterns: [pythonParameters] },
+                    },
+                },
+            ],
+        },
+        3: { token: CharacterTokenType.Colon },
+    },
+};
+
+const image: TokenPattern = {
+    match: /^([ \t]+)?(image)([ \t]+)((?:[a-zA-Z_.]\w*[ \t]+)+)(=)/dgm,
+    captures: {
+        1: {
+            token: CharacterTokenType.WhiteSpace,
+        },
+        2: {
+            token: KeywordTokenType.Image,
+        },
+        3: {
+            token: CharacterTokenType.WhiteSpace,
+        },
+        4: {
+            patterns: [
+                {
+                    token: CharacterTokenType.WhiteSpace,
+                    match: /[ \t]+/g,
+                },
+                {
+                    // image names
+                    token: EntityTokenType.Variable,
+                    match: /[a-zA-Z_.]\w*/g,
+                },
+            ],
+        },
+        5: {
+            token: OperatorTokenType.Assign,
+        },
+    },
+};
+
+const keywords: TokenPattern = {
+    patterns: [
+        {
+            // Python statement keywords
+            match: /\b(?:(init)|(python)|(hide)|(early)|(in)|(define)|(default))\b/dg,
+            captures: {
+                1: {
+                    token: KeywordTokenType.Init,
+                },
+                2: {
+                    token: KeywordTokenType.Python,
+                },
+                3: {
+                    token: KeywordTokenType.Hide,
+                },
+                4: {
+                    token: KeywordTokenType.Early,
+                },
+                5: {
+                    token: OperatorTokenType.In,
+                },
+                6: {
+                    token: KeywordTokenType.Define,
+                },
+                7: {
+                    token: KeywordTokenType.Default,
+                },
+            },
+        },
+        {
+            // Renpy keywords
+            match: /\b(?:(label)|(play)|(pause)|(screen)|(scene)|(show)|(image)|(transform))\b/dg,
+            captures: {
+                1: {
+                    token: KeywordTokenType.Label,
+                },
+                2: {
+                    token: KeywordTokenType.Play,
+                },
+                3: {
+                    token: KeywordTokenType.Pause,
+                },
+                4: {
+                    token: KeywordTokenType.Screen,
+                },
+                5: {
+                    token: KeywordTokenType.Scene,
+                },
+                6: {
+                    token: KeywordTokenType.Show,
+                },
+                7: {
+                    token: KeywordTokenType.Image,
+                },
+                8: {
+                    token: KeywordTokenType.Transform,
+                },
+            },
+        },
+        {
+            // Conditional control flow keywords
+            match: /\b(?:(if)|(elif)|(else))\b/dg,
+            captures: {
+                1: {
+                    token: KeywordTokenType.If,
+                },
+                2: {
+                    token: KeywordTokenType.Elif,
+                },
+                3: {
+                    token: KeywordTokenType.Else,
+                },
+            },
+        },
+        {
+            // Control flow keywords
+            match: /\b(?:(for)|(while)|(pass)|(return)|(menu)|(jump)|(call))\b/dg,
+            captures: {
+                1: {
+                    token: KeywordTokenType.For,
+                },
+                2: {
+                    token: KeywordTokenType.While,
+                },
+                3: {
+                    token: KeywordTokenType.Pass,
+                },
+                4: {
+                    token: KeywordTokenType.Return,
+                },
+                5: {
+                    token: KeywordTokenType.Menu,
+                },
+                6: {
+                    token: KeywordTokenType.Jump,
+                },
+                7: {
+                    token: KeywordTokenType.Call,
+                },
+            },
+        },
+        {
+            // [TODO: Should probably only be a keyword in the expression]Renpy sub expression keywords
+            match: /\b(?:(set)|(expression)|(sound)|(at)|(with)|(from))\b/dg,
+            captures: {
+                1: {
+                    token: KeywordTokenType.Set,
+                },
+                2: {
+                    token: KeywordTokenType.Expression,
+                },
+                3: {
+                    token: KeywordTokenType.Sound,
+                },
+                4: {
+                    token: KeywordTokenType.At,
+                },
+                5: {
+                    token: KeywordTokenType.With,
+                },
+                6: {
+                    token: KeywordTokenType.From,
+                },
+                7: {
+                    token: KeywordTokenType.Call,
+                },
+            },
+        },
+    ],
+};
+
+const renpyStatements: TokenPattern = {
+    patterns: [label, image],
+};
+
 const statements: TokenPattern = {
     patterns: [comments, strings, renpyStatements, pythonStatements],
 };
@@ -800,6 +856,6 @@ const expressions: TokenPattern = {
     patterns: [keywords, unmatchedLoseChars],
 };
 
-export const basePatterns: TokenPattern = {
+export const basePatterns: TokenRepoPattern = {
     patterns: [statements, expressions],
 };

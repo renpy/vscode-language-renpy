@@ -9,9 +9,6 @@ import { basePatterns } from "./token-patterns";
 import { Stack } from "./utilities/stack";
 import { Vector } from "./utilities/vector";
 
-// stack mode: 21.8451189504385 avg
-// recursive mode: 19.69293530988693 avg
-const stackVersion = false;
 const runBenchmark = false;
 let uniquePatternCount = 0;
 
@@ -29,12 +26,15 @@ export function tokenizeDocument(document: TextDocument): Token[] {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function benchmark(document: TextDocument) {
+    // screens.rpy, 10000 loops; 19.69293530988693 avg.
+
     const loops = 10000;
-    const percentReport = 1;
-    console.log(`Running tokenizer benchmark for ${loops} loops...`);
+    const reportEveryXPercent = 1;
 
     const onePercent = loops / 100;
-    const everyX = onePercent * percentReport;
+    const everyX = onePercent * reportEveryXPercent;
+
+    console.log(`Running tokenizer benchmark for ${loops} loops...`);
 
     let avg = 0;
     for (let i = 0; i < loops; ++i) {
@@ -59,6 +59,7 @@ function benchmark(document: TextDocument) {
         if (i % everyX === 0) console.log(`${i / onePercent}% complete... (avg.: ${msLoop.toFixed(2)}ms, approx. ${timeString} remaining)`);
     }
     avg /= loops;
+
     console.log(`DocumentTokenizer took ${avg} avg. milliseconds to complete.`);
 }
 
@@ -141,12 +142,10 @@ export function escapeRegExpCharacters(value: string): string {
 }
 
 type ScanResult = { pattern: TokenizerTokenPattern; matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray } | null;
-type ScanHead = { repo: ExTokenRepoPattern; index: number; bestMatchRating: number; bestResult: ScanResult };
 
 class DocumentTokenizer {
     private readonly backrefReplaceRe = /\\(\d+)/g;
     public readonly tokens: Vector<Token> = new Vector<Token>(16384);
-    private readonly scanStack = new Stack<ScanHead>(16);
 
     constructor(document: TextDocument) {
         const text = document.getText();
@@ -214,7 +213,7 @@ class DocumentTokenizer {
         }
     }
 
-    public scanMatchPattern(pattern: ExTokenMatchPattern, text: string, matchOffsetStart: number, cache: Array<ScanResult | undefined>): ScanResult {
+    private scanMatchPattern(pattern: ExTokenMatchPattern, text: string, matchOffsetStart: number, cache: Array<ScanResult | undefined>): ScanResult {
         const re = pattern.match;
         re.lastIndex = matchOffsetStart;
         const match = re.exec(text);
@@ -228,7 +227,7 @@ class DocumentTokenizer {
         return null;
     }
 
-    public scanRangePattern(next: ExTokenRangePattern, text: string, matchOffsetStart: number, cache: Array<ScanResult | undefined>): ScanResult {
+    private scanRangePattern(next: ExTokenRangePattern, text: string, matchOffsetStart: number, cache: Array<ScanResult | undefined>): ScanResult {
         const reBegin = next.begin;
         reBegin.lastIndex = matchOffsetStart;
         const matchBegin = reBegin.exec(text);
@@ -265,209 +264,90 @@ class DocumentTokenizer {
         return null;
     }
 
-    private applyBestResult(repo: ScanHead, result: ScanResult) {
-        if (!result) return;
-
-        const matchRating = result.matchBegin.index;
-        if (matchRating >= repo.bestMatchRating) {
-            // Patterns are sorted by priority, so the previous pattern had a better or equal priority
-            return;
-        }
-
-        repo.bestMatchRating = matchRating;
-        repo.bestResult = result;
-    }
-
     /**
      * Scans the text for the best matching pattern.
      * @param p The pattern to use for matches
      * @param text The text to match on
      * @param matchOffsetStart The character offset in 'text' to start the match at.
      */
-    public scanPattern(p: TokenizerTokenPattern, text: string, matchOffsetStart: number, cache: Array<ScanResult | undefined>): ScanResult {
-        const cachedResult = cache[p._patternId];
-        if (cachedResult !== undefined) {
+    public scanPattern(p: ExTokenRepoPattern, text: string, matchOffsetStart: number, cache: Array<ScanResult | undefined>): ScanResult {
+        if (p.patterns.length === 0) return null;
+
+        const cachedP = cache[p._patternId];
+        if (cachedP !== undefined) {
             // If the cached value is null, no match was found in the entire text
-            if (cachedResult === null || cachedResult.matchBegin.index >= matchOffsetStart) {
-                return cachedResult;
-            } else {
-                cache[p._patternId] = undefined;
+            if (cachedP === null || cachedP.matchBegin.index >= matchOffsetStart) {
+                return cachedP;
             }
         }
 
-        switch (p._patternType) {
-            case TokenPatternType.MatchPattern:
-                return this.scanMatchPattern(p, text, matchOffsetStart, cache);
+        let bestMatchRating = Number.MAX_VALUE;
+        let bestResult: ScanResult = null;
 
-            case TokenPatternType.RangePattern:
-                return this.scanRangePattern(p, text, matchOffsetStart, cache);
+        const size = p.patterns.length;
+        let scanResult: ScanResult = null;
 
-            case TokenPatternType.RepoPattern: {
-                if (p.patterns.length === 0) return null;
+        for (let j = 0; j < size; j++) {
+            const next = p.patterns[j];
+            scanResult = null;
 
-                if (stackVersion) {
-                    this.scanStack.clear();
-                    const root: ScanHead = { repo: p, index: 0, bestMatchRating: Number.MAX_VALUE, bestResult: null };
-                    this.scanStack.push(root);
-
-                    let head = root;
-                    while (!this.scanStack.isEmpty()) {
-                        head = this.scanStack.peek()!;
-                        const patterns = head.repo.patterns;
-                        const size = patterns.length;
-
-                        // If bestMatchRating is equal to matchOffsetStart, this match is valid at the first possible location. No need to check further.
-                        for (; head.index < size; ++head.index) {
-                            const next = patterns[head.index];
-
-                            let scanResult = null;
-                            // First check the cache
-                            const cachedResult = cache[next._patternId];
-                            if (cachedResult !== undefined) {
-                                // If the cached value is null, no match was found in the entire text
-                                if (cachedResult === null) continue;
-                                if (cachedResult.matchBegin.index >= matchOffsetStart) {
-                                    scanResult = cachedResult;
-                                }
-                            }
-
-                            if (scanResult === null) {
-                                if (next._patternType === TokenPatternType.MatchPattern) {
-                                    const re = next.match;
-                                    re.lastIndex = matchOffsetStart;
-                                    const match = re.exec(text);
-                                    if (match) {
-                                        scanResult = { pattern: next, matchBegin: match };
-                                    }
-
-                                    cache[next._patternId] = scanResult;
-
-                                    /*const scanResult = this.scanMatchPattern(next, text, matchOffsetStart, cache);
-                                this.applyBestResult(head, scanResult);
-                                continue;*/
-                                } else if (next._patternType === TokenPatternType.RangePattern) {
-                                    scanResult = this.scanRangePattern(next, text, matchOffsetStart, cache);
-                                } else {
-                                    if (next.patterns.length === 0) {
-                                        cache[next._patternId] = null;
-                                        continue;
-                                    }
-
-                                    // Push this repo to the stack and break the loop. Next loop it will scan this repo first
-                                    this.scanStack.push({ repo: next, index: 0, bestMatchRating: Number.MAX_VALUE, bestResult: null });
-                                    break;
-                                }
-                            }
-
-                            if (!scanResult) continue;
-
-                            const matchRating = scanResult.matchBegin.index;
-
-                            // If true, this match is valid at the first possible location. No need to check further.
-                            if (matchRating === matchOffsetStart) {
-                                cache[p._patternId] = scanResult;
-                                return scanResult; // Caching parent repo's would be pointless as they will have a lower match rating next loop
-                            }
-
-                            if (matchRating >= head.bestMatchRating) {
-                                // Patterns are sorted by priority, so the previous pattern had a better or equal priority
-                                continue;
-                            }
-
-                            head.bestMatchRating = matchRating;
-                            head.bestResult = scanResult;
-                        }
-
-                        // Repo was changed. First continue that scan before transferring the result
-                        if (head.index < size) continue;
-
-                        // Transfer scan result to parent repo
-                        const repoResult = this.scanStack.pop()!; // Pop the current repo. It has finished scanning.
-
-                        const parent = this.scanStack.peek();
-                        if (!parent) break; // There is no parent, head is already root
-
-                        const scanResult = repoResult.bestResult;
-                        cache[repoResult.repo._patternId] = scanResult;
-                        this.applyBestResult(parent, scanResult);
-                    }
-
-                    cache[p._patternId] = root.bestResult;
-                    return root.bestResult;
-                } else {
-                    let bestMatchRating = Number.MAX_VALUE;
-                    let bestResult: ScanResult = null;
-
-                    const size = p.patterns.length;
-                    for (let j = 0; j < size; j++) {
-                        const next = p.patterns[j];
-
-                        let scanResult: ScanResult = null;
-                        // First check the cache
-                        const cachedResult = cache[next._patternId];
-                        if (cachedResult !== undefined) {
-                            // If the cached value is null, no match was found in the entire text
-                            if (cachedResult === null) continue;
-                            if (cachedResult.matchBegin.index >= matchOffsetStart) {
-                                scanResult = cachedResult;
-                            }
-                        }
-
-                        if (scanResult === null) {
-                            switch (next._patternType) {
-                                case TokenPatternType.MatchPattern:
-                                    scanResult = this.scanMatchPattern(next, text, matchOffsetStart, cache);
-                                    break;
-                                case TokenPatternType.RangePattern:
-                                    scanResult = this.scanRangePattern(next, text, matchOffsetStart, cache);
-                                    break;
-                                case TokenPatternType.RepoPattern:
-                                    scanResult = this.scanPattern(next, text, matchOffsetStart, cache);
-                                    cache[next._patternId] = scanResult;
-                                    break;
-                                default:
-                                    assert(false, "Should not get here!");
-                                    break;
-                            }
-                        }
-
-                        if (!scanResult) continue;
-
-                        const matchRating = scanResult.matchBegin.index;
-                        if (matchRating >= bestMatchRating) {
-                            // Patterns are sorted by priority, so the previous pattern had a better or equal priority
-                            continue;
-                        }
-
-                        bestMatchRating = matchRating;
-                        bestResult = scanResult;
-
-                        // If true, this match is valid at the first possible location. No need to check further.
-                        if (bestMatchRating === matchOffsetStart) {
-                            break;
-                        }
-                    }
-                    cache[p._patternId] = bestResult;
-                    return bestResult;
+            // First check the cache
+            const cachedResult = cache[next._patternId];
+            if (cachedResult !== undefined) {
+                // If the cached value is null, no match was found in the entire text
+                if (cachedResult === null) continue;
+                if (cachedResult.matchBegin.index >= matchOffsetStart) {
+                    scanResult = cachedResult;
                 }
             }
-            default:
-                assert(false, "Should not get here!");
-                break;
-        }
 
-        return null;
+            if (scanResult === null) {
+                switch (next._patternType) {
+                    case TokenPatternType.MatchPattern:
+                        scanResult = this.scanMatchPattern(next, text, matchOffsetStart, cache);
+                        break;
+                    case TokenPatternType.RangePattern:
+                        scanResult = this.scanRangePattern(next, text, matchOffsetStart, cache);
+                        break;
+                    case TokenPatternType.RepoPattern:
+                        scanResult = this.scanPattern(next, text, matchOffsetStart, cache);
+                        cache[next._patternId] = scanResult;
+                        break;
+                    default:
+                        assert(false, "Should not get here!");
+                        break;
+                }
+            }
+
+            if (!scanResult) continue;
+
+            const matchRating = scanResult.matchBegin.index;
+            if (matchRating >= bestMatchRating) {
+                // Patterns are sorted by priority, so the previous pattern had a better or equal priority
+                continue;
+            }
+
+            bestMatchRating = matchRating;
+            bestResult = scanResult;
+
+            // If true, this match is valid at the first possible location. No need to check further.
+            if (bestMatchRating === matchOffsetStart) {
+                break;
+            }
+        }
+        cache[p._patternId] = bestResult;
+        return bestResult;
     }
 
     /**
      * Executes the pattern on 'text', adding tokens to the token list.
-     * @param pattern The pattern to use for matches.
+     * @param pattern The repo pattern to use for matches.
      * @param text The text to match on.
      * @param caret The location of the reader head
      * @returns True if the pattern was matched
      * @todo Timeout after it was running too long
      */
-    public executePattern(pattern: TokenizerTokenPattern, text: string, caret: TokenPosition) {
+    public executePattern(pattern: ExTokenRepoPattern, text: string, caret: TokenPosition) {
         const cache = new Array<ScanResult | undefined>(uniquePatternCount).fill(undefined);
         const initialCharOffset = caret.charStartOffset;
         const lastCharIndex = text.length;

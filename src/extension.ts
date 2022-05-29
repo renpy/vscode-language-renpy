@@ -67,55 +67,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
         console.log("Navigation.json file is missing.");
     }
 
-    // TODO: Auto create tokens for colors used in the files (requires updates to the token parser)
-    const rules = [
-        { scope: "renpy.meta.plain", settings: { fontStyle: "" } },
-        { scope: "renpy.meta.i", settings: { fontStyle: "italic" } },
-        { scope: "renpy.meta.b", settings: { fontStyle: "bold" } },
-        { scope: ["renpy.meta.u", "renpy.meta.a"], settings: { fontStyle: "underline" } },
-        { scope: "renpy.meta.s", settings: { fontStyle: "strikethrough" } },
-
-        { scope: "renpy.meta.i renpy.meta.b", settings: { fontStyle: "italic bold" } },
-        { scope: "renpy.meta.i renpy.meta.u", settings: { fontStyle: "italic underline" } },
-        { scope: "renpy.meta.i renpy.meta.s", settings: { fontStyle: "italic strikethrough" } },
-        { scope: "renpy.meta.b renpy.meta.u", settings: { fontStyle: "bold underline" } },
-        { scope: "renpy.meta.b renpy.meta.s", settings: { fontStyle: "bold strikethrough" } },
-        { scope: "renpy.meta.u renpy.meta.s", settings: { fontStyle: "underline strikethrough" } },
-
-        { scope: "renpy.meta.i renpy.meta.b renpy.meta.u", settings: { fontStyle: "italic bold underline" } },
-        { scope: "renpy.meta.i renpy.meta.b renpy.meta.s", settings: { fontStyle: "italic bold strikethrough" } },
-        { scope: "renpy.meta.i renpy.meta.u renpy.meta.s", settings: { fontStyle: "italic underline strikethrough" } },
-        { scope: "renpy.meta.b renpy.meta.u renpy.meta.s", settings: { fontStyle: "bold underline strikethrough" } },
-
-        { scope: "renpy.meta.i renpy.meta.b renpy.meta.u  renpy.meta.s", settings: { fontStyle: "italic bold underline strikethrough" } },
-
-        { scope: "renpy.meta.color.text", settings: { foreground: "#ffffff" } },
-        { scope: "renpy.meta.color.#000000", settings: { foreground: "#000000" } },
-        { scope: "renpy.meta.color.#ffffff", settings: { foreground: "#ffffff" } },
-        { scope: "renpy.meta.color.#f00", settings: { foreground: "#f00" } },
-        { scope: "renpy.meta.color.#0f0", settings: { foreground: "#0f0" } },
-        { scope: "renpy.meta.color.#0ff", settings: { foreground: "#0ff" } },
-        { scope: "renpy.meta.color.#333", settings: { foreground: "#333" } },
-        { scope: "renpy.meta.color.#888", settings: { foreground: "#888" } },
-        { scope: "renpy.meta.color.#ccc", settings: { foreground: "#ccc" } },
-    ];
-
-    const tokensConfig = workspace.getConfiguration("editor");
-    const customTokens = tokensConfig["tokenColorCustomizations"]["textMateRules"];
-    if (customTokens === undefined) {
-        tokensConfig.update("tokenColorCustomizations", { textMateRules: rules }, ConfigurationTarget.Workspace);
-    } else {
-        //TODO: Only replace rules that have changed and append rules instead of replacing the entire array
-        tokensConfig.update("tokenColorCustomizations", { textMateRules: rules }, ConfigurationTarget.Workspace).then(
-            () => {
-                console.log("Successfully updated the tokenColorCustomizations config");
-            },
-            (reason) => {
-                console.error("Failed to update the tokenColorCustomizations config! : " + reason);
-            }
-        );
-    }
-
     // hide rpyc files if the setting is enabled
     const config = workspace.getConfiguration("renpy");
     if (config && config.excludeRpycFilesFromWorkspace) {

@@ -72,6 +72,42 @@ export class Token {
 
         return new Range(start, end);
     }
+
+    public isKeyword() {
+        return this.tokenType >= TokenTypeIndex.KeywordStart && this.tokenType < TokenTypeIndex.EntityStart;
+    }
+
+    public isEntity() {
+        return this.tokenType >= TokenTypeIndex.EntityStart && this.tokenType < TokenTypeIndex.ConstantStart;
+    }
+
+    public isConstant() {
+        return this.tokenType >= TokenTypeIndex.ConstantStart && this.tokenType < TokenTypeIndex.OperatorsStart;
+    }
+
+    public isOperator() {
+        return this.tokenType >= TokenTypeIndex.OperatorsStart && this.tokenType < TokenTypeIndex.CharactersStart;
+    }
+
+    public isCharacter() {
+        return this.tokenType >= TokenTypeIndex.CharactersStart && this.tokenType < TokenTypeIndex.EscapedCharacterStart;
+    }
+
+    public isEscapedCharacter() {
+        return this.tokenType >= TokenTypeIndex.EscapedCharacterStart && this.tokenType < TokenTypeIndex.MetaStart;
+    }
+
+    public isMetaToken() {
+        return this.tokenType >= TokenTypeIndex.MetaStart && this.tokenType < TokenTypeIndex.UnknownCharacterID;
+    }
+
+    public isUnknownCharacter() {
+        return this.tokenType === CharacterTokenType.Unknown;
+    }
+
+    public isInvalid() {
+        return this.tokenType === MetaTokenType.Invalid;
+    }
 }
 
 export function isRangePattern(p: TokenPattern): p is TokenRangePattern {

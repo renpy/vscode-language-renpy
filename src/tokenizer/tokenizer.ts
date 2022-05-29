@@ -47,11 +47,15 @@ function benchmark(document: TextDocument) {
     let avg = 0;
     for (let i = 0; i < loops; ++i) {
         const t0 = performance.now();
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const tokenizer: DocumentTokenizer = new DocumentTokenizer(document);
         const t1 = performance.now();
 
         avg += t1 - t0;
+
+        // This is really just here to prevent the unused variable error
+        if (tokenizer.tokens.isEmpty()) {
+            console.error("No tokens were found.");
+        }
 
         // Show timer
         const msLoop = avg / (i + 1);

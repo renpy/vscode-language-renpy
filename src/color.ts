@@ -2,6 +2,8 @@
 "use strict";
 
 import { Color, ColorInformation, ColorPresentation, Range, TextDocument, TextEdit } from "vscode";
+import { injectCustomTextmateTokens, TextMateRule } from "./decorator";
+import { tokenizeDocument } from "./tokenizer/tokenizer";
 
 /**
  * Finds all colors in the given document and returns their ranges and color
@@ -98,6 +100,22 @@ export function getColorPresentations(color: Color, document: TextDocument, rang
     return colors;
 }
 
+export function injectCustomColorStyles(document: TextDocument) {
+    const documentTokens = tokenizeDocument(document);
+
+    // TODO: Should probably make sure this constant is actually part of a tag, but for now this is fine.
+    const colorTags = documentTokens.filter((x) => x.tokenType === ConstantTokenType.Color);
+    const colorRules: TextMateRule[] = [];
+
+    // Build the new rules for this file
+    colorTags.forEach((color) => {
+        const lowerColor = document.getText(color.getRange()).toLowerCase();
+        colorRules.push({ scope: `renpy.meta.color.${lowerColor}`, settings: { foreground: lowerColor } });
+    });
+
+    injectCustomTextmateTokens(colorRules);
+}
+
 /**
  * Search the given text for any color references
  * @remarks
@@ -122,7 +140,7 @@ export function findColorMatches(text: string): RegExpMatchArray | null {
  * @returns The hex color representation (`"#rrggbbaa"`) of the given rgba values
  */
 export function convertRgbToHex(r: number, g: number, b: number, a?: number): string | undefined {
-    if (r > 255 || g > 255 || b > 255) {
+    if (r > 255 || g > 255 || b > 255 || (a ?? 0) > 255) {
         return;
     }
 
@@ -149,27 +167,32 @@ export function convertColorToRgbTuple(color: Color): string {
 
 /**
  * Returns a Color provider object based on the given html hex color
- * @param hex - The html hex representation
+ * @param htmlHex - The html hex representation
  * @returns The `Color` provider object
  */
-export function convertHtmlToColor(hex: string): Color | null {
-    hex = hex.replace(/"/g, "").replace(/'/g, "");
-    // Add alpha value if not supplied
-    if (hex.length === 4) {
-        hex = hex + "f";
-    } else if (hex.length === 7) {
-        hex = hex + "ff";
+export function convertHtmlToColor(htmlHex: string): Color | null {
+    // Check if this is a valid hex color
+    const hexRe = /^(?:"|')?#(?:[a-f\d]{8}|[a-f\d]{6}|[a-f\d]{3,4})(?:"|')?$/gi;
+    if (!hexRe.test(htmlHex)) {
+        return null;
     }
 
-    // Expand shorthand form (e.g. "#03FF") to full form (e.g. "#0033FFFF")
-    const shorthandRegex = /^#?([A-Fa-f\d])([A-Fa-f\d])([A-Fa-f\d])([A-Fa-f\d])$/i;
-    hex = hex.replace(shorthandRegex, function (m, r, g, b, a) {
-        return r + r + g + g + b + b + a + a;
-    });
+    let hex = htmlHex.replace(/"|'|#/g, "");
 
-    // Parse #rrggbbaa into Color object
-    const result = /^#?([A-Fa-f\d]{2})([A-Fa-f\d]{2})([A-Fa-f\d]{2})([A-Fa-f\d]{2})$/i.exec(hex);
-    return result ? new Color(parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255, parseInt(result[4], 16) / 255) : null;
+    // Add alpha value if not supplied
+    if (hex.length === 3) {
+        hex += "f";
+    } else if (hex.length === 6) {
+        hex += "ff";
+    }
+
+    if (hex.length === 4) {
+        // Expand shorthand form (e.g. "#03FF") to full form (e.g. "#0033FFFF")
+        hex = hex.replace(/([a-f\d])/gi, "$1$1");
+    }
+
+    const result = hex.split(/[a-f\d]{2}/gi);
+    return new Color(parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255, parseInt(result[4], 16) / 255);
 }
 
 /**

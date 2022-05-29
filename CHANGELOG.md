@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.10 (2022/05/24)
+
+### Fixes
+
+* Allow double underscore in variable names [#123](https://github.com/LuqueDaniel/vscode-language-renpy/pull/123) (fix issue [#122](https://github.com/LuqueDaniel/vscode-language-renpy/issues/122))
+
+### Other changes
+
+* Reserved variable names now show as warnings instead of errors
+
 ## 2.0.9 (2022/05/02)
 
 ### Fixes

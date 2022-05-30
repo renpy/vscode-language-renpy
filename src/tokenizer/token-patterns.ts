@@ -597,7 +597,7 @@ const pythonStatements: TokenPattern = {
                 },
             },
             // eslint-disable-next-line no-useless-escape
-            end: /(?:(?<!\1|[^ \t])|^)(?=(?:[ \t]|^)(?!$)[^ \t])|\Z/gm,
+            end: /(?:(?<!\1|[^ \t])|^)(?=(?:[ \t]|^)(?!$|#)[^ \t])|\Z/gm,
             patterns: [pythonSource],
         },
         {

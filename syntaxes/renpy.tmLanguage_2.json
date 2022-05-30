@@ -46,7 +46,7 @@
             },
             "7": { "name": "punctuation.section.python.begin.renpy" }
           },
-          "end": "(?:(?<!\\1|[^ \\t])|^)(?=(?:[ \\t]|^)(?!$)[^ \\t])",
+          "end": "(?:(?<!\\1|[^ \\t])|^)(?=(?:[ \\t]|^)(?!$|#)[^ \\t])",
           "patterns": [{ "include": "source.python" }]
         },
         {

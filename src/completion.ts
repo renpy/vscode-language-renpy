@@ -1,6 +1,4 @@
 // Completion Provider
-"use strict";
-
 import { TextDocument, Position, CompletionContext, CompletionItem, CompletionTriggerKind, CompletionItemKind, workspace } from "vscode";
 import { Displayable } from "./displayable";
 import { getDefinitionFromFile } from "./hover";

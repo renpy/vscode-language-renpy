@@ -124,6 +124,7 @@ init python hide early in Namespace:
         """
         This is a sample function.
         """
+# test
         renpy.pause(delay)
         return name
 

@@ -7,7 +7,8 @@ import { cleanUpPath, extractFilenameWithoutExtension, getFileWithPath, getNavig
 import * as fs from "fs";
 import { Displayable } from "./displayable";
 import { Character } from "./character";
-
+import data from "./renpy.json";
+import kwData from "./renpyauto.json";
 const filterCharacter = "\u2588";
 
 export class NavigationData {
@@ -27,10 +28,7 @@ export class NavigationData {
     static async init(extensionPath: string) {
         console.log(`NavigationData init`);
 
-        const data = require(`${extensionPath}/src/renpy.json`);
         NavigationData.renpyFunctions = data;
-
-        const kwData = require(`${extensionPath}/src/renpyauto.json`);
         NavigationData.autoCompleteKeywords = kwData;
 
         NavigationData.renpyAutoComplete = [];

@@ -55,6 +55,7 @@ import { findAllReferences } from "./references";
 import { registerDebugDecorator, unregisterDebugDecorator } from "./tokenizer/debug-decorator";
 import * as fs from "fs";
 import * as cp from "child_process";
+import { clearTokenCache } from "./tokenizer/tokenizer";
 
 const selector: DocumentSelector = { scheme: "file", language: "renpy" };
 let myStatusBarItem: StatusBarItem;
@@ -255,6 +256,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     let isShowingTokenDebugView = false;
     const toggleTokenDebugViewCommand = commands.registerCommand("renpy.toggleTokenDebugView", () => {
         if (!isShowingTokenDebugView) {
+            clearTokenCache();
             registerDebugDecorator(context);
         } else {
             unregisterDebugDecorator();

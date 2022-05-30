@@ -10,6 +10,8 @@ import { tokenizeDocument } from "./tokenizer/tokenizer";
  * @returns - ColorInformation[] - an array that provides a range and color for each match
  */
 export function getColorInformation(document: TextDocument): ColorInformation[] {
+    injectCustomColorStyles(document);
+
     // find all colors in the document
     const colors: ColorInformation[] = [];
     for (let i = 0; i < document.lineCount; ++i) {
@@ -138,9 +140,9 @@ export function findColorMatches(text: string): RegExpMatchArray | null {
  * @param a - The alpha value (0-255) [optional]
  * @returns The hex color representation (`"#rrggbbaa"`) of the given rgba values
  */
-export function convertRgbToHex(r: number, g: number, b: number, a?: number): string | undefined {
+export function convertRgbToHex(r: number, g: number, b: number, a?: number): string | null {
     if (r > 255 || g > 255 || b > 255 || (a ?? 0) > 255) {
-        return;
+        return null;
     }
 
     if (a === undefined) {

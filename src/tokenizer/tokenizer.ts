@@ -31,6 +31,10 @@ export function tokenizeDocument(document: TextDocument): Token[] {
     return tokens;
 }
 
+export function clearTokenCache() {
+    tokenCache.clear();
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function benchmark(document: TextDocument) {
     // screens.rpy, 10000 loops; 19.69293530988693 avg.

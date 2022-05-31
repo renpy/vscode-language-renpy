@@ -25,6 +25,7 @@ export const enum KeywordTokenType {
 
     // Renpy keywords
     Label,
+    Menu,
     Play,
     Pause,
     Screen,
@@ -52,7 +53,6 @@ export const enum KeywordTokenType {
     While,
     Pass,
     Return,
-    Menu,
     Jump,
     Call,
 }
@@ -173,15 +173,20 @@ export const enum EscapedCharacterTokenType {
 export const enum MetaTokenType {
     Invalid = TokenTypeIndex.InvalidTokenID,
     Comment = TokenTypeIndex.MetaStart,
-    CommentCodeTag,
+    Block,
+
     PythonLine,
     PythonBlock,
     Arguments,
 
+    CommentCodeTag,
+    EmptyString,
     TagBlock,
     Placeholder,
-    Block,
-    EmptyString,
+
+    MenuBlock,
+    MenuOption,
+    MenuOptionBlock,
 }
 
 export type TokenType = KeywordTokenType | EntityTokenType | MetaTokenType | ConstantTokenType | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;

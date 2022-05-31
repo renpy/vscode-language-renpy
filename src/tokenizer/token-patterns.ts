@@ -5,6 +5,8 @@
 // These patterns are converted from the tmLanguage file.
 // Copy the patterns (the contents of the repository group) over and apply the following find and replace patterns:
 
+import { CharacterTokenType, ConstantTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "./renpy.tokens";
+
 // find: ^( +)"(\w+?)(?:[\-_](\w+?))?(?:[\-_](\w+?))?(?:[\-_](\w+?))?": \{$\n((?:^.*$\n)+?)^\1\},?
 // replace with: const \L$2\u$3\u$4\u$5: TokenPattern = {\n$6};
 

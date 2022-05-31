@@ -1,8 +1,7 @@
 // Color conversion methods for Color provider
-"use strict";
-
 import { Color, ColorInformation, ColorPresentation, Range, TextDocument, TextEdit } from "vscode";
 import { injectCustomTextmateTokens, TextMateRule } from "./decorator";
+import { ConstantTokenType } from "./tokenizer/renpy.tokens";
 import { tokenizeDocument } from "./tokenizer/tokenizer";
 
 /**

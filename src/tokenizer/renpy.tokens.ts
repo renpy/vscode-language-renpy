@@ -1,7 +1,7 @@
 /* eslint-disable no-shadow */
 // This index is used to make it easier to detect what type of token is currently used.
 // This also makes sure that token types wont have overlapping ID's.
-declare const enum TokenTypeIndex {
+export const enum TokenTypeIndex {
     Error = 0,
     KeywordStart = 1,
     EntityStart = 1001,
@@ -14,7 +14,7 @@ declare const enum TokenTypeIndex {
     InvalidTokenID = 9999,
 }
 
-declare const enum KeywordTokenType {
+export const enum KeywordTokenType {
     // Python statement keywords
     Init = TokenTypeIndex.KeywordStart,
     Python,
@@ -57,7 +57,7 @@ declare const enum KeywordTokenType {
     Call,
 }
 
-declare const enum EntityTokenType {
+export const enum EntityTokenType {
     Class = TokenTypeIndex.EntityStart,
     Namespace,
     Function,
@@ -65,7 +65,7 @@ declare const enum EntityTokenType {
     Variable,
 }
 
-declare const enum ConstantTokenType {
+export const enum ConstantTokenType {
     String = TokenTypeIndex.ConstantStart,
     UnquotedString,
 
@@ -77,7 +77,7 @@ declare const enum ConstantTokenType {
     Boolean,
 }
 
-declare const enum OperatorTokenType {
+export const enum OperatorTokenType {
     // Arithmetic operators
     Plus = TokenTypeIndex.OperatorsStart, // +
     Minus, // -
@@ -129,7 +129,7 @@ declare const enum OperatorTokenType {
     NotIn, // not in
 }
 
-declare const enum CharacterTokenType {
+export const enum CharacterTokenType {
     Unknown = TokenTypeIndex.UnknownCharacterID,
     // Expression characters
     OpenParentheses = TokenTypeIndex.CharactersStart, // (
@@ -159,7 +159,7 @@ declare const enum CharacterTokenType {
 }
 
 // Only valid inside strings
-declare const enum EscapedCharacterTokenType {
+export const enum EscapedCharacterTokenType {
     EscWhitespace = TokenTypeIndex.EscapedCharacterStart,
     EscNewline, // \n
 
@@ -170,7 +170,7 @@ declare const enum EscapedCharacterTokenType {
     EscOpenBracket, // {{
 }
 
-declare const enum MetaTokenType {
+export const enum MetaTokenType {
     Invalid = TokenTypeIndex.InvalidTokenID,
     Comment = TokenTypeIndex.MetaStart,
     CommentCodeTag,
@@ -184,4 +184,4 @@ declare const enum MetaTokenType {
     EmptyString,
 }
 
-declare type TokenType = KeywordTokenType | EntityTokenType | MetaTokenType | ConstantTokenType | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;
+export type TokenType = KeywordTokenType | EntityTokenType | MetaTokenType | ConstantTokenType | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;

@@ -1,7 +1,6 @@
 // Based on https://raw.githubusercontent.com/Microsoft/vscode/master/extensions/python/src/pythonMain.ts from Microsoft vscode
 //
 // Licensed under MIT License. See LICENSE in the project root for license information.
-"use strict";
 
 import {
     ExtensionContext,

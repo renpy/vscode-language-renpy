@@ -37,7 +37,8 @@
   "activationEvents": [
     "workspaceContains:**/*.rpy"
   ],
-  "main": "./out/extension",
+  "main": "./dist/extension",
+  "browser": "./dist/extension.js",
   "contributes": {
     "languages": [
       {
@@ -177,21 +178,31 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "test": "npm run compile && node ./node_modules/vscode/bin/test",
-    "lint": "eslint -c .eslintrc.js --ext .ts ./src/"
+    "vscode:prepublish": "npm run package",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "watch": "webpack --mode development --watch",
+    "watch-release": "webpack --mode production --watch",
+    "test-compile": "tsc -p ./",
+    "test": "npm run test-compile && node ./node_modules/vscode/bin/test",
+    "lint": "eslint -c .eslintrc.json --ext .ts ./src/"
   },
   "devDependencies": {
     "@types/mocha": "^9.1.1",
-    "@types/node": "^17.0.34",
+    "@types/node": "^17.0.36",
     "@types/vscode": "^1.67.0",
+    "@types/webpack": "^5.28.0",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
+    "copy-webpack-plugin": "^11.0.0",
     "eslint": "^8.15.0",
     "eslint-plugin-import": "^2.26.0",
-    "typescript": "^4.6.4",
-    "vscode-test": "^1.6.1"
+    "fork-ts-checker-webpack-plugin": "^7.2.11",
+    "node-polyfill-webpack-plugin": "^1.1.4",
+    "ts-loader": "^9.3.0",
+    "ts-node": "^10.8.0",
+    "typescript": "^4.7.2",
+    "vscode-test": "^1.6.1",
+    "webpack": "^5.72.1",
+    "webpack-cli": "^4.9.2"
   }
 }

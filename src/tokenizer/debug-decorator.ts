@@ -1,5 +1,6 @@
-import { performance } from "node:perf_hooks";
+import { performance } from "perf_hooks";
 import { DecorationOptions, Disposable, ExtensionContext, MarkdownString, Uri, window, workspace } from "vscode";
+import { CharacterTokenType, ConstantTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "./renpy.tokens";
 import { Token } from "./token-definitions";
 import { tokenizeDocument } from "./tokenizer";
 

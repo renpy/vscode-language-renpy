@@ -6,10 +6,12 @@
     {
       "type": "npm",
       "script": "watch",
-      "problemMatcher": "$tsc-watch",
+      "problemMatcher": ["$ts-checker-webpack-watch", "$ts-checker-eslint-webpack-watch"],
       "isBackground": true,
       "presentation": {
-        "reveal": "never"
+        "reveal": "never",
+        "clear": true,
+        "close": true
       },
       "group": {
         "kind": "build",
@@ -18,7 +20,20 @@
     },
     {
       "type": "npm",
+      "script": "watch-release",
+      "problemMatcher": ["$ts-checker-webpack-watch", "$ts-checker-eslint-webpack-watch"],
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never",
+        "clear": true,
+        "close": true
+      },
+      "group": "build"
+    },
+    {
+      "type": "npm",
       "script": "lint",
+      "group": "build",
       "problemMatcher": ["$eslint-stylish"]
     }
   ]

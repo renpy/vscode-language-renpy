@@ -1,6 +1,4 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-"use strict";
-
 import { assert } from "console";
 import { performance } from "perf_hooks";
 import { TextDocument, Uri } from "vscode";
@@ -8,6 +6,7 @@ import { Token, isRangePattern, isMatchPattern, isRepoPattern, TokenPosition } f
 import { basePatterns } from "./token-patterns";
 import { Stack } from "../utilities/stack";
 import { Vector } from "../utilities/vector";
+import { CharacterTokenType, TokenType } from "./renpy.tokens";
 
 type ScanResult = { pattern: TokenizerTokenPattern; matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray } | null;
 type TokenCache = { readonly documentVersion: number; readonly tokens: Token[] };

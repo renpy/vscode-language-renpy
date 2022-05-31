@@ -34,7 +34,7 @@ import { CharacterTokenType, ConstantTokenType, EntityTokenType, EscapedCharacte
 // Result should be manually fixed
 // Make sure to include this in internal captures to detect all newline tokens
 
-const lineContinuationPattern = /^(?!$|#)(?=(?!\1) *[^ \t#]|\1[^ \t#])|\Z/gm;
+const lineContinuationPattern = /^(?!$|#)(?=(?!\1)[ \t]*[^ \t#]|\1[^ \t#])|\Z/gm;
 
 const newLine: TokenPattern = {
     token: CharacterTokenType.NewLine,
@@ -679,7 +679,7 @@ const label: TokenPattern = {
 
 const menuOption: TokenPattern = {
     contentToken: MetaTokenType.MenuOptionBlock,
-    begin: /^([ \t]+)?((?:".+")|(?:'.+')|(?:""".+"""))[ \t]*(.+)?(:)/dgm,
+    begin: /^([ \t]+)((?:".*")|(?:'.*')|(?:""".*"""))[ \t]*(.+)?(:)/dgm,
     beginCaptures: {
         0: { patterns: [whiteSpace] },
         1: {}, // required for end match, but is already named by capture[0]
@@ -692,26 +692,49 @@ const menuOption: TokenPattern = {
             token: MetaTokenType.Arguments,
             patterns: [
                 {
-                    // Menu name
-                    match: /[a-zA-Z_.]\w*/g,
-                    token: EntityTokenType.Function,
-                },
-                {
                     match: /\(.*\)/dg,
                     captures: {
-                        0: { patterns: [pythonParameters] },
+                        0: {
+                            patterns: [pythonParameters],
+                        },
                     },
+                },
+                {
+                    // if condition
+                    match: /\b(if)[ \t]+(.+)?/dg,
+                    captures: {
+                        1: { token: KeywordTokenType.If },
+                        2: {
+                            patterns: [pythonExpression],
+                        },
+                    },
+                },
+                {
+                    match: /[^ \t]+/g,
+                    token: MetaTokenType.Invalid,
                 },
             ],
         },
         4: { token: CharacterTokenType.Colon },
     },
-    end: /^(?!$|#)(?=(?!\1) *[^ \t#]|\1[^ \t#])|\Z/gm,
+    end: lineContinuationPattern,
 
     patterns: [
         /*basePatterns*/
         // pushed below
     ],
+};
+const menuSet: TokenPattern = {
+    match: /^[ \t]+(set)[ \t]+(.+)?/dgm,
+    captures: {
+        0: { patterns: [whiteSpace] },
+        1: { token: KeywordTokenType.Set },
+        2: {
+            // set arguments
+            token: MetaTokenType.Arguments,
+            patterns: [pythonExpression],
+        },
+    },
 };
 const menu: TokenPattern = {
     token: MetaTokenType.Block,
@@ -726,23 +749,24 @@ const menu: TokenPattern = {
             token: MetaTokenType.Arguments,
             patterns: [
                 {
-                    // if condition
-                    match: /\b(if)[ \t]+(.*)/dg,
-                    captures: {
-                        1: { token: KeywordTokenType.If },
-                        2: { patterns: [pythonExpression] },
-                    },
+                    // Menu name
+                    match: /[a-zA-Z_.]\w*/g,
+                    token: EntityTokenType.Function,
                 },
                 {
-                    match: /.*/g,
-                    token: MetaTokenType.Invalid,
+                    match: /\(.*\)/dg,
+                    captures: {
+                        "0": {
+                            patterns: [pythonParameters],
+                        },
+                    },
                 },
             ],
         },
         4: { token: CharacterTokenType.Colon },
     },
-    end: /^(?!$|#)(?=(?!\1) *[^ \t#]|\1[^ \t#])|\Z/gm,
-    patterns: [comments, strings, menuOption, unmatchedLoseChars],
+    end: lineContinuationPattern,
+    patterns: [comments, menuOption, strings, menuSet, unmatchedLoseChars],
 };
 
 const image: TokenPattern = {

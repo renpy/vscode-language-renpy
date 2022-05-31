@@ -46,7 +46,7 @@
             },
             "7": { "name": "punctuation.section.python.begin.renpy" }
           },
-          "end": "^(?!$|#)(?=(?!\\1) *[^ \\t#]|\\1[^ \\t#])",
+          "end": "^(?!$|#)(?=(?!\\1)[ \t]*[^ \\t#]|\\1[^ \\t#])",
           "patterns": [{ "include": "source.python" }]
         },
         {
@@ -112,87 +112,96 @@
     },
 
     "menu": {
-      "patterns": [
-        {
-          "name": "meta.menu.renpy",
-          "contentName": "meta.block.menu.renpy",
-          "begin": "^([ \\t]+)?(menu)[ \t]*(.*)(:)",
-          "beginCaptures": {
-            "1": {
-              "name": "punctuation.whitespace.menu.leading.renpy"
+      "name": "meta.menu.renpy",
+      "contentName": "meta.block.menu.renpy",
+      "begin": "^([ \\t]+)?(menu)[ \t]*(.+)?(:)",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.whitespace.menu.leading.renpy"
+        },
+        "2": {
+          "name": "keyword.renpy"
+        },
+        "3": {
+          "name": "storage.type.function.renpy meta.embedded.line.python",
+          "patterns": [
+            {
+              "comment": "Menu name",
+              "match": "[a-zA-Z_.]\\w*",
+              "name": "entity.name.function.renpy"
             },
-            "2": {
-              "name": "keyword.renpy"
-            },
-            "3": {
-              "name": "storage.type.function.renpy meta.embedded.line.python",
-              "patterns": [
-                {
-                  "comment": "Menu name",
-                  "match": "[a-zA-Z_.]\\w*",
-                  "name": "entity.name.function.renpy"
-                },
-                {
-                  "match": "\\(.*\\)",
-                  "captures": {
-                    "0": {
-                      "patterns": [{ "include": "source.python#parameters" }]
-                    }
-                  }
+            {
+              "match": "\\(.*\\)",
+              "captures": {
+                "0": {
+                  "patterns": [{ "include": "source.python#parameters" }]
                 }
-              ]
-            },
-            "4": {
-              "name": "punctuation.section.menu.begin.renpy"
+              }
             }
-          },
-          "end": "^(?!$|#)(?=(?!\\1) *[^ \\t#]|\\1[^ \\t#])",
-          "patterns": [{ "include": "#strings" }, { "include": "#menu-option" }]
+          ]
+        },
+        "4": {
+          "name": "punctuation.section.menu.begin.renpy"
         }
-      ]
+      },
+      "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+      "patterns": [{ "include": "#comments" }, { "include": "#menu-option" }, { "include": "#strings" }, { "include": "#menu-set" }]
+    },
+    "menu-set": {
+      "match": "^[ \t]+(set)[ \t]+(.+)?",
+      "captures": {
+        "1": { "name": "support.function.renpy" },
+        "2": {
+          "name": "meta.embedded.line.python",
+          "patterns": [{ "include": "source.python#expression-bare" }]
+        }
+      }
     },
     "menu-option": {
-      "patterns": [
-        {
-          "contentName": "meta.block.menu-option.renpy",
-          "begin": "^([ \\t]+)?((?:\".+\")|(?:'.+')|(?:\"\"\".+\"\"\"))[ \\t]*(.*)(:)",
-          "beginCaptures": {
-            "1": {
-              "name": "punctuation.whitespace.menu-option.leading.renpy"
-            },
-            "2": {
-              "name": "meta.menu-option.renpy",
-              "patterns": [{ "include": "#strings" }]
-            },
-            "3": {
-              "name": "meta.menu-option.condition.renpy",
-              "patterns": [
-                {
-                  "comment": "if condition",
-                  "name": "meta.embedded.line.python",
-                  "match": "\\b(if)[ \\t]+(.*)",
-                  "captures": {
-                    "1": { "name": "keyword.control.conditional.renpy" },
-                    "2": {
-                      "patterns": [{ "include": "source.python#expression-bare" }]
-                    }
-                  }
-                },
-                {
-                  "match": ".*",
-                  "name": "invalid.illegal.unexpected-characters-in-condition.renpy"
+      "contentName": "meta.block.menu-option.renpy",
+      "begin": "^([ \\t]+)?((?:\".*\")|(?:'.*')|(?:\"\"\".*\"\"\"))[ \\t]*(.+)?(:)",
+      "beginCaptures": {
+        "1": {
+          "name": "punctuation.whitespace.menu-option.leading.renpy"
+        },
+        "2": {
+          "name": "meta.menu-option.renpy",
+          "patterns": [{ "include": "#strings" }]
+        },
+        "3": {
+          "name": "meta.embedded.line.python",
+          "patterns": [
+            {
+              "match": "\\(.*\\)",
+              "captures": {
+                "0": {
+                  "patterns": [{ "include": "source.python#parameters" }]
                 }
-              ]
+              }
             },
-            "4": {
-              "name": "punctuation.section.menu-option.begin.renpy"
+            {
+              "comment": "if condition",
+              "match": "\\b(if)[ \\t]+(.+)?",
+              "captures": {
+                "1": { "name": "keyword.control.conditional.renpy" },
+                "2": {
+                  "patterns": [{ "include": "source.python#expression-bare" }]
+                }
+              }
+            },
+            {
+              "match": "[^ \t]+",
+              "name": "invalid.illegal.unexpected-characters-in-menu-arguments.renpy"
             }
-          },
-          "end": "^(?!$|#)(?=(?!\\1) *[^ \\t#]|\\1[^ \\t#])",
-
-          "patterns": [{ "include": "#statements" }, { "include": "#expressions" }]
+          ]
+        },
+        "4": {
+          "name": "punctuation.section.menu-option.begin.renpy"
         }
-      ]
+      },
+      "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+
+      "patterns": [{ "include": "#statements" }, { "include": "#expressions" }]
     },
 
     "keywords": {

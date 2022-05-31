@@ -1,4 +1,7 @@
+/* eslint-disable no-useless-escape */
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-useless-backreference */
+
 // These patterns are converted from the tmLanguage file.
 // Copy the patterns (the contents of the repository group) over and apply the following find and replace patterns:
 
@@ -28,6 +31,8 @@
 
 // Result should be manually fixed
 // Make sure to include this in internal captures to detect all newline tokens
+
+const lineContinuationPattern = /^(?!$|#)(?=(?!\1) *[^ \t#]|\1[^ \t#])|\Z/gm;
 
 const newLine: TokenPattern = {
     token: CharacterTokenType.NewLine,
@@ -201,7 +206,7 @@ const stringTags: TokenPattern = {
         {
             // Valid tags with numeric params (self-closing)
             token: MetaTokenType.TagBlock,
-            match: /({)\s*(p|w)(=)(\+?)(\d+(?:.\d+)?)\s*(})/dg,
+            match: /({)\s*(p|w)(=)(\+)?(\d+(?:.\d+)?)\s*(})/dg,
             captures: {
                 0: { token: MetaTokenType.TagBlock },
                 1: { token: CharacterTokenType.OpenBracket },
@@ -215,7 +220,7 @@ const stringTags: TokenPattern = {
         {
             // Valid tags with numeric params (self-closing)
             token: MetaTokenType.TagBlock,
-            match: /({)\s*(v?space)(=)(\+?)(\d+)\s*(})/dg,
+            match: /({)\s*(v?space)(=)(\+)?(\d+)\s*(})/dg,
             captures: {
                 0: { token: MetaTokenType.TagBlock },
                 1: { token: CharacterTokenType.OpenBracket },
@@ -637,7 +642,7 @@ const pythonStatements: TokenPattern = {
 
 const label: TokenPattern = {
     token: MetaTokenType.Block,
-    match: /^[ \t]*(label)[ \t]+(.*)(:)/dgm,
+    match: /^[ \t]*(label)[ \t]+(.+)?(:)/dgm,
     captures: {
         0: { patterns: [whiteSpace] },
         1: { token: KeywordTokenType.Label },

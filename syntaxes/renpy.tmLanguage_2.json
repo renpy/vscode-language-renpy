@@ -46,7 +46,7 @@
             },
             "7": { "name": "punctuation.section.python.begin.renpy" }
           },
-          "end": "(?:(?<!\\1|[^ \\t])|^)(?=(?:[ \\t]|^)(?!$|#)[^ \\t])",
+          "end": "^(?!$|#)(?=(?!\\1) *[^ \\t#]|\\1[^ \\t#])",
           "patterns": [{ "include": "source.python" }]
         },
         {
@@ -86,7 +86,7 @@
               "name": "keyword.renpy"
             },
             "2": {
-              "name": "storage.type.function.renpy",
+              "name": "storage.type.function.renpy meta.embedded.line.python",
               "patterns": [
                 {
                   "comment": "Function name",

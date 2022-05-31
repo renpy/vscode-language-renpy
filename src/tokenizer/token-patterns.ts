@@ -678,79 +678,71 @@ const label: TokenPattern = {
 };
 
 const menuOption: TokenPattern = {
-    patterns: [
-        {
-            contentToken: MetaTokenType.MenuOptionBlock,
-            begin: /^([ \t]+)?((?:".+")|(?:'.+')|(?:""".+"""))[ \t]*(.*)(:)/dg,
-            beginCaptures: {
-                0: { patterns: [whiteSpace] },
-                1: {}, // required for end match, but is already named by capture[0]
-                2: {
-                    token: MetaTokenType.MenuOption,
-                    patterns: [strings],
-                },
-                3: {
-                    // Menu Option arguments
-                    token: MetaTokenType.Arguments,
-                    patterns: [
-                        {
-                            // Menu name
-                            match: /[a-zA-Z_.]\w*/g,
-                            token: EntityTokenType.Function,
-                        },
-                        {
-                            match: /\(.*\)/dg,
-                            captures: {
-                                0: { patterns: [pythonParameters] },
-                            },
-                        },
-                    ],
-                },
-                4: { token: CharacterTokenType.Colon },
-            },
-            end: lineContinuationPattern,
-
+    contentToken: MetaTokenType.MenuOptionBlock,
+    begin: /^([ \t]+)?((?:".+")|(?:'.+')|(?:""".+"""))[ \t]*(.+)?(:)/dgm,
+    beginCaptures: {
+        0: { patterns: [whiteSpace] },
+        1: {}, // required for end match, but is already named by capture[0]
+        2: {
+            token: MetaTokenType.MenuOption,
+            patterns: [strings],
+        },
+        3: {
+            // Menu Option arguments
+            token: MetaTokenType.Arguments,
             patterns: [
-                /*basePatterns*/
-                // pushed below
+                {
+                    // Menu name
+                    match: /[a-zA-Z_.]\w*/g,
+                    token: EntityTokenType.Function,
+                },
+                {
+                    match: /\(.*\)/dg,
+                    captures: {
+                        0: { patterns: [pythonParameters] },
+                    },
+                },
             ],
         },
+        4: { token: CharacterTokenType.Colon },
+    },
+    end: /^(?!$|#)(?=(?!\1) *[^ \t#]|\1[^ \t#])|\Z/gm,
+
+    patterns: [
+        /*basePatterns*/
+        // pushed below
     ],
 };
 const menu: TokenPattern = {
-    patterns: [
-        {
-            token: MetaTokenType.Block,
-            contentToken: MetaTokenType.MenuBlock,
-            begin: /^([ \t]+)?(menu)[ \t]*(.*)(:)/dg,
-            beginCaptures: {
-                0: { patterns: [whiteSpace] },
-                1: {}, // required for end match, but is already named by capture[0]
-                2: { token: KeywordTokenType.Menu },
-                3: {
-                    // Menu arguments
-                    token: MetaTokenType.Arguments,
-                    patterns: [
-                        {
-                            // if condition
-                            match: /\b(if)[ \t]+(.*)/g,
-                            captures: {
-                                1: { token: KeywordTokenType.If },
-                                2: { patterns: [pythonExpression] },
-                            },
-                        },
-                        {
-                            match: /.*/g,
-                            token: MetaTokenType.Invalid,
-                        },
-                    ],
+    token: MetaTokenType.Block,
+    contentToken: MetaTokenType.MenuBlock,
+    begin: /^([ \t]+)?(menu)[ \t]*(.+)?(:)/dgm,
+    beginCaptures: {
+        0: { patterns: [whiteSpace] },
+        1: {}, // required for end match, but is already named by capture[0]
+        2: { token: KeywordTokenType.Menu },
+        3: {
+            // Menu arguments
+            token: MetaTokenType.Arguments,
+            patterns: [
+                {
+                    // if condition
+                    match: /\b(if)[ \t]+(.*)/dg,
+                    captures: {
+                        1: { token: KeywordTokenType.If },
+                        2: { patterns: [pythonExpression] },
+                    },
                 },
-                4: { token: CharacterTokenType.Colon },
-            },
-            end: lineContinuationPattern,
-            patterns: [comments, strings, menuOption],
+                {
+                    match: /.*/g,
+                    token: MetaTokenType.Invalid,
+                },
+            ],
         },
-    ],
+        4: { token: CharacterTokenType.Colon },
+    },
+    end: /^(?!$|#)(?=(?!\1) *[^ \t#]|\1[^ \t#])|\Z/gm,
+    patterns: [comments, strings, menuOption, unmatchedLoseChars],
 };
 
 const image: TokenPattern = {

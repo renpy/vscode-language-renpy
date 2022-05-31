@@ -82,6 +82,7 @@ function setupAndValidatePatterns() {
     const stack = new Stack<TokenizerTokenPattern>(32);
     stack.push(basePatterns as ExTokenRepoPattern);
 
+    const mFlagRe = /[\^$]/g;
     while (!stack.isEmpty()) {
         const p = stack.pop()!;
 
@@ -94,6 +95,9 @@ function setupAndValidatePatterns() {
             for (let i = 0; i < p.patterns.length; ++i) stack.push(p.patterns[i]);
         } else if (isRangePattern(p)) {
             p._patternType = TokenPatternType.RangePattern;
+            if (p.begin.source.match(mFlagRe)) {
+                assert(p.begin.multiline, "To match this pattern the 'm' flag is required on the begin RegExp!");
+            }
 
             assert(p.begin.global && p.end.global, "To match this pattern the 'g' flag is required on the begin and end RegExp!");
             if (p.beginCaptures) {
@@ -125,12 +129,21 @@ function setupAndValidatePatterns() {
             }
 
             let reEndSource = p.end.source;
+
+            if (reEndSource.match(mFlagRe)) {
+                assert(p.begin.multiline, "To match this pattern the 'm' flag is required on the end RegExp!");
+            }
+
             p._hasBackref = /\\\d+/.test(reEndSource);
             //reEndSource = reEndSource.replaceAll("\\A", "¨0");
             reEndSource = reEndSource.replaceAll("\\Z", "$(?!\r\n|\r|\n)"); // This assumes (CR)LF without trailig new line right?...
             p.end = new RegExp(reEndSource, p.end.flags);
         } else if (isMatchPattern(p)) {
             p._patternType = TokenPatternType.MatchPattern;
+
+            if (p.match.source.match(mFlagRe)) {
+                assert(p.match.multiline, "To match this pattern the 'm' flag is required!");
+            }
 
             assert(p.match.global, "To match this pattern the 'g' flag is required!");
             if (p.captures) {

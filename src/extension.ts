@@ -39,6 +39,7 @@ import {
     DocumentSemanticTokensProvider,
     SemanticTokens,
     SemanticTokensLegend,
+    DocumentSelector,
 } from "vscode";
 import { getColorInformation, getColorPresentations } from "./color";
 import { getStatusBarText, NavigationData } from "./navigation-data";
@@ -55,6 +56,7 @@ import { registerDebugDecorator, unregisterDebugDecorator } from "./tokenizer/de
 import * as fs from "fs";
 import * as cp from "child_process";
 
+const selector: DocumentSelector = { scheme: "file", language: "renpy" };
 let myStatusBarItem: StatusBarItem;
 
 export async function activate(context: ExtensionContext): Promise<void> {
@@ -74,7 +76,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     // hover provider for code tooltip
     const hoverProvider = languages.registerHoverProvider(
-        "renpy",
+        selector,
         new (class implements HoverProvider {
             async provideHover(document: TextDocument, position: Position, token: CancellationToken): Promise<Hover | null | undefined> {
                 return getHover(document, position);
@@ -85,7 +87,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     // provider for Go To Definition
     const definitionProvider = languages.registerDefinitionProvider(
-        "renpy",
+        selector,
         new (class implements DefinitionProvider {
             provideDefinition(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Definition> {
                 return getDefinition(document, position);
@@ -96,7 +98,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     // provider for Outline view
     const symbolProvider = languages.registerDocumentSymbolProvider(
-        "renpy",
+        selector,
         new (class implements DocumentSymbolProvider {
             provideDocumentSymbols(document: TextDocument, token: CancellationToken): ProviderResult<DocumentSymbol[]> {
                 return getDocumentSymbols(document);
@@ -107,7 +109,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     // provider for Method Signature Help
     const signatureProvider = languages.registerSignatureHelpProvider(
-        "renpy",
+        selector,
         new (class implements SignatureHelpProvider {
             provideSignatureHelp(document: TextDocument, position: Position, token: CancellationToken, context: SignatureHelpContext): ProviderResult<SignatureHelp> {
                 return getSignatureHelp(document, position, context);
@@ -121,7 +123,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     // Completion provider
     const completionProvider = languages.registerCompletionItemProvider(
-        "renpy",
+        selector,
         new (class implements CompletionItemProvider {
             provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): ProviderResult<CompletionItem[]> {
                 return getCompletionList(document, position, context);
@@ -137,7 +139,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     // Color Provider
     const colorProvider = languages.registerColorProvider(
-        "renpy",
+        selector,
         new (class implements DocumentColorProvider {
             provideDocumentColors(document: TextDocument, token: CancellationToken): ProviderResult<ColorInformation[]> {
                 return getColorInformation(document);
@@ -151,7 +153,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     // Find All References provider
     const references = languages.registerReferenceProvider(
-        "renpy",
+        selector,
         new (class implements ReferenceProvider {
             async provideReferences(document: TextDocument, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | null | undefined> {
                 return await findAllReferences(document, position, context);
@@ -166,7 +168,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     // Semantic Token Provider
     const semanticTokens = languages.registerDocumentSemanticTokensProvider(
-        "renpy",
+        selector,
         new (class implements DocumentSemanticTokensProvider {
             provideDocumentSemanticTokens(document: TextDocument, token: CancellationToken): ProviderResult<SemanticTokens> {
                 if (document.languageId !== "renpy") {

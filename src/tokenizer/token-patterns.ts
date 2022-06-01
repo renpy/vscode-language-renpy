@@ -10,31 +10,31 @@ import { CharacterTokenType, ConstantTokenType, EntityTokenType, EscapedCharacte
 // find: ^( +)"(\w+?)(?:[\-_](\w+?))?(?:[\-_](\w+?))?(?:[\-_](\w+?))?": \{$\n((?:^.*$\n)+?)^\1\},?
 // replace with: const \L$2\u$3\u$4\u$5: TokenPattern = {\n$6};
 
-// find: "include": "#?(\w+?)(?:[\-_](\w+?))?(?:[\-_](\w+?))?(?:[\-_](\w+?))?"
-// replace with: include: \L$1\u$2\u$3\u$4
+// find: \{ "include": "#?(\w+?)(?:[\-_](\w+?))?(?:[\-_](\w+?))?(?:[\-_](\w+?))?" }
+// replace with: \L$1\u$2\u$3\u$4
 
-// find: (?<=^ *|\{ )"comment": "(.*?)",?$
+// find: (?<=^ *|\{ )"comment": "(.*?)"(?=,$| })
 // replace with: // $1
 
-// find: (?<=^ *|\{ )"name": "(.*?)"(?=: [{["])
+// find: (?<=^ *|\{ )"name": "(.*?)"(?=,$| })
 // replace with: token: "$1"
 
-// find: (?<=^ *|\{ )"contentName": "(.*?)"(?=: [{["])
+// find: (?<=^ *|\{ )"contentName": "(.*?)"(?=,$| })
 // replace with: contentToken: "$1"
 
 // find: (?<=^ *|\{ )"(.*?)"(?=: [{["])
 // replace with: $1
 
-// find: (?<=(?:^ *|\{ )(?:match|begin|end): )"(.*?)"(?=,?$)
-// replace with: /$1/dg
-
 // find: (?<=(?:^ *|\{ )(?:match|begin|end): /.*?)\\\\(?=.*?/dg,?$)
 // replace with: \
+
+// find: (?<=(?:^ *|\{ )(?:match|begin|end): )"(.*?)"(?=,?$)
+// replace with: /$1/dg
 
 // Result should be manually fixed
 // Make sure to include this in internal captures to detect all newline tokens
 
-const lineContinuationPattern = /^(?!$|#)(?=(?!\1) *[^ \t#]|\1[^ \t#])|\Z/gm;
+const lineContinuationPattern = /^(?!$|#)(?=(?!\1)[ \t]*[^ \t#]|\1[^ \t#])|\Z/gm;
 
 const newLine: TokenPattern = {
     token: CharacterTokenType.NewLine,
@@ -190,7 +190,12 @@ const constantPlaceholder: TokenPattern = {
 };
 
 const stringsInterior: TokenPattern = {
-    patterns: [newLine, escapedChar, constantPlaceholder], // ,stringTags (Recursive pattern. See below)
+    patterns: [
+        newLine,
+        escapedChar,
+        constantPlaceholder,
+        /*stringTags*/ // pushed below
+    ],
 };
 
 const stringTags: TokenPattern = {
@@ -543,6 +548,10 @@ const comments: TokenPattern = {
     },
 };
 
+const pythonExpression: TokenPattern = {
+    patterns: [whiteSpace],
+};
+
 const pythonParameters: TokenPattern = {
     patterns: [whiteSpace],
 };
@@ -603,8 +612,7 @@ const pythonStatements: TokenPattern = {
                     token: CharacterTokenType.Colon,
                 },
             },
-            // eslint-disable-next-line no-useless-escape
-            end: /(?:(?<!\1|[^ \t])|^)(?=(?:[ \t]|^)(?!$|#)[^ \t])|\Z/gm,
+            end: lineContinuationPattern,
             patterns: [pythonSource],
         },
         {
@@ -650,8 +658,8 @@ const label: TokenPattern = {
         1: { token: KeywordTokenType.Label },
         2: {
             // label arguments
+            token: MetaTokenType.Arguments,
             patterns: [
-                whiteSpace,
                 {
                     // Function name
                     match: /[a-zA-Z_.]\w*/g,
@@ -667,6 +675,98 @@ const label: TokenPattern = {
         },
         3: { token: CharacterTokenType.Colon },
     },
+};
+
+const menuOption: TokenPattern = {
+    contentToken: MetaTokenType.MenuOptionBlock,
+    begin: /^([ \t]+)((?:".*")|(?:'.*')|(?:""".*"""))[ \t]*(.+)?(:)/dgm,
+    beginCaptures: {
+        0: { patterns: [whiteSpace] },
+        1: {}, // required for end match, but is already named by capture[0]
+        2: {
+            token: MetaTokenType.MenuOption,
+            patterns: [strings],
+        },
+        3: {
+            // Menu Option arguments
+            token: MetaTokenType.Arguments,
+            patterns: [
+                {
+                    match: /\(.*\)/dg,
+                    captures: {
+                        0: {
+                            patterns: [pythonParameters],
+                        },
+                    },
+                },
+                {
+                    // if condition
+                    match: /\b(if)[ \t]+(.+)?/dg,
+                    captures: {
+                        1: { token: KeywordTokenType.If },
+                        2: {
+                            patterns: [pythonExpression],
+                        },
+                    },
+                },
+                {
+                    match: /[^ \t]+/g,
+                    token: MetaTokenType.Invalid,
+                },
+            ],
+        },
+        4: { token: CharacterTokenType.Colon },
+    },
+    end: lineContinuationPattern,
+
+    patterns: [
+        /*basePatterns*/
+        // pushed below
+    ],
+};
+const menuSet: TokenPattern = {
+    match: /^[ \t]+(set)[ \t]+(.+)?/dgm,
+    captures: {
+        0: { patterns: [whiteSpace] },
+        1: { token: KeywordTokenType.Set },
+        2: {
+            // set arguments
+            token: MetaTokenType.Arguments,
+            patterns: [pythonExpression],
+        },
+    },
+};
+const menu: TokenPattern = {
+    token: MetaTokenType.Block,
+    contentToken: MetaTokenType.MenuBlock,
+    begin: /^([ \t]+)?(menu)[ \t]*(.+)?(:)/dgm,
+    beginCaptures: {
+        0: { patterns: [whiteSpace] },
+        1: {}, // required for end match, but is already named by capture[0]
+        2: { token: KeywordTokenType.Menu },
+        3: {
+            // Menu arguments
+            token: MetaTokenType.Arguments,
+            patterns: [
+                {
+                    // Menu name
+                    match: /[a-zA-Z_.]\w*/g,
+                    token: EntityTokenType.Function,
+                },
+                {
+                    match: /\(.*\)/dg,
+                    captures: {
+                        "0": {
+                            patterns: [pythonParameters],
+                        },
+                    },
+                },
+            ],
+        },
+        4: { token: CharacterTokenType.Colon },
+    },
+    end: lineContinuationPattern,
+    patterns: [comments, menuOption, strings, menuSet, unmatchedLoseChars],
 };
 
 const image: TokenPattern = {
@@ -832,7 +932,7 @@ const keywords: TokenPattern = {
 };
 
 const renpyStatements: TokenPattern = {
-    patterns: [label, image],
+    patterns: [label, menu, image],
 };
 
 const statements: TokenPattern = {
@@ -845,3 +945,5 @@ const expressions: TokenPattern = {
 export const basePatterns: TokenRepoPattern = {
     patterns: [statements, expressions],
 };
+
+menuOption.patterns!.push(basePatterns);

@@ -267,6 +267,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case KeywordTokenType.Define:
             case KeywordTokenType.Default:
             case KeywordTokenType.Label: // Renpy keywords
+            case KeywordTokenType.Menu:
             case KeywordTokenType.Play:
             case KeywordTokenType.Pause:
             case KeywordTokenType.Screen:
@@ -299,7 +300,6 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case KeywordTokenType.While:
             case KeywordTokenType.Pass:
             case KeywordTokenType.Return:
-            case KeywordTokenType.Menu:
             case KeywordTokenType.Jump:
             case KeywordTokenType.Call:
                 controlKeywords.push(decoration);
@@ -337,6 +337,9 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case MetaTokenType.TagBlock:
             case MetaTokenType.Placeholder:
             case MetaTokenType.Block:
+            case MetaTokenType.MenuBlock:
+            case MetaTokenType.MenuOption:
+            case MetaTokenType.MenuOptionBlock:
             case MetaTokenType.EmptyString:
                 otherMeta.push(decoration);
                 break;
@@ -610,6 +613,9 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     TagBlock: { name: "TagBlock", value: MetaTokenType.TagBlock },
     Placeholder: { name: "Placeholder", value: MetaTokenType.Placeholder },
     Block: { name: "Block", value: MetaTokenType.Block },
+    MenuBlock: { name: "MenuBlock", value: MetaTokenType.MenuBlock },
+    MenuOption: { name: "MenuOption", value: MetaTokenType.MenuOption },
+    MenuOptionBlock: { name: "MenuOptionBlock", value: MetaTokenType.MenuOptionBlock },
     EmptyString: { name: "EmptyString", value: MetaTokenType.EmptyString },
     Invalid: { name: "Invalid", value: MetaTokenType.Invalid },
 };

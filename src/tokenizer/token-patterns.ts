@@ -175,18 +175,14 @@ const hexLiteral: TokenPattern = {
 };
 
 const constantPlaceholder: TokenPattern = {
-    patterns: [
-        {
-            // Python value interpolation using [ ... ]
-            token: MetaTokenType.Placeholder,
-            match: /(\[)((?:.*\[.*?\])*.*?)(\])/dg,
-            captures: {
-                1: { token: CharacterTokenType.OpenSquareBracket },
-                2: { token: MetaTokenType.PythonLine },
-                3: { token: CharacterTokenType.CloseSquareBracket },
-            },
-        },
-    ],
+    // Python value interpolation using [ ... ]
+    token: MetaTokenType.Placeholder,
+    match: /(\[)(.*?)(\])(?![^\[]*?\])/dg,
+    captures: {
+        1: { token: CharacterTokenType.OpenSquareBracket },
+        2: { token: MetaTokenType.PythonLine },
+        3: { token: CharacterTokenType.CloseSquareBracket },
+    },
 };
 
 const stringsInterior: TokenPattern = {
@@ -534,17 +530,19 @@ const strings: TokenPattern = {
     patterns: [stringQuotedDouble, stringQuotedSingle, stringQuotedBack],
 };
 
-const codeTags: TokenPattern = {
-    match: /(?:\b(NOTE|XXX|HACK|FIXME|BUG|TODO)\b)/dg,
-    captures: { 1: { token: MetaTokenType.CommentCodeTag } },
-};
-
 const comments: TokenPattern = {
     token: MetaTokenType.Comment,
     match: /(#)(.*)$/dgm,
     captures: {
         1: { token: CharacterTokenType.Hashtag },
-        2: { patterns: [codeTags] },
+        2: {
+            patterns: [
+                {
+                    match: /(?:\b(NOTE|XXX|HACK|FIXME|BUG|TODO)\b)/dg,
+                    captures: { 1: { token: MetaTokenType.CommentCodeTag } },
+                },
+            ],
+        },
     },
 };
 
@@ -617,24 +615,19 @@ const pythonStatements: TokenPattern = {
         },
         {
             // Match begin and end of python one line statements
-            match: /^([ \t]+)?(?:(\$)|(define)|(default))([ \t]+)(.*)$/dgm,
+            match: /^[ \t]*(?:(\$)|(define)|(default))[ \t]+(.*)$/dgm,
             captures: {
+                0: { patterns: [whiteSpace] },
                 1: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                2: {
                     token: KeywordTokenType.DollarSign,
                 },
-                3: {
+                2: {
                     token: KeywordTokenType.Define,
                 },
-                4: {
+                3: {
                     token: KeywordTokenType.Default,
                 },
-                5: {
-                    token: CharacterTokenType.WhiteSpace,
-                },
-                6: {
+                4: {
                     token: MetaTokenType.PythonLine,
                     patterns: [
                         {
@@ -648,6 +641,29 @@ const pythonStatements: TokenPattern = {
             },
         },
     ],
+};
+
+const pause: TokenPattern = {
+    match: /^[ \t]+(pause)[ \t]+([^#]*)/dgm,
+    captures: {
+        0: { patterns: [whiteSpace] },
+        1: {
+            token: KeywordTokenType.Pause,
+        },
+        2: {
+            patterns: [
+                {
+                    // Numeric value
+                    match: /(?<![.0])\b([1-9]\d*|0)(.\d+|\b)/dg,
+                    token: ConstantTokenType.Float,
+                },
+                {
+                    match: /.*/g,
+                    token: MetaTokenType.Invalid,
+                },
+            ],
+        },
+    },
 };
 
 const label: TokenPattern = {
@@ -932,7 +948,7 @@ const keywords: TokenPattern = {
 };
 
 const renpyStatements: TokenPattern = {
-    patterns: [label, menu, image],
+    patterns: [label, menu, image, pause],
 };
 
 const statements: TokenPattern = {

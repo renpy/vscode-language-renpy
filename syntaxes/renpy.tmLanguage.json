@@ -74,6 +74,7 @@
 
     "renpy-statements": {
       "patterns": [
+        { "include": "#say-statements" },
         {
           "include": "#label"
         },
@@ -208,6 +209,47 @@
       ]
     },
 
+    "say-statements": {
+      "patterns": [
+        {
+          "name": "meta.say.narrator.renpy",
+          "begin": "^[ \\t]+(?=[\"'`])",
+          "end": "(?<!\\\\)(?<=[\"'`])[ \\t]*(?:(\\(.*?\\)(?![^\\(]*?\\)))[ \\t]*|$)",
+          "endCaptures": {
+            "1": {
+              "patterns": [{ "include": "source.renpy.python#function-arguments" }]
+            }
+          },
+          "patterns": [{ "include": "#strings" }]
+        },
+        {
+          "name": "meta.say.${1:/downcase}.renpy",
+          "begin": "^[ \\t]+(?:([a-zA-Z_]\\w*)\\b)((?:[ \\t]+(?:@|[a-zA-Z_]\\w*))*)?[ \\t]*(?=[\"'`])",
+          "beginCaptures": {
+            "1": {
+              "name": "meta.say.character.renpy variable.character.renpy"
+            },
+            "2": {
+              "name": "meta.say.parameters.renpy",
+              "patterns": [
+                {
+                  "name": "keyword.renpy",
+                  "match": "@"
+                }
+              ]
+            }
+          },
+          "end": "(?<!\\\\)(?<=[\"'`])[ \\t]*(?:(\\(.*?\\)(?![^\\(]*?\\)))[ \\t]*|$)",
+          "endCaptures": {
+            "1": {
+              "patterns": [{ "include": "source.renpy.python#function-arguments" }]
+            }
+          },
+          "patterns": [{ "include": "#strings" }]
+        }
+      ]
+    },
+
     "builtin-labels": {
       "name": "support.function.builtin.renpy",
       "match": "(?<!\\.)\\b(?:start|quit|after_load|splashscreen|before_main_menu|main_menu|after_warp|hide_windows)\\b"
@@ -270,7 +312,7 @@
         }
       },
       "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
-      "patterns": [{ "include": "#comments" }, { "include": "#menu-option" }, { "include": "#strings" }, { "include": "#menu-set" }]
+      "patterns": [{ "include": "#comments" }, { "include": "#menu-option" }, { "include": "#say-statements" }, { "include": "#menu-set" }]
     },
     "menu-set": {
       "match": "^[ \t]+(set)[ \t]+(.+)?",
@@ -792,7 +834,7 @@
           "beginCaptures": {
             "0": { "name": "punctuation.definition.string.begin.renpy" }
           },
-          "end": "(?<!\\\\)((?<=\"\"\")(\")\"\"|\"\"\")",
+          "end": "(?<!\\\\)((?<=\\1)(\")\"\"|\"\"\")",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.triple.block.renpy" }
@@ -806,7 +848,7 @@
           "beginCaptures": {
             "1": { "name": "punctuation.definition.string.begin.renpy" }
           },
-          "end": "(?<!\\\\)((?<=\")(\")|\")",
+          "end": "(?<!\\\\)((?<=\\1)(\")|\")",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.double.renpy" },
@@ -825,7 +867,7 @@
           "beginCaptures": {
             "0": { "name": "punctuation.definition.string.begin.renpy" }
           },
-          "end": "(?<!\\\\)((?<=''')('|''')|''')",
+          "end": "(?<!\\\\)((?<=\\1)('|''')|''')",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.single.block.renpy" }
@@ -839,7 +881,7 @@
           "beginCaptures": {
             "1": { "name": "punctuation.definition.string.begin.renpy" }
           },
-          "end": "(?<!\\\\)((?<=')(')|')",
+          "end": "(?<!\\\\)((?<=\\1)(')|')",
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.single.renpy" },

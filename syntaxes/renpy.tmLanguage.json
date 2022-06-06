@@ -63,7 +63,7 @@
           "patterns": [
             {
               "comment": "Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)",
-              "match": "(?<!\\.)\\b(\\w+)(?=\\s=\\s)",
+              "match": "(?<!\\.)\\b([a-zA-Z_]\\w*)(?=\\s=\\s)",
               "name": "variable.other.python"
             },
             { "include": "source.renpy.python" }
@@ -208,6 +208,10 @@
       ]
     },
 
+    "builtin-labels": {
+      "name": "support.function.builtin.renpy",
+      "match": "(?<!\\.)\\b(?:start|quit|after_load|splashscreen|before_main_menu|main_menu|after_warp|hide_windows)\\b"
+    },
     "label": {
       "patterns": [
         {
@@ -220,19 +224,15 @@
             "2": {
               "name": "storage.type.function.renpy meta.embedded.line.python",
               "patterns": [
+                { "include": "source.renpy.python#special-variables" },
+                { "include": "source.renpy.python#builtin-possible-callables" },
+                { "include": "#builtin-labels" },
                 {
-                  "comment": "Function name",
-                  "match": "[a-zA-Z_.]\\w*",
+                  "comment": "Label name",
+                  "match": "[a-zA-Z_.]\\w*\\b",
                   "name": "entity.name.function.renpy"
                 },
-                {
-                  "match": "\\(.*\\)",
-                  "captures": {
-                    "0": {
-                      "patterns": [{ "include": "source.renpy.python#parameters" }]
-                    }
-                  }
-                }
+                { "include": "source.renpy.python#parameters" }
               ]
             },
             "3": {
@@ -262,14 +262,7 @@
               "match": "[a-zA-Z_.]\\w*",
               "name": "entity.name.function.renpy"
             },
-            {
-              "match": "\\(.*\\)",
-              "captures": {
-                "0": {
-                  "patterns": [{ "include": "source.renpy.python#parameters" }]
-                }
-              }
-            }
+            { "include": "source.renpy.python#parameters" }
           ]
         },
         "4": {
@@ -303,14 +296,7 @@
         "3": {
           "name": "meta.embedded.line.python",
           "patterns": [
-            {
-              "match": "\\(.*\\)",
-              "captures": {
-                "0": {
-                  "patterns": [{ "include": "source.renpy.python#parameters" }]
-                }
-              }
-            },
+            { "include": "source.renpy.python#parameters" },
             {
               "comment": "if condition",
               "match": "\\b(if)[ \\t]+(.+)?",
@@ -322,7 +308,7 @@
               }
             },
             {
-              "match": "[^ \t]+",
+              "match": "[^ \\t]+",
               "name": "invalid.illegal.unexpected-characters-in-menu-arguments.renpy"
             }
           ]
@@ -344,7 +330,6 @@
           "match": "\\b(?<!\\.)(?:pass|return)\\b"
         },
         {
-          "name": "keyword.control.flow.renpy",
           "begin": "\\b(?<!\\.)(jump|call)\\b[ \\t]*",
           "beginCaptures": {
             "1": {
@@ -369,33 +354,20 @@
                 },
                 "4": {
                   "name": "meta.embedded.line.python",
-                  "patterns": [
-                    {
-                      "match": "\\(.*\\)",
-                      "captures": {
-                        "0": {
-                          "patterns": [{ "include": "source.renpy.python#parameters" }]
-                        }
-                      }
-                    }
-                  ]
+                  "patterns": [{ "include": "source.renpy.python#parameters" }]
                 },
                 "5": {
                   "name": "storage.type.function.renpy meta.embedded.line.python",
                   "patterns": [
+                    { "include": "source.renpy.python#special-variables" },
+                    { "include": "source.renpy.python#builtin-possible-callables" },
+                    { "include": "#builtin-labels" },
                     {
-                      "comment": "Function name",
-                      "match": "[a-zA-Z_.]\\w*",
-                      "name": "entity.name.function.renpy"
+                      "comment": "Label name",
+                      "match": "[a-zA-Z_.]\\w*\\b",
+                      "name": "entity.name.function.renpy meta.function-call.generic.python"
                     },
-                    {
-                      "match": "\\(.*\\)",
-                      "captures": {
-                        "0": {
-                          "patterns": [{ "include": "source.renpy.python#parameters" }]
-                        }
-                      }
-                    }
+                    { "include": "source.renpy.python#function-arguments" }
                   ]
                 }
               }

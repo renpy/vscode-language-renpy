@@ -53,7 +53,8 @@
           ".rpymc",
           ".rpyc"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "firstLine": "^#!\\s*/?.*\\brenpy\\b"
       }
     ],
     "grammars": [

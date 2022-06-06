@@ -1,7 +1,8 @@
 {
   "comments": {
     // symbol used for single line comment. Remove this entry if your language does not support line comments
-    "lineComment": "#"
+    "lineComment": "#",
+    "blockComment": ["\"\"\"", "\"\"\""]
   },
   // symbols used as brackets
   "brackets": [
@@ -14,9 +15,29 @@
     { "open": "{", "close": "}" },
     { "open": "[", "close": "]" },
     { "open": "(", "close": ")" },
+
     { "open": "\"", "close": "\"", "notIn": ["string"] },
+    { "open": "r\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "R\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "u\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "U\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "f\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "F\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "b\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "B\"", "close": "\"", "notIn": ["string", "comment"] },
+
     { "open": "'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "r'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "R'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "u'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "U'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "f'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "F'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "b'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "B'", "close": "'", "notIn": ["string", "comment"] },
+
     { "open": "`", "close": "`", "notIn": ["string", "comment"] },
+
     { "open": "\"\"\"", "close": "\"\"\"", "notIn": ["string"] }
   ],
   // symbols that that can be used to surround a selection
@@ -32,24 +53,24 @@
   "folding": {
     "offSide": true,
     "markers": {
-      "start": "^\\s*#\\s*region\\b",
-      "end": "^\\s*#\\s*endregion\\b"
+      "start": "^[ \\t]*#[ \\t]*region\\b",
+      "end": "^[ \\t]*#[ \\t]*endregion\\b"
     }
   },
   "onEnterRules": [
     //Renpy keywords
     {
-      "beforeText": "^\\s*\\b(?:label|menu|python|init|screen|transform)\\b.*:\\s*$",
-      "action": { "indent": "indent" }
-    },
-    //Python keywords available in renpy code
-    {
-      "beforeText": "^\\s*\\b(?:for|if|elif|else|while)\\b.*:\\s*$",
+      "beforeText": "^[ \\t]*(?:image|init|label|menu|python|scene|screen|transform)\\b.*?:[ \\t]*$",
       "action": { "indent": "indent" }
     },
     //For menu's
     {
-      "beforeText": "^\\s+(?:\".*?\"|\\'.*?\\')\\s*:\\s*$",
+      "beforeText": "^[ \\t]+(?:\".*?\"|\\'.*?\\').*?:[ \\t]*$",
+      "action": { "indent": "indent" }
+    },
+    //Python code
+    {
+      "beforeText": "^[ \\t]*(?:class|def|for|if|elif|else|while|try|with|finally|except|async)\\b.*?:[ \\t]*$",
       "action": { "indent": "indent" }
     }
   ]

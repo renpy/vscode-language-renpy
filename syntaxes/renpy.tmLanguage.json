@@ -3,7 +3,6 @@
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "Ren'Py",
   "scopeName": "source.renpy",
-  "firstLineMatch": "^#!/.*\\brenpy\\b",
   "patterns": [{ "include": "#statements" }, { "include": "#expressions" }],
   "repository": {
     "statements": {
@@ -429,7 +428,7 @@
         },
         {
           "comment": "Renpy keywords",
-          "match": "\\b(?<!\\.)(?:label|menu|play|screen|scene|show|image|transform|nvl[ \\t]+clear)\\b",
+          "match": "\\b(?<!\\.)(?:image|label|menu|nvl[ \\t]+clear|play|scene|screen|show|transform)\\b",
           "name": "keyword.other.renpy"
         },
         {

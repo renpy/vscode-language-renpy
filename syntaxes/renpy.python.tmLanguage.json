@@ -240,7 +240,7 @@
     "member-access": {
       "name": "meta.member.access.python",
       "begin": "(\\.)\\s*(?!\\.)",
-      "end": "#stopwhenyou'vejustreadnon-whitespacefollowedbynon-word#i.e.whenfinishedreadinganidentifierorfunctioncall(?<=\\S)(?=\\W)|#stopwhenseeingthestartofsomethingthat'snotaword,#i.e.whenseeinganon-identifier(^|(?<=\\s))(?=[^\\\\\\w\\s])|$",
+      "end": "(?<=\\S)(?=\\W)|(^|(?<=\\s))(?=[^\\\\\\w\\s])|$",
       "beginCaptures": {
         "1": { "name": "punctuation.separator.period.python" }
       },
@@ -256,7 +256,7 @@
     },
     "special-names": {
       "name": "constant.other.caps.python",
-      "match": "\\b#wewanttosee\"enough\",meaning2ormoreupper-case#lettersinthebeginningoftheconstant##formoredetailsreferto:#https://github.com/MagicStack/MagicPython/issues/42(_*[[:upper:]][_\\d]*[[:upper:]])[[:upper:]\\d]*(_\\w*)?\\b"
+      "match": "\\b(_*[[:upper:]][_\\d]*[[:upper:]])[[:upper:]\\d]*(_\\w*)?\\b"
     },
     "curly-braces": {
       "begin": "\\{",

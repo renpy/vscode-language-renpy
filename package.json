@@ -49,7 +49,9 @@
         ],
         "extensions": [
           ".rpy",
-          ".rpym"
+          ".rpym",
+          ".rpymc",
+          ".rpyc"
         ],
         "configuration": "./language-configuration.json"
       }
@@ -58,11 +60,11 @@
       {
         "language": "renpy",
         "scopeName": "source.renpy",
-        "path": "./syntaxes/renpy.tmLanguage_2.json",
-        "embeddedLanguages": {
-          "meta.embedded.line.python": "python",
-          "meta.embedded.block.python": "python"
-        }
+        "path": "./syntaxes/renpy.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.renpy.python",
+        "path": "./syntaxes/renpy.python.tmLanguage.json"
       }
     ],
     "snippets": [

@@ -2,7 +2,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-useless-backreference */
 
-// These patterns are converted from the tmLanguage file.
+// NOTE: These patterns are converted from the tmLanguage file.
+// ANY CHANGES MADE HERE SHOULD BE PORTED TO THAT FILE AS WELL
 // Copy the patterns (the contents of the repository group) over and apply the following find and replace patterns:
 
 import { CharacterTokenType, ConstantTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "./renpy.tokens";

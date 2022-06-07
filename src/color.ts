@@ -190,8 +190,9 @@ export function convertHtmlToColor(htmlHex: string): Color | null {
         hex = hex.replace(/([a-f\d])/gi, "$1$1");
     }
 
-    const result = hex.split(/[a-f\d]{2}/gi);
-    return new Color(parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255, parseInt(result[4], 16) / 255);
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const result = hex.match(/[a-f\d]{2}/gi)!;
+    return new Color(parseInt(result[0], 16) / 255, parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255);
 }
 
 /**

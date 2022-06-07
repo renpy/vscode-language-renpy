@@ -283,13 +283,24 @@
         },
         {
           "contentName": "string.quoted.renpy renpy.meta.say.$1",
-          "begin": "(?<=^[ \\t]+)(?:([a-zA-Z_]\\w*)\\b)((?:[ \\t]+(?:@|[a-zA-Z_]\\w*))*)?[ \\t]*(?=[\"'`])",
+          "begin": "(?<=^[ \\t]+)(?:([a-zA-Z_]\\w*)\\b)((?:[ \\t]+(?:@|\\w+))*)?[ \\t]*(?=[\"'`])",
           "beginCaptures": {
             "1": {
-              "name": "meta.say.character.renpy variable.character.renpy"
+              "name": "meta.say.character.renpy",
+              "patterns": [
+                {
+                  "comment": "Match special characters",
+                  "match": "adv|nvl|narrator|name_only|centered|vcentered|extend",
+                  "name": "variable.other.constant.renpy"
+                },
+                {
+                  "match": ".*",
+                  "name": "variable.character.renpy"
+                }
+              ]
             },
             "2": {
-              "name": "meta.say.parameters.renpy",
+              "name": "meta.say.attributes.renpy",
               "patterns": [
                 {
                   "name": "keyword.renpy",

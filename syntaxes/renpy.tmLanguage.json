@@ -6,7 +6,7 @@
   "patterns": [{ "include": "#statements" }, { "include": "#expressions" }],
   "repository": {
     "statements": {
-      "patterns": [{ "include": "#renpy-statements" }, { "include": "#python-statements" }, { "include": "#keywords" }, { "include": "#atl-keywords-old" }]
+      "patterns": [{ "include": "#renpy-statements" }, { "include": "#python-statements" }, { "include": "#keywords" }, { "include": "#say-statements" }, { "include": "#atl-keywords-old" }]
     },
     "expressions": {
       "patterns": [{ "include": "#comments" }, { "include": "#strings" }]
@@ -83,8 +83,8 @@
         { "include": "#style-old" },
         { "include": "#use-old" },
         { "include": "#screen-old" },
-        { "include": "#jump-statements" },
-        { "include": "#say-statements" }
+        { "include": "#return-statements" },
+        { "include": "#jump-statements" }
       ]
     },
     "atl": { "patterns": [] },
@@ -210,6 +210,18 @@
       ]
     },
 
+    "return-statements": {
+      "match": "^[ \\t]+(return)\\b[ \\t]*(.*?)(?:#|$)",
+      "captures": {
+        "1": {
+          "name": "keyword.control.flow.renpy"
+        },
+        "2": {
+          "patterns": [{ "include": "source.renpy.python#expression" }]
+        }
+      }
+    },
+
     "jump-statements": {
       "begin": "^[ \\t]+(jump|call)\\b[ \\t]*",
       "beginCaptures": {
@@ -271,7 +283,7 @@
         },
         {
           "name": "string.quoted.renpy renpy.meta.say.$1",
-          "begin": "^[ \\t]+(?:([a-zA-Z_]\\w*)\\b)((?:[ \\t]+(?:@|[a-zA-Z_]\\w*))*)?[ \\t]*(?=[\"'`])",
+          "begin": "(?<=^[ \\t]+)(?:([a-zA-Z_]\\w*)\\b)((?:[ \\t]+(?:@|[a-zA-Z_]\\w*))*)?[ \\t]*(?=[\"'`])",
           "beginCaptures": {
             "1": {
               "name": "meta.say.character.renpy variable.character.renpy"
@@ -444,7 +456,7 @@
         },
         {
           "comment": "Renpy keywords",
-          "match": "\\b(?<!\\.)(?:image|label|menu|nvl[ \\t]+clear|play|scene|screen|show|transform)\\b",
+          "match": "\\b(?<!\\.)(?:image|label|menu|nvl[ \\t]+clear|play|queue|scene|screen|show|transform)\\b",
           "name": "keyword.other.renpy"
         },
         {

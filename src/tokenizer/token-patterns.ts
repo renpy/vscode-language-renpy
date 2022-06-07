@@ -385,8 +385,9 @@ const stringTags: TokenPattern = {
             patterns: [stringsInterior],
         },
         {
-            match: /({)(\s+)?(\w+)\b(?:(=)(.*?))?(\s+)?(})((?:.|\r\n|\r|\n)+?)({)(\/)(\s+)?(\3)(\s+)?(})/dg,
-            captures: {
+            contentToken: MetaTokenType.TagBlock,
+            begin: /({)([ \t]+)?(\w+)\b(?:(=)(.*?))?([ \t]+)?(})/dg,
+            beginCaptures: {
                 1: { token: CharacterTokenType.OpenBracket },
                 2: { token: CharacterTokenType.WhiteSpace },
                 3: { token: EntityTokenType.Tag },
@@ -394,17 +395,17 @@ const stringTags: TokenPattern = {
                 5: { token: MetaTokenType.Arguments },
                 6: { token: CharacterTokenType.WhiteSpace },
                 7: { token: CharacterTokenType.CloseBracket },
-                8: {
-                    token: MetaTokenType.TagBlock,
-                    patterns: [stringsInterior],
-                },
-                9: { token: CharacterTokenType.OpenBracket },
-                10: { token: CharacterTokenType.ForwardSlash },
-                11: { token: CharacterTokenType.WhiteSpace },
-                12: { token: EntityTokenType.Tag },
-                13: { token: CharacterTokenType.WhiteSpace },
-                14: { token: CharacterTokenType.CloseBracket },
             },
+            end: /({)(\/)([ \t]+)?(\3)([ \t]+)?(})/dg,
+            endCaptures: {
+                1: { token: CharacterTokenType.OpenBracket },
+                2: { token: CharacterTokenType.ForwardSlash },
+                3: { token: CharacterTokenType.WhiteSpace },
+                4: { token: EntityTokenType.Tag },
+                5: { token: CharacterTokenType.WhiteSpace },
+                6: { token: CharacterTokenType.CloseBracket },
+            },
+            patterns: [stringsInterior],
         },
         {
             // Empty tag end
@@ -645,7 +646,7 @@ const pythonStatements: TokenPattern = {
 };
 
 const pause: TokenPattern = {
-    match: /^[ \t]+(pause)[ \t]+([^#]*)/dgm,
+    match: /^[ \t]+(pause)[ \t]+(.*?)(?:#|$)/dgm,
     captures: {
         0: { patterns: [whiteSpace] },
         1: {
@@ -655,7 +656,7 @@ const pause: TokenPattern = {
             patterns: [
                 {
                     // Numeric value
-                    match: /(?<![.0])\b([1-9]\d*|0)(.\d+|\b)/dg,
+                    match: /(?<![.0])\b(?:[1-9]\d*|0)(?:.\d+|\b)/g,
                     token: ConstantTokenType.Float,
                 },
                 {

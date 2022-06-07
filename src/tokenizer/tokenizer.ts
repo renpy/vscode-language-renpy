@@ -25,7 +25,9 @@ export function tokenizeDocument(document: TextDocument): Token[] {
         return cachedTokens.tokens;
     }
 
+    console.log(`Running tokenizer on document: ${document.fileName}`);
     const tokenizer = new DocumentTokenizer(document);
+    console.log(`Tokenizer completed!`);
     const tokens = tokenizer.tokens.toArray();
     tokenCache.set(document.uri, { documentVersion: document.version, tokens: tokens });
     return tokens;
@@ -85,7 +87,7 @@ function setupAndValidatePatterns() {
     const stack = new Stack<TokenizerTokenPattern>(32);
     stack.push(basePatterns as ExTokenRepoPattern);
 
-    const mFlagRe = /[\^$]/g;
+    const mFlagRe = /(?<!\[)[\^$]/g;
     while (!stack.isEmpty()) {
         const p = stack.pop()!;
 

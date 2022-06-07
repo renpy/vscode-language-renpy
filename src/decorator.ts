@@ -35,14 +35,19 @@ export function injectCustomTextmateTokens(rules: TextMateRule[]) {
     const currentRules = tokenColorCustomizations.textMateRules;
 
     // Build the new rules for this file
-    const newRules = rules.filter((y) => {
+    const newRules = customFontStyleRules.concat(rules); // Always add the default rules
+    const filteredRules = newRules.filter((y) => {
         return !currentRules.some((x) => {
-            return x.scope === y.scope || (x.scope === y.scope && x.settings.foreground !== y.settings.foreground);
+            if (x.scope instanceof Array && y.scope instanceof Array) {
+                return x.scope.length === y.scope.length && x.scope.every((value, index) => value === y.scope[index]);
+            }
+
+            return x.scope === y.scope || (x.scope === y.scope && (x.settings.foreground !== y.settings.foreground || x.settings.fontStyle !== y.settings.fontStyle));
         });
     });
-    tokenColorCustomizations.textMateRules = currentRules.concat(rules);
 
-    if (newRules.length !== 0) {
+    if (filteredRules.length !== 0) {
+        tokenColorCustomizations.textMateRules = currentRules.concat(filteredRules);
         tokensConfig.update("tokenColorCustomizations", tokenColorCustomizations, ConfigurationTarget.Workspace).then(
             () => {
                 console.log("Successfully updated the tokenColorCustomizations config");

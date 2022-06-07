@@ -259,7 +259,7 @@
     "say-statements": {
       "patterns": [
         {
-          "name": "meta.say.narrator.renpy",
+          "contentName": "string.quoted.renpy renpy.meta.say.narrator",
           "begin": "^[ \\t]+(?=[\"'`])",
           "end": "(?<!\\\\)(?<=[\"'`])[ \\t]*(?:(\\(.*?\\)(?![^\\(]*?\\)))[ \\t]*|$)",
           "endCaptures": {
@@ -267,10 +267,10 @@
               "patterns": [{ "include": "source.renpy.python#function-arguments" }]
             }
           },
-          "patterns": [{ "include": "#strings" }]
+          "patterns": [{ "include": "#strings-base" }]
         },
         {
-          "name": "meta.say.${1:/downcase}.renpy",
+          "name": "string.quoted.renpy renpy.meta.say.$1",
           "begin": "^[ \\t]+(?:([a-zA-Z_]\\w*)\\b)((?:[ \\t]+(?:@|[a-zA-Z_]\\w*))*)?[ \\t]*(?=[\"'`])",
           "beginCaptures": {
             "1": {
@@ -292,7 +292,7 @@
               "patterns": [{ "include": "source.renpy.python#function-arguments" }]
             }
           },
-          "patterns": [{ "include": "#strings" }]
+          "patterns": [{ "include": "#strings-base" }]
         }
       ]
     },
@@ -502,10 +502,6 @@
           }
         }
       ]
-    },
-
-    "strings": {
-      "patterns": [{ "include": "#string-quoted-double" }, { "include": "#string-quoted-single" }, { "include": "#string-quoted-back" }]
     },
 
     "strings-interior": {
@@ -794,7 +790,7 @@
         },
         {
           "comment": "Unknown tag (Single line support only cus \\R does not work) (Since we don't know if a tag is self closing, we can't assume that an end pattern exists)",
-          "match": "({)\\s*(\\w+)\\b(?:(=)(.*?))?\\s*(})((?:.|\\R)+?)\\s*({/)\\s*(\\2)\\s*(})",
+          "match": "({)[ \\t]*(\\w+)\\b(?:(=)(.*?))?\\s*(})((?:.|\\R)+?)\\s*({/)\\s*(\\2)\\s*(})",
           "captures": {
             "1": { "name": "meta.tag.${2:/downcase}.start.renpy punctuation.definition.tag.begin.renpy" },
             "2": { "name": "renpy.meta.u meta.tag.${2:/downcase}.start.renpy entity.name.tag.${2:/downcase}.renpy" },
@@ -838,104 +834,31 @@
       ]
     },
 
-    "string-quoted-double": {
-      "patterns": [
-        {
-          "comment": "Triple quoted block string",
-          "name": "string.quoted.triple.block.renpy",
-          "begin": "(\"\"\")",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.string.begin.renpy" }
-          },
-          "end": "(?<!\\\\)((?<=\\1)(\")\"\"|\"\"\")",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.string.end.renpy" },
-            "2": { "name": "meta.empty-string.triple.block.renpy" }
-          },
-          "patterns": [{ "include": "#strings-interior" }]
-        },
-        {
-          "comment": "Double quoted single line string",
-          "name": "string.quoted.double.line.renpy",
-          "begin": "(\")",
-          "beginCaptures": {
-            "1": { "name": "punctuation.definition.string.begin.renpy" }
-          },
-          "end": "(?<!\\\\)((?<=\\1)(\")|\")",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.string.end.renpy" },
-            "2": { "name": "meta.empty-string.double.renpy" },
-            "3": { "name": "invalid.illegal.unclosed-string.renpy" }
-          },
-          "patterns": [{ "include": "#strings-interior" }]
-        }
-      ]
+    "strings-base": {
+      "begin": "\"\"\"|\"|'''|'|```|`",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.renpy" }
+      },
+      "end": "(?<!\\\\)(((?<=\\0)\\0)|\\0)",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.string.end.renpy" },
+        "2": { "name": "meta.empty-string.renpy" }
+      },
+      "patterns": [{ "include": "#strings-interior" }]
     },
-    "string-quoted-single": {
-      "patterns": [
-        {
-          "comment": "Single quoted block string",
-          "name": "string.quoted.single.block.renpy",
-          "begin": "(''')",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.string.begin.renpy" }
-          },
-          "end": "(?<!\\\\)((?<=\\1)('|''')|''')",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.string.end.renpy" },
-            "2": { "name": "meta.empty-string.single.block.renpy" }
-          },
-          "patterns": [{ "include": "#strings-interior" }]
-        },
-        {
-          "comment": "Single quoted single line string",
-          "name": "string.quoted.single.line.renpy",
-          "begin": "(')",
-          "beginCaptures": {
-            "1": { "name": "punctuation.definition.string.begin.renpy" }
-          },
-          "end": "(?<!\\\\)((?<=\\1)(')|')",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.string.end.renpy" },
-            "2": { "name": "meta.empty-string.single.renpy" },
-            "3": { "name": "invalid.illegal.unclosed-string.renpy" }
-          },
-          "patterns": [{ "include": "#strings-interior" }]
-        }
-      ]
-    },
-    "string-quoted-back": {
-      "patterns": [
-        {
-          "comment": "Back quoted block string",
-          "name": "string.quoted.back.block.renpy",
-          "begin": "(```)",
-          "beginCaptures": {
-            "0": { "name": "punctuation.definition.string.begin.renpy" }
-          },
-          "end": "(?<!\\\\)((?<=```)(`)``|```)",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.string.end.renpy" },
-            "2": { "name": "meta.empty-string.back.block.renpy" }
-          },
-          "patterns": [{ "include": "#strings-interior" }]
-        },
-        {
-          "comment": "Back quoted single line string",
-          "name": "string.quoted.back.line.renpy",
-          "begin": "(`)",
-          "beginCaptures": {
-            "1": { "name": "punctuation.definition.string.begin.renpy" }
-          },
-          "end": "(?<!\\\\)((?<=`)(`)|`)",
-          "endCaptures": {
-            "1": { "name": "punctuation.definition.string.end.renpy" },
-            "2": { "name": "meta.empty-string.back.renpy" },
-            "3": { "name": "invalid.illegal.unclosed-string.renpy" }
-          },
-          "patterns": [{ "include": "#strings-interior" }]
-        }
-      ]
+
+    "strings": {
+      "name": "string.quoted.renpy",
+      "begin": "\"\"\"|\"|'''|'|```|`",
+      "beginCaptures": {
+        "0": { "name": "punctuation.definition.string.begin.renpy" }
+      },
+      "end": "(?<!\\\\)(((?<=\\0)\\0)|\\0)",
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.string.end.renpy" },
+        "2": { "name": "meta.empty-string.renpy" }
+      },
+      "patterns": [{ "include": "#strings-interior" }]
     }
   }
 }

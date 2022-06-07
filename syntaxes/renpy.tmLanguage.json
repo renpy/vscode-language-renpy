@@ -74,7 +74,6 @@
 
     "renpy-statements": {
       "patterns": [
-        { "include": "#say-statements" },
         {
           "include": "#label"
         },
@@ -83,7 +82,9 @@
         { "include": "#transform-old" },
         { "include": "#style-old" },
         { "include": "#use-old" },
-        { "include": "#screen-old" }
+        { "include": "#screen-old" },
+        { "include": "#jump-statements" },
+        { "include": "#say-statements" }
       ]
     },
     "atl": { "patterns": [] },
@@ -205,6 +206,52 @@
         {
           "match": "\\b(viewport_(?:|activate_|hover_|idle_|insensitive_|selected_|selected_activate_|selected_hover_|selected_idle_|selected_insensitive_)(?:align|alt|anchor|area|clipping|debug|maximum|minimum|offset|pos|xalign|xanchor|xcenter|xfill|xmaximum|xminimum|xoffset|xpos|xsize|xysize|yalign|yanchor|ycenter|yfill|ymaximum|yminimum|yoffset|ypos|ysize))\\b",
           "name": "support.function.renpy"
+        }
+      ]
+    },
+
+    "jump-statements": {
+      "begin": "^[ \\t]+(jump|call)\\b[ \\t]*",
+      "beginCaptures": {
+        "1": {
+          "name": "keyword.control.flow.renpy"
+        }
+      },
+      "end": "#|$",
+      "patterns": [
+        {
+          "name": "keyword.control.flow.renpy",
+          "match": "(expression)\\b[ \\t]*(.*)[ \\t]*\\b(pass)?\\b(.*)|(.*)",
+          "captures": {
+            "1": {
+              "name": "keyword.other.renpy"
+            },
+            "2": {
+              "name": "meta.embedded.line.python",
+              "patterns": [{ "include": "source.renpy.python#expression-bare" }]
+            },
+            "3": {
+              "name": "keyword.control.flow.renpy"
+            },
+            "4": {
+              "name": "meta.embedded.line.python",
+              "patterns": [{ "include": "source.renpy.python#parameters" }]
+            },
+            "5": {
+              "name": "storage.type.function.renpy meta.embedded.line.python",
+              "patterns": [
+                { "include": "source.renpy.python#special-variables" },
+                { "include": "source.renpy.python#builtin-possible-callables" },
+                { "include": "#builtin-labels" },
+                {
+                  "comment": "Label name",
+                  "match": "[a-zA-Z_.]\\w*\\b",
+                  "name": "entity.name.function.renpy meta.function-call.generic.python"
+                },
+                { "include": "source.renpy.python#function-arguments" }
+              ]
+            }
+          }
         }
       ]
     },
@@ -370,51 +417,6 @@
           "comment": "Control flow keywords",
           "name": "keyword.control.flow.renpy",
           "match": "\\b(?<!\\.)(?:pass|return)\\b"
-        },
-        {
-          "begin": "\\b(?<!\\.)(jump|call)\\b[ \\t]*",
-          "beginCaptures": {
-            "1": {
-              "name": "keyword.control.flow.renpy"
-            }
-          },
-          "end": "#|$",
-          "patterns": [
-            {
-              "name": "keyword.control.flow.renpy",
-              "match": "(expression)\\b[ \\t]*(.*)[ \\t]*\\b(pass)?\\b(.*)|(.*)",
-              "captures": {
-                "1": {
-                  "name": "keyword.other.renpy"
-                },
-                "2": {
-                  "name": "meta.embedded.line.python",
-                  "patterns": [{ "include": "source.renpy.python#expression-bare" }]
-                },
-                "3": {
-                  "name": "keyword.control.flow.renpy"
-                },
-                "4": {
-                  "name": "meta.embedded.line.python",
-                  "patterns": [{ "include": "source.renpy.python#parameters" }]
-                },
-                "5": {
-                  "name": "storage.type.function.renpy meta.embedded.line.python",
-                  "patterns": [
-                    { "include": "source.renpy.python#special-variables" },
-                    { "include": "source.renpy.python#builtin-possible-callables" },
-                    { "include": "#builtin-labels" },
-                    {
-                      "comment": "Label name",
-                      "match": "[a-zA-Z_.]\\w*\\b",
-                      "name": "entity.name.function.renpy meta.function-call.generic.python"
-                    },
-                    { "include": "source.renpy.python#function-arguments" }
-                  ]
-                }
-              }
-            }
-          ]
         },
         {
           "comment": "Control flow keywords with block",

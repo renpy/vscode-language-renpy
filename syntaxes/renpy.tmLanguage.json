@@ -282,7 +282,7 @@
           "patterns": [{ "include": "#strings-base" }]
         },
         {
-          "name": "string.quoted.renpy renpy.meta.say.$1",
+          "contentName": "string.quoted.renpy renpy.meta.say.$1",
           "begin": "(?<=^[ \\t]+)(?:([a-zA-Z_]\\w*)\\b)((?:[ \\t]+(?:@|[a-zA-Z_]\\w*))*)?[ \\t]*(?=[\"'`])",
           "beginCaptures": {
             "1": {

@@ -289,8 +289,12 @@
               "name": "meta.say.character.renpy",
               "patterns": [
                 {
+                  "match": "extend",
+                  "name": "keyword.other.renpy"
+                },
+                {
                   "comment": "Match special characters",
-                  "match": "adv|nvl|narrator|name_only|centered|vcentered|extend",
+                  "match": "adv|nvl|narrator|name_only|centered|vcentered",
                   "name": "variable.other.constant.renpy"
                 },
                 {

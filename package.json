@@ -50,7 +50,11 @@
           ".rpy",
           ".rpym"
         ],
-        "configuration": "./language-configuration.json"
+        "configuration": "./language-configuration.json",
+        "icon": {
+					"light": "./renpy.svg",
+					"dark": "./renpy.svg"
+				}
       }
     ],
     "grammars": [

@@ -54,7 +54,11 @@
           ".rpyc"
         ],
         "configuration": "./language-configuration.json",
-        "firstLine": "^#!\\s*/?.*\\brenpy\\b"
+        "firstLine": "^#!\\s*/?.*\\brenpy\\b",
+        "icon": {
+            "light": "./renpy.svg",
+            "dark": "./renpy.svg"
+        }
       }
     ],
     "grammars": [

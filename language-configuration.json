@@ -63,7 +63,12 @@
       "beforeText": "^[ \\t]*(?:image|init|label|menu|python|scene|screen|transform)\\b.*?:[ \\t]*$",
       "action": { "indent": "indent" }
     },
-    //For menu's
+    // Outdent keywords
+    {
+      "beforeText": "^[ \\t]*(?:pass|return|repeat)\\b.*?$",
+      "action": { "indent": "outdent" }
+    },
+    // For menu's
     {
       "beforeText": "^[ \\t]+(?:\".*?\"|\\'.*?\\').*?:[ \\t]*$",
       "action": { "indent": "indent" }

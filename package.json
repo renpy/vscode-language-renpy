@@ -56,8 +56,8 @@
         "configuration": "./language-configuration.json",
         "firstLine": "^#!\\s*/?.*\\brenpy\\b",
         "icon": {
-            "light": "./renpy.svg",
-            "dark": "./renpy.svg"
+          "light": "./renpy.svg",
+          "dark": "./renpy.svg"
         }
       }
     ],

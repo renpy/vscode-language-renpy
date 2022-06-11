@@ -58,7 +58,7 @@
     }
   },
   "onEnterRules": [
-    //Renpy keywords
+    // Renpy keywords
     {
       "beforeText": "^[ \\t]*(?:image|init|label|menu|python|scene|screen|transform)\\b.*?:[ \\t]*$",
       "action": { "indent": "indent" }
@@ -73,7 +73,7 @@
       "beforeText": "^[ \\t]+(?:\".*?\"|\\'.*?\\').*?:[ \\t]*$",
       "action": { "indent": "indent" }
     },
-    //Python code
+    // Python code
     {
       "beforeText": "^[ \\t]*(?:class|def|for|if|elif|else|while|try|with|finally|except|async)\\b.*?:[ \\t]*$",
       "action": { "indent": "indent" }

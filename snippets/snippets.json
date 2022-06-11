@@ -1,4 +1,10 @@
 {
+  "Region": {
+    "prefix": ["#region", "region"],
+    "body": "#region ${1:Region name}\n$0\n#endregion ${1:Region name}",
+    "description": "Create a new folding region."
+  },
+
   "Label": {
     "prefix": "label",
     "body": "label ${1:label_name}:\n\t${2:}",

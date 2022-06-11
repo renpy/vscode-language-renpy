@@ -61,6 +61,13 @@
     "comments": {
       "patterns": [
         {
+          "name": "comment.line.number-sign.renpy",
+          "match": "^[ \\t]*(#[ \\t]*(?:end)?region)\\b.*$",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag" }
+          }
+        },
+        {
           "name": "comment.line.number-sign.python",
           "contentName": "meta.typehint.comment.python",
           "begin": "(?:\\#\\s*(type:)\\s*+(?#wewant`\\s*+`whichispossessivequantifiersincewedonotactuallywanttobacktrackwhenmatchingwhitespacehere)(?!$|\\#))",

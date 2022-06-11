@@ -65,7 +65,7 @@
     },
     // Outdent keywords
     {
-      "beforeText": "^[ \\t]*(?:pass|return)\\b.*?$",
+      "beforeText": "^[ \\t]*(?:pass|return|repeat)\\b.*?$",
       "action": { "indent": "outdent" }
     },
     // For menu's

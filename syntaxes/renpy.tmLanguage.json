@@ -6,7 +6,7 @@
   "patterns": [{ "include": "#statements" }, { "include": "#expressions" }],
   "repository": {
     "statements": {
-      "patterns": [{ "include": "#renpy-statements" }, { "include": "#python-statements" }, { "include": "#keywords" }, { "include": "#say-statements" }, { "include": "#atl-keywords-old" }]
+      "patterns": [{ "include": "#renpy-statements" }, { "include": "#python-statements" }, { "include": "#keywords" }, { "include": "#say-statements" }]
     },
     "expressions": {
       "patterns": [{ "include": "#comments" }, { "include": "#strings" }]
@@ -78,8 +78,9 @@
           "include": "#label"
         },
         { "include": "#menu" },
-        { "include": "#image-old" },
-        { "include": "#transform-old" },
+        { "include": "#image" },
+        { "include": "#transform" },
+        { "include": "#scene-show" },
         { "include": "#style-old" },
         { "include": "#use-old" },
         { "include": "#screen-old" },
@@ -88,24 +89,410 @@
         { "include": "#call" }
       ]
     },
-    "atl": { "patterns": [] },
 
-    "image-old": {
-      "match": "^\\s*(image)\\s+([a-zA-Z_0-9 ]*)",
+    "transform": {
+      "begin": "^([ \\t]+)?(transform)\\b[ \\t]*(.*)?(:)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.whitespace.leading.renpy" },
+        "2": { "name": "keyword.renpy" },
+        "3": {
+          "patterns": [
+            {
+              "name": "variable.name.transform.renpy",
+              "match": "\\b([[:alpha:]_]\\w*)\\b"
+            }
+          ]
+        },
+        "4": { "name": "punctuation.section.atl.begin.renpy" }
+      },
+      "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+      "patterns": [{ "include": "#atl" }]
+    },
+
+    "image": {
+      "patterns": [
+        {
+          "name": "meta.image.renpy",
+          "contentName": "meta.image.atl-block.renpy",
+          "begin": "^([ \\t]+)?(image)\\b[ \\t]*([a-zA-Z_0-9 ]*)(:)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.whitespace.leading.renpy" },
+            "2": { "name": "keyword.renpy" },
+            "3": { "name": "entity.name.type.image.renpy" },
+            "4": { "name": "punctuation.section.atl.begin.renpy" }
+          },
+          "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+          "patterns": [{ "include": "#atl" }]
+        },
+        {
+          "name": "meta.image.renpy",
+          "begin": "^[ \\t]*(image)\\b[ \\t]*",
+          "beginCaptures": {
+            "1": { "name": "keyword.renpy" }
+          },
+          "end": "(?!\\G)(?=\\b(at)\\b|#)|$",
+          "patterns": [{ "match": "\\b(?:[a-zA-Z_0-9]*)\\b[ \\t]*", "name": "entity.name.type.image.renpy" }]
+        },
+        { "include": "#at" }
+      ]
+    },
+
+    "scene-show": {
+      "patterns": [
+        {
+          "name": "meta.$2.renpy",
+          "contentName": "meta.$2.atl-block.renpy",
+          "begin": "^([ \\t]+)?(scene|show)\\b[ \\t]*([a-zA-Z_0-9 ]*)(:)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.whitespace.leading.renpy" },
+            "2": { "name": "keyword.renpy" },
+            "3": { "name": "entity.name.type.image.renpy" },
+            "4": { "name": "punctuation.section.atl.begin.renpy" }
+          },
+          "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+          "patterns": [{ "include": "#atl" }]
+        },
+        {
+          "name": "meta.$1.renpy",
+          "begin": "^[ \\t]*(scene|show)\\b[ \\t]*",
+          "beginCaptures": {
+            "1": { "name": "keyword.renpy" }
+          },
+          "end": "(?=\\b(at)\\b|#)|$",
+          "patterns": [{ "match": "\\b(?:[a-zA-Z_0-9]*)\\b[ \\t]*", "name": "entity.name.type.image.renpy" }]
+        },
+        { "include": "#at" }
+      ]
+    },
+
+    "at": {
+      "name": "meta.at.renpy",
+      "match": "\\b(at)\\b[ \\t]*(.+)?",
       "captures": {
-        "1": { "name": "keyword.python.renpy" },
-        "2": { "name": "entity.name.class.image.python.renpy" }
+        "1": { "name": "keyword.renpy" },
+        "2": { "name": "meta.at.params.renpy" }
       }
     },
-    "transform-old": {
-      "match": "^\\s*(transform)\\s+([a-zA-Z_][a-zA-Z_0-9]*)",
+
+    "atl": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#atl-syntax-and-semantics",
+      "patterns": [
+        {
+          "include": "#atl-keywords"
+        },
+        { "include": "#atl-blocks" },
+        { "include": "#atl-simple-expression" },
+        { "include": "#atl-warper" },
+        { "include": "#atl-event" },
+        { "include": "#atl-on" },
+        { "include": "#atl-function" }
+      ]
+    },
+    "atl-simple-expression": {
+      "patterns": [
+        {
+          "include": "#expressions"
+        },
+        { "include": "#atl-build-in-properties" },
+        { "include": "source.renpy.python#literal" },
+        { "include": "source.renpy.python#member-access" },
+        { "include": "source.renpy.python#illegal-operator" },
+        { "include": "source.renpy.python#operator" },
+        { "include": "source.renpy.python#curly-braces" },
+        { "include": "source.renpy.python#item-access" },
+        { "include": "source.renpy.python#list" },
+        { "include": "source.renpy.python#odd-function-call" },
+        { "include": "source.renpy.python#round-braces" },
+        { "include": "source.renpy.python#function-call" },
+        { "include": "source.renpy.python#builtin-functions" },
+        { "include": "source.renpy.python#builtin-types" },
+        { "include": "source.renpy.python#builtin-exceptions" },
+        { "include": "source.renpy.python#magic-names" },
+        { "include": "source.renpy.python#special-names" },
+        { "include": "source.renpy.python#illegal-names" },
+        { "include": "source.renpy.python#special-variables" },
+        { "include": "source.renpy.python#ellipsis" },
+        { "include": "source.renpy.python#punctuation" },
+        { "include": "source.renpy.python#line-continuation" }
+      ]
+    },
+    "atl-expression": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#expression-statement",
+      "patterns": [
+        { "include": "#atl-simple-expression" },
+        {
+          "begin": "\\b(with)\\b[ \\t]*",
+          "beginCaptures": {
+            "1": { "name": "keyword.renpy" }
+          },
+          "end": "$",
+          "patterns": [{ "include": "#atl-simple-expression" }]
+        },
+        { "include": "source.renpy.python#expression" }
+      ]
+    },
+    "atl-keywords": {
+      "patterns": [
+        {
+          "comment": "https://www.renpy.org/doc/html/atl.html#animation-statement",
+          "match": "^[ \\t]*(animation)\\b",
+          "captures": {
+            "1": { "name": "keyword.renpy" }
+          }
+        },
+        {
+          "comment": "https://www.renpy.org/doc/html/atl.html#pass-statement",
+          "match": "^[ \\t]*(pass)\\b",
+          "captures": {
+            "1": { "name": "keyword.control.flow.renpy" }
+          }
+        },
+        {
+          "comment": "https://www.renpy.org/doc/html/atl.html#repeat-statement and https://www.renpy.org/doc/html/atl.html#time-statement",
+          "begin": "^[ \\t]*(repeat|time|pause)\\b[ \\t]*",
+          "beginCaptures": {
+            "1": { "name": "keyword.control.flow.renpy" }
+          },
+          "end": "$",
+          "patterns": [{ "include": "#atl-simple-expression" }]
+        },
+        {
+          "comment": "https://www.renpy.org/doc/html/atl.html#expression-statement",
+          "contentName": "meta.atl.with.renpy",
+          "begin": "^[ \\t]*(with)\\b[ \\t]*",
+          "beginCaptures": {
+            "1": { "name": "keyword.renpy" }
+          },
+          "end": "$",
+          "patterns": [{ "include": "#atl-simple-expression" }]
+        },
+        {
+          "comment": "https://www.renpy.org/doc/html/atl.html#contains-statement",
+          "contentName": "meta.atl.contains.renpy",
+          "begin": "^[ \\t]*(contains)\\b[ \\t]*",
+          "beginCaptures": {
+            "1": { "name": "keyword.control.flow.renpy" }
+          },
+          "end": "$",
+          "patterns": [{ "include": "#atl-expression" }]
+        }
+      ]
+    },
+    "atl-blocks": {
+      "patterns": [
+        {
+          "comment": "See https://www.renpy.org/doc/html/atl.html",
+          "contentName": "meta.atl.block.renpy",
+          "begin": "^([ \\t]+)?(block|parallel|contains)\\b[ \\t]*(:)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.whitespace.leading.block.renpy" },
+            "2": { "name": "keyword.other.renpy" },
+            "3": { "name": "punctuation.section.block.begin.renpy" }
+          },
+          "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+          "patterns": [{ "include": "#atl" }]
+        },
+        {
+          "comment": "https://www.renpy.org/doc/html/atl.html#choice-statement",
+          "contentName": "meta.atl.choice.renpy",
+          "begin": "^([ \\t]+)?(choice)\\b[ \\t]*(.+)?(:)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.whitespace.leading.block.renpy" },
+            "2": { "name": "keyword.other.renpy" },
+            "3": { "patterns": [{ "include": "#atl-simple-expression" }] },
+            "4": { "name": "punctuation.section.block.begin.renpy" }
+          },
+          "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+          "patterns": [{ "include": "#atl" }]
+        }
+      ]
+    },
+    "atl-build-in-events": {
+      "comment": "Pre-defined events (https://www.renpy.org/doc/html/atl.html#external-events)",
+      "name": "support.function.event.renpy",
+      "match": "\\b(?<!\\.)(?:start|show|replace|hide|replaced|update|hover|idle|selected_hover|selected_idle)\\b"
+    },
+    "atl-event-name": {
+      "patterns": [
+        { "include": "source.renpy.python#builtin-possible-callables" },
+        { "include": "#atl-build-in-events" },
+        {
+          "name": "entity.name.function.renpy meta.function-call.generic.renpy",
+          "match": "\\b([[:alpha:]_]\\w*)\\b"
+        }
+      ]
+    },
+    "atl-event-def-name": {
+      "patterns": [
+        { "include": "source.renpy.python#builtin-possible-callables" },
+        { "include": "#atl-build-in-events" },
+        {
+          "name": "entity.name.function.renpy",
+          "match": "\\b([[:alpha:]_]\\w*)\\b"
+        }
+      ]
+    },
+    "atl-event": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#event-statement",
+      "name": "meta.atl.event.renpy",
+      "match": "^[ \\t]*(event)\\b[ \\t]*\\b([[:alpha:]_]\\w*)\\b",
       "captures": {
-        "1": { "name": "keyword.python.renpy" },
+        "1": { "name": "keyword.other.renpy" },
+        "2": { "patterns": [{ "include": "#atl-event-name" }] }
+      }
+    },
+    "atl-on": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#on-statement",
+      "contentName": "meta.atl.on.renpy",
+      "begin": "^([ \\t]+)?(on)\\b[ \\t]*(.+)?(:)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.whitespace.leading.block.renpy" },
+        "2": { "name": "keyword.other.renpy" },
+        "3": { "patterns": [{ "include": "#atl-event-name" }, { "match": "[ \\t]*,[ \\t]*", "name": "punctuation.separator.parameters.renpy" }, { "include": "#comments" }] },
+        "4": { "name": "punctuation.section.block.begin.renpy" }
+      },
+      "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+      "patterns": [{ "include": "#atl" }]
+    },
+    "atl-function": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#function-statement",
+      "name": "meta.atl.function.renpy",
+      "match": "^[ \\t]*(function)\\b[ \\t]*\\b([[:alpha:]_]\\w*)\\b",
+      "captures": {
+        "1": { "name": "keyword.other.renpy" },
         "2": {
-          "name": "entity.name.section.python.renpy.transform.renpy"
+          "patterns": [
+            { "include": "source.renpy.python#builtin-possible-callables" },
+            {
+              "name": "entity.name.function.renpy meta.function-call.generic.renpy",
+              "match": "\\b([[:alpha:]_]\\w*)\\b"
+            }
+          ]
         }
       }
     },
+    "atl-build-in-warpers": {
+      "comment": "Pre-defined warpers (https://www.renpy.org/doc/html/atl.html#warpers)",
+      "name": "support.function.renpy",
+      "match": "\\b(?<!\\.)(?:linear|ease|easein|easeout|ease_back|ease_bounce|ease_circ|ease_cubic|ease_elastic|ease_expo|ease_quad|ease_quart|ease_quint|easein_back|easein_bounce|easein_circ|easein_cubic|easein_elastic|easein_expo|easein_quad|easein_quart|easein_quint|easeout_back|easeout_bounce|easeout_circ|easeout_cubic|easeout_elastic|easeout_expo|easeout_quad|easeout_quart|easeout_quint)\\b"
+    },
+    "atl-build-in-properties": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#list-of-transform-properties",
+      "patterns": [
+        {
+          "comment": "Special manipulation keywords",
+          "name": "keyword.renpy",
+          "match": "\\b(?<!\\.)(?:warp|circles|clockwise|counterclockwise)\\b"
+        },
+        {
+          "comment": "position props (int, absolute, or a float)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:xpos|ypos|xanchor|yanchor|xcenter|ycenter|radius)\\b"
+        },
+        {
+          "comment": "position pair props",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:pos|anchor|xycenter|around|alignaround|matrixanchor)\\b"
+        },
+        {
+          "comment": "float props",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:xalign|yalign|zoom|xzoom|yzoom|alpha|additive|angle|delay|events|zpos)\\b"
+        },
+        {
+          "comment": "float pair props",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:align|knot)\\b"
+        },
+        {
+          "comment": "int props",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:xoffset|yoffset|xtile|ytile)\\b"
+        },
+        {
+          "comment": "int pair props",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:offset)\\b"
+        },
+        {
+          "comment": "boolean props",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:rotate_pad|transform_anchor|nearest|crop_relative|subpixel|zzoom)\\b"
+        },
+        {
+          "comment": "('#float' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:rotate|xpan|ypan|blur)\\b"
+        },
+        {
+          "comment": "('#position' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:xsize|ysize)\\b"
+        },
+        {
+          "comment": "('\\(int, int, int, int\\)' | '\\(float, float, float, float\\)' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:crop)\\b"
+        },
+        {
+          "comment": "('\\(int, int\\)' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:corner1|corner2)\\b"
+        },
+        {
+          "comment": "('\\(position, position\\)' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:xysize)\\b"
+        },
+        {
+          "comment": "('#string' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:fit)\\b"
+        },
+        {
+          "comment": "('\\(int, int\\)' | None)",
+          "name": "invalid.deprecated.renpy",
+          "match": "\\b(?<!\\.)(?:size|maxsize)\\b"
+        },
+        {
+          "comment": "('#Matrix' | '#MatrixColor' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:matrixcolor)\\b"
+        },
+        {
+          "comment": "('#Matrix' | '#TransformMatrix' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:matrixtransform)\\b"
+        },
+        {
+          "comment": "('#bool' | '#float' | '\\(float, float, float\\)')",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:perspective)\\b"
+        }
+      ]
+    },
+    "atl-warper-name": {
+      "patterns": [
+        { "include": "source.renpy.python#builtin-possible-callables" },
+        { "include": "#atl-build-in-warpers" },
+        { "include": "#atl-build-in-properties" },
+        {
+          "name": "entity.name.function.warper.renpy meta.function-call.generic.renpy",
+          "match": "\\b([[:alpha:]_]\\w*)\\b"
+        }
+      ]
+    },
+    "atl-warper": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#warpers",
+      "name": "meta.atl.warper.renpy",
+      "begin": "\\b(?<!\\.)([[:alpha:]_]\\w*)\\b[ \\t]*",
+      "beginCaptures": {
+        "1": { "patterns": [{ "include": "#atl-warper-name" }] }
+      },
+      "end": "(?!\\G)",
+      "patterns": [{ "include": "#atl-simple-expression" }]
+    },
+
     "style-old": {
       "match": "^\\s*(style)\\s+([a-zA-Z_][a-zA-Z_0-9]*)",
       "captures": {
@@ -175,38 +562,6 @@
               "match": "\\b([a-zA-Z_][a-zA-Z_0-9]*)\\s*(?:(,)|(?=[\\n\\)]))"
             }
           ]
-        }
-      ]
-    },
-    "atl-keywords-old": {
-      "patterns": [
-        {
-          "match": "\\b(add|always|and|animation|as|assert|attribute|auto|bar|behind|block|break|button|camera|choice|circles|class|clear|clockwise|contains|continue|counterclockwise|def|del|drag|draggroup|event|except|exec|extend|finally|fixed|frame|function|global|grid|group|has|hbox|hotbar|hotspot|imagebutton|imagemap|import|index|input|is|key|knot|lambda|layeredimage|monologue|mousearea|music|new|nointeract|not|null|nvl|offset|old|on|onlayer|or|parallel|print|queue|raise|repeat|rpy|showif|side|stop|strings|sustain|tag|take|testcase|text|textbutton|time|timer|transclude|translate|try|use|vbar|vbox|viewport|voice|vpgrid|window|yield|zorder)\\b",
-          "name": "keyword.python.renpy"
-        },
-        {
-          "match": "\\b((?:linear|action|activate_sound|activated|adjustment|allow|allow_underfull|alpha|alternate|alternate_keysym|arguments|arrowkeys|at|auto|cache|caption|changed|child_size|clicked|cols|copypaste|default|default_focus|drag_handle|drag_joined|drag_name|drag_offscreen|drag_raise|draggable|dragged|drop_allowable|droppable|dropped|edgescroll|exclude|focus|focus_mask|ground|height|hover|hovered|icon_tooltip|id|idle|image_style|insensitive|keysym|layer|length|mask|min_overlap|modal|mouse_drop|mousewheel|pagekeys|pixel_width|predict|prefix|properties|range|repeat|rows|scope|scrollbars|selected|selected_hover|selected_idle|selected_insensitive|sensitive|slow|slow_done|spacing|style|style_group|style_prefix|style_suffix|substitute|suffix|text_style|text_tooltip|tooltip|transpose|unhovered|value|variant|width|xadjustment|xinitial|yadjustment|yinitial|zorder))\\b",
-          "name": "support.function.renpy"
-        },
-        {
-          "match": "\\b((?:|activate_|hover_|idle_|insensitive_|selected_|selected_activate_|selected_hover_|selected_idle_|selected_insensitive_)(?:additive|adjust_spacing|align|alignaround|alpha|alt|anchor|angle|antialias|area|around|background|bar_invert|bar_resizing|bar_vertical|base_bar|black_color|blend|blur|bold|bottom_bar|bottom_gutter|bottom_margin|bottom_padding|box_layout|box_reverse|box_wrap|box_wrap_spacing|caret|child|clipping|color|corner1|corner2|crop|crop_relative|debug|delay|drop_shadow|drop_shadow_color|events|first_indent|first_spacing|fit|fit_first|focus_mask|font|foreground|gl_anisostropic|gl_blend_func|gl_color_mask|gl_depth|gl_mipmap|gl_pixel_perfect|gl_texture_wrap|hinting|hyperlink_functions|italic|justify|kerning|key_events|keyboard_focus|language|layout|left_bar|left_gutter|left_margin|left_padding|line_leading|line_spacing|line_overlap_split|margin|matrixanchor|matrixcolor|matrixtransform|maximum|maxsize|mesh|mesh_pad|min_width|minimum|minwidth|mipmap|modal|mouse|nearest|newline_indent|offset|order_reverse|outline_scaling|outlines|padding|perspective|pos|radius|rest_indent|right_bar|right_gutter|right_margin|right_padding|rotate|rotate_pad|ruby_style|shader|size|size_group|slow_abortable|slow_cps|slow_cps_multiplier|sound|spacing|strikethrough|subpixel|text_align|text_y_fudge|thumb|thumb_offset|thumb_shadow|top_bar|top_gutter|top_margin|top_padding|transform_anchor|underline|unscrollable|vertical|xalign|xanchor|xanchoraround|xaround|xcenter|xfill|xfit|xmargin|xmaximum|xminimum|xoffset|xpadding|xpan|xpos|xsize|xspacing|xtile|xysize|xzoom|yalign|yanchor|yanchoraround|yaround|ycenter|yfill|yfit|ymargin|ymaximum|yminimum|yoffset|ypadding|ypan|ypos|ysize|yspacing|ytile|yzoom|zoom|zpos|zzoom))\\b",
-          "name": "support.function.renpy"
-        },
-        {
-          "match": "\\b((?:vscrollbar_|scrollbar_)(?:|activate_|hover_|idle_|insensitive_|selected_|selected_activate_|selected_hover_|selected_idle_|selected_insensitive_)(?:align|alt|anchor|area|bar_invert|bar_resizing|bar_vertical|base_bar|bottom_bar|bottom_gutter|clipping|debug|keyboard_focus|left_bar|left_gutter|maximum|minimum|mouse|offset|pos|right_bar|right_gutter|thumb|thumb_offset|thumb_shadow|top_bar|top_gutter|unscrollable|xalign|xanchor|xcenter|xfill|xmaximum|xminimum|xoffset|xpos|xsize|xysize|yalign|yanchor|ycenter|yfill|ymaximum|yminimum|yoffset|ypos|ysize))\\b",
-          "name": "support.function.renpy"
-        },
-        {
-          "match": "\\b(side_(?:|activate_|hover_|idle_|insensitive_|selected_|selected_activate_|selected_hover_|selected_idle_|selected_insensitive_)(?:align|alt|anchor|area|clipping|debug|maximum|minimum|offset|pos|spacing|xalign|xanchor|xcenter|xfill|xmaximum|xminimum|xoffset|xpos|xsize|xysize|yalign|yanchor|ycenter|yfill|ymaximum|yminimum|yoffset|ypos|ysize))\\b",
-          "name": "support.function.renpy"
-        },
-        {
-          "match": "\\b(text_(?:|activate_|hover_|idle_|insensitive_|selected_|selected_activate_|selected_hover_|selected_idle_|selected_insensitive_)(?:adjust_spacing|align|alt|anchor|antialias|area|black_color|bold|clipping|color|debug|drop_shadow|drop_shadow_color|first_indent|font|hinting|hyperlink_functions|italic|justify|kerning|language|layout|line_leading|line_spacing|line_overlap_split|maximum|min_width|minimum|minwidth|mipmap|newline_indent|offset|outline_scaling|outlines|pos|rest_indent|ruby_style|size|slow_abortable|slow_cps|slow_cps_multiplier|strikethrough|text_align|text_y_fudge|underline|vertical|xalign|xanchor|xcenter|xfill|xmaximum|xminimum|xoffset|xpos|xsize|xysize|yalign|yanchor|ycenter|yfill|ymaximum|yminimum|yoffset|ypos|ysize))\\b",
-          "name": "support.function.renpy"
-        },
-        {
-          "match": "\\b(viewport_(?:|activate_|hover_|idle_|insensitive_|selected_|selected_activate_|selected_hover_|selected_idle_|selected_insensitive_)(?:align|alt|anchor|area|clipping|debug|maximum|minimum|offset|pos|xalign|xanchor|xcenter|xfill|xmaximum|xminimum|xoffset|xpos|xsize|xysize|yalign|yanchor|ycenter|yfill|ymaximum|yminimum|yoffset|ypos|ysize))\\b",
-          "name": "support.function.renpy"
         }
       ]
     },
@@ -545,7 +900,7 @@
           "match": "^[ \\t]+(pause)\\b[ \\t]*([^#]*)",
           "captures": {
             "1": {
-              "name": "keyword.renpy"
+              "name": "keyword.control.flow.renpy"
             },
             "2": {
               "patterns": [

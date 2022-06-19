@@ -167,6 +167,17 @@
         }
       }
     },
+    "zorder": {
+      "name": "meta.zorder.renpy",
+      "match": "\\b(zorder)\\b[ \\t]*(.+)?",
+      "captures": {
+        "1": { "name": "keyword.renpy" },
+        "2": {
+          "name": "meta.zorder.params.renpy",
+          "patterns": [{ "include": "#statements" }]
+        }
+      }
+    },
 
     "image": {
       "patterns": [
@@ -276,14 +287,15 @@
           "beginCaptures": {
             "1": { "name": "keyword.renpy" }
           },
-          "end": "(?=\\b(at|as|behind|onlayer|expression|with)\\b|#)|$",
+          "end": "(?=\\b(at|as|behind|onlayer|expression|with|zorder)\\b|#)|$",
           "patterns": [{ "match": "\\b(?:[a-zA-Z_0-9]*)\\b[ \\t]*", "name": "entity.name.type.image.renpy" }]
         },
         { "include": "#at" },
         { "include": "#as" },
         { "include": "#with" },
         { "include": "#behind" },
-        { "include": "#onlayer" }
+        { "include": "#onlayer" },
+        { "include": "#zorder" }
       ]
     },
 

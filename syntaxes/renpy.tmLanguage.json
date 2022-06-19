@@ -9,7 +9,7 @@
       "patterns": [{ "include": "#renpy-statements" }, { "include": "#python-statements" }, { "include": "#keywords" }, { "include": "#say-statements" }]
     },
     "expressions": {
-      "patterns": [{ "include": "#comments" }, { "include": "#strings" }]
+      "patterns": [{ "include": "#comments" }, { "include": "#strings" }, { "include": "#literal" }]
     },
 
     "python-statements": {
@@ -80,7 +80,10 @@
         { "include": "#menu" },
         { "include": "#image" },
         { "include": "#transform" },
-        { "include": "#scene-show" },
+        { "include": "#scene" },
+        { "include": "#camera" },
+        { "include": "#show" },
+        { "include": "#with" },
         { "include": "#style-old" },
         { "include": "#use-old" },
         { "include": "#screen-old" },
@@ -109,6 +112,62 @@
       "patterns": [{ "include": "#atl" }]
     },
 
+    "at": {
+      "name": "meta.at.renpy",
+      "match": "\\b(at)\\b[ \\t]*(.+)?",
+      "captures": {
+        "1": { "name": "keyword.renpy" },
+        "2": {
+          "name": "meta.with.params.renpy",
+          "patterns": [{ "include": "#statements" }]
+        }
+      }
+    },
+    "as": {
+      "name": "meta.as.renpy",
+      "match": "\\b(as)\\b[ \\t]*(.+)?",
+      "captures": {
+        "1": { "name": "keyword.renpy" },
+        "2": {
+          "name": "meta.with.params.renpy",
+          "patterns": [{ "include": "#statements" }]
+        }
+      }
+    },
+    "with": {
+      "name": "meta.with.renpy",
+      "match": "\\b(with)\\b[ \\t]*(.+)?",
+      "captures": {
+        "1": { "name": "keyword.renpy" },
+        "2": {
+          "name": "meta.with.params.renpy",
+          "patterns": [{ "include": "#expressions" }]
+        }
+      }
+    },
+    "behind": {
+      "name": "meta.behind.renpy",
+      "match": "\\b(behind)\\b[ \\t]*(.+)?",
+      "captures": {
+        "1": { "name": "keyword.renpy" },
+        "2": {
+          "name": "meta.behind.params.renpy",
+          "patterns": [{ "include": "#statements" }]
+        }
+      }
+    },
+    "onlayer": {
+      "name": "meta.onlayer.renpy",
+      "match": "\\b(onlayer)\\b[ \\t]*(.+)?",
+      "captures": {
+        "1": { "name": "keyword.renpy" },
+        "2": {
+          "name": "meta.onlayer.params.renpy",
+          "patterns": [{ "include": "#statements" }]
+        }
+      }
+    },
+
     "image": {
       "patterns": [
         {
@@ -130,19 +189,20 @@
           "beginCaptures": {
             "1": { "name": "keyword.renpy" }
           },
-          "end": "(?!\\G)(?=\\b(at)\\b|#)|$",
+          "end": "(?!\\G)(?=\\b(at)\\b|#|=)|$",
           "patterns": [{ "match": "\\b(?:[a-zA-Z_0-9]*)\\b[ \\t]*", "name": "entity.name.type.image.renpy" }]
         },
-        { "include": "#at" }
+        { "include": "#at" },
+        { "include": "#with" }
       ]
     },
 
-    "scene-show": {
+    "scene": {
       "patterns": [
         {
           "name": "meta.$2.renpy",
           "contentName": "meta.$2.atl-block.renpy",
-          "begin": "^([ \\t]+)?(scene|show)\\b[ \\t]*([a-zA-Z_0-9 ]*)(:)",
+          "begin": "^([ \\t]+)?(scene)\\b[ \\t]*([a-zA-Z_0-9 ]*)(:)",
           "beginCaptures": {
             "1": { "name": "punctuation.whitespace.leading.renpy" },
             "2": { "name": "keyword.renpy" },
@@ -154,24 +214,77 @@
         },
         {
           "name": "meta.$1.renpy",
-          "begin": "^[ \\t]*(scene|show)\\b[ \\t]*",
+          "begin": "^[ \\t]*(scene)\\b[ \\t]*",
           "beginCaptures": {
             "1": { "name": "keyword.renpy" }
           },
-          "end": "(?=\\b(at)\\b|#)|$",
+          "end": "(?=\\b(at|with)\\b|#)|$",
           "patterns": [{ "match": "\\b(?:[a-zA-Z_0-9]*)\\b[ \\t]*", "name": "entity.name.type.image.renpy" }]
         },
-        { "include": "#at" }
+        { "include": "#at" },
+        { "include": "#with" }
       ]
     },
 
-    "at": {
-      "name": "meta.at.renpy",
-      "match": "\\b(at)\\b[ \\t]*(.+)?",
-      "captures": {
-        "1": { "name": "keyword.renpy" },
-        "2": { "name": "meta.at.params.renpy" }
-      }
+    "camera": {
+      "patterns": [
+        {
+          "name": "meta.camera.renpy",
+          "contentName": "meta.camera.atl-block.renpy",
+          "begin": "^([ \\t]+)?(camera)\\b[ \\t]*(:)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.whitespace.leading.renpy" },
+            "2": { "name": "keyword.renpy" },
+            "3": { "name": "entity.name.type.image.renpy" },
+            "4": { "name": "punctuation.section.atl.begin.renpy" }
+          },
+          "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+          "patterns": [{ "include": "#atl" }]
+        },
+        {
+          "name": "meta.camera.renpy",
+          "begin": "^[ \\t]*(camera)\\b[ \\t]*",
+          "beginCaptures": {
+            "1": { "name": "keyword.renpy" }
+          },
+          "end": "(?=\\b(at|with)\\b|#)|$",
+          "patterns": [{ "match": "\\b(?:[a-zA-Z_0-9]*)\\b[ \\t]*", "name": "entity.name.type.image.renpy" }]
+        },
+        { "include": "#at" },
+        { "include": "#with" }
+      ]
+    },
+
+    "show": {
+      "patterns": [
+        {
+          "name": "meta.$2.renpy",
+          "contentName": "meta.$2.atl-block.renpy",
+          "begin": "^([ \\t]+)?(show)\\b[ \\t]*([a-zA-Z_0-9 ]*)(:)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.whitespace.leading.renpy" },
+            "2": { "name": "keyword.renpy" },
+            "3": { "name": "entity.name.type.image.renpy" },
+            "4": { "name": "punctuation.section.atl.begin.renpy" }
+          },
+          "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+          "patterns": [{ "include": "#atl" }]
+        },
+        {
+          "name": "meta.$1.renpy",
+          "begin": "^[ \\t]*(show)\\b[ \\t]*",
+          "beginCaptures": {
+            "1": { "name": "keyword.renpy" }
+          },
+          "end": "(?=\\b(at|as|behind|onlayer|expression|with)\\b|#)|$",
+          "patterns": [{ "match": "\\b(?:[a-zA-Z_0-9]*)\\b[ \\t]*", "name": "entity.name.type.image.renpy" }]
+        },
+        { "include": "#at" },
+        { "include": "#as" },
+        { "include": "#with" },
+        { "include": "#behind" },
+        { "include": "#onlayer" }
+      ]
     },
 
     "atl": {
@@ -860,6 +973,16 @@
       "patterns": [{ "include": "#statements" }, { "include": "#expressions" }]
     },
 
+    "literal": {
+      "patterns": [
+        {
+          "comment": "Python literals",
+          "name": "constant.language.renpy",
+          "match": "\\b(?<!\\.)(True|False|None)\\b"
+        }
+      ]
+    },
+
     "keywords": {
       "patterns": [
         {
@@ -893,7 +1016,7 @@
         },
         {
           "comment": "Renpy keywords",
-          "match": "\\b(?<!\\.)(?:image|label|menu|nvl[ \\t]+clear|play|queue|scene|screen|show|transform)\\b",
+          "match": "\\b(?<!\\.)(?:camera|image|label|menu|nvl[ \\t]+clear|play|queue|scene|screen|show|transform|window)\\b",
           "name": "keyword.other.renpy"
         },
         {

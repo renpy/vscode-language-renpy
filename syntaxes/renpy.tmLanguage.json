@@ -694,7 +694,52 @@
     "say-statements": {
       "patterns": [
         {
-          "begin": "^[ \\t]+(?=[\"'`])",
+          "contentName": "string.quoted.renpy renpy.meta.say.$1",
+          "begin": "(?<=^[ \\t]+)(?:([a-zA-Z_]\\w*)\\b|\"([a-zA-Z_]\\w*)\\b\")((?:[ \\t]+(?:@|\\w+))*)?[ \\t]*(\"\"\"|\"|'''|'|```|`)",
+          "beginCaptures": {
+            "1": {
+              "name": "renpy.meta.character.$1",
+              "patterns": [
+                {
+                  "match": "extend",
+                  "name": "keyword.other.renpy"
+                },
+                {
+                  "comment": "Match special characters",
+                  "match": "adv|nvl|narrator|name_only|centered|vcentered",
+                  "name": "variable.other.constant.renpy"
+                },
+                {
+                  "match": ".*"
+                }
+              ]
+            },
+            "2": {
+              "name": "renpy.meta.string.character.$2"
+            },
+            "3": {
+              "name": "meta.say.attributes.renpy",
+              "patterns": [
+                {
+                  "name": "keyword.renpy",
+                  "match": "@"
+                }
+              ]
+            },
+            "4": { "name": "string.quoted.renpy punctuation.definition.string.begin.renpy" }
+          },
+          "end": "(?<!\\\\)(((?<=\\4)\\4)|\\4)[ \\t]*(\\(.*?\\)(?![^\\(]*?\\)))?",
+          "endCaptures": {
+            "1": { "name": "string.quoted.renpy punctuation.definition.string.end.renpy" },
+            "2": { "name": "meta.empty-string.renpy" },
+            "3": {
+              "patterns": [{ "include": "source.renpy.python#function-arguments" }]
+            }
+          },
+          "patterns": [{ "include": "#strings-interior" }]
+        },
+        {
+          "begin": "(?<=^[ \\t]+)(?=[\"'`])",
           "end": "(?<!\\\\)(?<=[\"'`])[ \\t]*(\\(.*?\\)(?![^\\(]*?\\)))?",
           "endCaptures": {
             "1": {
@@ -717,48 +762,6 @@
               "patterns": [{ "include": "#strings-interior" }]
             }
           ]
-        },
-        {
-          "contentName": "string.quoted.renpy renpy.meta.say.$1",
-          "begin": "(?<=^[ \\t]+)([a-zA-Z_]\\w*)\\b((?:[ \\t]+(?:@|\\w+))*)?[ \\t]*(\"\"\"|\"|'''|'|```|`)",
-          "beginCaptures": {
-            "1": {
-              "name": "renpy.meta.character.$1",
-              "patterns": [
-                {
-                  "match": "extend",
-                  "name": "keyword.other.renpy"
-                },
-                {
-                  "comment": "Match special characters",
-                  "match": "adv|nvl|narrator|name_only|centered|vcentered",
-                  "name": "variable.other.constant.renpy"
-                },
-                {
-                  "match": ".*"
-                }
-              ]
-            },
-            "2": {
-              "name": "meta.say.attributes.renpy",
-              "patterns": [
-                {
-                  "name": "keyword.renpy",
-                  "match": "@"
-                }
-              ]
-            },
-            "3": { "name": "string.quoted.renpy punctuation.definition.string.begin.renpy" }
-          },
-          "end": "(?<!\\\\)(((?<=\\3)\\3)|\\3)[ \\t]*(\\(.*?\\)(?![^\\(]*?\\)))?",
-          "endCaptures": {
-            "1": { "name": "string.quoted.renpy punctuation.definition.string.end.renpy" },
-            "2": { "name": "meta.empty-string.renpy" },
-            "3": {
-              "patterns": [{ "include": "source.renpy.python#function-arguments" }]
-            }
-          },
-          "patterns": [{ "include": "#strings-interior" }]
         }
       ]
     },

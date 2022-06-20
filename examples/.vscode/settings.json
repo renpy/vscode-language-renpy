@@ -156,6 +156,24 @@
                 "settings": {
                     "foreground": "#ccc"
                 }
+            },
+            {
+                "scope": "renpy.meta.say.narrator",
+                "settings": {
+                    "foreground": "#ff0"
+                }
+            },
+            {
+                "scope": "renpy.meta.say.e",
+                "settings": {
+                    "foreground": "#f0f"
+                }
+            },
+            {
+                "scope": "renpy.meta.character.e",
+                "settings": {
+                    "foreground": "#c8ffc8"
+                }
             }
         ]
     },

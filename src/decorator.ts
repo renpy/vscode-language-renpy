@@ -31,7 +31,9 @@ export function injectCustomTextmateTokens(rules: TextMateRule[]) {
     const tokensConfig = workspace.getConfiguration("editor");
 
     // If the config didn't exist yet, push the default tokens
-    const tokenColorCustomizations = tokensConfig.get<TextMateRules>("tokenColorCustomizations") ?? { textMateRules: customFontStyleRules };
+    let tokenColorCustomizations = tokensConfig.get<TextMateRules>("tokenColorCustomizations");
+    if (tokenColorCustomizations === undefined || tokenColorCustomizations.textMateRules === undefined) tokenColorCustomizations = { textMateRules: customFontStyleRules };
+
     const currentRules = tokenColorCustomizations.textMateRules;
 
     // Build the new rules for this file

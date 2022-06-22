@@ -937,14 +937,13 @@
           "name": "storage.type.function.renpy"
         },
         "3": {
-          "name": "storage.type.function.renpy",
           "patterns": [
             {
               "comment": "Menu name",
               "match": "[a-zA-Z_.]\\w*",
               "name": "entity.name.function.renpy"
             },
-            { "include": "source.renpy.python#parameters" }
+            { "include": "source.renpy.python#function-arguments" }
           ]
         },
         "4": {
@@ -957,7 +956,7 @@
     "menu-set": {
       "match": "^[ \\t]+(set)[ \\t]+(.+)?",
       "captures": {
-        "1": { "name": "support.function.renpy" },
+        "1": { "name": "keyword.renpy" },
         "2": {
           "name": "meta.embedded.line.python",
           "patterns": [{ "include": "source.renpy.python#expression-bare" }]
@@ -978,7 +977,7 @@
         "3": {
           "name": "meta.embedded.line.python",
           "patterns": [
-            { "include": "source.renpy.python#parameters" },
+            { "include": "source.renpy.python#function-arguments" },
             {
               "comment": "if condition",
               "match": "\\b(if)[ \\t]+(.+)?",

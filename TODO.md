@@ -105,11 +105,7 @@ Renpy Features List
   * init offset statement (https://www.renpy.org/doc/html/python.html#init-offset-statement)
 
   * Audio
-    - play statement (https://www.renpy.org/doc/html/audio.html#play-statement)
-    - stop statement (https://www.renpy.org/doc/html/audio.html#stop-statement)
-    - queue statement (https://www.renpy.org/doc/html/audio.html#queue-statement)
     - Audio playback tags (https://www.renpy.org/doc/html/audio.html#partial-playback)
-
     - voice statement (https://www.renpy.org/doc/html/voice.html)
 
   * style statement
@@ -122,19 +118,12 @@ Renpy Features List
     - https://www.renpy.org/doc/html/translation.html#translate-statement
 
   * transform statement
-    - Also see ATL (https://www.renpy.org/doc/html/atl.html)
     - List of properties (https://www.renpy.org/doc/html/std-transform-property-index.html)
     - https://www.renpy.org/doc/html/3dstage.html#transform-properties
     - https://www.renpy.org/doc/html/displayables.html#applying-transforms-to-displayables
-    - https://www.renpy.org/doc/html/atl.html#event-statement
     - https://www.renpy.org/doc/html/model.html#transforms-and-model-based-rendering
 
-  * ATL (https://www.renpy.org/doc/html/atl.html)
-    - animation (https://www.renpy.org/doc/html/atl.html#animation-statement)
-    - expressions (https://www.renpy.org/doc/html/atl.html#expression-statement)
-    - pass, repeat, block
-    - function statement (https://www.renpy.org/doc/html/atl.html#function-statement)
-    - time statement (https://www.renpy.org/doc/html/atl.html#time-statement)
+  * ATL
     - https://www.renpy.org/doc/html/model.html#transforms-and-model-based-rendering
   
   * Creator-Defined Statements (https://www.renpy.org/doc/html/cds.html)
@@ -159,23 +148,7 @@ Renpy Features List
     - build (https://www.renpy.org/doc/html/build.html)
     - updater (https://www.renpy.org/doc/html/updater.html)
     - iap (https://www.renpy.org/doc/html/iap.html)
-
-  * Special Labels: (https://www.renpy.org/doc/html/label.html#special-labels)
-    - start
-    - quit
-    - after_load
-    - splashscreen (see https://www.renpy.org/doc/html/splashscreen_presplash.html)
-    - before_main_menu
-    - main_menu
-    - after_warp
-    - hide_windows
   
-  * Special Functions:
-    - Character
-    - _() -> Translate
-    - __() -> Translate immediately
-    - _p() -> Reformat and flag as translatable
-
 - Reserved names (https://www.renpy.org/doc/html/reserved.html)
 
 - Complete index (https://www.renpy.org/doc/html/genindex.html)

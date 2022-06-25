@@ -79,6 +79,7 @@
         },
         { "include": "#menu" },
         { "include": "#image" },
+        { "include": "#audio" },
         { "include": "#transform" },
         { "include": "#scene" },
         { "include": "#camera" },
@@ -1013,6 +1014,64 @@
       ]
     },
 
+    "audio": {
+      "patterns": [{ "include": "#play" }, { "include": "#stop" }]
+    },
+
+    "builtin-audio-channels": {
+      "name": "support.type.audio.channel.renpy",
+      "match": "(?<!\\.)\\b(?:music|sound|voice|audio)\\b"
+    },
+    "play": {
+      "patterns": [
+        {
+          "name": "meta.$1.renpy",
+          "begin": "^[ \\t]*(play|queue)\\b[ \\t]+\\b([a-zA-Z_0-9]*)\\b[ \\t]*",
+          "beginCaptures": {
+            "1": { "name": "keyword.renpy" },
+            "2": {
+              "patterns": [{ "include": "#builtin-audio-channels" }, { "match": ".*", "name": "entity.name.type.audio.channel.renpy" }]
+            }
+          },
+          "end": "(?=[ \\t]*#)|$",
+          "patterns": [{ "include": "#strings" }, { "include": "#audio-params" }, { "include": "source.renpy.python#expression" }]
+        }
+      ]
+    },
+
+    "stop": {
+      "patterns": [
+        {
+          "name": "meta.stop.renpy",
+          "begin": "^[ \\t]*(stop)\\b[ \\t]+\\b([a-zA-Z_0-9]*)\\b[ \\t]*",
+          "captures": {
+            "1": { "name": "keyword.renpy" },
+            "2": {
+              "patterns": [{ "include": "#builtin-audio-channels" }, { "match": ".*", "name": "entity.name.type.audio.channel.renpy" }]
+            }
+          },
+          "end": "(?=[ \\t]*#)|$",
+          "patterns": [
+            {
+              "name": "keyword.renpy",
+              "match": "\\b(?<!\\.)(?:fadeout)\\b"
+            },
+            { "include": "source.renpy.python#number" }
+          ]
+        }
+      ]
+    },
+
+    "audio-params": {
+      "patterns": [
+        {
+          "name": "keyword.renpy",
+          "match": "\\b(?<!\\.)(?:fadeout|fadein|volume|loop|noloop)\\b"
+        },
+        { "include": "source.renpy.python#number" }
+      ]
+    },
+
     "keywords": {
       "patterns": [
         {
@@ -1073,7 +1132,7 @@
         {
           "comment": "[TODO: Should probably only be a keyword in the expression] Renpy sub expression keywords",
           "name": "keyword.other.renpy",
-          "match": "\\b(?<!\\.)(?:set|expression|sound|at|with|from)\\b"
+          "match": "\\b(?<!\\.)(?:set|expression|at|with|from)\\b"
         }
       ]
     },

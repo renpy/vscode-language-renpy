@@ -518,11 +518,16 @@
       "match": "\\\\$"
     },
     "string-formatting": {
-      "name": "meta.format.percent.python",
-      "match": "(%(\\([\\w\\s]*\\))?[-+#0 ]*(\\d+|\\*)?(\\.(\\d+|\\*))?([hlL])?[diouxXeEfFgGcrsab%])",
-      "captures": {
-        "1": { "name": "constant.character.format.placeholder.other.python" }
-      }
+      "patterns": [
+        { "include": "source.renpy#string-tags" },
+        {
+          "name": "meta.format.percent.python",
+          "match": "(%(\\([\\w\\s]*\\))?[-+#0 ]*(\\d+|\\*)?(\\.(\\d+|\\*))?([hlL])?[diouxXeEfFgGcrsab%])",
+          "captures": {
+            "1": { "name": "constant.character.format.placeholder.other.python" }
+          }
+        }
+      ]
     },
     "string-brace-formatting": {
       "patterns": [

@@ -15,3 +15,19 @@ Open a new issue for each bug or feature you want to propose.
 ## Pull Request Process
 
 If you want to add new features, please make sure to discuss it in an issue.
+
+## How to contribute
+
+1. Clone the project
+2. Start VSCode and select `Open Folder...`
+3. Now select the folder of your newly cloned project. (Eg. `../vscode-language-renpy/`)
+
+<details><summary>If done correctly your folder view should look like this.</summary>
+   
+![image](https://user-images.githubusercontent.com/60387522/176013833-e5d39ebc-0b13-4a6f-b10c-c2e3b4f68f67.png)
+   
+</details>
+
+4. Install the recommended extensions (A popup should appear). This will make sure you get the best developer experience in our workflow and it will format the code as intended.
+5. Make your changes and submit a pull request
+6. Happy coding! :D

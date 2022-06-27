@@ -71,9 +71,19 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     // hide rpyc files if the setting is enabled
     const config = workspace.getConfiguration("renpy");
-    if (config && config.excludeRpycFilesFromWorkspace) {
-        hideRpycFilesFromWorkspace();
+    if (config) {
+        updateShowRpycFilesConfig(config.excludeRpycFilesFromWorkspace);
     }
+
+    // Listen to configuration changes
+    context.subscriptions.push(
+        workspace.onDidChangeConfiguration((e) => {
+            if (e.affectsConfiguration("renpy.excludeRpycFilesFromWorkspace")) {
+                const newValue: boolean = workspace.getConfiguration("").get("conf.resource.insertEmptyLastLine") ?? true;
+                updateShowRpycFilesConfig(newValue);
+            }
+        })
+    );
 
     // hover provider for code tooltip
     const hoverProvider = languages.registerHoverProvider(
@@ -382,12 +392,12 @@ function updateStatusBar(text: string) {
     }
 }
 
-function hideRpycFilesFromWorkspace() {
+function updateShowRpycFilesConfig(hide: boolean) {
     const jsonDumpFile = getNavigationJsonFilepath();
     if (fs.existsSync(jsonDumpFile)) {
         const config = workspace.getConfiguration("files");
-        if (config["exclude"]["**/*.rpyc"] === undefined) {
-            config.update("exclude", { "**/*.rpyc": true }, ConfigurationTarget.Workspace);
+        if (config["exclude"]["**/*.rpyc"] === undefined || config["exclude"]["**/*.rpyc"] !== hide) {
+            config.update("exclude", { "**/*.rpyc": hide }, ConfigurationTarget.Workspace);
         }
     }
 }

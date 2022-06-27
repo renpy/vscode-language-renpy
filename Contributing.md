@@ -30,4 +30,4 @@ If you want to add new features, please make sure to discuss it in an issue.
 
 4. Install the recommended extensions (A popup should appear). This will make sure you get the best developer experience in our workflow and it will format the code as intended.
 5. Make your changes and submit a pull request
-6. Happy coding! :D
+6. Happy coding! 🚀

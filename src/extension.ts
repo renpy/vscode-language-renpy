@@ -38,10 +38,20 @@ export async function activate(context: ExtensionContext): Promise<any> {
 	}
 
 	// hide rpyc files if the setting is enabled
-	const config = workspace.getConfiguration('renpy');
-	if (config && config.excludeRpycFilesFromWorkspace) {
-		hideRpycFilesFromWorkspace();
-	}
+    const config = workspace.getConfiguration("renpy");
+    if (config) {
+        updateShowRpycFilesConfig(config.excludeRpycFilesFromWorkspace);
+    }
+
+    // Listen to configuration changes
+    context.subscriptions.push(
+        workspace.onDidChangeConfiguration((e) => {
+            if (e.affectsConfiguration("renpy.excludeRpycFilesFromWorkspace")) {
+                const newValue: boolean = workspace.getConfiguration("").get("conf.resource.insertEmptyLastLine") ?? true;
+                updateShowRpycFilesConfig(newValue);
+            }
+        })
+    );
 
 	// hover provider for code tooltip
 	let hoverProvider = languages.registerHoverProvider('renpy',
@@ -339,14 +349,14 @@ function updateStatusBar(text:string) {
 	}
 }
 
-function hideRpycFilesFromWorkspace() {
-	var jsonDumpFile = getNavigationJsonFilepath();
-	if (fs.existsSync(jsonDumpFile)) {
-		const config = workspace.getConfiguration("files");
-		if (config["exclude"]["**/*.rpyc"] === undefined) {
-			config.update("exclude", { "**/*.rpyc": true }, ConfigurationTarget.Workspace);
-		}
-	}
+function updateShowRpycFilesConfig(hide: boolean) {
+    const jsonDumpFile = getNavigationJsonFilepath();
+    if (fs.existsSync(jsonDumpFile)) {
+        const config = workspace.getConfiguration("files");
+        if (config["exclude"]["**/*.rpyc"] === undefined || config["exclude"]["**/*.rpyc"] !== hide) {
+            config.update("exclude", { "**/*.rpyc": hide }, ConfigurationTarget.Workspace);
+        }
+    }
 }
 
 function isValidExecutable(renpyExecutableLocation: string): boolean {

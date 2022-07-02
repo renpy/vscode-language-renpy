@@ -52,9 +52,9 @@
         ],
         "configuration": "./language-configuration.json",
         "icon": {
-					"light": "./renpy.svg",
-					"dark": "./renpy.svg"
-				}
+          "light": "./renpy.svg",
+          "dark": "./renpy.svg"
+        }
       }
     ],
     "grammars": [
@@ -88,6 +88,11 @@
       {
         "title": "Ren'Py",
         "properties": {
+          "renpy.excludeCompiledFilesFromWorkspace": {
+            "type": "boolean",
+            "default": true,
+            "description": "Exclude *.rpyc, *.rpa and *.rpymc files from the workspace explorer. (This will add a .vscode settings file to your workspace)"
+          },
           "renpy.excludeRpycFilesFromWorkspace": {
             "type": "boolean",
             "default": true,

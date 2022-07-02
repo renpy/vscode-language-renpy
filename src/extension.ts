@@ -3,20 +3,20 @@
 // Licensed under MIT License. See LICENSE in the project root for license information.
 'use strict';
 
-import { ExtensionContext, languages, commands, window, IndentAction, TextDocument, Position, CancellationToken, ProviderResult, HoverProvider, Hover, DefinitionProvider, Range, Location, Uri, workspace, CompletionContext, CompletionItemProvider, CompletionItem, DocumentSymbol, DocumentSymbolProvider, DocumentColorProvider, ColorInformation, ColorPresentation, Color, Definition, StatusBarItem, StatusBarAlignment, ConfigurationTarget, SignatureHelpProvider, SignatureHelp, SignatureHelpContext, ReferenceContext, ReferenceProvider, DocumentSemanticTokensProvider, SemanticTokens, SemanticTokensLegend } from 'vscode';
+import * as cp from 'child_process';
+import * as fs from 'fs';
+import { CancellationToken, Color, ColorInformation, ColorPresentation, commands, CompletionContext, CompletionItem, CompletionItemProvider, ConfigurationTarget, Definition, DefinitionProvider, DocumentColorProvider, DocumentSemanticTokensProvider, DocumentSymbol, DocumentSymbolProvider, ExtensionContext, Hover, HoverProvider, IndentAction, languages, Location, Position, ProviderResult, Range, ReferenceContext, ReferenceProvider, SemanticTokens, SemanticTokensLegend, SignatureHelp, SignatureHelpContext, SignatureHelpProvider, StatusBarAlignment, StatusBarItem, TextDocument, Uri, window, workspace } from 'vscode';
 import { getColorInformation, getColorPresentations } from './color';
-import { getStatusBarText, NavigationData } from './navigationdata';
-import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from './workspace';
-import { refreshDiagnostics, subscribeToDocumentChanges } from './diagnostics';
-import { getSemanticTokens } from './semantics';
-import { getHover } from './hover';
 import { getCompletionList } from './completion';
 import { getDefinition } from './definition';
+import { refreshDiagnostics, subscribeToDocumentChanges } from './diagnostics';
+import { getHover } from './hover';
+import { getStatusBarText, NavigationData } from './navigationdata';
 import { getDocumentSymbols } from './outline';
-import { getSignatureHelp } from './signature';
 import { findAllReferences } from './references';
-import * as fs from 'fs';
-import * as cp from 'child_process';
+import { getSemanticTokens } from './semantics';
+import { getSignatureHelp } from './signature';
+import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from './workspace';
 
 let myStatusBarItem: StatusBarItem;
 
@@ -38,20 +38,22 @@ export async function activate(context: ExtensionContext): Promise<any> {
 	}
 
 	// hide rpyc files if the setting is enabled
-    const config = workspace.getConfiguration("renpy");
-    if (config) {
-        updateShowRpycFilesConfig(config.excludeRpycFilesFromWorkspace);
-    }
+	const config = workspace.getConfiguration("renpy");
+	if (config) {
+		updateShowCompiledFilesConfig(config.excludeCompiledFilesFromWorkspace)
+		updateShowRpycFilesConfig(config.excludeRpycFilesFromWorkspace);
+	}
 
-    // Listen to configuration changes
-    context.subscriptions.push(
-        workspace.onDidChangeConfiguration((e) => {
-            if (e.affectsConfiguration("renpy.excludeRpycFilesFromWorkspace")) {
-                const newValue: boolean = workspace.getConfiguration("").get("conf.resource.insertEmptyLastLine") ?? true;
-                updateShowRpycFilesConfig(newValue);
-            }
-        })
-    );
+	// Listen to configuration changes
+	context.subscriptions.push(
+		workspace.onDidChangeConfiguration((e) => {
+			if (e.affectsConfiguration("renpy.excludeRpycFilesFromWorkspace")) {
+				const newValue: boolean = workspace.getConfiguration("").get("conf.resource.insertEmptyLastLine") ?? true;
+				updateShowCompiledFilesConfig(newValue)
+				updateShowRpycFilesConfig(newValue);
+			}
+		})
+	);
 
 	// hover provider for code tooltip
 	let hoverProvider = languages.registerHoverProvider('renpy',
@@ -80,7 +82,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 	// provider for Outline view
 	let symbolProvider = languages.registerDocumentSymbolProvider('renpy',
 		new (class implements DocumentSymbolProvider {
-			provideDocumentSymbols(document: TextDocument, token: CancellationToken) : ProviderResult<DocumentSymbol[]> {
+			provideDocumentSymbols(document: TextDocument, token: CancellationToken): ProviderResult<DocumentSymbol[]> {
 				return getDocumentSymbols(document);
 			}
 		})()
@@ -285,7 +287,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 	if (config && config.watchFoldersForChanges) {
 		console.log("Starting Watcher for images folder.");
 		try {
-			fs.watch(getImagesFolder(), {recursive: true},  async (event, filename) => {
+			fs.watch(getImagesFolder(), { recursive: true }, async (event, filename) => {
 				if (filename && event === 'rename') {
 					console.log(`${filename} created/deleted`);
 					await NavigationData.scanForImages();
@@ -297,7 +299,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 
 		console.log("Starting Watcher for audio folder.");
 		try {
-			fs.watch(getAudioFolder(), {recursive: true},  async (event, filename) => {
+			fs.watch(getAudioFolder(), { recursive: true }, async (event, filename) => {
 				if (filename && event === 'rename') {
 					console.log(`${filename} created/deleted`);
 					await NavigationData.scanForAudio();
@@ -340,7 +342,7 @@ export function getKeywordPrefix(document: TextDocument, position: Position, ran
 	return;
 }
 
-function updateStatusBar(text:string) {
+function updateStatusBar(text: string) {
 	if (text === "") {
 		myStatusBarItem.hide();
 	} else {
@@ -349,14 +351,22 @@ function updateStatusBar(text:string) {
 	}
 }
 
+function updateShowCompiledFilesConfig(hide: boolean) {
+	const jsonDumpFile = getNavigationJsonFilepath();
+	if (fs.existsSync(jsonDumpFile)) {
+		const config = workspace.getConfiguration("files");
+		config.update("exclude", { "**/*.rpyc": hide, "**/*.rpa": hide, "**/*.rpymc": hide, "**/cache/": hide }, ConfigurationTarget.Workspace);
+	}
+}
+
 function updateShowRpycFilesConfig(hide: boolean) {
-    const jsonDumpFile = getNavigationJsonFilepath();
-    if (fs.existsSync(jsonDumpFile)) {
-        const config = workspace.getConfiguration("files");
-        if (config["exclude"]["**/*.rpyc"] === undefined || config["exclude"]["**/*.rpyc"] !== hide) {
-            config.update("exclude", { "**/*.rpyc": hide }, ConfigurationTarget.Workspace);
-        }
-    }
+	const jsonDumpFile = getNavigationJsonFilepath();
+	if (fs.existsSync(jsonDumpFile)) {
+		const config = workspace.getConfiguration("files");
+		if (config["exclude"]["**/*.rpyc"] === undefined || config["exclude"]["**/*.rpyc"] !== hide) {
+			config.update("exclude", { "**/*.rpyc": hide }, ConfigurationTarget.Workspace);
+		}
+	}
 }
 
 function isValidExecutable(renpyExecutableLocation: string): boolean {
@@ -388,7 +398,7 @@ function ExecuteRenpyCompile(): boolean {
 		try {
 			NavigationData.isCompiling = true;
 			updateStatusBar("$(sync~spin) Compiling Ren'Py navigation data...");
-			let result = cp.spawnSync(renpy, args, { cwd:`${cwd}`, env: { PATH: process.env.PATH }, encoding:"utf-8", windowsHide: true});
+			let result = cp.spawnSync(renpy, args, { cwd: `${cwd}`, env: { PATH: process.env.PATH }, encoding: "utf-8", windowsHide: true });
 			if (result.error) {
 				console.log(`renpy spawn error: ${result.error}`);
 				return false;

@@ -68,8 +68,6 @@ Note: In Ren'py 7.5/8.0 VSCode is already included by default in the list of tex
 
 You can copy the [`Visual Studio Code.edit.py`](https://raw.githubusercontent.com/LuqueDaniel/vscode-language-renpy/master/Visual%20Studio%20Code.edit.py) file that is available at the root of this repository to the root of your project directory. This will add VSCode (or VSCodium) to the list of text editors in Ren'Py.
 
-
-
 ## Thanks To
 
 - [language-renpy](https://github.com/renpy/language-renpy). All contributors

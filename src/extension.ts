@@ -47,7 +47,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 	context.subscriptions.push(
 		workspace.onDidChangeConfiguration((e) => {
 			if (e.affectsConfiguration("renpy.excludeCompiledFilesFromWorkspace")) {
-				const newValue: boolean = workspace.getConfiguration("").get("conf.resource.insertEmptyLastLine") ?? true;
+				const newValue: boolean = workspace.getConfiguration("renpy").get("excludeCompiledFilesFromWorkspace") ?? true;
 				updateShowCompiledFilesConfig(newValue)
 			}
 		})

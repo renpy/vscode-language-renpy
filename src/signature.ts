@@ -1,5 +1,5 @@
 // Signature Provider
-'use strict';
+"use strict";
 
 import { TextDocument, Position, SignatureHelp, SignatureHelpContext } from "vscode";
 import { getKeywordPrefix } from "./extension";
@@ -11,7 +11,7 @@ import { NavigationData } from "./navigationdata";
  * @param document - The current TextDocument
  * @param position - The current position
  * @param context - The current context
- * @returns A SignatureHelp that describes the current method and the current argument 
+ * @returns A SignatureHelp that describes the current method and the current argument
  */
 export function getSignatureHelp(document: TextDocument, position: Position, context: SignatureHelpContext): SignatureHelp | undefined {
     let triggerWord = "";
@@ -19,14 +19,14 @@ export function getSignatureHelp(document: TextDocument, position: Position, con
     //find the keyword before the last '(' character before the current position
     const currentLine = document.lineAt(position.line).text;
     const currentLinePrefix = currentLine.substring(0, position.character);
-    const openParenthesis = currentLinePrefix.lastIndexOf('(');
+    const openParenthesis = currentLinePrefix.lastIndexOf("(");
     if (openParenthesis) {
         const prevPosition = new Position(position.line, openParenthesis - 1);
         const prevRange = document.getWordRangeAtPosition(prevPosition);
         if (!prevRange) {
             return;
         }
-        triggerWord = document.getText(prevRange);					
+        triggerWord = document.getText(prevRange);
         const prefix = getKeywordPrefix(document, position, prevRange);
         if (prefix) {
             triggerWord = `${prefix}.${triggerWord}`;
@@ -34,7 +34,7 @@ export function getSignatureHelp(document: TextDocument, position: Position, con
     }
 
     // show the documentation for the keyword that triggered this signature
-    let signatureHelp: SignatureHelp = new SignatureHelp();
+    const signatureHelp: SignatureHelp = new SignatureHelp();
     const locations = NavigationData.getNavigationDumpEntries(triggerWord);
     if (locations) {
         for (let location of locations) {
@@ -42,7 +42,7 @@ export function getSignatureHelp(document: TextDocument, position: Position, con
                 location = NavigationData.getClassData(location);
             }
             if (location.args && location.args.length > 0) {
-                let signature = getArgumentParameterInfo(location, currentLine, position.character);
+                const signature = getArgumentParameterInfo(location, currentLine, position.character);
                 signatureHelp.activeParameter = 0;
                 signatureHelp.activeSignature = 0;
                 signatureHelp.signatures.push(signature);

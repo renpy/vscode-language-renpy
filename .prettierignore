@@ -1,0 +1,6 @@
+# Ignore artifacts:
+**/out
+**/dist
+
+# Ignore all markdown files:
+*.md

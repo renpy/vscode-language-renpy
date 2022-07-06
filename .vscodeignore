@@ -1,12 +1,20 @@
+.github/**
 .vscode/**
 .vscode-test/**
+examples/**
+src
+out
 node_modules
-out/test/**
-out/**/*.map
-**/*.ts
+**/*.map
+
+# Specific root files
+.editorconfig
+.eslintric.json
+.gitattributes
 .gitignore
+CODE_OF_CONDUCT.md
+Contributing.md
+package-lock.json
 tsconfig.json
-vsc-extension-quickstart.md
-tslint.json
-!renpy.json
-!renpyauto.json
+browser.webpack.config.ts
+webpack.config.ts

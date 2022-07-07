@@ -27,7 +27,7 @@
     "Snippets"
   ],
   "engines": {
-    "vscode": "^1.50.0"
+    "vscode": "^1.63.0"
   },
   "capabilities": {
     "untrustedWorkspaces": {
@@ -180,7 +180,7 @@
     "lint": "eslint -c .eslintrc.json --ext .ts ./src/"
   },
   "devDependencies": {
-    "@types/vscode": "^1.50.0",
+    "@types/vscode": "^1.63.0",
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.0.3",
     "@typescript-eslint/eslint-plugin": "^5.25.0",

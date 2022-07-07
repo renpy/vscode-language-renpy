@@ -2,6 +2,8 @@
 //
 // Licensed under MIT License. See LICENSE in the project root for license information.
 
+import * as cp from "child_process";
+import * as fs from "fs";
 import {
     ExtensionContext,
     languages,
@@ -10,36 +12,36 @@ import {
     TextDocument,
     Position,
     CancellationToken,
-    ProviderResult,
-    HoverProvider,
-    Hover,
-    DefinitionProvider,
-    Range,
-    Location,
-    Uri,
-    workspace,
-    CompletionContext,
-    CompletionItemProvider,
-    CompletionItem,
-    DocumentSymbol,
-    DocumentSymbolProvider,
-    DocumentColorProvider,
+    Color,
     ColorInformation,
     ColorPresentation,
-    Color,
-    Definition,
-    StatusBarItem,
-    StatusBarAlignment,
+    CompletionContext,
+    CompletionItem,
+    CompletionItemProvider,
     ConfigurationTarget,
-    SignatureHelpProvider,
-    SignatureHelp,
-    SignatureHelpContext,
+    Definition,
+    DefinitionProvider,
+    DocumentColorProvider,
+    DocumentSemanticTokensProvider,
+    DocumentSymbol,
+    DocumentSymbolProvider,
+    Hover,
+    HoverProvider,
+    Location,
+    ProviderResult,
+    Range,
     ReferenceContext,
     ReferenceProvider,
-    DocumentSemanticTokensProvider,
     SemanticTokens,
     SemanticTokensLegend,
     DocumentSelector,
+    StatusBarItem,
+    workspace,
+    SignatureHelpProvider,
+    SignatureHelp,
+    SignatureHelpContext,
+    StatusBarAlignment,
+    Uri,
 } from "vscode";
 import { getColorInformation, getColorPresentations } from "./color";
 import { getStatusBarText, NavigationData } from "./navigation-data";
@@ -50,12 +52,10 @@ import { getHover } from "./hover";
 import { getCompletionList } from "./completion";
 import { getDefinition } from "./definition";
 import { getDocumentSymbols } from "./outline";
-import { getSignatureHelp } from "./signature";
 import { findAllReferences } from "./references";
 import { registerDebugDecorator, unregisterDebugDecorator } from "./tokenizer/debug-decorator";
-import * as fs from "fs";
-import * as cp from "child_process";
 import { clearTokenCache } from "./tokenizer/tokenizer";
+import { getSignatureHelp } from "./signature";
 
 const selector: DocumentSelector = { scheme: "file", language: "renpy" };
 let myStatusBarItem: StatusBarItem;
@@ -72,15 +72,15 @@ export async function activate(context: ExtensionContext): Promise<void> {
     // hide rpyc files if the setting is enabled
     const config = workspace.getConfiguration("renpy");
     if (config) {
-        updateShowRpycFilesConfig(config.excludeRpycFilesFromWorkspace);
+        updateShowCompiledFilesConfig(config.excludeCompiledFilesFromWorkspace);
     }
 
     // Listen to configuration changes
     context.subscriptions.push(
         workspace.onDidChangeConfiguration((e) => {
-            if (e.affectsConfiguration("renpy.excludeRpycFilesFromWorkspace")) {
-                const newValue: boolean = workspace.getConfiguration("").get("conf.resource.insertEmptyLastLine") ?? true;
-                updateShowRpycFilesConfig(newValue);
+            if (e.affectsConfiguration("renpy.excludeCompiledFilesFromWorkspace")) {
+                const newValue: boolean = workspace.getConfiguration("renpy").get("excludeCompiledFilesFromWorkspace") ?? true;
+                updateShowCompiledFilesConfig(newValue);
             }
         })
     );
@@ -392,14 +392,9 @@ function updateStatusBar(text: string) {
     }
 }
 
-function updateShowRpycFilesConfig(hide: boolean) {
-    const jsonDumpFile = getNavigationJsonFilepath();
-    if (fs.existsSync(jsonDumpFile)) {
-        const config = workspace.getConfiguration("files");
-        if (config["exclude"]["**/*.rpyc"] === undefined || config["exclude"]["**/*.rpyc"] !== hide) {
-            config.update("exclude", { "**/*.rpyc": hide }, ConfigurationTarget.Workspace);
-        }
-    }
+function updateShowCompiledFilesConfig(hide: boolean) {
+    const config = workspace.getConfiguration("files");
+    config.update("exclude", { "**/*.rpyc": hide, "**/*.rpa": hide, "**/*.rpymc": hide, "**/cache/": hide }, ConfigurationTarget.Workspace);
 }
 
 function isValidExecutable(renpyExecutableLocation: string): boolean {

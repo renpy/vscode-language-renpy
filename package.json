@@ -88,10 +88,10 @@
       {
         "title": "Ren'Py",
         "properties": {
-          "renpy.excludeRpycFilesFromWorkspace": {
+          "renpy.excludeCompiledFilesFromWorkspace": {
             "type": "boolean",
             "default": true,
-            "description": "Exclude *.rpyc (compiled Ren'Py script) files from the workspace folder list. (This will add a .vscode settings file to your workspace.)"
+            "description": "Exclude *.rpyc, *.rpa, *.rpymc files and the cache/ folder from the workspace explorer. (This will add a .vscode settings file to your workspace)"
           },
           "renpy.watchFoldersForChanges": {
             "type": "boolean",

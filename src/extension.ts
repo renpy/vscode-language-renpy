@@ -6,12 +6,43 @@
 import * as cp from "child_process";
 import * as fs from "fs";
 import {
-    CancellationToken, Color, ColorInformation,
-    ColorPresentation, commands, CompletionContext, CompletionItem, CompletionItemProvider, ConfigurationTarget, Definition, DefinitionProvider, DocumentColorProvider, DocumentSemanticTokensProvider, DocumentSymbol,
-    DocumentSymbolProvider, ExtensionContext, Hover, HoverProvider, IndentAction, languages, Location, Position, ProviderResult, Range, ReferenceContext,
-    ReferenceProvider, SemanticTokens,
-    SemanticTokensLegend, SignatureHelp,
-    SignatureHelpContext, SignatureHelpProvider, StatusBarAlignment, StatusBarItem, TextDocument, Uri, window, workspace
+    CancellationToken,
+    Color,
+    ColorInformation,
+    ColorPresentation,
+    commands,
+    CompletionContext,
+    CompletionItem,
+    CompletionItemProvider,
+    ConfigurationTarget,
+    Definition,
+    DefinitionProvider,
+    DocumentColorProvider,
+    DocumentSemanticTokensProvider,
+    DocumentSymbol,
+    DocumentSymbolProvider,
+    ExtensionContext,
+    Hover,
+    HoverProvider,
+    IndentAction,
+    languages,
+    Location,
+    Position,
+    ProviderResult,
+    Range,
+    ReferenceContext,
+    ReferenceProvider,
+    SemanticTokens,
+    SemanticTokensLegend,
+    SignatureHelp,
+    SignatureHelpContext,
+    SignatureHelpProvider,
+    StatusBarAlignment,
+    StatusBarItem,
+    TextDocument,
+    Uri,
+    window,
+    workspace,
 } from "vscode";
 import { getColorInformation, getColorPresentations } from "./color";
 import { getCompletionList } from "./completion";
@@ -49,7 +80,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     // hide rpyc files if the setting is enabled
     const config = workspace.getConfiguration("renpy");
     if (config) {
-        updateShowCompiledFilesConfig(config.excludeCompiledFilesFromWorkspace)
+        updateShowCompiledFilesConfig(config.excludeCompiledFilesFromWorkspace);
     }
 
     // Listen to configuration changes
@@ -57,7 +88,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
         workspace.onDidChangeConfiguration((e) => {
             if (e.affectsConfiguration("renpy.excludeCompiledFilesFromWorkspace")) {
                 const newValue: boolean = workspace.getConfiguration("renpy").get("excludeCompiledFilesFromWorkspace") ?? true;
-                updateShowCompiledFilesConfig(newValue)
+                updateShowCompiledFilesConfig(newValue);
             }
         })
     );

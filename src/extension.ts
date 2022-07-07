@@ -357,11 +357,8 @@ function updateStatusBar(text: string) {
 }
 
 function updateShowCompiledFilesConfig(hide: boolean) {
-	const jsonDumpFile = getNavigationJsonFilepath();
-	if (fs.existsSync(jsonDumpFile)) {
-		const config = workspace.getConfiguration("files");
-		config.update("exclude", { "**/*.rpyc": hide, "**/*.rpa": hide, "**/*.rpymc": hide, "**/cache/": hide }, ConfigurationTarget.Workspace);
-	}
+	const config = workspace.getConfiguration("files");
+	config.update("exclude", { "**/*.rpyc": hide, "**/*.rpa": hide, "**/*.rpymc": hide, "**/cache/": hide }, ConfigurationTarget.Workspace);
 }
 
 function isValidExecutable(renpyExecutableLocation: string): boolean {

@@ -1,0 +1,54 @@
+name: PR Check
+
+on:
+  pull_request:
+
+env:
+  NODE_VERSION: 16
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node_version: ${{ env.NODE_VERSION }}
+      - name: Lint
+        run: npm run lint
+
+  format:
+    name: Format
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node_version: ${{ env.NODE_VERSION }}
+      - name: Format
+        run: npm run format-check
+
+  build_extension:
+    name: Build Extension
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node_version: ${{ env.NODE_VERSION }}
+      - name: Build Extension
+        run: npm run vsce-package
+      - name: Upload Extension
+        uses: actions/upload-artifact@v3
+        with:
+          name: languague-renpy-package
+          path: "**/*.vsix"
+          if-no-files-found: error
+          retention-days: 7

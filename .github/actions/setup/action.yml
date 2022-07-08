@@ -1,0 +1,19 @@
+name: "setup"
+description: "Setup Node for all workflows"
+
+inputs:
+  node_version:
+    description: "Version of Node to use"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Node
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ inputs.node_version }}
+        cache: "npm"
+    - name: Install Node dependencies
+      run: npm ci --prefer-offline
+      shell: bash

@@ -192,7 +192,8 @@
     "test-compile": "tsc -p ./",
     "test": "npm run test-compile && node ./node_modules/vscode/bin/test",
     "lint": "eslint -c .eslintrc.json --ext .ts ./src/",
-    "vsce-package": "vsce package -o languague-renpy.vsix"
+    "vsce-package": "vsce package -o languague-renpy.vsix",
+    "format-check": "prettier --check 'src/**/*.ts' '.github/**/*.yml'"
   },
   "devDependencies": {
     "@types/mocha": "^9.1.1",
@@ -212,6 +213,7 @@
     "vscode-test": "^1.6.1",
     "webpack": "^5.72.1",
     "webpack-cli": "^4.9.2",
-    "vsce": "^2.9.2"
+    "vsce": "^2.9.2",
+    "prettier": "^2.7.1"
   }
 }

@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.11 (2022/06/30)
+
+### Changes
+
+* Added default language icon for `.rpy` and `.rpym` files [#140](https://github.com/LuqueDaniel/vscode-language-renpy/pull/140)
+
+### Fixes
+
+* Listen to config changes and update value accordingly [#147](https://github.com/LuqueDaniel/vscode-language-renpy/discussions/147) and [#149](https://github.com/LuqueDaniel/vscode-language-renpy/issues/149)
+
 ## 2.0.10 (2022/05/24)
 
 ### Fixes

@@ -2,7 +2,7 @@
   "name": "languague-renpy",
   "displayName": "Ren'Py Language",
   "description": "Adds rich support for the Ren'Py programming language to Visual Studio Code.",
-  "version": "2.0.10",
+  "version": "2.0.11",
   "publisher": "LuqueDaniel",
   "license": "MIT",
   "homepage": "https://github.com/LuqueDaniel/vscode-language-renpy",
@@ -100,10 +100,10 @@
       {
         "title": "Ren'Py",
         "properties": {
-          "renpy.excludeRpycFilesFromWorkspace": {
+          "renpy.excludeCompiledFilesFromWorkspace": {
             "type": "boolean",
             "default": true,
-            "description": "Exclude *.rpyc (compiled Ren'Py script) files from the workspace folder list. (This will add a .vscode settings file to your workspace.)"
+            "description": "Exclude *.rpyc, *.rpa, *.rpymc files and the cache/ folder from the workspace explorer. (This will add a .vscode settings file to your workspace)"
           },
           "renpy.watchFoldersForChanges": {
             "type": "boolean",

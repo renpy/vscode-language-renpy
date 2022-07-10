@@ -62,7 +62,9 @@ Feel free to [contribute](https://github.com/LuqueDaniel/vscode-language-renpy/b
 
 > Document Symbols are displayed in the Outline window in the sidebar.
 
-## Integrate VSCode as code editor in Ren'Py
+## Integrate VSCode as code editor in Ren'Py (Ren'Py 7.4 and older)
+
+Note: In Ren'py 7.5/8.0 VSCode is already included by default in the list of text editors
 
 You can copy the [`Visual Studio Code.edit.py`](https://raw.githubusercontent.com/LuqueDaniel/vscode-language-renpy/master/Visual%20Studio%20Code.edit.py) file that is available at the root of this repository to the root of your project directory. This will add VSCode (or VSCodium) to the list of text editors in Ren'Py.
 

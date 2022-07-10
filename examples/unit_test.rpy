@@ -763,6 +763,16 @@
         else:
             jump worst_ending
 
+        if ( points >= 10 
+            and points >= 5
+        ):
+            jump best_ending
+        elif points >= 1:
+            jump bad_ending
+        else:
+            jump worst_ending
+
+
         $ count = 10
 
         while count > 0:

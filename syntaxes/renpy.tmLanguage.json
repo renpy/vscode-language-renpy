@@ -1088,22 +1088,26 @@
         },
         {
           "comment": "Control flow keywords with block",
-          "match": "\\b(?<!\\.)(?:(if|elif|else)|(for|while))\\b(.*?)(:|$)",
-          "captures": {
+          "begin": "\\b(?<!\\.)(?:(if|elif|else)|(for|while))\\b",
+          "contentName" : "meta.embedded.line.python",
+          "beginCaptures": {
             "1": {
               "name": "keyword.control.conditional.renpy"
             },
             "2": {
               "name": "keyword.control.flow.renpy"
-            },
-            "3": {
-              "name": "meta.embedded.line.python",
-              "patterns": [{ "include": "source.renpy.python#expression-bare" }]
-            },
-            "4": {
+            }
+          },
+          "end": ":",
+          "endCaptures": {
+            "0": {
               "name": "punctuation.section.block.begin.renpy"
             }
-          }
+          },
+          "patterns": [
+            { "include": "#expressions"},
+            { "include": "source.renpy.python#expression"}
+          ]
         },
         {
           "comment": "Python statement keywords",

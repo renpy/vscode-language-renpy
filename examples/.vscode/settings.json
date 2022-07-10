@@ -1,6 +1,9 @@
 {
   "files.exclude": {
-    "**/*.rpyc": true
+    "**/*.rpyc": true,
+    "**/*.rpa": true,
+    "**/*.rpymc": true,
+    "**/cache/": true
   },
   "editor.tokenColorCustomizations": {
     "textMateRules": [

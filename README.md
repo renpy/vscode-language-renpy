@@ -10,7 +10,7 @@ An extension that adds rich support for the [Ren'Py](https://www.renpy.org/) pro
 [![Open VSX Rating](https://img.shields.io/open-vsx/rating/LuqueDaniel/languague-renpy?style=flat-square)](https://open-vsx.org/extension/LuqueDaniel/languague-renpy)
 ![Open VSX Downloads](https://img.shields.io/open-vsx/dt/LuqueDaniel/languague-renpy?style=flat-square)
 
-Grammar and snippets converted from [Ren'Py language support in Atom](https://github.com/renpy/language-renpy)
+Snippets converted from [Ren'Py language support in Atom](https://github.com/renpy/language-renpy)
 
 Feel free to [contribute](https://github.com/LuqueDaniel/vscode-language-renpy/blob/master/Contributing.md), fork this and send a pull request. :smile:
 

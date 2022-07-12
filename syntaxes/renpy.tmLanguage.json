@@ -46,7 +46,7 @@
             },
             "7": { "name": "punctuation.section.python.begin.renpy" }
           },
-          "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
           "patterns": [{ "include": "source.renpy.python" }]
         },
         {
@@ -109,7 +109,7 @@
         },
         "4": { "name": "punctuation.section.atl.begin.renpy" }
       },
-      "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
       "patterns": [{ "include": "#atl" }]
     },
 
@@ -192,7 +192,7 @@
             "3": { "name": "entity.name.type.image.renpy" },
             "4": { "name": "punctuation.section.atl.begin.renpy" }
           },
-          "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
           "patterns": [{ "include": "#atl" }]
         },
         {
@@ -221,7 +221,7 @@
             "3": { "name": "entity.name.type.image.renpy" },
             "4": { "name": "punctuation.section.atl.begin.renpy" }
           },
-          "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
           "patterns": [{ "include": "#atl" }]
         },
         {
@@ -254,7 +254,7 @@
             "3": { "name": "entity.name.type.image.renpy" },
             "4": { "name": "punctuation.section.atl.begin.renpy" }
           },
-          "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
           "patterns": [{ "include": "#atl" }]
         },
         {
@@ -283,7 +283,7 @@
             "3": { "name": "entity.name.type.image.renpy" },
             "4": { "name": "punctuation.section.atl.begin.renpy" }
           },
-          "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
           "patterns": [{ "include": "#atl" }]
         },
         {
@@ -415,7 +415,7 @@
             "2": { "name": "keyword.other.renpy" },
             "3": { "name": "punctuation.section.block.begin.renpy" }
           },
-          "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
           "patterns": [{ "include": "#atl" }]
         },
         {
@@ -428,7 +428,7 @@
             "3": { "patterns": [{ "include": "#atl-simple-expression" }] },
             "4": { "name": "punctuation.section.block.begin.renpy" }
           },
-          "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
           "patterns": [{ "include": "#atl" }]
         }
       ]
@@ -477,7 +477,7 @@
         "3": { "patterns": [{ "include": "#atl-event-name" }, { "match": "[ \\t]*,[ \\t]*", "name": "punctuation.separator.parameters.renpy" }, { "include": "#comments" }] },
         "4": { "name": "punctuation.section.block.begin.renpy" }
       },
-      "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
       "patterns": [{ "include": "#atl" }]
     },
     "atl-function": {
@@ -958,7 +958,7 @@
           "name": "punctuation.section.menu.begin.renpy"
         }
       },
-      "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
       "patterns": [{ "include": "#comments" }, { "include": "#menu-option" }, { "include": "#say-statements" }, { "include": "#menu-set" }]
     },
     "menu-set": {
@@ -1006,7 +1006,7 @@
           "name": "punctuation.section.menu-option.begin.renpy"
         }
       },
-      "end": "^(?!$|#)(?=(?!\\1)[ \\t]*[^ \\t#]|\\1[^ \\t#])",
+      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
 
       "patterns": [{ "include": "#statements" }, { "include": "#expressions" }]
     },

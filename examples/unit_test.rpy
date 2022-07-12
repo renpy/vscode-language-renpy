@@ -601,6 +601,9 @@
 
             "Drink tea.":
                 $ drank_tea = True
+            # spaces test
+            
+                $ drank_tea.function(something)
 
                 "I drink the tea, trying not to make a political statement as I do."
 

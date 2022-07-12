@@ -35,7 +35,7 @@ import { CharacterTokenType, ConstantTokenType, EntityTokenType, EscapedCharacte
 // Result should be manually fixed
 // Make sure to include this in internal captures to detect all newline tokens
 
-const lineContinuationPattern = /^(?!$|#)(?=(?!\1)[ \t]*[^ \t#]|\1[^ \t#])|\Z/gm;
+const lineContinuationPattern = /^(?=(?!\1)[ \t]*[^\s#]|\1[^\s#])|\Z/gm;
 
 const newLine: TokenPattern = {
     token: CharacterTokenType.NewLine,

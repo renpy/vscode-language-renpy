@@ -1,0 +1,50 @@
+name: Syntax bug report
+description: Report a bug related to syntax
+labels: ["topic:syntax"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for the report. Please follow the steps below:
+        - Read the [contributing guide](https://github.com/LuqueDaniel/vscode-language-renpy/blob/master/Contributing.md#reporting-bugs-or-proposing-features)
+        - Write a descriptive title for your issue.
+        - In order to identify the bug, we need you to provide screenshots with the [scope inspector](https://code.visualstudio.com/api/language-extensions/syntax-highlight-guide#scope-inspector)
+
+  - type: input
+    id: version
+    attributes:
+      label: Extension version
+      description: Which version of the extension are you using?
+      placeholder: 2.1.0, 2.0.11...
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: Issue description
+      description: |
+        Describe the issue. What doesn't work? And how do you expect it to work instead?
+        You can include images with drag and drop or pasting them.
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope-inspector-screenshots
+    attributes:
+      label: Scope inspector screenshots
+      description: |
+        Please provide screenshots of the syntax you believe is incorrectly highlighted.
+        Include screenshots of the scopes on and around the incorrect area using the [scope inspector](https://code.visualstudio.com/api/language-extensions/syntax-highlight-guide#scope-inspector).
+        You can include images with drag and drop or pasting them.
+    validations:
+      required: true
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Code
+      description: |
+        Provide the minimum raw source code that displays the issue.
+    validations:
+      required: true

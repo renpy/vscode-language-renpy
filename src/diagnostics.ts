@@ -138,13 +138,8 @@ export function refreshDiagnostics(doc: TextDocument, diagnosticCollection: Diag
             }
         }
 
-        const checkVariables: string = config.warnOnInvalidVariableNames;
-        if (checkVariables.toLowerCase() !== "disabled") {
-            let severity = DiagnosticSeverity.Error;
-            if (checkVariables.toLowerCase() === "warning") {
-                severity = DiagnosticSeverity.Warning;
-            }
-            checkInvalidVariableNames(diagnostics, line, lineIndex, severity);
+        if (config.warnOnInvalidVariableNames) {
+            checkInvalidVariableNames(diagnostics, line, lineIndex);
         }
 
         if (config.warnOnReservedVariableNames) {
@@ -243,7 +238,7 @@ function checkStrayDollarSigns(diagnostics: Diagnostic[], line: string, lineInde
     }
 }
 
-function checkInvalidVariableNames(diagnostics: Diagnostic[], line: string, lineIndex: number, severity: DiagnosticSeverity) {
+function checkInvalidVariableNames(diagnostics: Diagnostic[], line: string, lineIndex: number) {
     // check line for invalid define/default variable names
     // Variables must begin with a letter or number, and may not begin with '_'
     let matches;
@@ -251,7 +246,7 @@ function checkInvalidVariableNames(diagnostics: Diagnostic[], line: string, line
         if (!renpyStore.includes(matches[2])) {
             const offset = matches.index + matches[0].indexOf(matches[2]);
             const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
-            const diagnostic = new Diagnostic(range, `"${matches[2]}": Variables must begin with a letter (and may contain numbers, letters, or underscores).`, severity);
+            const diagnostic = new Diagnostic(range, `"${matches[2]}": Variables must begin with a letter (and may contain numbers, letters, or underscores).`, DiagnosticSeverity.Error);
             diagnostics.push(diagnostic);
         }
     }

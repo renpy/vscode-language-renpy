@@ -7,9 +7,6 @@ import * as cp from "child_process";
 import * as fs from "fs";
 import {
     CancellationToken,
-    Color,
-    ColorInformation,
-    ColorPresentation,
     commands,
     CompletionContext,
     CompletionItem,
@@ -17,7 +14,6 @@ import {
     ConfigurationTarget,
     Definition,
     DefinitionProvider,
-    DocumentColorProvider,
     DocumentSemanticTokensProvider,
     DocumentSymbol,
     DocumentSymbolProvider,
@@ -44,7 +40,7 @@ import {
     window,
     workspace,
 } from "vscode";
-import { getColorInformation, getColorPresentations, RenpyColorProvider } from "./color";
+import { RenpyColorProvider } from "./color";
 import { getCompletionList } from "./completion";
 import { getDefinition } from "./definition";
 import { refreshDiagnostics, subscribeToDocumentChanges } from "./diagnostics";

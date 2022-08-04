@@ -1,14 +1,23 @@
 // Color conversion methods for Color provider
 "use strict";
 
-import { Color, ColorInformation, ColorPresentation, Range, TextDocument, TextEdit } from "vscode";
+import { CancellationToken, Color, ColorInformation, ColorPresentation, DocumentColorProvider, Range, TextDocument, TextEdit } from "vscode";
+
+export class RenpyColorProvider implements DocumentColorProvider {
+    public provideDocumentColors(document: TextDocument, token: CancellationToken): Thenable<ColorInformation[]> {
+        return getColorInformation(document);
+    }
+    public provideColorPresentations(color: Color, context: { document: TextDocument; range: Range }, token: CancellationToken): Thenable<ColorPresentation[]> {
+        return getColorPresentations(color, context.document, context.range);
+    }
+}
 
 /**
  * Finds all colors in the given document and returns their ranges and color
  * @param document - the TextDocument to search
- * @returns - ColorInformation[] - an array that provides a range and color for each match
+ * @returns - Thenable<ColorInformation[]> - an array that provides a range and color for each match
  */
-export function getColorInformation(document: TextDocument): ColorInformation[] {
+export function getColorInformation(document: TextDocument): Thenable<ColorInformation[]> {
     // find all colors in the document
     const colors: ColorInformation[] = [];
     for (let i = 0; i < document.lineCount; ++i) {
@@ -50,7 +59,7 @@ export function getColorInformation(document: TextDocument): ColorInformation[] 
             }
         }
     }
-    return colors;
+    return Promise.resolve(colors);
 }
 
 /**
@@ -60,7 +69,7 @@ export function getColorInformation(document: TextDocument): ColorInformation[] 
  * @param range - The Range of the color match
  * @returns - ColorPresentation to replace the color in the document with the new chosen color
  */
-export function getColorPresentations(color: Color, document: TextDocument, range: Range): ColorPresentation[] | undefined {
+export function getColorPresentations(color: Color, document: TextDocument, range: Range): Thenable<ColorPresentation[]> {
     // user hovered/tapped the color block/return the color they picked
     const colors: ColorPresentation[] = [];
     const line = document.lineAt(range.start.line).text;
@@ -95,7 +104,7 @@ export function getColorPresentations(color: Color, document: TextDocument, rang
         colors.push(rgbColorPres);
     }
 
-    return colors;
+    return Promise.resolve(colors);
 }
 
 /**

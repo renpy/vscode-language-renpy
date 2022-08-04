@@ -44,7 +44,7 @@ import {
     window,
     workspace,
 } from "vscode";
-import { getColorInformation, getColorPresentations } from "./color";
+import { getColorInformation, getColorPresentations, RenpyColorProvider } from "./color";
 import { getCompletionList } from "./completion";
 import { getDefinition } from "./definition";
 import { refreshDiagnostics, subscribeToDocumentChanges } from "./diagnostics";
@@ -157,17 +157,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     context.subscriptions.push(completionProvider);
 
     // Color Provider
-    const colorProvider = languages.registerColorProvider(
-        "renpy",
-        new (class implements DocumentColorProvider {
-            provideDocumentColors(document: TextDocument, token: CancellationToken): ProviderResult<ColorInformation[]> {
-                return getColorInformation(document);
-            }
-            provideColorPresentations(color: Color, context: { document: TextDocument; range: Range }, token: CancellationToken): ProviderResult<ColorPresentation[]> {
-                return getColorPresentations(color, context.document, context.range);
-            }
-        })()
-    );
+    const colorProvider = languages.registerColorProvider("renpy", new RenpyColorProvider());
     context.subscriptions.push(colorProvider);
 
     // Find All References provider

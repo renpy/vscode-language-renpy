@@ -263,11 +263,15 @@
           "beginCaptures": {
             "1": { "name": "keyword.renpy" }
           },
-          "end": "(?=\\b(at|with)\\b|#)|$",
+          "end": "(?=\\b(at|as|behind|onlayer|expression|with|zorder)\\b|#)|$",
           "patterns": [{ "include": "#strings" }, { "match": "\\b(?:[a-zA-Z_0-9]*)\\b[ \\t]*", "name": "entity.name.type.image.renpy" }]
         },
         { "include": "#at" },
-        { "include": "#with" }
+        { "include": "#as" },
+        { "include": "#with" },
+        { "include": "#behind" },
+        { "include": "#onlayer" },
+        { "include": "#zorder" }
       ]
     },
 

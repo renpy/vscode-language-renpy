@@ -39,6 +39,7 @@ import {
     Uri,
     window,
     workspace,
+    WorkspaceConfiguration,
 } from "vscode";
 import { RenpyColorProvider } from "./color";
 import { getCompletionList } from "./completion";
@@ -375,7 +376,14 @@ function updateStatusBar(text: string) {
 
 function updateShowCompiledFilesConfig(hide: boolean) {
     const config = workspace.getConfiguration("files");
-    config.update("exclude", { "**/*.rpyc": hide, "**/*.rpa": hide, "**/*.rpymc": hide, "**/cache/": hide }, ConfigurationTarget.Workspace);
+    const newConfig = {
+        ...config.inspect<WorkspaceConfiguration>("exclude")?.workspaceValue,
+        "**/*.rpyc": hide,
+        "**/*.rpa": hide,
+        "**/*.rpymc": hide,
+        "**/cache/": hide,
+    };
+    config.update("exclude", newConfig, ConfigurationTarget.Workspace);
 }
 
 function isValidExecutable(renpyExecutableLocation: string): boolean {

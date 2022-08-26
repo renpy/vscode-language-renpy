@@ -264,7 +264,7 @@
             "1": { "name": "keyword.renpy" }
           },
           "end": "(?=\\b(at|with)\\b|#)|$",
-          "patterns": [{ "match": "\\b(?:[a-zA-Z_0-9]*)\\b[ \\t]*", "name": "entity.name.type.image.renpy" }]
+          "patterns": [{ "include": "#strings" }, { "match": "\\b(?:[a-zA-Z_0-9]*)\\b[ \\t]*", "name": "entity.name.type.image.renpy" }]
         },
         { "include": "#at" },
         { "include": "#with" }

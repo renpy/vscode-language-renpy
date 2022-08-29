@@ -12,16 +12,12 @@ import {
     TextDocument,
     Position,
     CancellationToken,
-    Color,
-    ColorInformation,
-    ColorPresentation,
     CompletionContext,
     CompletionItem,
     CompletionItemProvider,
     ConfigurationTarget,
     Definition,
     DefinitionProvider,
-    DocumentColorProvider,
     DocumentSemanticTokensProvider,
     DocumentSymbol,
     DocumentSymbolProvider,
@@ -37,13 +33,14 @@ import {
     DocumentSelector,
     StatusBarItem,
     workspace,
+    WorkspaceConfiguration,
     SignatureHelpProvider,
     SignatureHelp,
     SignatureHelpContext,
     StatusBarAlignment,
     Uri,
 } from "vscode";
-import { getColorInformation, getColorPresentations } from "./color";
+import { RenpyColorProvider } from "./color";
 import { getStatusBarText, NavigationData } from "./navigation-data";
 import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
 import { refreshDiagnostics, subscribeToDocumentChanges } from "./diagnostics";
@@ -149,17 +146,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     context.subscriptions.push(completionProvider);
 
     // Color Provider
-    const colorProvider = languages.registerColorProvider(
-        selector,
-        new (class implements DocumentColorProvider {
-            provideDocumentColors(document: TextDocument, token: CancellationToken): ProviderResult<ColorInformation[]> {
-                return getColorInformation(document);
-            }
-            provideColorPresentations(color: Color, context: { document: TextDocument; range: Range }, token: CancellationToken): ProviderResult<ColorPresentation[]> {
-                return getColorPresentations(color, context.document, context.range);
-            }
-        })()
-    );
+    const colorProvider = languages.registerColorProvider("renpy", new RenpyColorProvider());
     context.subscriptions.push(colorProvider);
 
     // Find All References provider
@@ -394,7 +381,14 @@ function updateStatusBar(text: string) {
 
 function updateShowCompiledFilesConfig(hide: boolean) {
     const config = workspace.getConfiguration("files");
-    config.update("exclude", { "**/*.rpyc": hide, "**/*.rpa": hide, "**/*.rpymc": hide, "**/cache/": hide }, ConfigurationTarget.Workspace);
+    const newConfig = {
+        ...config.inspect<WorkspaceConfiguration>("exclude")?.workspaceValue,
+        "**/*.rpyc": hide,
+        "**/*.rpa": hide,
+        "**/*.rpymc": hide,
+        "**/cache/": hide,
+    };
+    config.update("exclude", newConfig, ConfigurationTarget.Workspace);
 }
 
 function isValidExecutable(renpyExecutableLocation: string): boolean {

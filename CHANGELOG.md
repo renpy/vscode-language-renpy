@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.0.13 (2022/08/29)
+
+### Fixes
+
+* Fixed overwrite existing 'files.exclude' in `settings.json` [#184](https://github.com/LuqueDaniel/vscode-language-renpy/pull/184)
+
+## 2.0.12 (2022/07/12)
+
+### Changes
+
+* Updated minimum version of VS Code to `1.63.0` [#159](https://github.com/LuqueDaniel/vscode-language-renpy/pull/159)
+* Replaced config option `renpy.excludeRpycFilesFromWorkspace` with `renpy.excludeCompiledFilesFromWorkspace`. Now `*.rpyc`, `*.rpa`, `*.rpymc` files and the `cache/` directory will be excluded from the workspace [#155](https://github.com/LuqueDaniel/vscode-language-renpy/pull/155)
+
+### Dependencies
+
+* Bumps `@types/node` from `17.0.31` to `18.0.3` [#157](https://github.com/LuqueDaniel/vscode-language-renpy/pull/157)
+* Bumps `typescript` from `4.6.4` to `4.7.4` [#152](https://github.com/LuqueDaniel/vscode-language-renpy/pull/152)
+
 ## 2.0.11 (2022/06/30)
 
 ### Changes

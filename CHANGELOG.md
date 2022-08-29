@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.13 (2022/08/29)
+
+### Fixes
+
+* Fixed overwrite existing 'files.exclude' in `settings.json` [#184](https://github.com/LuqueDaniel/vscode-language-renpy/pull/184)
+
 ## 2.0.12 (2022/07/12)
 
 ### Changes

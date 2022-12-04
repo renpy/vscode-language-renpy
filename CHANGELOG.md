@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.14 (2022/12/04)
+
+### Fixes
+
+* Activates the extension when the language is `renpy` [#221](https://github.com/LuqueDaniel/vscode-language-renpy/pull/221)
+
 ## 2.0.13 (2022/08/29)
 
 ### Fixes

@@ -1,13 +1,15 @@
-interface TokenCapturePattern {
+import { TokenType } from "./renpy-tokens";
+
+export interface TokenCapturePattern {
     readonly token?: TokenType;
     readonly patterns?: TokenPatternArray;
 }
 
-interface TokenPatternCapture {
-    readonly [k: string | number]: TokenCapturePattern;
+export interface TokenPatternCapture {
+    readonly [k: number]: TokenCapturePattern;
 }
 
-interface TokenRepoPattern {
+export interface TokenRepoPattern {
     readonly patterns: TokenPatternArray;
 
     // These are added to prevent falsy assignment
@@ -21,7 +23,7 @@ interface TokenRepoPattern {
     endCaptures?: never;
 }
 
-interface TokenRangePattern {
+export interface TokenRangePattern {
     readonly token?: TokenType;
     readonly contentToken?: TokenType;
 
@@ -38,7 +40,7 @@ interface TokenRangePattern {
     captures?: never;
 }
 
-interface TokenMatchPattern {
+export interface TokenMatchPattern {
     readonly token?: TokenType;
     match: RegExp;
     readonly captures?: TokenPatternCapture;
@@ -52,5 +54,9 @@ interface TokenMatchPattern {
     endCaptures?: never;
 }
 
-declare type TokenPattern = TokenRangePattern | TokenMatchPattern | TokenRepoPattern;
-declare type TokenPatternArray = Array<TokenPattern>;
+interface TokenPatternDebugInfo {
+    readonly debugName?: string;
+}
+
+export declare type TokenPattern = (TokenRangePattern | TokenMatchPattern | TokenRepoPattern) & TokenPatternDebugInfo;
+export declare type TokenPatternArray = Array<TokenPattern>;

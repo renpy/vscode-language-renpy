@@ -2,7 +2,8 @@
 "use strict";
 
 import { Position, Range } from "vscode";
-import { CharacterTokenType, MetaTokenType, TokenType, TokenTypeIndex } from "./renpy.tokens";
+import { CharacterTokenType, MetaTokenType, TokenType, TokenTypeIndex } from "./renpy-tokens";
+import { TokenPattern, TokenRangePattern, TokenMatchPattern, TokenRepoPattern } from "./token-pattern-types";
 
 export class TokenPosition {
     line: number;

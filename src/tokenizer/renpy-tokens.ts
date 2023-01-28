@@ -26,21 +26,36 @@ export const enum KeywordTokenType {
     // Renpy keywords
     Label,
     Menu,
-    Play,
     Pause,
     Screen,
     Scene,
+    Camera,
     Show,
     Image,
     Transform,
+    Extend,
+
+    // Audio
+    Voice,
+    Sound,
+    Play,
+    Queue,
+    Stop,
+    Fadeout,
 
     // Renpy sub expression keywords
     Set,
     Expression,
-    Sound,
     At,
+    As,
     With,
+    OnLayer,
+    ZOrder,
+    Behind,
+    Animation,
     From,
+    Time,
+    Repeat,
     DollarSign,
 
     // Conditional control flow keywords
@@ -55,17 +70,34 @@ export const enum KeywordTokenType {
     Return,
     Jump,
     Call,
+    Contains,
+    Parallel,
+    Block,
+    Choice,
+
+    // ATL keywords
+    Warp,
+    Circles,
+    Clockwise,
+    Counterclockwise,
+    Event,
+    On,
+    Function,
 }
 
 export const enum EntityTokenType {
     Class = TokenTypeIndex.EntityStart,
     Namespace,
-    Function,
+    FunctionName,
     Tag,
-    Variable,
+    VariableName,
+
+    // ATL entities
+    EventName,
+    PropertyName,
 }
 
-export const enum ConstantTokenType {
+export const enum LiteralTokenType {
     String = TokenTypeIndex.ConstantStart,
     UnquotedString,
 
@@ -145,6 +177,7 @@ export const enum CharacterTokenType {
     WhiteSpace, // Tab or space
     NewLine,
 
+    Period, // .
     Colon, // :
     Semicolon, // ;
     Comma, // ,
@@ -173,7 +206,7 @@ export const enum EscapedCharacterTokenType {
 export const enum MetaTokenType {
     Invalid = TokenTypeIndex.InvalidTokenID,
     Comment = TokenTypeIndex.MetaStart,
-    Block,
+    CodeBlock,
 
     PythonLine,
     PythonBlock,
@@ -184,9 +217,42 @@ export const enum MetaTokenType {
     TagBlock,
     Placeholder,
 
+    MenuStatement,
     MenuBlock,
     MenuOption,
     MenuOptionBlock,
+
+    CameraStatement,
+    SceneStatement,
+    ShowStatement,
+    ImageStatement,
+
+    NarratorSayStatement,
+    SayStatement,
+    CharacterNameString,
+
+    CallStatement,
+    JumpStatement,
+
+    PlayAudioStatement,
+    StopAudioStatement,
+
+    LabelStatement,
+    LabelCall,
+    LabelAccess,
+
+    AtStatement,
+    AsStatement,
+    WithStatement,
+
+    ATLBlock,
+    ATLChoiceBlock,
+    ATLContains,
+    ATLWith,
+    ATLEvent,
+    ATLFunction,
+    ATLWarper,
+    ATLOn,
 }
 
-export type TokenType = KeywordTokenType | EntityTokenType | MetaTokenType | ConstantTokenType | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;
+export type TokenType = KeywordTokenType | EntityTokenType | MetaTokenType | LiteralTokenType | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;

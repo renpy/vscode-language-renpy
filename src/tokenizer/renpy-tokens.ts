@@ -34,7 +34,7 @@ export const enum KeywordTokenType {
     Image,
     Transform,
     Extend,
-    
+
     // Audio
     Voice,
     Sound,

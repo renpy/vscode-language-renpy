@@ -606,7 +606,6 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     On: { name: "On", value: KeywordTokenType.On },
     Function: { name: "Function", value: KeywordTokenType.Function },
 
-
     Class: { name: "Class", value: EntityTokenType.Class },
     Namespace: { name: "Namespace", value: EntityTokenType.Namespace },
     FunctionName: { name: "FunctionName", value: EntityTokenType.FunctionName },
@@ -615,7 +614,6 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
 
     EventName: { name: "EventName", value: EntityTokenType.EventName },
     PropertyName: { name: "PropertyName", value: EntityTokenType.PropertyName },
-
 
     String: { name: "String", value: LiteralTokenType.String },
     UnquotedString: { name: "UnquotedString", value: LiteralTokenType.UnquotedString },
@@ -626,7 +624,6 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     Float: { name: "Float", value: LiteralTokenType.Float },
 
     Boolean: { name: "Boolean", value: LiteralTokenType.Boolean },
-
 
     Plus: { name: "Plus", value: OperatorTokenType.Plus },
     Minus: { name: "Minus", value: OperatorTokenType.Minus },
@@ -642,7 +639,7 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     BitwiseNot: { name: "BitwiseNot", value: OperatorTokenType.BitwiseNot },
     BitwiseLeftShift: { name: "BitwiseLeftShift", value: OperatorTokenType.BitwiseLeftShift },
     BitwiseRightShift: { name: "BitwiseRightShift", value: OperatorTokenType.BitwiseRightShift },
-    
+
     Assign: { name: "Assign", value: OperatorTokenType.Assign },
     PlusAssign: { name: "PlusAssign", value: OperatorTokenType.PlusAssign },
     MinusAssign: { name: "MinusAssign", value: OperatorTokenType.MinusAssign },
@@ -656,14 +653,14 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     BitwiseXOrAssign: { name: "BitwiseXOrAssign", value: OperatorTokenType.BitwiseXOrAssign },
     BitwiseLeftShiftAssign: { name: "BitwiseLeftShiftAssign", value: OperatorTokenType.BitwiseLeftShiftAssign },
     BitwiseRightShiftAssign: { name: "BitwiseRightShiftAssign", value: OperatorTokenType.BitwiseRightShiftAssign },
-    
+
     Equals: { name: "Equals", value: OperatorTokenType.Equals },
     NotEquals: { name: "NotEquals", value: OperatorTokenType.NotEquals },
     GreaterThan: { name: "GreaterThan", value: OperatorTokenType.GreaterThan },
     LessThan: { name: "LessThan", value: OperatorTokenType.LessThan },
     GreaterThanEquals: { name: "GreaterThanEquals", value: OperatorTokenType.GreaterThanEquals },
     LessThanEquals: { name: "LessThanEquals", value: OperatorTokenType.LessThanEquals },
-   
+
     And: { name: "And", value: OperatorTokenType.And },
     Or: { name: "Or", value: OperatorTokenType.Or },
     Not: { name: "Not", value: OperatorTokenType.Not },
@@ -674,21 +671,20 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     In: { name: "In", value: OperatorTokenType.In },
     NotIn: { name: "NotIn", value: OperatorTokenType.NotIn },
 
-
     Unknown: { name: "Unknown", value: CharacterTokenType.Unknown },
 
     OpenParentheses: { name: "OpenParentheses", value: CharacterTokenType.OpenParentheses },
     CloseParentheses: { name: "CloseParentheses", value: CharacterTokenType.CloseParentheses },
-    
+
     OpenBracket: { name: "OpenBracket", value: CharacterTokenType.OpenBracket },
     CloseBracket: { name: "CloseBracket", value: CharacterTokenType.CloseBracket },
-    
+
     OpenSquareBracket: { name: "OpenSquareBracket", value: CharacterTokenType.OpenSquareBracket },
     CloseSquareBracket: { name: "CloseSquareBracket", value: CharacterTokenType.CloseSquareBracket },
-    
+
     WhiteSpace: { name: "WhiteSpace", value: CharacterTokenType.WhiteSpace },
     NewLine: { name: "NewLine", value: CharacterTokenType.NewLine },
-    
+
     Period: { name: "Period", value: CharacterTokenType.Period },
     Colon: { name: "Colon", value: CharacterTokenType.Colon },
     Semicolon: { name: "Semicolon", value: CharacterTokenType.Semicolon },
@@ -698,15 +694,13 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     Quote: { name: "Quote", value: CharacterTokenType.Quote },
     DoubleQuote: { name: "DoubleQuote", value: CharacterTokenType.DoubleQuote },
     BackQuote: { name: "BackQuote", value: CharacterTokenType.BackQuote },
-    
+
     Backslash: { name: "Backslash", value: CharacterTokenType.Backslash },
     ForwardSlash: { name: "ForwardSlash", value: CharacterTokenType.ForwardSlash },
-    
-
 
     EscWhitespace: { name: "EscWhitespace", value: EscapedCharacterTokenType.EscWhitespace },
     EscNewline: { name: "EscNewline", value: EscapedCharacterTokenType.EscNewline },
-    
+
     EscQuote: { name: "EscQuote", value: EscapedCharacterTokenType.EscQuote },
     EscDoubleQuote: { name: "EscDoubleQuote", value: EscapedCharacterTokenType.EscDoubleQuote },
     EscBackslash: { name: "EscBackslash", value: EscapedCharacterTokenType.EscBackslash },
@@ -735,25 +729,25 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     SceneStatement: { name: "SceneStatement", value: MetaTokenType.SceneStatement },
     ShowStatement: { name: "ShowStatement", value: MetaTokenType.ShowStatement },
     ImageStatement: { name: "ImageStatement", value: MetaTokenType.ImageStatement },
-    
+
     NarratorSayStatement: { name: "NarratorSayStatement", value: MetaTokenType.NarratorSayStatement },
     SayStatement: { name: "SayStatement", value: MetaTokenType.SayStatement },
     CharacterNameString: { name: "CharacterNameString", value: MetaTokenType.CharacterNameString },
-    
+
     CallStatement: { name: "CallStatement", value: MetaTokenType.CallStatement },
     JumpStatement: { name: "JumpStatement", value: MetaTokenType.JumpStatement },
-    
+
     PlayAudioStatement: { name: "PlayAudioStatement", value: MetaTokenType.PlayAudioStatement },
     StopAudioStatement: { name: "StopAudioStatement", value: MetaTokenType.StopAudioStatement },
-    
+
     LabelStatement: { name: "LabelStatement", value: MetaTokenType.LabelStatement },
     LabelCall: { name: "LabelCall", value: MetaTokenType.LabelCall },
     LabelAccess: { name: "LabelAccess", value: MetaTokenType.LabelAccess },
-    
+
     AtStatement: { name: "AtStatement", value: MetaTokenType.AtStatement },
     AsStatement: { name: "AsStatement", value: MetaTokenType.AsStatement },
     WithStatement: { name: "WithStatement", value: MetaTokenType.WithStatement },
-    
+
     ATLBlock: { name: "ATLBlock", value: MetaTokenType.ATLBlock },
     ATLChoiceBlock: { name: "ATLChoiceBlock", value: MetaTokenType.ATLChoiceBlock },
     ATLContains: { name: "ATLContains", value: MetaTokenType.ATLContains },

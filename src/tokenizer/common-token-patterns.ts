@@ -125,10 +125,14 @@ export const comments: TokenPattern = {
 
 export const statements: TokenPattern = {
     debugName: "statements",
-    patterns: [/* Items included in renpy token-patterns file*/],
+    patterns: [
+        /* Items included in renpy token-patterns file*/
+    ],
 };
 
 export const expressions: TokenPattern = {
     debugName: "expressions",
-    patterns: [/* Items included in renpy token-patterns file*/],
+    patterns: [
+        /* Items included in renpy token-patterns file*/
+    ],
 };

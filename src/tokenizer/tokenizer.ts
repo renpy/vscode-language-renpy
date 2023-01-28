@@ -82,8 +82,7 @@ function benchmark(document: TextDocument) {
 }
 
 function setupAndValidatePatterns() {
-    if (uniquePatternCount !== -1)
-        return;
+    if (uniquePatternCount !== -1) return;
 
     uniquePatternCount = 0;
     const stack = new Stack<ExTokenPattern>(32);
@@ -94,16 +93,14 @@ function setupAndValidatePatterns() {
         const p = stack.pop()!;
         assert(p !== undefined, "This pattern is undefined! Please make sure that circular includes are added after both patterns are defined.");
 
-        if (p._patternId !== undefined && p._patternId !== -1)
-            continue; // This pattern was already validated
-        
+        if (p._patternId !== undefined && p._patternId !== -1) continue; // This pattern was already validated
+
         p._patternId = uniquePatternCount;
         ++uniquePatternCount;
 
         if (isRepoPattern(p)) {
             p._patternType = TokenPatternType.RepoPattern;
-            for (let i = 0; i < p.patterns.length; ++i)
-                stack.push(p.patterns[i]);
+            for (let i = 0; i < p.patterns.length; ++i) stack.push(p.patterns[i]);
         } else if (isRangePattern(p)) {
             p._patternType = TokenPatternType.RangePattern;
             if (p.begin.source.match(mFlagRe)) {
@@ -115,8 +112,7 @@ function setupAndValidatePatterns() {
                 assert(p.begin.hasIndices, "To match this begin pattern the 'd' flag is required!");
 
                 Object.entries(p.beginCaptures).forEach(([, v]) => {
-                    if (v.patterns)
-                        stack.push(v as ExTokenRepoPattern);
+                    if (v.patterns) stack.push(v as ExTokenRepoPattern);
                 });
             } else {
                 assert(!p.begin.hasIndices, "This pattern should not have the 'd' flag set!");
@@ -125,8 +121,7 @@ function setupAndValidatePatterns() {
                 assert(p.end.hasIndices, "To match this end pattern the 'd' flag is required!");
 
                 Object.entries(p.endCaptures).forEach(([, v]) => {
-                    if (v.patterns)
-                        stack.push(v as ExTokenRepoPattern);
+                    if (v.patterns) stack.push(v as ExTokenRepoPattern);
                 });
             } else {
                 assert(!p.end.hasIndices, "This pattern should not have the 'd' flag set!");
@@ -164,8 +159,7 @@ function setupAndValidatePatterns() {
                 assert(p.match.hasIndices, "To match this pattern the 'd' flag is required!");
 
                 Object.entries(p.captures).forEach(([, v]) => {
-                    if (v.patterns)
-                        stack.push(v as ExTokenRepoPattern);
+                    if (v.patterns) stack.push(v as ExTokenRepoPattern);
                 });
             } else {
                 assert(!p.match.hasIndices, "This pattern should not have the 'd' flag set!");
@@ -203,13 +197,10 @@ class DocumentTokenizer {
 
         let lastMatchEnd = match.index;
         for (let i = 1; i < match.indices!.length; i++) {
-            if (match.indices![i] === undefined)
-                continue; // If the object at i is undefined, the capture is empty
+            if (match.indices![i] === undefined) continue; // If the object at i is undefined, the capture is empty
 
             if (captures[i] === undefined) {
-                console.warn(
-                    `There is no pattern defined for capture group '${i}', on a pattern that matched '${match[i]}' near L:${caret.line + 1} C:${caret.character + 1}.\nThis should probably be added or be a non-capturing group.`
-                );
+                console.warn(`There is no pattern defined for capture group '${i}', on a pattern that matched '${match[i]}' near L:${caret.line + 1} C:${caret.character + 1}.\nThis should probably be added or be a non-capturing group.`);
                 continue;
             }
 
@@ -237,8 +228,7 @@ class DocumentTokenizer {
             endCaret.advance(content.length); // Move caret to end of the current match
 
             if (p.token) {
-                if (p.token === CharacterTokenType.NewLine)
-                    endCaret.nextLine();
+                if (p.token === CharacterTokenType.NewLine) endCaret.nextLine();
                 this.tokens.pushBack(new Token(p.token, startCaret, endCaret));
             }
 
@@ -266,10 +256,9 @@ class DocumentTokenizer {
             const startCaret = originalCaret.clone();
             const endCaret = originalCaret.clone();
             endCaret.advance(content.length); // Move caret to end of the current match
-            
+
             if (p.token) {
-                if (p.token === CharacterTokenType.NewLine)
-                    endCaret.nextLine();
+                if (p.token === CharacterTokenType.NewLine) endCaret.nextLine();
                 this.tokens.pushBack(new Token(p.token, startCaret, endCaret));
             }
 
@@ -366,7 +355,7 @@ class DocumentTokenizer {
 
         for (let j = 0; j < size; j++) {
             const next = p.patterns[j];
-            
+
             scanResult = null;
 
             // First check the cache
@@ -481,7 +470,10 @@ class DocumentTokenizer {
                             const captureCaret = startCaret.clone();
                             this.applyCaptures(p.beginCaptures, matchBegin, captureCaret);
 
-                            assert(captureCaret.charStartOffset === contentStartCaret.charStartOffset, "The token read position was misaligned by the capture context! This means {p.beginCaptures} is not processing white spaces and new lines (individually!).");
+                            assert(
+                                captureCaret.charStartOffset === contentStartCaret.charStartOffset,
+                                "The token read position was misaligned by the capture context! This means {p.beginCaptures} is not processing white spaces and new lines (individually!)."
+                            );
 
                             if (captureCaret.line !== endCaret.line) {
                                 // Line was moved, all characters should reset to 0 and move by content length
@@ -507,7 +499,10 @@ class DocumentTokenizer {
                             const content = text.substring(matchBegin.index + matchBegin[0].length, matchEnd.index);
                             this.executePattern(p._patternsRepo, content, captureCaret);
 
-                            assert(captureCaret.charStartOffset === contentEndCaret.charStartOffset, "The token read position was misaligned by the capture context! This means {p.patterns} is not processing white spaces and new lines (individually!).");
+                            assert(
+                                captureCaret.charStartOffset === contentEndCaret.charStartOffset,
+                                "The token read position was misaligned by the capture context! This means {p.patterns} is not processing white spaces and new lines (individually!)."
+                            );
 
                             if (captureCaret.line !== endCaret.line) {
                                 // Line was moved, all characters should reset to 0 and move by content length
@@ -524,7 +519,10 @@ class DocumentTokenizer {
                             const captureCaret = contentEndCaret.clone();
                             this.applyCaptures(p.endCaptures, matchEnd, captureCaret);
 
-                            assert(captureCaret.charStartOffset === endCaret.charStartOffset, "The token read position was misaligned by the capture context! This means {p.endCaptures} is not processing white spaces and new lines (individually!).");
+                            assert(
+                                captureCaret.charStartOffset === endCaret.charStartOffset,
+                                "The token read position was misaligned by the capture context! This means {p.endCaptures} is not processing white spaces and new lines (individually!)."
+                            );
 
                             if (captureCaret.line !== endCaret.line) {
                                 // Line was moved, all characters should reset to 0 and move by content length
@@ -598,7 +596,7 @@ const enum TokenPatternType {
     MatchPattern = 2,
 }
 
-// These private cache properties are added to the pattern objects by the setupAndValidatePatterns() function. 
+// These private cache properties are added to the pattern objects by the setupAndValidatePatterns() function.
 // It uses a bit of javascript magic to add them to the original objects while leaving the references in tact.
 // The remaining interfaces are there purely for type safety.
 interface PatternStateProperties {

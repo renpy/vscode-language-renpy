@@ -471,14 +471,13 @@ const literal: TokenPattern = {
     debugName: "literal",
 
     patterns: [
-      {
-        // Python literals,
-        token: LiteralTokenType.Boolean,
-        match: /\b(?<!\.)(True|False|None)\b/g
-      }
-    ]
+        {
+            // Python literals,
+            token: LiteralTokenType.Boolean,
+            match: /\b(?<!\.)(True|False|None)\b/g,
+        },
+    ],
 };
-
 
 const pythonParameters: TokenPattern = {
     debugName: "pythonParameters",
@@ -500,7 +499,7 @@ const pythonStatements: TokenPattern = {
             // Renpy python block
             token: MetaTokenType.CodeBlock,
             contentToken: MetaTokenType.PythonBlock,
-            
+
             begin: /^([ \t]+)?(?:(init)(?:[ \t]+(-)?(\d+))?[ \t]+)?(python)[ \t]*(.*)?(:)/dgm,
             beginCaptures: {
                 0: { patterns: [whiteSpace] },
@@ -516,22 +515,22 @@ const pythonStatements: TokenPattern = {
                             // in statement
                             match: /(?:\s*(in)\s*([a-zA-Z_]\w*)\b)/dg,
                             captures: {
-                                1: { token: OperatorTokenType.In, },
-                                2: { token: EntityTokenType.Namespace, },
+                                1: { token: OperatorTokenType.In },
+                                2: { token: EntityTokenType.Namespace },
                             },
                         },
                         {
                             // keywords
                             match: /\b(hide)|(early)|(in)\b/dg,
                             captures: {
-                                1: { token: KeywordTokenType.Hide, },
-                                2: { token: KeywordTokenType.Early, },
-                                3: { token: OperatorTokenType.In, },
+                                1: { token: KeywordTokenType.Hide },
+                                2: { token: KeywordTokenType.Early },
+                                3: { token: OperatorTokenType.In },
                             },
                         },
                     ],
                 },
-                7: { token: CharacterTokenType.Colon, },
+                7: { token: CharacterTokenType.Colon },
             },
             end: lineContinuationPattern,
             patterns: [pythonSource],
@@ -563,80 +562,80 @@ const sayStatements: TokenPattern = {
     debugName: "sayStatements",
 
     patterns: [
-      {
-        token: MetaTokenType.SayStatement,
-        contentToken: LiteralTokenType.String,
-        begin: /(?<=^[ \t]+)(?:([a-zA-Z_]\w*)\b|"([a-zA-Z_]\w*)\b")((?:[ \t]+(?:@|\w+))*)?[ \t]*("""|"|'''|'|```|`)/dgm,
-        beginCaptures: {
-          1: {
-            token: EntityTokenType.VariableName,
-            patterns: [
-              {
-                match: /extend/g,
-                token: KeywordTokenType.Extend
-              },
-              {
-                match: /voice/g,
-                token: KeywordTokenType.Voice
-              },
-              {
-                // Match special characters,
-                match: /adv|nvl|narrator|name_only|centered|vcentered/g,
-                token: EntityTokenType.VariableName
-              },
-              {
-                match: /.*/g
-              }
-            ]
-          },
-          2: {
-            token: MetaTokenType.CharacterNameString
-          },
-          3: {
-            token: MetaTokenType.Arguments,
-            patterns: [
-              {
-                token: KeywordTokenType.At,
-                match: /@/g
-              }
-            ]
-          },
-          4: { token: CharacterTokenType.Quote }
-        },
-        end: /(?<!\\)(((?<=\4)\4)|\4)[ \t]*(\(.*?\)(?![^\(]*?\)))?/dg,
-        endCaptures: {
-            0: { patterns: [whiteSpace] },
-            1: { token: CharacterTokenType.Quote },
-            2: { token: MetaTokenType.EmptyString },
-            3: { patterns: [pythonFunctionArguments] }
-        },
-        patterns: [stringsInterior]
-      },
-      {
-        begin: /(?<=^[ \t]+)(?=["'`])/gm,
-        end: /(?<!\\)(?<=["'`])[ \t]*(\(.*?\)(?![^\(]*?\)))?/dg,
-        endCaptures: {
-            0: { patterns: [whiteSpace] },
-            1: { patterns: [pythonFunctionArguments] }
-        },
-        patterns: [
-          {
-            token: LiteralTokenType.String,
-            contentToken: MetaTokenType.NarratorSayStatement,
-            begin: /"""|"|'''|'|```|`/dg,
+        {
+            token: MetaTokenType.SayStatement,
+            contentToken: LiteralTokenType.String,
+            begin: /(?<=^[ \t]+)(?:([a-zA-Z_]\w*)\b|"([a-zA-Z_]\w*)\b")((?:[ \t]+(?:@|\w+))*)?[ \t]*("""|"|'''|'|```|`)/dgm,
             beginCaptures: {
-              0: { token: CharacterTokenType.Quote }
+                1: {
+                    token: EntityTokenType.VariableName,
+                    patterns: [
+                        {
+                            match: /extend/g,
+                            token: KeywordTokenType.Extend,
+                        },
+                        {
+                            match: /voice/g,
+                            token: KeywordTokenType.Voice,
+                        },
+                        {
+                            // Match special characters,
+                            match: /adv|nvl|narrator|name_only|centered|vcentered/g,
+                            token: EntityTokenType.VariableName,
+                        },
+                        {
+                            match: /.*/g,
+                        },
+                    ],
+                },
+                2: {
+                    token: MetaTokenType.CharacterNameString,
+                },
+                3: {
+                    token: MetaTokenType.Arguments,
+                    patterns: [
+                        {
+                            token: KeywordTokenType.At,
+                            match: /@/g,
+                        },
+                    ],
+                },
+                4: { token: CharacterTokenType.Quote },
             },
-            end: /(?<!\\)(((?<=\0)\0)|\0)/dg,
+            end: /(?<!\\)(((?<=\4)\4)|\4)[ \t]*(\(.*?\)(?![^\(]*?\)))?/dg,
             endCaptures: {
-              1: { token: CharacterTokenType.Quote },
-              2: { token: MetaTokenType.EmptyString }
+                0: { patterns: [whiteSpace] },
+                1: { token: CharacterTokenType.Quote },
+                2: { token: MetaTokenType.EmptyString },
+                3: { patterns: [pythonFunctionArguments] },
             },
-            patterns: [stringsInterior]
-          }
-        ]
-      }
-    ]
+            patterns: [stringsInterior],
+        },
+        {
+            begin: /(?<=^[ \t]+)(?=["'`])/gm,
+            end: /(?<!\\)(?<=["'`])[ \t]*(\(.*?\)(?![^\(]*?\)))?/dg,
+            endCaptures: {
+                0: { patterns: [whiteSpace] },
+                1: { patterns: [pythonFunctionArguments] },
+            },
+            patterns: [
+                {
+                    token: LiteralTokenType.String,
+                    contentToken: MetaTokenType.NarratorSayStatement,
+                    begin: /"""|"|'''|'|```|`/dg,
+                    beginCaptures: {
+                        0: { token: CharacterTokenType.Quote },
+                    },
+                    end: /(?<!\\)(((?<=\0)\0)|\0)/dg,
+                    endCaptures: {
+                        1: { token: CharacterTokenType.Quote },
+                        2: { token: MetaTokenType.EmptyString },
+                    },
+                    patterns: [stringsInterior],
+                },
+            ],
+        },
+    ],
 };
 
 const menuOption: TokenPattern = {
@@ -674,7 +673,7 @@ const menuOption: TokenPattern = {
         4: { token: CharacterTokenType.Colon },
     },
     end: lineContinuationPattern,
-    patterns: [ basePatterns ],
+    patterns: [basePatterns],
 };
 const menuSet: TokenPattern = {
     debugName: "menuSet",
@@ -709,7 +708,7 @@ const menu: TokenPattern = {
                     match: /[a-zA-Z_.]\w*/g,
                     token: EntityTokenType.FunctionName,
                 },
-                pythonFunctionArguments
+                pythonFunctionArguments,
             ],
         },
         4: { token: CharacterTokenType.Colon },
@@ -856,20 +855,20 @@ const transform: TokenPattern = {
 
     begin: /^([ \t]+)?(transform)\b[ \t]*(.*)?(:)/dgm,
     beginCaptures: {
-      1: { token: CharacterTokenType.WhiteSpace },
-      2: { token: KeywordTokenType.Transform },
-      3: {
-        patterns: [
-          {
-            token: EntityTokenType.VariableName,
-            match: /\b([[:alpha:]_]\w*)\b/g
-          }
-        ]
-      },
-      4: { token: CharacterTokenType.Colon }
+        1: { token: CharacterTokenType.WhiteSpace },
+        2: { token: KeywordTokenType.Transform },
+        3: {
+            patterns: [
+                {
+                    token: EntityTokenType.VariableName,
+                    match: /\b([[:alpha:]_]\w*)\b/g,
+                },
+            ],
+        },
+        4: { token: CharacterTokenType.Colon },
     },
     end: /^(?=(?!\1)[ \t]*[^\s#]|\1[^\s#])/gm,
-    patterns: [atl]
+    patterns: [atl],
 };
 
 const withStatement: TokenPattern = {
@@ -878,12 +877,12 @@ const withStatement: TokenPattern = {
     token: MetaTokenType.CodeBlock,
     match: /\b(with)\b[ \t]*(.+)?/dg,
     captures: {
-      1: { token: KeywordTokenType.With },
-      2: {
-        token: MetaTokenType.Arguments,
-        patterns: [ expressions ]
-      }
-    }
+        1: { token: KeywordTokenType.With },
+        2: {
+            token: MetaTokenType.Arguments,
+            patterns: [expressions],
+        },
+    },
 };
 const at: TokenPattern = {
     debugName: "at",
@@ -891,12 +890,12 @@ const at: TokenPattern = {
     token: MetaTokenType.CodeBlock,
     match: /\b(at)\b[ \t]*(.+)?/dg,
     captures: {
-      1: { token: KeywordTokenType.At },
-      2: {
-        token: MetaTokenType.Arguments,
-        patterns: [ statements ]
-      }
-    }
+        1: { token: KeywordTokenType.At },
+        2: {
+            token: MetaTokenType.Arguments,
+            patterns: [statements],
+        },
+    },
 };
 const as: TokenPattern = {
     debugName: "as",
@@ -904,12 +903,12 @@ const as: TokenPattern = {
     token: MetaTokenType.CodeBlock,
     match: /\b(as)\b[ \t]*(.+)?/dg,
     captures: {
-      1: { token: KeywordTokenType.As },
-      2: {
-        token: MetaTokenType.Arguments,
-        patterns: [ statements ]
-      }
-    }
+        1: { token: KeywordTokenType.As },
+        2: {
+            token: MetaTokenType.Arguments,
+            patterns: [statements],
+        },
+    },
 };
 const behind: TokenPattern = {
     debugName: "behind",
@@ -917,12 +916,12 @@ const behind: TokenPattern = {
     token: MetaTokenType.CodeBlock,
     match: /\b(behind)\b[ \t]*(.+)?/dg,
     captures: {
-      1: { token: KeywordTokenType.Behind },
-      2: {
-        token: MetaTokenType.Arguments,
-        patterns: [ statements ]
-      }
-    }
+        1: { token: KeywordTokenType.Behind },
+        2: {
+            token: MetaTokenType.Arguments,
+            patterns: [statements],
+        },
+    },
 };
 const onlayer: TokenPattern = {
     debugName: "onlayer",
@@ -930,12 +929,12 @@ const onlayer: TokenPattern = {
     token: MetaTokenType.CodeBlock,
     match: /\b(onlayer)\b[ \t]*(.+)?/dg,
     captures: {
-      1: { token: KeywordTokenType.OnLayer },
-      2: {
-        token: MetaTokenType.Arguments,
-        patterns: [ statements ]
-      }
-    }
+        1: { token: KeywordTokenType.OnLayer },
+        2: {
+            token: MetaTokenType.Arguments,
+            patterns: [statements],
+        },
+    },
 };
 const zorder: TokenPattern = {
     debugName: "zorder",
@@ -943,145 +942,145 @@ const zorder: TokenPattern = {
     token: MetaTokenType.CodeBlock,
     match: /\b(zorder)\b[ \t]*(.+)?/dg,
     captures: {
-      1: { token: KeywordTokenType.ZOrder },
-      2: {
-        token: MetaTokenType.Arguments,
-        patterns: [ statements ]
-      }
-    }
+        1: { token: KeywordTokenType.ZOrder },
+        2: {
+            token: MetaTokenType.Arguments,
+            patterns: [statements],
+        },
+    },
 };
 
 const image: TokenPattern = {
     debugName: "image",
 
     patterns: [
-      {
-        token: MetaTokenType.ImageStatement,
-        contentToken: MetaTokenType.ATLBlock,
-        begin: /^([ \t]+)?(image)\b[ \t]*([a-zA-Z_0-9 ]*?)[ \t]*(:)/dgm,
-        beginCaptures: {
-            0: { patterns: [whiteSpace] },
-            1: {}, // required for end match, but is already named by capture[0]
-            2: { token: KeywordTokenType.Image },
-            3: { token: EntityTokenType.VariableName },
-            4: { token: CharacterTokenType.Colon }
+        {
+            token: MetaTokenType.ImageStatement,
+            contentToken: MetaTokenType.ATLBlock,
+            begin: /^([ \t]+)?(image)\b[ \t]*([a-zA-Z_0-9 ]*?)[ \t]*(:)/dgm,
+            beginCaptures: {
+                0: { patterns: [whiteSpace] },
+                1: {}, // required for end match, but is already named by capture[0]
+                2: { token: KeywordTokenType.Image },
+                3: { token: EntityTokenType.VariableName },
+                4: { token: CharacterTokenType.Colon },
+            },
+            end: lineContinuationPattern,
+            patterns: [atl],
         },
-        end: lineContinuationPattern,
-        patterns: [ atl ]
-      },
-      {
-        debugName: "imageStatement",
-        token: MetaTokenType.ImageStatement,
-        begin: /^[ \t]*(image)\b[ \t]*/dgm,
-        beginCaptures: {
-            0: { patterns: [whiteSpace] },
-            1: { token: KeywordTokenType.Image }
+        {
+            debugName: "imageStatement",
+            token: MetaTokenType.ImageStatement,
+            begin: /^[ \t]*(image)\b[ \t]*/dgm,
+            beginCaptures: {
+                0: { patterns: [whiteSpace] },
+                1: { token: KeywordTokenType.Image },
+            },
+            end: /(?!\G)(?=\b(at)\b|#|=)|$/gm,
+            patterns: [
+                strings,
+                {
+                    match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
+                    captures: {
+                        1: { token: EntityTokenType.VariableName },
+                        2: { token: CharacterTokenType.WhiteSpace },
+                    },
+                },
+            ],
         },
-        end: /(?!\G)(?=\b(at)\b|#|=)|$/gm,
-        patterns: [
-          strings,
-          {
-            match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
-            captures: {
-                1: { token: EntityTokenType.VariableName },
-                2: { token: CharacterTokenType.WhiteSpace }
-            }
-          }
-        ]
-      },
-      at,
-      withStatement
-    ]
+        at,
+        withStatement,
+    ],
 };
 const show: TokenPattern = {
     debugName: "show",
 
     patterns: [
-      {
-        token: MetaTokenType.ShowStatement,
-        contentToken: MetaTokenType.ATLBlock,
-        begin: /^([ \t]+)?(show)\b[ \t]*([a-zA-Z_0-9 ]*?)[ \t]*(:)/dgm,
-        beginCaptures: {
-          0: { patterns: [whiteSpace] },
-          1: {}, // required for end match, but is already named by capture[0]
-          2: { token: KeywordTokenType.Show },
-          3: { token: EntityTokenType.VariableName },
-          4: { token: CharacterTokenType.Colon }
+        {
+            token: MetaTokenType.ShowStatement,
+            contentToken: MetaTokenType.ATLBlock,
+            begin: /^([ \t]+)?(show)\b[ \t]*([a-zA-Z_0-9 ]*?)[ \t]*(:)/dgm,
+            beginCaptures: {
+                0: { patterns: [whiteSpace] },
+                1: {}, // required for end match, but is already named by capture[0]
+                2: { token: KeywordTokenType.Show },
+                3: { token: EntityTokenType.VariableName },
+                4: { token: CharacterTokenType.Colon },
+            },
+            end: lineContinuationPattern,
+            patterns: [atl],
         },
-        end: lineContinuationPattern,
-        patterns: [ atl ]
-      },
-      {
-        token: MetaTokenType.ShowStatement,
-        begin: /^[ \t]*(show)\b[ \t]*/dgm,
-        beginCaptures: {
-            0: { patterns: [whiteSpace] },
-            1: { token: KeywordTokenType.Show }
+        {
+            token: MetaTokenType.ShowStatement,
+            begin: /^[ \t]*(show)\b[ \t]*/dgm,
+            beginCaptures: {
+                0: { patterns: [whiteSpace] },
+                1: { token: KeywordTokenType.Show },
+            },
+            end: /(?=\b(at|as|behind|onlayer|expression|with|zorder)\b|#)|$/gm,
+            patterns: [
+                strings,
+                {
+                    match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
+                    captures: {
+                        1: { token: EntityTokenType.VariableName },
+                        2: { token: CharacterTokenType.WhiteSpace },
+                    },
+                },
+            ],
         },
-        end: /(?=\b(at|as|behind|onlayer|expression|with|zorder)\b|#)|$/gm,
-        patterns: [
-          strings,
-          {
-            match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
-            captures: {
-                1: { token: EntityTokenType.VariableName },
-                2: { token: CharacterTokenType.WhiteSpace }
-            }
-          }
-        ]
-      },
-      at, 
-      as, 
-      withStatement,
-      behind,
-      onlayer,
-      zorder
-    ]
+        at,
+        as,
+        withStatement,
+        behind,
+        onlayer,
+        zorder,
+    ],
 };
 const scene: TokenPattern = {
     debugName: "scene",
 
     patterns: [
-      {
-        token: MetaTokenType.SceneStatement,
-        contentToken: MetaTokenType.ATLBlock,
-        begin: /^([ \t]+)?(scene)\b[ \t]*([a-zA-Z_0-9 ]*?)[ \t]*(:)/dgm,
-        beginCaptures: {
-            0: { patterns: [whiteSpace] },
-            1: {}, // required for end match, but is already named by capture[0]
-            2: { token: KeywordTokenType.Scene },
-            3: { token: EntityTokenType.VariableName },
-            4: { token: CharacterTokenType.Colon }
+        {
+            token: MetaTokenType.SceneStatement,
+            contentToken: MetaTokenType.ATLBlock,
+            begin: /^([ \t]+)?(scene)\b[ \t]*([a-zA-Z_0-9 ]*?)[ \t]*(:)/dgm,
+            beginCaptures: {
+                0: { patterns: [whiteSpace] },
+                1: {}, // required for end match, but is already named by capture[0]
+                2: { token: KeywordTokenType.Scene },
+                3: { token: EntityTokenType.VariableName },
+                4: { token: CharacterTokenType.Colon },
+            },
+            end: lineContinuationPattern,
+            patterns: [atl],
         },
-        end: lineContinuationPattern,
-        patterns: [ atl ]
-      },
-      {
-        token: MetaTokenType.SceneStatement,
-        begin: /^[ \t]*(scene)\b[ \t]*/dgm,
-        beginCaptures: {
-            0: { patterns: [whiteSpace] },
-            1: { token: KeywordTokenType.Scene }
+        {
+            token: MetaTokenType.SceneStatement,
+            begin: /^[ \t]*(scene)\b[ \t]*/dgm,
+            beginCaptures: {
+                0: { patterns: [whiteSpace] },
+                1: { token: KeywordTokenType.Scene },
+            },
+            end: /(?=\b(at|as|behind|onlayer|expression|with|zorder)\b|#)|$/gm,
+            patterns: [
+                strings,
+                {
+                    match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
+                    captures: {
+                        1: { token: EntityTokenType.VariableName },
+                        2: { token: CharacterTokenType.WhiteSpace },
+                    },
+                },
+            ],
         },
-        end: /(?=\b(at|as|behind|onlayer|expression|with|zorder)\b|#)|$/gm,
-        patterns: [
-            strings,
-            {
-                match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
-                captures: {
-                    1: { token: EntityTokenType.VariableName },
-                    2: { token: CharacterTokenType.WhiteSpace }
-                }
-            }
-        ]
-      },
-      at,
-      as,
-      withStatement,
-      behind,
-      onlayer,
-      zorder
-    ]
+        at,
+        as,
+        withStatement,
+        behind,
+        onlayer,
+        zorder,
+    ],
 };
 const camera: TokenPattern = {
     debugName: "camera",
@@ -1096,17 +1095,17 @@ const camera: TokenPattern = {
                 1: {}, // required for end match, but is already named by capture[0]
                 2: { token: KeywordTokenType.Camera },
                 3: { token: EntityTokenType.VariableName },
-                4: { token: CharacterTokenType.Colon }
+                4: { token: CharacterTokenType.Colon },
             },
             end: lineContinuationPattern,
-            patterns: [ atl ]
+            patterns: [atl],
         },
         {
             token: MetaTokenType.CameraStatement,
             begin: /^[ \t]*(camera)\b[ \t]*/dgm,
             beginCaptures: {
                 0: { patterns: [whiteSpace] },
-                1: { token: KeywordTokenType.Camera }
+                1: { token: KeywordTokenType.Camera },
             },
             end: /(?=\b(at|with)\b|#)|$/gm,
             patterns: [
@@ -1114,33 +1113,33 @@ const camera: TokenPattern = {
                     match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
                     captures: {
                         1: { token: EntityTokenType.VariableName },
-                        2: { token: CharacterTokenType.WhiteSpace }
-                    }
-                }
-            ]
+                        2: { token: CharacterTokenType.WhiteSpace },
+                    },
+                },
+            ],
         },
         at,
-        withStatement
-    ]
+        withStatement,
+    ],
 };
 
 const builtinLabels: TokenPattern = {
     debugName: "builtinLabels",
 
     token: EntityTokenType.FunctionName,
-    match: /(?<!\.)\b(?:start|quit|after_load|splashscreen|before_main_menu|main_menu|after_warp|hide_windows)\b/g
+    match: /(?<!\.)\b(?:start|quit|after_load|splashscreen|before_main_menu|main_menu|after_warp|hide_windows)\b/g,
 };
 const labelName: TokenPattern = {
     debugName: "labelName",
 
     patterns: [
         pythonBuiltinPossibleCallables,
-        builtinLabels, 
+        builtinLabels,
         {
-            token: EntityTokenType.FunctionName, 
-            match: /\b(?:[a-zA-Z_]\w*)\b/g
-        }
-    ]
+            token: EntityTokenType.FunctionName,
+            match: /\b(?:[a-zA-Z_]\w*)\b/g,
+        },
+    ],
 };
 const labelCall: TokenPattern = {
     debugName: "labelCall",
@@ -1150,9 +1149,9 @@ const labelCall: TokenPattern = {
     begin: /\b(?=([a-zA-Z_]\w*)\s*(\())/g,
     end: /(\))/dg,
     endCaptures: {
-      1: { token: CharacterTokenType.CloseParentheses }
+        1: { token: CharacterTokenType.CloseParentheses },
     },
-    patterns: [pythonSpecialVariables, labelName, pythonFunctionArguments]
+    patterns: [pythonSpecialVariables, labelName, pythonFunctionArguments],
 };
 const labelAccess: TokenPattern = {
     debugName: "labelAccess",
@@ -1161,27 +1160,27 @@ const labelAccess: TokenPattern = {
     token: MetaTokenType.LabelAccess,
     begin: /(\.)\s*(?!\.)/dg,
     beginCaptures: {
-        1: { token: CharacterTokenType.Period }
+        1: { token: CharacterTokenType.Period },
     },
     end: /(?<=\S)(?=\W)|(^|(?<=\s))(?=[^\\\w\s])|$/gm,
-    patterns: [labelCall, labelName]
+    patterns: [labelCall, labelName],
 };
 const labelDefName: TokenPattern = {
     debugName: "labelDefName",
 
     // Note: Labels can't be nested twice in a row!,
     patterns: [
-      pythonBuiltinPossibleCallables,
-      builtinLabels,
-      {
-        match: /(?<=^|[ \t])(\b(?:[a-zA-Z_]\w*)\b)?(\.)?(\b(?:[a-zA-Z_]\w*)\b)/dgm,
-        captures: {
-          1: { token: EntityTokenType.FunctionName },
-          2: { token: CharacterTokenType.Period },
-          3: { token: EntityTokenType.FunctionName }
-        }
-      }
-    ]
+        pythonBuiltinPossibleCallables,
+        builtinLabels,
+        {
+            match: /(?<=^|[ \t])(\b(?:[a-zA-Z_]\w*)\b)?(\.)?(\b(?:[a-zA-Z_]\w*)\b)/dgm,
+            captures: {
+                1: { token: EntityTokenType.FunctionName },
+                2: { token: CharacterTokenType.Period },
+                3: { token: EntityTokenType.FunctionName },
+            },
+        },
+    ],
 };
 const label: TokenPattern = {
     debugName: "label",
@@ -1193,17 +1192,17 @@ const label: TokenPattern = {
         1: { token: KeywordTokenType.Label },
         2: {
             patterns: [
-                labelDefName, 
-                pythonParameters, 
-                { 
-                    match: /.*/g, 
-                    token: MetaTokenType.Invalid
-                }
-            ]
+                labelDefName,
+                pythonParameters,
+                {
+                    match: /.*/g,
+                    token: MetaTokenType.Invalid,
+                },
+            ],
         },
         3: { token: KeywordTokenType.Hide },
         4: { token: CharacterTokenType.Colon },
-    }
+    },
 };
 
 const callJumpExpression: TokenPattern = {
@@ -1211,33 +1210,33 @@ const callJumpExpression: TokenPattern = {
 
     begin: /\b(?<!\.)(expression)\b/dg,
     beginCaptures: {
-        1: { token: KeywordTokenType.Expression }
+        1: { token: KeywordTokenType.Expression },
     },
     end: /(?=\b(?<!\.)(?:pass|from)\b)|$/gm,
-    patterns: [expressions, pythonExpression]
+    patterns: [expressions, pythonExpression],
 };
 const callPass: TokenPattern = {
     debugName: "callPass",
 
     begin: /\b(?<!\.)(pass)\b[ \t]*(?=\()/dg,
     beginCaptures: {
-      1: { token: KeywordTokenType.Pass }
+        1: { token: KeywordTokenType.Pass },
     },
     end: /(\))/dg,
     endCaptures: {
-      1: { token: CharacterTokenType.CloseParentheses }
+        1: { token: CharacterTokenType.CloseParentheses },
     },
-    patterns: [pythonFunctionArguments]
+    patterns: [pythonFunctionArguments],
 };
 const callFrom: TokenPattern = {
     debugName: "callFrom",
 
     begin: /\b(?<!\.)(from)\b[ \t]*/dg,
     beginCaptures: {
-      1: { token: KeywordTokenType.From }
+        1: { token: KeywordTokenType.From },
     },
     end: /(?=\W|$)/gm,
-    patterns: [labelName]
+    patterns: [labelName],
 };
 const call: TokenPattern = {
     debugName: "call",
@@ -1246,11 +1245,11 @@ const call: TokenPattern = {
     begin: /^[ \t]+(call)\b[ \t]*/dgm,
     beginCaptures: {
         0: { patterns: [whiteSpace] },
-        1: { token: KeywordTokenType.Call }
+        1: { token: KeywordTokenType.Call },
     },
     end: /(?=#|$)/dgm,
     endCaptures: {
-        1: { token: MetaTokenType.Invalid }
+        1: { token: MetaTokenType.Invalid },
     },
     patterns: [
         callJumpExpression,
@@ -1259,10 +1258,10 @@ const call: TokenPattern = {
             // Label expression,
             begin: /\G/g,
             end: /(?!\G)(?![ \t]*\.[ \t]*)/g,
-            patterns: [labelCall, labelAccess, labelName]
+            patterns: [labelCall, labelAccess, labelName],
         },
-        callFrom
-    ]
+        callFrom,
+    ],
 };
 const jump: TokenPattern = {
     debugName: "jump",
@@ -1270,21 +1269,21 @@ const jump: TokenPattern = {
     token: MetaTokenType.JumpStatement,
     begin: /^[ \t]+(jump)\b[ \t]*/dgm,
     beginCaptures: {
-      1: { token: KeywordTokenType.Jump }
+        1: { token: KeywordTokenType.Jump },
     },
     end: /(?!\G)[ \t]*(.*?)?(?=#|$)/dgm,
     endCaptures: {
-      1: { token: MetaTokenType.Invalid }
+        1: { token: MetaTokenType.Invalid },
     },
     patterns: [
-      callJumpExpression,
-      {
-        // Label expression,
-        begin: /\G/g,
-        end: /(?!\G)(?![ \t]*\.[ \t]*)/g,
-        patterns: [labelAccess, labelName]
-      }
-    ]
+        callJumpExpression,
+        {
+            // Label expression,
+            begin: /\G/g,
+            end: /(?!\G)(?![ \t]*\.[ \t]*)/g,
+            patterns: [labelAccess, labelName],
+        },
+    ],
 };
 const returnStatements: TokenPattern = {
     debugName: "returnStatements",
@@ -1292,87 +1291,87 @@ const returnStatements: TokenPattern = {
     begin: /^[ \t]+(return)\b[ \t]*/dgm,
     beginCaptures: {
         0: { patterns: [whiteSpace] },
-        1: { token: KeywordTokenType.Return }
+        1: { token: KeywordTokenType.Return },
     },
     end: /$/gm,
-    patterns: [expressions, pythonExpression]
+    patterns: [expressions, pythonExpression],
 };
 
 const builtinAudioChannels: TokenPattern = {
     debugName: "builtinAudioChannels",
 
     token: EntityTokenType.PropertyName,
-    match: /(?<!\.)\b(?:music|sound|voice|audio)\b/g
+    match: /(?<!\.)\b(?:music|sound|voice|audio)\b/g,
 };
 const audioParams: TokenPattern = {
     debugName: "audioParams",
 
     patterns: [
-      {
-        token: EntityTokenType.PropertyName,
-        match: /\b(?<!\.)(?:fadeout|fadein|volume|loop|noloop)\b/g
-      },
-      pythonNumber
-    ]
+        {
+            token: EntityTokenType.PropertyName,
+            match: /\b(?<!\.)(?:fadeout|fadein|volume|loop|noloop)\b/g,
+        },
+        pythonNumber,
+    ],
 };
 const play: TokenPattern = {
     debugName: "play",
 
     patterns: [
-      {
-        token: MetaTokenType.PlayAudioStatement,
-        begin: /^[ \t]*(play|queue)\b[ \t]+\b([a-zA-Z_0-9]*)\b[ \t]*/dgm,
-        beginCaptures: {
-          1: { token: KeywordTokenType.Play },
-          2: {
-            patterns: [
-                builtinAudioChannels, 
-                {
-                    match: /.*/g, 
-                    token: EntityTokenType.VariableName
-                }
-            ]
-          }
+        {
+            token: MetaTokenType.PlayAudioStatement,
+            begin: /^[ \t]*(play|queue)\b[ \t]+\b([a-zA-Z_0-9]*)\b[ \t]*/dgm,
+            beginCaptures: {
+                1: { token: KeywordTokenType.Play },
+                2: {
+                    patterns: [
+                        builtinAudioChannels,
+                        {
+                            match: /.*/g,
+                            token: EntityTokenType.VariableName,
+                        },
+                    ],
+                },
+            },
+            end: /(?=[ \t]*#)|$/gm,
+            patterns: [strings, audioParams, pythonExpression],
         },
-        end: /(?=[ \t]*#)|$/gm,
-        patterns: [strings, audioParams, pythonExpression]
-      }
-    ]
+    ],
 };
 const stop: TokenPattern = {
     debugName: "stop",
 
     patterns: [
-      {
-        token: MetaTokenType.StopAudioStatement,
-        begin: /^[ \t]*(stop)\b[ \t]+\b([a-zA-Z_0-9]*)\b[ \t]*/dgm,
-        beginCaptures: {
-          1: { token: KeywordTokenType.Stop },
-          2: {
+        {
+            token: MetaTokenType.StopAudioStatement,
+            begin: /^[ \t]*(stop)\b[ \t]+\b([a-zA-Z_0-9]*)\b[ \t]*/dgm,
+            beginCaptures: {
+                1: { token: KeywordTokenType.Stop },
+                2: {
+                    patterns: [
+                        builtinAudioChannels,
+                        {
+                            match: /.*/g,
+                            token: EntityTokenType.VariableName,
+                        },
+                    ],
+                },
+            },
+            end: /(?=[ \t]*#)|$/gm,
             patterns: [
-                builtinAudioChannels, 
-                { 
-                    match: /.*/g,
-                    token: EntityTokenType.VariableName
-                }
-            ]
-          }
+                {
+                    match: /\b(?<!\.)(?:fadeout)\b/g,
+                    token: KeywordTokenType.Fadeout,
+                },
+                pythonNumber,
+            ],
         },
-        end: /(?=[ \t]*#)|$/gm,
-        patterns: [
-          {
-              match: /\b(?<!\.)(?:fadeout)\b/g,
-              token: KeywordTokenType.Fadeout,
-          },
-          pythonNumber
-        ]
-      }
-    ]
+    ],
 };
 const audio: TokenPattern = {
     debugName: "audio",
 
-    patterns: [play, stop]
+    patterns: [play, stop],
 };
 
 const renpyStatements: TokenPattern = {

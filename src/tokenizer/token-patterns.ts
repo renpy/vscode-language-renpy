@@ -3,7 +3,7 @@
 /* eslint-disable no-useless-backreference */
 
 import { CharacterTokenType, LiteralTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "./renpy-tokens";
-import { comments, expressions, newLine, statements, charactersPatten, whiteSpace } from "./common-token-patterns";
+import { comments, expressions, newLine, statements, charactersPatten, whiteSpace, numFloat, numInt, invalidToken } from "./common-token-patterns";
 import { atl } from "./atl-token-patterns";
 import { pythonBuiltinPossibleCallables, pythonExpression, pythonExpressionBare, pythonFunctionArguments, pythonNumber, pythonSpecialVariables } from "./python-token-patterns";
 import { TokenPattern } from "./token-pattern-types";
@@ -496,6 +496,19 @@ const pythonStatements: TokenPattern = {
 
     patterns: [
         {
+            match: /^[ \t]*(init)[ \t]+(offset)[ \t]*(=)[ \t]*(-)?([^#]*?)$/dgm,
+            captures: {
+                0: { patterns: [whiteSpace] },
+                1: { token: KeywordTokenType.Init },
+                2: { token: KeywordTokenType.Offset },
+                3: { token: OperatorTokenType.Assign },
+                4: { token: OperatorTokenType.Minus },
+                5: {
+                    patterns: [numInt, invalidToken],
+                },
+            },
+        },
+        {
             // Renpy python block
             token: MetaTokenType.CodeBlock,
             contentToken: MetaTokenType.PythonBlock,
@@ -583,9 +596,7 @@ const sayStatements: TokenPattern = {
                             match: /adv|nvl|narrator|name_only|centered|vcentered/g,
                             token: EntityTokenType.VariableName,
                         },
-                        {
-                            match: /.*/g,
-                        },
+                        invalidToken,
                     ],
                 },
                 2: {
@@ -800,25 +811,7 @@ const keywords: TokenPattern = {
                 0: { patterns: [whiteSpace] },
                 1: { token: KeywordTokenType.Pause },
                 2: {
-                    patterns: [
-                        {
-                            // Float value
-                            match: /(?<!\w)(?:\.[0-9]*|[0-9]*\.[0-9]*|[0-9]*\.)\b/g,
-                            token: LiteralTokenType.Float,
-                        },
-                        {
-                            // Numeric value
-                            match: /(?<![\w\.])(?:[1-9]*|0+|0([0-9]+)(?![eE\.]))\b/g,
-                            token: LiteralTokenType.Integer,
-                            captures: {
-                                1: { token: MetaTokenType.Invalid },
-                            },
-                        },
-                        {
-                            match: /.*/,
-                            token: MetaTokenType.Invalid,
-                        },
-                    ],
+                    patterns: [numFloat, numInt, invalidToken],
                 },
             },
         },
@@ -1023,6 +1016,7 @@ const show: TokenPattern = {
                         2: { token: CharacterTokenType.WhiteSpace },
                     },
                 },
+                invalidToken,
             ],
         },
         at,
@@ -1187,14 +1181,7 @@ const label: TokenPattern = {
         0: { patterns: [whiteSpace] },
         1: { token: KeywordTokenType.Label },
         2: {
-            patterns: [
-                labelDefName,
-                pythonParameters,
-                {
-                    match: /.*/g,
-                    token: MetaTokenType.Invalid,
-                },
-            ],
+            patterns: [labelDefName, pythonParameters, invalidToken],
         },
         3: { token: KeywordTokenType.Hide },
         4: { token: CharacterTokenType.Colon },

@@ -11,8 +11,39 @@
     "expressions": {
       "patterns": [{ "include": "#comments" }, { "include": "#strings" }, { "include": "#literal" }]
     },
+
+    "num-float": {
+      "match": "(?<!\\w)(?:\\.[0-9]*|[0-9]*\\.[0-9]*|[0-9]*\\.)\\b",
+      "name": "constant.numeric.float.renpy"
+    },
+    "num-int": {
+      "match": "(?<![\\w.])(?:[1-9]*|0+|0([0-9]+)(?![eE.]))\\b",
+      "name": "constant.numeric.dec.renpy",
+      "captures": {
+        "1": { "name": "invalid.illegal.dec.renpy" }
+      }
+    },
+
     "python-statements": {
       "patterns": [
+        {
+          "match": "^[ \\t]*(init)[ \\t]+(offset)[ \\t]*(=)[ \\t]*(-)?([^#]*)",
+          "captures": {
+            "1": { "name": "keyword.renpy" },
+            "2": { "name": "keyword.renpy" },
+            "3": { "name": "keyword.operator.assignment.renpy" },
+            "4": { "name": "keyword.operator.arithmetic.renpy" },
+            "5": {
+              "patterns": [
+                { "include": "#num-int" },
+                {
+                  "match": ".*",
+                  "name": "invalid.illegal.dec.renpy"
+                }
+              ]
+            }
+          }
+        },
         {
           "comment": "Renpy python block",
           "contentName": "meta.embedded.block.python",
@@ -1079,19 +1110,8 @@
             "1": { "name": "keyword.control.flow.renpy" },
             "2": {
               "patterns": [
-                {
-                  "comment": "Float value",
-                  "match": "(?<!\\w)(?:\\.[0-9]*|[0-9]*\\.[0-9]*|[0-9]*\\.)\\b",
-                  "name": "constant.numeric.float.renpy"
-                },
-                {
-                  "comment": "Numeric value",
-                  "match": "(?<![\\w\\.])(?:[1-9]*|0+|0([0-9]+)(?![eE\\.]))\b",
-                  "name": "constant.numeric.dec.renpy",
-                  "captures": {
-                    "1": { "name": "invalid.illegal.dec.renpy" }
-                  }
-                },
+                { "include": "#num-float" },
+                { "include": "#num-int" },
                 {
                   "match": ".*",
                   "name": "invalid.illegal.dec.renpy"

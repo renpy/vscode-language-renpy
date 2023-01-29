@@ -261,6 +261,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
 
         switch (token.tokenType) {
             case KeywordTokenType.Init: // Python statement keywords
+            case KeywordTokenType.Offset:
             case KeywordTokenType.Python:
             case KeywordTokenType.Hide:
             case KeywordTokenType.Early:
@@ -545,6 +546,7 @@ type EnumToString<Type> = {
 
 const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     Init: { name: "Init", value: KeywordTokenType.Init },
+    Offset: { name: "Offset", value: KeywordTokenType.Offset },
     Python: { name: "Python", value: KeywordTokenType.Python },
     Hide: { name: "Hide", value: KeywordTokenType.Hide },
     Early: { name: "Early", value: KeywordTokenType.Early },

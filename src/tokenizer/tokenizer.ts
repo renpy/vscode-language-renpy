@@ -246,7 +246,7 @@ class DocumentTokenizer {
 
             caret.setValue(endCaret);
         }
-
+        // TODO: This also gets misaligned if the whole match is a token and contains additional captures
         // TODO: The system should be updated to build a token list/tree. When that's done we can simply compare and merge the tokens instead of this hack.
         // Special case for captures[0] which is the entire match
         if (captures[0] !== undefined) {

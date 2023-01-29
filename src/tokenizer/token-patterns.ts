@@ -806,7 +806,7 @@ const keywords: TokenPattern = {
             },
         },
         {
-            match: /^[ \t]+(pause)\b[ \t]*([^#]*)/dgm,
+            match: /^[ \t]+(pause)\b[ \t]*([^#]*?)$/dgm,
             captures: {
                 0: { patterns: [whiteSpace] },
                 1: { token: KeywordTokenType.Pause },
@@ -1203,6 +1203,7 @@ const callPass: TokenPattern = {
 
     begin: /\b(?<!\.)(pass)\b[ \t]*(?=\()/dg,
     beginCaptures: {
+        0: { patterns: [whiteSpace] },
         1: { token: KeywordTokenType.Pass },
     },
     end: /(\))/dg,
@@ -1216,6 +1217,7 @@ const callFrom: TokenPattern = {
 
     begin: /\b(?<!\.)(from)\b[ \t]*/dg,
     beginCaptures: {
+        0: { patterns: [whiteSpace] },
         1: { token: KeywordTokenType.From },
     },
     end: /(?=\W|$)/gm,
@@ -1252,10 +1254,12 @@ const jump: TokenPattern = {
     token: MetaTokenType.JumpStatement,
     begin: /^[ \t]+(jump)\b[ \t]*/dgm,
     beginCaptures: {
+        0: { patterns: [whiteSpace] },
         1: { token: KeywordTokenType.Jump },
     },
     end: /(?!\G)[ \t]*(.*?)?(?=#|$)/dgm,
     endCaptures: {
+        0: { patterns: [whiteSpace] },
         1: { token: MetaTokenType.Invalid },
     },
     patterns: [
@@ -1305,6 +1309,7 @@ const play: TokenPattern = {
             token: MetaTokenType.PlayAudioStatement,
             begin: /^[ \t]*(play|queue)\b[ \t]+\b([a-zA-Z_0-9]*)\b[ \t]*/dgm,
             beginCaptures: {
+                0: { patterns: [whiteSpace] },
                 1: { token: KeywordTokenType.Play },
                 2: {
                     patterns: [

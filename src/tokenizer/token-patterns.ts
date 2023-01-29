@@ -722,6 +722,31 @@ const keywords: TokenPattern = {
 
     patterns: [
         {
+            // Control flow keywords
+            match: /\b(?<!\.)(?:(pass)|(return))\b/dg,
+            captures: {
+                1: { token: KeywordTokenType.Pass },
+                2: { token: KeywordTokenType.Return },
+            },
+        },
+        {
+            // Control flow keywords with block
+            begin: /\b(?<!\.)(?:(if)|(elif)|(else)|(for)|(while))\b/dg,
+            contentToken: MetaTokenType.PythonLine,
+            beginCaptures: {
+                1: { token: KeywordTokenType.If },
+                2: { token: KeywordTokenType.Elif },
+                3: { token: KeywordTokenType.Else },
+                4: { token: KeywordTokenType.For },
+                5: { token: KeywordTokenType.While },
+            },
+            end: /:/dg,
+            endCaptures: {
+                0: { token: CharacterTokenType.Colon },
+            },
+            patterns: [expressions, pythonExpression],
+        },
+        {
             // Python statement keywords
             match: /\b(?:(init)|(python)|(hide)|(early)|(in)|(define)|(default))\b/dg,
             captures: {
@@ -750,79 +775,56 @@ const keywords: TokenPattern = {
         },
         {
             // Renpy keywords
-            match: /\b(?:(label)|(play)|(pause)|(screen)|(scene)|(show)|(image)|(transform))\b/dg,
+            match: /\b(?:(camera)|(image)|(label)|(layeredimage)|(menu)|(nvl[ \\t]+clear)|(play)|(queue)|(scene)|(screen)|(show)|(transform)|(translate)|(voice(?:[ \\t]+sustain)?)|(window))\b/dg,
             captures: {
-                1: {
-                    token: KeywordTokenType.Label,
-                },
-                2: {
-                    token: KeywordTokenType.Play,
-                },
-                3: {
-                    token: KeywordTokenType.Pause,
-                },
-                4: {
-                    token: KeywordTokenType.Screen,
-                },
-                5: {
-                    token: KeywordTokenType.Scene,
-                },
-                6: {
-                    token: KeywordTokenType.Show,
-                },
-                7: {
-                    token: KeywordTokenType.Image,
-                },
-                8: {
-                    token: KeywordTokenType.Transform,
-                },
+                1: { token: KeywordTokenType.Camera },
+                2: { token: KeywordTokenType.Image },
+                3: { token: KeywordTokenType.Label },
+                4: { token: KeywordTokenType.LayeredImage },
+                5: { token: KeywordTokenType.Menu },
+                6: { token: KeywordTokenType.NVLClear },
+                7: { token: KeywordTokenType.Play },
+                8: { token: KeywordTokenType.Queue },
+                9: { token: KeywordTokenType.Scene },
+                10: { token: KeywordTokenType.Screen },
+                11: { token: KeywordTokenType.Show },
+                12: { token: KeywordTokenType.Transform },
+                13: { token: KeywordTokenType.Translate },
+                14: { token: KeywordTokenType.Voice },
+                15: { token: KeywordTokenType.Window },
             },
         },
         {
-            // Conditional control flow keywords
-            match: /\b(?:(if)|(elif)|(else))\b/dg,
+            match: /^[ \t]+(pause)\b[ \t]*([^#]*)/dgm,
             captures: {
-                1: {
-                    token: KeywordTokenType.If,
-                },
+                0: { patterns: [whiteSpace] },
+                1: { token: KeywordTokenType.Pause },
                 2: {
-                    token: KeywordTokenType.Elif,
-                },
-                3: {
-                    token: KeywordTokenType.Else,
-                },
-            },
-        },
-        {
-            // Control flow keywords
-            match: /\b(?:(for)|(while)|(pass)|(return)|(menu)|(jump)|(call))\b/dg,
-            captures: {
-                1: {
-                    token: KeywordTokenType.For,
-                },
-                2: {
-                    token: KeywordTokenType.While,
-                },
-                3: {
-                    token: KeywordTokenType.Pass,
-                },
-                4: {
-                    token: KeywordTokenType.Return,
-                },
-                5: {
-                    token: KeywordTokenType.Menu,
-                },
-                6: {
-                    token: KeywordTokenType.Jump,
-                },
-                7: {
-                    token: KeywordTokenType.Call,
+                    patterns: [
+                        {
+                            // Float value
+                            match: /(?<!\w)(?:\.[0-9]*|[0-9]*\.[0-9]*|[0-9]*\.)\b/g,
+                            token: LiteralTokenType.Float,
+                        },
+                        {
+                            // Numeric value
+                            match: /(?<![\w\.])(?:[1-9]*|0+|0([0-9]+)(?![eE\.]))\b/g,
+                            token: LiteralTokenType.Integer,
+                            captures: {
+                                1: { token: MetaTokenType.Invalid },
+                            },
+                        },
+                        {
+                            match: /.*/,
+                            token: MetaTokenType.Invalid,
+                        },
+                    ],
                 },
             },
         },
         {
             // [TODO: Should probably only be a keyword in the expression]Renpy sub expression keywords
-            match: /\b(?:(set)|(expression)|(sound)|(at)|(with)|(from))\b/dg,
+            match: /\b(?:(set)|(expression)|(at)|(with)|(from))\b/dg,
             captures: {
                 1: {
                     token: KeywordTokenType.Set,
@@ -831,19 +833,13 @@ const keywords: TokenPattern = {
                     token: KeywordTokenType.Expression,
                 },
                 3: {
-                    token: KeywordTokenType.Sound,
-                },
-                4: {
                     token: KeywordTokenType.At,
                 },
-                5: {
+                4: {
                     token: KeywordTokenType.With,
                 },
-                6: {
+                5: {
                     token: KeywordTokenType.From,
-                },
-                7: {
-                    token: KeywordTokenType.Call,
                 },
             },
         },

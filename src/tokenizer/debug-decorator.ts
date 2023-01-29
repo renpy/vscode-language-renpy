@@ -558,11 +558,15 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     Camera: { name: "Camera", value: KeywordTokenType.Camera },
     Show: { name: "Show", value: KeywordTokenType.Show },
     Image: { name: "Image", value: KeywordTokenType.Image },
+    LayeredImage: { name: "LayeredImage", value: KeywordTokenType.LayeredImage },
+    Window: { name: "Window", value: KeywordTokenType.Window },
     Transform: { name: "Transform", value: KeywordTokenType.Transform },
-
+    Translate: { name: "Translate", value: KeywordTokenType.Translate },
     Extend: { name: "Extend", value: KeywordTokenType.Extend },
-    Voice: { name: "Voice", value: KeywordTokenType.Voice },
+    NVLClear: { name: "NVLClear", value: KeywordTokenType.NVLClear },
 
+    Voice: { name: "Voice", value: KeywordTokenType.Voice },
+    Sound: { name: "Sound", value: KeywordTokenType.Sound },
     Play: { name: "Play", value: KeywordTokenType.Play },
     Queue: { name: "Queue", value: KeywordTokenType.Queue },
     Stop: { name: "Stop", value: KeywordTokenType.Stop },
@@ -570,7 +574,6 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
 
     Set: { name: "Set", value: KeywordTokenType.Set },
     Expression: { name: "Expression", value: KeywordTokenType.Expression },
-    Sound: { name: "Sound", value: KeywordTokenType.Sound },
     At: { name: "At", value: KeywordTokenType.At },
     As: { name: "As", value: KeywordTokenType.As },
     With: { name: "With", value: KeywordTokenType.With },

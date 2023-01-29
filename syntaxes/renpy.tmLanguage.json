@@ -313,15 +313,7 @@
     },
     "atl": {
       "comment": "https://www.renpy.org/doc/html/atl.html#atl-syntax-and-semantics",
-      "patterns": [
-        { "include": "#atl-keywords" },
-        { "include": "#atl-blocks" },
-        { "include": "#atl-simple-expression" },
-        { "include": "#atl-warper" },
-        { "include": "#atl-event" },
-        { "include": "#atl-on" },
-        { "include": "#atl-function" }
-      ]
+      "patterns": [{ "include": "#atl-keywords" }, { "include": "#atl-blocks" }, { "include": "#atl-simple-expression" }, { "include": "#atl-warper" }, { "include": "#atl-event" }, { "include": "#atl-on" }, { "include": "#atl-function" }]
     },
     "atl-simple-expression": {
       "patterns": [

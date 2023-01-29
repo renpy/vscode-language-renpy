@@ -17,6 +17,7 @@ export const enum TokenTypeIndex {
 export const enum KeywordTokenType {
     // Python statement keywords
     Init = TokenTypeIndex.KeywordStart,
+    Offset,
     Python,
     Hide,
     Early,

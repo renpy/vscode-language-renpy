@@ -3,7 +3,7 @@
 /* eslint-disable no-useless-backreference */
 
 import { CharacterTokenType, LiteralTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "./renpy-tokens";
-import { comments, expressions, newLine, statements, charactersPatten, whiteSpace } from "./common-token-patterns";
+import { comments, expressions, newLine, statements, charactersPatten, whiteSpace, numFloat, numInt, invalidToken } from "./common-token-patterns";
 import { atl } from "./atl-token-patterns";
 import { pythonBuiltinPossibleCallables, pythonExpression, pythonExpressionBare, pythonFunctionArguments, pythonNumber, pythonSpecialVariables } from "./python-token-patterns";
 import { TokenPattern } from "./token-pattern-types";
@@ -496,6 +496,19 @@ const pythonStatements: TokenPattern = {
 
     patterns: [
         {
+            match: /^[ \t]*(init)[ \t]+(offset)[ \t]*(=)[ \t]*(-)?([^#]*?)$/dgm,
+            captures: {
+                0: { patterns: [whiteSpace] },
+                1: { token: KeywordTokenType.Init },
+                2: { token: KeywordTokenType.Offset },
+                3: { token: OperatorTokenType.Assign },
+                4: { token: OperatorTokenType.Minus },
+                5: {
+                    patterns: [numInt, invalidToken],
+                },
+            },
+        },
+        {
             // Renpy python block
             token: MetaTokenType.CodeBlock,
             contentToken: MetaTokenType.PythonBlock,
@@ -583,9 +596,7 @@ const sayStatements: TokenPattern = {
                             match: /adv|nvl|narrator|name_only|centered|vcentered/g,
                             token: EntityTokenType.VariableName,
                         },
-                        {
-                            match: /.*/g,
-                        },
+                        invalidToken,
                     ],
                 },
                 2: {
@@ -795,30 +806,12 @@ const keywords: TokenPattern = {
             },
         },
         {
-            match: /^[ \t]+(pause)\b[ \t]*([^#]*)/dgm,
+            match: /^[ \t]+(pause)\b[ \t]*([^#]*?)$/dgm,
             captures: {
                 0: { patterns: [whiteSpace] },
                 1: { token: KeywordTokenType.Pause },
                 2: {
-                    patterns: [
-                        {
-                            // Float value
-                            match: /(?<!\w)(?:\.[0-9]*|[0-9]*\.[0-9]*|[0-9]*\.)\b/g,
-                            token: LiteralTokenType.Float,
-                        },
-                        {
-                            // Numeric value
-                            match: /(?<![\w\.])(?:[1-9]*|0+|0([0-9]+)(?![eE\.]))\b/g,
-                            token: LiteralTokenType.Integer,
-                            captures: {
-                                1: { token: MetaTokenType.Invalid },
-                            },
-                        },
-                        {
-                            match: /.*/,
-                            token: MetaTokenType.Invalid,
-                        },
-                    ],
+                    patterns: [numFloat, numInt, invalidToken],
                 },
             },
         },
@@ -976,7 +969,7 @@ const image: TokenPattern = {
             patterns: [
                 strings,
                 {
-                    match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
+                    match: /\b([a-zA-Z_0-9]+)\b([ \t]+)?/dg,
                     captures: {
                         1: { token: EntityTokenType.VariableName },
                         2: { token: CharacterTokenType.WhiteSpace },
@@ -1017,12 +1010,13 @@ const show: TokenPattern = {
             patterns: [
                 strings,
                 {
-                    match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
+                    match: /\b([a-zA-Z_0-9]+)\b([ \t]+)?/dg,
                     captures: {
                         1: { token: EntityTokenType.VariableName },
                         2: { token: CharacterTokenType.WhiteSpace },
                     },
                 },
+                invalidToken,
             ],
         },
         at,
@@ -1062,7 +1056,7 @@ const scene: TokenPattern = {
             patterns: [
                 strings,
                 {
-                    match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
+                    match: /\b([a-zA-Z_0-9]+)\b([ \t]+)?/dg,
                     captures: {
                         1: { token: EntityTokenType.VariableName },
                         2: { token: CharacterTokenType.WhiteSpace },
@@ -1106,7 +1100,7 @@ const camera: TokenPattern = {
             end: /(?=\b(at|with)\b|#)|$/gm,
             patterns: [
                 {
-                    match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
+                    match: /\b([a-zA-Z_0-9]+)\b([ \t]+)?/dg,
                     captures: {
                         1: { token: EntityTokenType.VariableName },
                         2: { token: CharacterTokenType.WhiteSpace },
@@ -1187,14 +1181,7 @@ const label: TokenPattern = {
         0: { patterns: [whiteSpace] },
         1: { token: KeywordTokenType.Label },
         2: {
-            patterns: [
-                labelDefName,
-                pythonParameters,
-                {
-                    match: /.*/g,
-                    token: MetaTokenType.Invalid,
-                },
-            ],
+            patterns: [labelDefName, pythonParameters, invalidToken],
         },
         3: { token: KeywordTokenType.Hide },
         4: { token: CharacterTokenType.Colon },
@@ -1216,6 +1203,7 @@ const callPass: TokenPattern = {
 
     begin: /\b(?<!\.)(pass)\b[ \t]*(?=\()/dg,
     beginCaptures: {
+        0: { patterns: [whiteSpace] },
         1: { token: KeywordTokenType.Pass },
     },
     end: /(\))/dg,
@@ -1229,6 +1217,7 @@ const callFrom: TokenPattern = {
 
     begin: /\b(?<!\.)(from)\b[ \t]*/dg,
     beginCaptures: {
+        0: { patterns: [whiteSpace] },
         1: { token: KeywordTokenType.From },
     },
     end: /(?=\W|$)/gm,
@@ -1265,10 +1254,12 @@ const jump: TokenPattern = {
     token: MetaTokenType.JumpStatement,
     begin: /^[ \t]+(jump)\b[ \t]*/dgm,
     beginCaptures: {
+        0: { patterns: [whiteSpace] },
         1: { token: KeywordTokenType.Jump },
     },
     end: /(?!\G)[ \t]*(.*?)?(?=#|$)/dgm,
     endCaptures: {
+        0: { patterns: [whiteSpace] },
         1: { token: MetaTokenType.Invalid },
     },
     patterns: [
@@ -1318,6 +1309,7 @@ const play: TokenPattern = {
             token: MetaTokenType.PlayAudioStatement,
             begin: /^[ \t]*(play|queue)\b[ \t]+\b([a-zA-Z_0-9]*)\b[ \t]*/dgm,
             beginCaptures: {
+                0: { patterns: [whiteSpace] },
                 1: { token: KeywordTokenType.Play },
                 2: {
                     patterns: [

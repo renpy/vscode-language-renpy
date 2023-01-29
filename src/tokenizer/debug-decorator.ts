@@ -228,7 +228,7 @@ function updateDecorations() {
             range: range,
             hoverMessage: {
                 language: "text",
-                value: `${tokenTypeToStringMap[token.tokenType]} Token (id: ${token.tokenType}): 
+                value: `Token: ${tokenTypeToStringMap[token.tokenType]}(id: ${token.tokenType})
 Start: {Line: ${range.start.line + 1}, Char: ${range.start.character + 1}}
 End: {Line: ${range.end.line + 1}, Char: ${range.end.character + 1}}
 Content: {${content?.replaceAll("\n", "\\n")}}`,
@@ -261,6 +261,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
 
         switch (token.tokenType) {
             case KeywordTokenType.Init: // Python statement keywords
+            case KeywordTokenType.Offset:
             case KeywordTokenType.Python:
             case KeywordTokenType.Hide:
             case KeywordTokenType.Early:
@@ -274,8 +275,12 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case KeywordTokenType.Camera:
             case KeywordTokenType.Show:
             case KeywordTokenType.Image:
+            case KeywordTokenType.LayeredImage:
+            case KeywordTokenType.Window:
             case KeywordTokenType.Transform:
+            case KeywordTokenType.Translate:
             case KeywordTokenType.Extend:
+            case KeywordTokenType.NVLClear:
             case KeywordTokenType.Voice: // Audio
             case KeywordTokenType.Sound:
             case KeywordTokenType.Play:
@@ -494,7 +499,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
                 errors.push(decoration);
                 break;
             default:
-                throw new Error(`Unhandled token case: ${token.tokenType}`);
+                throw new Error(`Unhandled token case: ${tokenTypeToStringMap[token.tokenType]}(id: ${token.tokenType})`);
         }
     });
 
@@ -545,6 +550,7 @@ type EnumToString<Type> = {
 
 const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     Init: { name: "Init", value: KeywordTokenType.Init },
+    Offset: { name: "Offset", value: KeywordTokenType.Offset },
     Python: { name: "Python", value: KeywordTokenType.Python },
     Hide: { name: "Hide", value: KeywordTokenType.Hide },
     Early: { name: "Early", value: KeywordTokenType.Early },

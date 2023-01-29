@@ -1,4 +1,4 @@
-import { CharacterTokenType, MetaTokenType, OperatorTokenType } from "./renpy-tokens";
+import { CharacterTokenType, LiteralTokenType, MetaTokenType, OperatorTokenType } from "./renpy-tokens";
 import { TokenPattern } from "./token-pattern-types";
 
 export const newLine: TokenPattern = {
@@ -9,6 +9,28 @@ export const newLine: TokenPattern = {
 export const whiteSpace: TokenPattern = {
     token: CharacterTokenType.WhiteSpace,
     match: /[ \t]+/g,
+};
+
+export const invalidToken: TokenPattern = {
+    match: /(.*)/dg,
+    captures: {
+        1: { token: MetaTokenType.Invalid },
+    },
+};
+
+export const numFloat: TokenPattern = {
+    debugName: "numFloat",
+
+    match: /(?<!\w)(?:\.[0-9]+|[0-9]*\.[0-9]*|[0-9]*\.)\b/g,
+    token: LiteralTokenType.Float,
+};
+export const numInt: TokenPattern = {
+    debugName: "numInt",
+    match: /(?<![\w.])([1-9]+|0+|0([0-9]+)(?![eE.]))\b/dg,
+    captures: {
+        1: { token: LiteralTokenType.Integer },
+        2: { token: MetaTokenType.Invalid },
+    },
 };
 
 // NOTE: Having these patterns separated increases performance.

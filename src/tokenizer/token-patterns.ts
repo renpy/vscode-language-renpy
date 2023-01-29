@@ -969,7 +969,7 @@ const image: TokenPattern = {
             patterns: [
                 strings,
                 {
-                    match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
+                    match: /\b([a-zA-Z_0-9]+)\b([ \t]+)?/dg,
                     captures: {
                         1: { token: EntityTokenType.VariableName },
                         2: { token: CharacterTokenType.WhiteSpace },
@@ -1010,7 +1010,7 @@ const show: TokenPattern = {
             patterns: [
                 strings,
                 {
-                    match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
+                    match: /\b([a-zA-Z_0-9]+)\b([ \t]+)?/dg,
                     captures: {
                         1: { token: EntityTokenType.VariableName },
                         2: { token: CharacterTokenType.WhiteSpace },
@@ -1056,7 +1056,7 @@ const scene: TokenPattern = {
             patterns: [
                 strings,
                 {
-                    match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
+                    match: /\b([a-zA-Z_0-9]+)\b([ \t]+)?/dg,
                     captures: {
                         1: { token: EntityTokenType.VariableName },
                         2: { token: CharacterTokenType.WhiteSpace },
@@ -1100,7 +1100,7 @@ const camera: TokenPattern = {
             end: /(?=\b(at|with)\b|#)|$/gm,
             patterns: [
                 {
-                    match: /\b([a-zA-Z_0-9]*)\b([ \t]+)?/dg,
+                    match: /\b([a-zA-Z_0-9]+)\b([ \t]+)?/dg,
                     captures: {
                         1: { token: EntityTokenType.VariableName },
                         2: { token: CharacterTokenType.WhiteSpace },

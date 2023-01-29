@@ -32,8 +32,12 @@ export const enum KeywordTokenType {
     Camera,
     Show,
     Image,
+    LayeredImage,
+    Window,
     Transform,
+    Translate,
     Extend,
+    NVLClear,
 
     // Audio
     Voice,

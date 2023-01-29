@@ -231,7 +231,8 @@
 
                 text _("(click to continue)"):
                     size 18
-
+        
+        pause .0
         transform ctc_appear:
             alpha 0.0
             pause 5.0

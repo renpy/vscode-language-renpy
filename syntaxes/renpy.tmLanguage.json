@@ -1088,9 +1088,17 @@
             "2": {
               "patterns": [
                 {
+                  "comment": "Float value",
+                  "match": "(?<!\\w)(?:\\.[0-9]*|[0-9]*\\.[0-9]*|[0-9]*\\.)\\b",
+                  "name": "constant.numeric.float.renpy"
+                },
+                {
                   "comment": "Numeric value",
-                  "match": "(?<![.0])\\b([1-9]\\d*|0)(.\\d+|\\b)",
-                  "name": "constant.numeric.dec.renpy"
+                  "match": "(?<![\\w\\.])(?:[1-9]*|0+|0([0-9]+)(?![eE\\.]))\b",
+                  "name": "constant.numeric.dec.renpy",
+                  "captures": {
+                    "1": { "name": "invalid.illegal.dec.renpy" }
+                  }
                 },
                 {
                   "match": ".*",

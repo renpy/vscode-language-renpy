@@ -1,20 +1,34 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-useless-backreference */
-import { charactersPatten } from "./common-token-patterns";
+import { charactersPatten, strings } from "./common-token-patterns";
 import { TokenPattern, TokenRepoPattern } from "./token-pattern-types";
 
-export const pythonExpression: TokenPattern = {
+export const pythonMemberAccess: TokenPattern = {
     patterns: [charactersPatten],
 };
+
 export const pythonExpressionBare: TokenPattern = {
     patterns: [charactersPatten],
 };
+export const pythonExpressionBase: TokenPattern = {
+    patterns: [strings],
+};
+export const pythonExpression: TokenPattern = {
+    // All valid Python expressions
+    patterns: [pythonExpressionBase, pythonMemberAccess, charactersPatten],
+};
+
+export const semicolon: TokenPattern = {
+    patterns: [
+        {
+            name: "invalid.deprecated.semicolon.python",
+            match: /\\;$/g,
+        },
+    ],
+};
 
 export const pythonLiteral: TokenPattern = {
-    patterns: [charactersPatten],
-};
-export const pythonMemberAccess: TokenPattern = {
     patterns: [charactersPatten],
 };
 export const pythonIllegalOperator: TokenPattern = {

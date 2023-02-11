@@ -63,7 +63,7 @@ export function refreshDiagnostics(doc: TextDocument, diagnosticCollection: Diag
     }
 
     const diagnostics: Diagnostic[] = [];
-    const config = workspace.getConfiguration("renpy");
+    const config = workspace.getConfiguration("renpy.diagnostics");
 
     //Filenames must begin with a letter or number,
     //and may not begin with "00", as Ren'Py uses such files for its own purposes.

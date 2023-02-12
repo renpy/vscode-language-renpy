@@ -43,7 +43,7 @@ import {
 import { RenpyColorProvider } from "./color";
 import { getStatusBarText, NavigationData } from "./navigation-data";
 import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
-import { refreshDiagnostics, subscribeToDocumentChanges } from "./diagnostics";
+import { diagnosticsInit } from "./diagnostics";
 import { getSemanticTokens } from "./semantics";
 import { getHover } from "./hover";
 import { getCompletionList } from "./completion";
@@ -212,9 +212,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     );
 
     // diagnostics (errors and warnings)
-    const diagnostics = languages.createDiagnosticCollection("renpy");
-    context.subscriptions.push(diagnostics);
-    subscribeToDocumentChanges(context, diagnostics);
+    diagnosticsInit(context);
 
     // custom command - refresh data
     const refreshCommand = commands.registerCommand("renpy.refreshNavigationData", async () => {
@@ -240,14 +238,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
         }
     });
     context.subscriptions.push(gotoFileLocationCommand);
-
-    // custom command - refresh diagnostics
-    const refreshDiagnosticsCommand = commands.registerCommand("renpy.refreshDiagnostics", () => {
-        if (window.activeTextEditor) {
-            refreshDiagnostics(window.activeTextEditor.document, diagnostics);
-        }
-    });
-    context.subscriptions.push(refreshDiagnosticsCommand);
 
     // custom command - toggle token debug view
     let isShowingTokenDebugView = false;

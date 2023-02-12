@@ -1,7 +1,7 @@
 // Diagnostics (warnings and errors)
 "use strict";
 
-import { Diagnostic, DiagnosticCollection, DiagnosticSeverity, ExtensionContext, Range, TextDocument, window, workspace } from "vscode";
+import { commands, Diagnostic, DiagnosticCollection, DiagnosticSeverity, ExtensionContext, languages, Range, TextDocument, window, workspace } from "vscode";
 import { NavigationData } from "./navigation-data";
 import { extractFilename } from "./workspace";
 
@@ -53,11 +53,30 @@ const rxTabCheck = /^(\t+)/g;
 const rsComparisonCheck = /\s+(if|while)\s+(\w+)\s*(=)\s*(\w+)\s*/g;
 
 /**
+ * Set up diagnostics
+ * @param context extension context
+ */
+export function diagnosticsInit(context: ExtensionContext) {
+    const diagnostics = languages.createDiagnosticCollection("renpy");
+    context.subscriptions.push(diagnostics);
+
+    // custom command - refresh diagnostics
+    const refreshDiagnosticsCommand = commands.registerCommand("renpy.refreshDiagnostics", () => {
+        if (window.activeTextEditor) {
+            refreshDiagnostics(window.activeTextEditor.document, diagnostics);
+        }
+    });
+    context.subscriptions.push(refreshDiagnosticsCommand);
+
+    subscribeToDocumentChanges(context, diagnostics);
+}
+
+/**
  * Analyzes the text document for problems.
  * @param doc text document to analyze
  * @param diagnostics diagnostic collection
  */
-export function refreshDiagnostics(doc: TextDocument, diagnosticCollection: DiagnosticCollection): void {
+function refreshDiagnostics(doc: TextDocument, diagnosticCollection: DiagnosticCollection): void {
     if (doc.languageId !== "renpy") {
         return;
     }
@@ -167,7 +186,7 @@ export function refreshDiagnostics(doc: TextDocument, diagnosticCollection: Diag
     diagnosticCollection.set(doc.uri, diagnostics);
 }
 
-export function subscribeToDocumentChanges(context: ExtensionContext, diagnostics: DiagnosticCollection): void {
+function subscribeToDocumentChanges(context: ExtensionContext, diagnostics: DiagnosticCollection): void {
     if (window.activeTextEditor) {
         refreshDiagnostics(window.activeTextEditor.document, diagnostics);
     }

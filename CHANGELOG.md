@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.15 (2023/02/13)
+
+### Fixes
+
+* The `excludeCompiledFilesFromWorkspace` option now doesn't overwrite existing `file.exclude` values [#238](https://github.com/LuqueDaniel/vscode-language-renpy/pull/238)
+
 ## 2.0.14 (2022/12/04)
 
 ### Fixes

@@ -35,6 +35,7 @@ export const enum KeywordTokenType {
     Image,
     LayeredImage,
     Window,
+    Frame,
     Transform,
     Translate,
     Extend,

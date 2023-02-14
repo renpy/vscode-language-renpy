@@ -3793,6 +3793,25 @@
 #endregion Python and Ren'Py
 
 #region other
+    screen extract_dialogue:
+
+        frame:
+            style_group "l"
+            style "l_root"
+
+            window:
+
+                has vbox
+
+                label _("Extract Dialogue: [project.current.display_name!q]"):
+                    test
+
+                add HALF_SPACER
+
+                frame:
+                    style "l_indent"
+                    xfill True
+
     # Return Statement
     label main_menu:
         return "no_unlock"

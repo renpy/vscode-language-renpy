@@ -443,11 +443,11 @@ class DocumentTokenizer {
                         const matchOffset = initialCharOffset + matchBegin.index - caret.charStartOffset;
                         if (matchOffset !== 0) {
                             /*console.warn(
-                                `A range begin match was misaligned (expected: ${textDocumentOffset + matchBegin.index}, got: ${caret.charStartOffset}) on pattern '${p.begin.source}' that matched '${matchBegin[0]}' near L:${caret.line + 1} C:${
+                                `A range begin match was misaligned (expected: ${initialCharOffset + matchBegin.index}, got: ${caret.charStartOffset}) on pattern '${p.begin.source}' that matched '${matchBegin[0]}' near L:${caret.line + 1} C:${
                                     caret.character + 1
-                                }.\nYou probably didn't catch all characters in the match or the match before this one.\nApplying a fix...`
+                                }.\nYou probably didn't catch all characters in the match or the match before this one.\nApplying a fix...`;
+                                caret.advance(matchOffset);
                             );*/
-                            caret.advance(matchOffset);
                         }
 
                         const startCaret = caret.clone();
@@ -543,7 +543,7 @@ class DocumentTokenizer {
                         const matchOffset = initialCharOffset + match.index - caret.charStartOffset;
                         if (matchOffset !== 0) {
                             /*console.warn(
-                                `A match was misaligned (expected: ${textDocumentOffset + match.index}, got: ${caret.charStartOffset}) on pattern '${p.match.source}' that matched '${match[0]}' near L:${caret.line + 1} C:${
+                                `A match was misaligned (expected: ${initialCharOffset + match.index}, got: ${caret.charStartOffset}) on pattern '${p.match.source}' that matched '${match[0]}' near L:${caret.line + 1} C:${
                                     caret.character + 1
                                 }.\nYou probably didn't catch all characters in the match or the match before this one.\nApplying a fix...`
                             );*/

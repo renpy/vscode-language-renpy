@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-useless-backreference */
 
-import { CharacterTokenType, LiteralTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "./renpy-tokens";
+import { CharacterTokenType, LiteralTokenType, EntityTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "./renpy-tokens";
 import { comments, expressions, newLine, statements, charactersPatten, whiteSpace, numFloat, numInt, invalidToken, strings, stringsInterior } from "./common-token-patterns";
 import { atl } from "./atl-token-patterns";
 import { pythonBuiltinPossibleCallables, pythonExpression, pythonExpressionBare, pythonFunctionArguments, pythonNumber, pythonSpecialVariables } from "./python-token-patterns";

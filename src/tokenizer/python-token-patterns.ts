@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-useless-backreference */
 import { charactersPatten, strings } from "./common-token-patterns";
+import { MetaTokenType } from "./renpy-tokens";
 import { TokenPattern, TokenRepoPattern } from "./token-pattern-types";
 
 export const pythonMemberAccess: TokenPattern = {
@@ -22,7 +23,7 @@ export const pythonExpression: TokenPattern = {
 export const semicolon: TokenPattern = {
     patterns: [
         {
-            name: "invalid.deprecated.semicolon.python",
+            token: MetaTokenType.Invalid,
             match: /\\;$/g,
         },
     ],

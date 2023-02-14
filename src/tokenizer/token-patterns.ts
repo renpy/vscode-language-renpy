@@ -366,7 +366,7 @@ const keywords: TokenPattern = {
         },
         {
             // Renpy keywords
-            match: /\b(?:(camera)|(image)|(label)|(layeredimage)|(menu)|(nvl[ \\t]+clear)|(play)|(queue)|(scene)|(screen)|(show)|(transform)|(translate)|(voice(?:[ \\t]+sustain)?)|(window))\b/dg,
+            match: /\b(?:(camera)|(image)|(label)|(layeredimage)|(menu)|(nvl[ \\t]+clear)|(play)|(queue)|(scene)|(screen)|(show)|(transform)|(translate)|(voice(?:[ \\t]+sustain)?)|(window)|(frame))\b/dg,
             captures: {
                 1: { token: KeywordTokenType.Camera },
                 2: { token: KeywordTokenType.Image },
@@ -383,6 +383,7 @@ const keywords: TokenPattern = {
                 13: { token: KeywordTokenType.Translate },
                 14: { token: KeywordTokenType.Voice },
                 15: { token: KeywordTokenType.Window },
+                16: { token: KeywordTokenType.Frame },
             },
         },
         {

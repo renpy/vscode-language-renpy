@@ -455,7 +455,7 @@
       ]
     },
     "string-unicode-guts": {
-      "patterns": [{ "include": "#escape-sequence-unicode" }, { "include": "#string-entity" }, { "include": "#string-brace-formatting" }]
+      "patterns": [{ "include": "source.renpy#strings-interior" }, { "include": "#escape-sequence-unicode" }, { "include": "#string-entity" }, { "include": "#string-brace-formatting" }]
     },
     "string-consume-escape": { "match": "\\\\['\"\\n\\\\]" },
     "string-raw-guts": {

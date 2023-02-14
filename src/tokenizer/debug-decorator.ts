@@ -277,6 +277,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case KeywordTokenType.Image:
             case KeywordTokenType.LayeredImage:
             case KeywordTokenType.Window:
+            case KeywordTokenType.Frame:
             case KeywordTokenType.Transform:
             case KeywordTokenType.Translate:
             case KeywordTokenType.Extend:
@@ -566,6 +567,7 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     Image: { name: "Image", value: KeywordTokenType.Image },
     LayeredImage: { name: "LayeredImage", value: KeywordTokenType.LayeredImage },
     Window: { name: "Window", value: KeywordTokenType.Window },
+    Frame: { name: "Frame", value: KeywordTokenType.Frame },
     Transform: { name: "Transform", value: KeywordTokenType.Transform },
     Translate: { name: "Translate", value: KeywordTokenType.Translate },
     Extend: { name: "Extend", value: KeywordTokenType.Extend },

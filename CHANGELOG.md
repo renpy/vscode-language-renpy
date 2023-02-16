@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.16 (2023/02/16)
+
+## Fixes
+
+* Fix missing JSON files in extension package [#254](https://github.com/LuqueDaniel/vscode-language-renpy/pull/254) ref [#253](https://github.com/LuqueDaniel/vscode-language-renpy/issues/253)
+
 ## 2.0.15 (2023/02/13)
 
 ### Fixes

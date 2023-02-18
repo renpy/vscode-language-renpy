@@ -3,6 +3,7 @@ import { CancellationToken, Color, ColorInformation, ColorPresentation, Document
 import { injectCustomTextmateTokens, TextMateRule } from "./decorator";
 import { LiteralTokenType } from "./tokenizer/renpy-tokens";
 import { tokenizeDocument } from "./tokenizer/tokenizer";
+import util = require("util");
 
 export class RenpyColorProvider implements DocumentColorProvider {
     public provideDocumentColors(document: TextDocument, token: CancellationToken): Thenable<ColorInformation[]> {

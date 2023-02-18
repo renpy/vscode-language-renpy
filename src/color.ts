@@ -120,7 +120,11 @@ export function injectCustomColorStyles(document: TextDocument) {
     // Build the new rules for this file
     colorTags.forEach((color) => {
         const lowerColor = document.getText(color.getRange()).toLowerCase();
-        colorRules.push({ scope: `renpy.meta.color.${lowerColor}`, settings: { foreground: lowerColor } });
+        const newRule = { scope: `renpy.meta.color.${lowerColor}`, settings: { foreground: lowerColor } };
+
+        if (colorRules.some(x => util.isDeepStrictEqual(x, newRule))) {
+            colorRules.push(newRule);
+        }
     });
 
     injectCustomTextmateTokens(colorRules);

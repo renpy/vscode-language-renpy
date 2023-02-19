@@ -126,7 +126,7 @@ export function injectCustomColorStyles(document: TextDocument) {
             settings: { foreground: lowerColor },
         };
 
-        if (colorRules.some((x) => util.isDeepStrictEqual(x, newRule))) {
+        if (!colorRules.some((x) => util.isDeepStrictEqual(x, newRule))) {
             colorRules.push(newRule);
         }
     });

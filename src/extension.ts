@@ -68,16 +68,17 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     // hide rpyc files if the setting is enabled
     const config = workspace.getConfiguration("renpy");
-    if (config) {
-        updateShowCompiledFilesConfig(config.excludeCompiledFilesFromWorkspace);
+    if (config?.excludeCompiledFilesFromWorkspace) {
+        excludeCompiledFilesConfig();
     }
 
     // Listen to configuration changes
     context.subscriptions.push(
         workspace.onDidChangeConfiguration((e) => {
             if (e.affectsConfiguration("renpy.excludeCompiledFilesFromWorkspace")) {
-                const newValue: boolean = workspace.getConfiguration("renpy").get("excludeCompiledFilesFromWorkspace") ?? true;
-                updateShowCompiledFilesConfig(newValue);
+                if (workspace.getConfiguration("renpy").get("excludeCompiledFilesFromWorkspace")) {
+                    excludeCompiledFilesConfig();
+                }
             }
         })
     );
@@ -379,16 +380,17 @@ function updateStatusBar(text: string) {
     }
 }
 
-function updateShowCompiledFilesConfig(hide: boolean) {
+function excludeCompiledFilesConfig() {
+    const renpyExclude = ["**/*.rpyc", "**/*.rpa", "**/*.rpymc", "**/cache/"];
     const config = workspace.getConfiguration("files");
-    const newConfig = {
-        ...config.inspect<WorkspaceConfiguration>("exclude")?.workspaceValue,
-        "**/*.rpyc": hide,
-        "**/*.rpa": hide,
-        "**/*.rpymc": hide,
-        "**/cache/": hide,
-    };
-    config.update("exclude", newConfig, ConfigurationTarget.Workspace);
+    const workspaceExclude = config.inspect<WorkspaceConfiguration>("exclude");
+    const exclude = { ...workspaceExclude?.workspaceValue };
+    renpyExclude.forEach((element) => {
+        if (!(element in exclude)) {
+            Object.assign(exclude, { [element]: true });
+        }
+    });
+    config.update("exclude", exclude, ConfigurationTarget.Workspace);
 }
 
 function isValidExecutable(renpyExecutableLocation: string): boolean {

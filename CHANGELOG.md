@@ -1,5 +1,23 @@
 # Changelog
 
+## 2.0.16 (2023/02/16)
+
+## Fixes
+
+* Fix missing JSON files in extension package [#254](https://github.com/LuqueDaniel/vscode-language-renpy/pull/254) ref [#253](https://github.com/LuqueDaniel/vscode-language-renpy/issues/253)
+
+## 2.0.15 (2023/02/13)
+
+### Fixes
+
+* The `excludeCompiledFilesFromWorkspace` option now doesn't overwrite existing `file.exclude` values [#238](https://github.com/LuqueDaniel/vscode-language-renpy/pull/238)
+
+## 2.0.14 (2022/12/04)
+
+### Fixes
+
+* Activates the extension when the language is `renpy` [#221](https://github.com/LuqueDaniel/vscode-language-renpy/pull/221)
+
 ## 2.0.13 (2022/08/29)
 
 ### Fixes

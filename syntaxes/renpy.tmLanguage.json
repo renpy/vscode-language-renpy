@@ -875,7 +875,7 @@
             },
             "4": { "name": "string.quoted.renpy punctuation.definition.string.begin.renpy" }
           },
-          "end": "(?<!\\\\)(((?<=\\4)\\4)|\\4)[ \\t]*(\\(.*?\\)(?![^\\(]*?\\)))?",
+          "end": "(?<![^\\\\]\\\\)(((?<=\\4)\\4)|\\4)[ \\t]*(\\(.*?\\)(?![^\\(]*?\\)))?",
           "endCaptures": {
             "1": { "name": "string.quoted.renpy punctuation.definition.string.end.renpy" },
             "2": { "name": "meta.empty-string.renpy" },
@@ -887,7 +887,7 @@
         },
         {
           "begin": "(?<=^[ \\t]+)(?=[\"'`])",
-          "end": "(?<!\\\\)(?<=[\"'`])[ \\t]*(\\(.*?\\)(?![^\\(]*?\\)))?",
+          "end": "(?<![^\\\\]\\\\)(?<=[\"'`])[ \\t]*(\\(.*?\\)(?![^\\(]*?\\)))?",
           "endCaptures": {
             "1": {
               "patterns": [{ "include": "source.renpy.python#function-arguments" }]
@@ -901,7 +901,7 @@
               "beginCaptures": {
                 "0": { "name": "punctuation.definition.string.begin.renpy" }
               },
-              "end": "(?<!\\\\)(((?<=\\0)\\0)|\\0)",
+              "end": "(?<![^\\\\]\\\\)(((?<=\\0)\\0)|\\0)",
               "endCaptures": {
                 "1": { "name": "punctuation.definition.string.end.renpy" },
                 "2": { "name": "meta.empty-string.renpy" }
@@ -1579,7 +1579,7 @@
       "beginCaptures": {
         "0": { "name": "punctuation.definition.string.begin.renpy" }
       },
-      "end": "(?<!\\\\)(((?<=\\0)\\0)|\\0)",
+      "end": "(?<![^\\\\]\\\\)(((?<=\\0)\\0)|\\0)",
       "endCaptures": {
         "1": { "name": "punctuation.definition.string.end.renpy" },
         "2": { "name": "meta.empty-string.renpy" }

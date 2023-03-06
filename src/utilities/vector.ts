@@ -1,4 +1,7 @@
-export class Vector<T> {
+/**
+ * A dynamically sized array that can be used to store items of any type.
+ */
+export class Vector<T> implements Iterable<T> {
     private buffer: Array<T | null> = [];
 
     private headPtr = -1;
@@ -15,12 +18,24 @@ export class Vector<T> {
         if (capacity > 0) this.buffer = new Array<T | null>(capacity).fill(null);
     }
 
+    [Symbol.iterator](): Iterator<T> {
+        let index = 0;
+        return {
+            next: () => {
+                if (index >= this.size) {
+                    return { done: true, value: null };
+                }
+                return { done: false, value: this.buffer[index++] as T };
+            },
+        };
+    }
+
     /**
      * Add a new item to the end of the vector
      * @param item The item to add
      */
     public pushBack(item: T) {
-        if (this.size() === this.capacity()) {
+        if (this.size === this.capacity) {
             this._grow();
         }
 
@@ -149,7 +164,7 @@ export class Vector<T> {
      * Get the amount of items that the vector is able to hold at this time
      * @returns The amount items that could fit in the internal memory buffer
      */
-    public capacity() {
+    get capacity() {
         return this.buffer.length;
     }
 
@@ -157,7 +172,7 @@ export class Vector<T> {
      * Get the amount of items that are on the vector
      * @returns The number of items
      */
-    public size() {
+    get size() {
         return this.itemCount;
     }
 
@@ -199,14 +214,14 @@ export class Vector<T> {
      * Shrink the internal memory buffer to match the size of the vector
      */
     public shrink() {
-        this.buffer.length = this.size();
+        this.buffer.length = this.size;
     }
 
     /**
      * Grow the buffer to double the current capacity
      */
     private _grow() {
-        const currentCapacity = Math.max(this.capacity(), 1);
+        const currentCapacity = Math.max(this.capacity, 1);
 
         this.buffer = this.buffer.concat(new Array<T | null>(currentCapacity).fill(null));
     }

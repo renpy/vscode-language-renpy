@@ -3,7 +3,7 @@ import { CancellationToken, Color, ColorInformation, ColorPresentation, Document
 import { injectCustomTextmateTokens, TextMateRule } from "./decorator";
 import { LiteralTokenType } from "./tokenizer/renpy-tokens";
 import { tokenizeDocument } from "./tokenizer/tokenizer";
-import util = require("util");
+import { ValueEqualsSet } from "./utilities/hashset";
 
 export class RenpyColorProvider implements DocumentColorProvider {
     public provideDocumentColors(document: TextDocument, token: CancellationToken): Thenable<ColorInformation[]> {
@@ -116,19 +116,13 @@ export function injectCustomColorStyles(document: TextDocument) {
 
     // TODO: Should probably make sure this constant is actually part of a tag, but for now this is fine.
     const colorTags = documentTokens.filter((x) => x.tokenType === LiteralTokenType.Color);
-    const colorRules: TextMateRule[] = [];
+    const colorRules = new ValueEqualsSet<TextMateRule>();
 
     // Build the new rules for this file
     colorTags.forEach((color) => {
         const lowerColor = document.getText(color.getRange()).toLowerCase();
-        const newRule = {
-            scope: `renpy.meta.color.${lowerColor}`,
-            settings: { foreground: lowerColor },
-        };
-
-        if (!colorRules.some((x) => util.isDeepStrictEqual(x, newRule))) {
-            colorRules.push(newRule);
-        }
+        const newRule = new TextMateRule(`renpy.meta.color.${lowerColor}`, { foreground: lowerColor });
+        colorRules.add(newRule);
     });
 
     injectCustomTextmateTokens(colorRules);

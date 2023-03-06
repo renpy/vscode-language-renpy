@@ -59,7 +59,7 @@ export class Vector<T> {
     }
 
     public at(index: number): T {
-        if (index >= this.itemCount) throw new RangeError("Index out of range");
+        if (index < 0 || index >= this.itemCount) throw new RangeError("Index out of range");
         // Convert to T since we only added the null type to create a storage buffer
         return this.buffer[index] as T;
     }
@@ -81,12 +81,68 @@ export class Vector<T> {
         throw new Error("Not yet implemented");
     }
 
+    /**
+     * Remove the first occurrence of the item from the vector, if it exists
+     * @param item The item to remove
+     */
     public erase(item: T) {
-        throw new Error("Not yet implemented");
+        const index = this.indexOf(item);
+        this.eraseAt(index);
     }
 
+    /**
+     * Remove the item at the specified index
+     * @param index The index of the item to remove
+     * @throws RangeError if the index is out of range
+     */
     public eraseAt(index: number) {
-        throw new Error("Not yet implemented");
+        if (index < 0 || index >= this.itemCount) throw new RangeError("Index out of range");
+
+        // Move all items after the index to the left
+        for (let i = index; i < this.itemCount - 1; ++i) {
+            this.buffer[i] = this.buffer[i + 1];
+        }
+        this.popBack();
+    }
+
+    /**
+     * Swap the items at the specified indices
+     * @param elementIndexA The index of the first item
+     * @param elementIndexB The index of the second item
+     * @throws RangeError if either index is out of range
+     */
+    public swapElements(elementIndexA: number, elementIndexB: number) {
+        if (elementIndexA < 0 || elementIndexA >= this.itemCount) throw new RangeError("ElementIndexA out of range");
+        if (elementIndexB < 0 || elementIndexB >= this.itemCount) throw new RangeError("ElementIndexB out of range");
+
+        const temp = this.buffer[elementIndexB];
+        this.buffer[elementIndexB] = this.buffer[elementIndexA];
+        this.buffer[elementIndexA] = temp;
+    }
+
+    /**
+     * Swap the item at the specified index with the item at the back of the vector
+     * @param index The index of the item to swap to the back
+     * @throws RangeError if the index is out of range
+     */
+    public swapToBack(index: number) {
+        if (index < 0 || index >= this.itemCount) throw new RangeError("Index out of range");
+
+        const temp = this.back();
+        this.buffer[this.headPtr] = this.buffer[index];
+        this.buffer[index] = temp;
+    }
+
+    /**
+     * Returns the index of the first occurrence of a value in an array, or -1 if it is not present.
+     * @param searchElement The value to locate in the array.
+     * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
+     */
+    public indexOf(item: T, fromIndex?: number) {
+        const index = this.buffer.indexOf(item, fromIndex);
+        if (index >= this.itemCount) return -1;
+
+        return index;
     }
 
     /**

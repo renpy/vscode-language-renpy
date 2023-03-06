@@ -1213,7 +1213,7 @@
             "1": { "name": "keyword.control.conditional.renpy" },
             "2": { "name": "keyword.control.flow.renpy" }
           },
-          "end": ":",
+          "end": ":|$",
           "endCaptures": {
             "0": { "name": "punctuation.section.block.begin.renpy" }
           },

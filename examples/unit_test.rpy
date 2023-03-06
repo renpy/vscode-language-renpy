@@ -1873,6 +1873,21 @@
             variant "touch"
             take big_red
 
+        style history_text:
+            xpos gui.history_text_xpos
+            ypos gui.history_text_ypos
+            xanchor gui.history_text_xalign
+            xsize gui.history_text_width
+            min_width gui.history_text_width
+            text_align gui.history_text_xalign
+            layout ("subtitle" if gui.history_text_xalign else "tex")
+
+        style history_label:
+            xfill True
+
+        style history_label_text:
+            xalign 0.5
+
         init python:
             style.button['Foo'].background = "#f00"
             style.button['Bar'].background = "#00f"

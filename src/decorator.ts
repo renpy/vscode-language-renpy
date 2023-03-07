@@ -59,7 +59,7 @@ export function injectCustomTextmateTokens(rules: ValueEqualsSet<TextMateRule>) 
         newRules.add(new TextMateRule(rule.scope, rule.settings));
     }
 
-    if (newRules.size !== 0) {
+    if (newRules.size !== currentRules.length) {
         tokenColorCustomizations.textMateRules = newRules.toArray();
         tokensConfig.update("tokenColorCustomizations", tokenColorCustomizations, ConfigurationTarget.Workspace).then(
             () => {

@@ -115,6 +115,19 @@
             "default": true,
             "description": "Show Automatic Images in the displayable auto-completion list. If not checked (false), only images defined in the script will be shown. If checked (true), both script-defined images and images detected in the images folders will be shown."
           },
+          "renpy.diagnostics.diagnosticMode": {
+            "type": "string",
+            "default": "openFilesOnly",
+            "enum": [
+              "openFilesOnly",
+              "workspace"
+            ],
+            "enumDescriptions": [
+              "Only diagnoses open files.",
+              "Diagnose all Ren'Py files in the workspace. This mode applies recursive expressions that can be resource-intensive in projects with a large codebase."
+            ],
+            "description": "Select whether to analyze all Ren'Py files in the workspace or only open files (default)."
+          },
           "renpy.diagnostics.warnOnObsoleteMethods": {
             "type": "boolean",
             "default": true,

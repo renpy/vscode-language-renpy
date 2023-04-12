@@ -334,7 +334,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
         vscode.debug.startDebugging(
           undefined,
           {
-            type: "renpy",
+            type: "cmd",
             name: "Run File",
             request: "launch",
             program: config.renpyExecutableLocation,

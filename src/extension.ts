@@ -258,6 +258,25 @@ export async function activate(context: ExtensionContext): Promise<any> {
     });
     context.subscriptions.push(refreshDiagnosticsCommand);
 
+    // custom command - call renpy to run workspace
+    const runCommand = commands.registerCommand("renpy.runCommand", () => {
+        const config = workspace.getConfiguration("renpy");
+        if (!config) {
+            window.showErrorMessage("Ren'Py executable location not configured or is invalid.");
+        } else {
+            if (isValidExecutable(config.renpyExecutableLocation)) {
+                //call renpy
+                const result = RunWorkspaceFolder();
+                if (result) {
+                    window.showInformationMessage("Ren'Py is running successfully");
+                }
+            } else {
+                window.showErrorMessage("Ren'Py executable location not configured or is invalid.");
+            }
+        }
+    });
+    context.subscriptions.push(runCommand);
+
     // custom command - call renpy to compile
     const compileCommand = commands.registerCommand("renpy.compileNavigationData", () => {
         // check Settings has the path to Ren'Py executable
@@ -393,6 +412,38 @@ function isValidExecutable(renpyExecutableLocation: string): boolean {
         return false;
     }
     return fs.existsSync(renpyExecutableLocation);
+}
+// Attempts to run renpy executable through console commands.
+function RunWorkspaceFolder(): boolean {
+    const config = workspace.getConfiguration("renpy");
+    const renpy = config.renpyExecutableLocation;
+    if (isValidExecutable(renpy)) {
+        const renpyPath = cleanUpPath(Uri.file(renpy).path);
+        const cwd = renpyPath.substring(0, renpyPath.lastIndexOf("/"));
+        let wf = getWorkspaceFolder();
+        const args: string[] = [`${wf}`, "run"];
+        if (wf.endsWith("/game")) {
+            try {
+                updateStatusBar("$(sync~spin) Running Ren'Py...");
+                const result = cp.spawn(renpy, args, { cwd: `${cwd}`, env: { PATH: process.env.PATH } });
+                if (result.error) {
+                    console.log(`renpy spawn error: ${result.error}`);
+                    return false;
+                }
+                if (result.stderr && result.stderr.length > 0) {
+                    console.log(`renpy spawn stderr: ${result.stderr}`);
+                    return false;
+                }
+            } catch (error) {
+                console.log(`renpy spawn error: ${error}`);
+                return false;
+            } finally {
+                updateStatusBar(getStatusBarText());
+            }
+            return true;
+        }
+    }
+    return false;
 }
 
 function ExecuteRenpyCompile(): boolean {

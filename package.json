@@ -86,7 +86,9 @@
       },
       {
         "command": "renpy.runCommand",
-        "title": "Runs The current project in renpy"
+        "title": "Run Project",
+        "category": "Run",
+        "icon": "$(play)"
       }
     ],
     "configuration": [

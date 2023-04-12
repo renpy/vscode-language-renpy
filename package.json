@@ -83,6 +83,10 @@
       {
         "command": "renpy.refreshDiagnostics",
         "title": "Refresh Ren'Py diagnostics for the active editor window"
+      },
+      {
+        "command": "renpy.runCommand",
+        "title": "Runs The current project in renpy"
       }
     ],
     "configuration": [

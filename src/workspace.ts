@@ -10,11 +10,11 @@ import * as fs from "fs";
  * @returns The filename.ext of the filepath
  */
 export function extractFilename(str: string) {
-    if (str) {
-        str = str.replace(/\\/g, "/");
-        return str.split("/").pop();
-    }
-    return null;
+  if (str) {
+    str = str.replace(/\\/g, "/");
+    return str.split("/").pop();
+  }
+  return null;
 }
 
 /**
@@ -23,14 +23,14 @@ export function extractFilename(str: string) {
  * @returns The filename of the filepath
  */
 export function extractFilenameWithoutExtension(str: string) {
-    if (str) {
-        str = str.replace(/\\/g, "/");
-        const filename = str.split("/").pop();
-        if (filename) {
-            return filename.replace(/\.[^/.]+$/, "");
-        }
+  if (str) {
+    str = str.replace(/\\/g, "/");
+    const filename = str.split("/").pop();
+    if (filename) {
+      return filename.replace(/\.[^/.]+$/, "");
     }
-    return null;
+  }
+  return null;
 }
 
 /**
@@ -39,17 +39,17 @@ export function extractFilenameWithoutExtension(str: string) {
  * @returns The filename of the filepath (e.g., `game/script.rpy`)
  */
 export function stripWorkspaceFromFile(str: string) {
-    const wf = getWorkspaceFolder();
+  const wf = getWorkspaceFolder();
 
-    let filename = cleanUpPath(str);
-    if (filename.toLowerCase().startsWith(wf.toLowerCase())) {
-        filename = filename.substring(wf.length + 1);
-    }
+  let filename = cleanUpPath(str);
+  if (filename.toLowerCase().startsWith(wf.toLowerCase())) {
+    filename = filename.substring(wf.length + 1);
+  }
 
-    while (filename.startsWith("/")) {
-        filename = filename.substring(1);
-    }
-    return filename;
+  while (filename.startsWith("/")) {
+    filename = filename.substring(1);
+  }
+  return filename;
 }
 
 /**
@@ -57,12 +57,12 @@ export function stripWorkspaceFromFile(str: string) {
  * @returns The path of the workspace (i.e., the Ren'Py base folder)
  */
 export function getWorkspaceFolder() {
-    if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-        let wf = workspace.workspaceFolders[0].uri.path;
-        wf = cleanUpPath(wf);
-        return wf;
-    }
-    return "";
+  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
+    let wf = workspace.workspaceFolders[0].uri.path;
+    wf = cleanUpPath(wf);
+    return wf;
+  }
+  return "";
 }
 
 /**
@@ -73,11 +73,11 @@ export function getWorkspaceFolder() {
  * @returns The full path and filename of the file with invalid characters removed
  */
 export function cleanUpPath(path: string): string {
-    if (path.startsWith("/") && path.startsWith(":/", 2)) {
-        // windows is reporting the path as "/c:/xxx"
-        path = path.substring(1);
-    }
-    return path;
+  if (path.startsWith("/") && path.startsWith(":/", 2)) {
+    // windows is reporting the path as "/c:/xxx"
+    path = path.substring(1);
+  }
+  return path;
 }
 
 /**
@@ -86,19 +86,19 @@ export function cleanUpPath(path: string): string {
  * @returns The filename path including the workspace folder
  */
 export function getFileWithPath(filename: string) {
-    const wf = getWorkspaceFolder();
-    if (wf && wf.length > 0) {
-        if (filename.startsWith(wf)) {
-            return filename;
-        }
-        let path = wf + "/game/" + filename;
-        if (!fs.existsSync(path)) {
-            path = wf + "/" + filename;
-        }
-        return path;
-    } else {
-        return filename;
+  const wf = getWorkspaceFolder();
+  if (wf && wf.length > 0) {
+    if (filename.startsWith(wf)) {
+      return filename;
     }
+    let path = wf + "/game/" + filename;
+    if (!fs.existsSync(path)) {
+      path = wf + "/" + filename;
+    }
+    return path;
+  } else {
+    return filename;
+  }
 }
 
 /**
@@ -106,12 +106,12 @@ export function getFileWithPath(filename: string) {
  * @returns The full path to the game/images folder
  */
 export function getImagesFolder() {
-    const workspaceFolder = getWorkspaceFolder();
-    let path = workspaceFolder + "/game/images";
-    if (!fs.existsSync(path)) {
-        path = workspaceFolder + "/images";
-    }
-    return path;
+  const workspaceFolder = getWorkspaceFolder();
+  let path = workspaceFolder + "/game/images";
+  if (!fs.existsSync(path)) {
+    path = workspaceFolder + "/images";
+  }
+  return path;
 }
 
 /**
@@ -119,12 +119,12 @@ export function getImagesFolder() {
  * @returns The full path to the game/audio folder
  */
 export function getAudioFolder() {
-    const workspaceFolder = getWorkspaceFolder();
-    let path = workspaceFolder + "/game/audio";
-    if (!fs.existsSync(path)) {
-        path = workspaceFolder + "/audio";
-    }
-    return path;
+  const workspaceFolder = getWorkspaceFolder();
+  let path = workspaceFolder + "/game/audio";
+  if (!fs.existsSync(path)) {
+    path = workspaceFolder + "/audio";
+  }
+  return path;
 }
 
 /**
@@ -132,7 +132,7 @@ export function getAudioFolder() {
  * @returns The full path to the navigation.json file
  */
 export function getNavigationJsonFilepath() {
-    const filename = "saves/navigation.json";
-    const filepath = getFileWithPath(filename);
-    return filepath;
+  const filename = "saves/navigation.json";
+  const filepath = getFileWithPath(filename);
+  return filepath;
 }

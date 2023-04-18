@@ -261,7 +261,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 
     // custom command - call renpy to run workspace
     const runCommand = commands.registerCommand("renpy.runCommand", () => {
-        const config = workspace.getConfiguration("renpy");
+        //EsLint reccommends config be removed as it has already been decrlaed in a previous scope
         if (!config || !isValidExecutable(config.renpyExecutableLocation)) {
             window.showErrorMessage("Ren'Py executable location not configured or is invalid.");
         } else {
@@ -426,15 +426,15 @@ function isValidExecutable(renpyExecutableLocation: string): boolean {
 function RunWorkspaceFolder(): boolean {
     const config = workspace.getConfiguration("renpy");
     const renpy = config.renpyExecutableLocation;
-    if (isValidExecutable(renpy)) {
+    if (config && isValidExecutable(renpy)) {
         const renpyPath = cleanUpPath(Uri.file(renpy).path);
         const cwd = renpyPath.substring(0, renpyPath.lastIndexOf("/"));
-        let wf = getWorkspaceFolder();
-        const args: string[] = [`${wf}`, "run"];
-        if (wf.endsWith("/game")) {
+        const workfolder = getWorkspaceFolder();
+        const args: string[] = [`${workfolder}`, "run"];
+        if (workfolder.endsWith("/game")) {
             try {
                 updateStatusBar("$(sync~spin) Running Ren'Py...");
-                const result = cp.spawn(renpy, args, {
+                const result = cp.spawnSync(renpy, args, {
                     cwd: `${cwd}`,
                     env: { PATH: process.env.PATH },
                 });

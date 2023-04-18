@@ -16,6 +16,7 @@ import {
     DefinitionProvider,
     DocumentSemanticTokensProvider,
     DocumentSymbol,
+    debug,
     DocumentSymbolProvider,
     ExtensionContext,
     Hover,
@@ -261,28 +262,25 @@ export async function activate(context: ExtensionContext): Promise<any> {
     // custom command - call renpy to run workspace
     const runCommand = commands.registerCommand("renpy.runCommand", () => {
         const config = workspace.getConfiguration("renpy");
-        if (!config) {
+        if (!config || !isValidExecutable(config.renpyExecutableLocation)) {
             window.showErrorMessage("Ren'Py executable location not configured or is invalid.");
         } else {
-            if (isValidExecutable(config.renpyExecutableLocation)) {
-                //this is kinda a hob botched together attempt that I'm like 30% certain has a chance of working
-                vscode.debug.startDebugging(
-                    undefined,
-                    {
-                        type: "cmd",
-                        name: "Run File",
-                        request: "launch",
-                        program: config.renpyExecutableLocation,
-                    },
-                    { noDebug: true }
-                );
-                //call renpy
-                const result = RunWorkspaceFolder();
-                if (result) {
-                    window.showInformationMessage("Ren'Py is running successfully");
-                }
-            } else {
-                window.showErrorMessage("Ren'Py executable location not configured or is invalid.");
+            //this is kinda a hob botched together attempt that I'm like 30% certain has a chance of working
+            debug.startDebugging(
+                undefined,
+                {
+                    type: "cmd",
+                    name: "Run File",
+                    request: "launch",
+                    program: config.renpyExecutableLocation,
+                },
+                { noDebug: true }
+            );
+
+            //call renpy
+            const result = RunWorkspaceFolder();
+            if (result) {
+                window.showInformationMessage("Ren'Py is running successfully");
             }
         }
     });

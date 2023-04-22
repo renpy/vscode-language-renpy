@@ -52,14 +52,7 @@ import { getDocumentSymbols } from "./outline";
 import { findAllReferences } from "./references";
 import { getSemanticTokens } from "./semantics";
 import { getSignatureHelp } from "./signature";
-import {
-    cleanUpPath,
-    getAudioFolder,
-    getImagesFolder,
-    getNavigationJsonFilepath,
-    getWorkspaceFolder,
-    stripWorkspaceFromFile,
-} from "./workspace";
+import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
 
 let myStatusBarItem: StatusBarItem;
 
@@ -70,8 +63,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
         onEnterRules: [
             {
                 // indentation for Ren'Py and Python blocks
-                beforeText:
-                    /^\s*(?:def|class|for|if|elif|else|while|try|with|finally|except|label|menu|init|":|':|python|).*?:\s*$/,
+                beforeText: /^\s*(?:def|class|for|if|elif|else|while|try|with|finally|except|label|menu|init|":|':|python|).*?:\s*$/,
                 action: { indentAction: IndentAction.Indent },
             },
         ],
@@ -92,16 +84,8 @@ export async function activate(context: ExtensionContext): Promise<any> {
     // Listen to configuration changes
     context.subscriptions.push(
         workspace.onDidChangeConfiguration((e) => {
-            if (
-                e.affectsConfiguration(
-                    "renpy.excludeCompiledFilesFromWorkspace"
-                )
-            ) {
-                if (
-                    workspace
-                        .getConfiguration("renpy")
-                        .get("excludeCompiledFilesFromWorkspace")
-                ) {
+            if (e.affectsConfiguration("renpy.excludeCompiledFilesFromWorkspace")) {
+                if (workspace.getConfiguration("renpy").get("excludeCompiledFilesFromWorkspace")) {
                     excludeCompiledFilesConfig();
                 }
             }
@@ -112,11 +96,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     const hoverProvider = languages.registerHoverProvider(
         "renpy",
         new (class implements HoverProvider {
-            async provideHover(
-                document: TextDocument,
-                position: Position,
-                token: CancellationToken
-            ): Promise<Hover | null | undefined> {
+            async provideHover(document: TextDocument, position: Position, token: CancellationToken): Promise<Hover | null | undefined> {
                 return getHover(document, position);
             }
         })()
@@ -127,11 +107,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     const definitionProvider = languages.registerDefinitionProvider(
         "renpy",
         new (class implements DefinitionProvider {
-            provideDefinition(
-                document: TextDocument,
-                position: Position,
-                token: CancellationToken
-            ): ProviderResult<Definition> {
+            provideDefinition(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Definition> {
                 return getDefinition(document, position);
             }
         })()
@@ -142,10 +118,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     const symbolProvider = languages.registerDocumentSymbolProvider(
         "renpy",
         new (class implements DocumentSymbolProvider {
-            provideDocumentSymbols(
-                document: TextDocument,
-                token: CancellationToken
-            ): ProviderResult<DocumentSymbol[]> {
+            provideDocumentSymbols(document: TextDocument, token: CancellationToken): ProviderResult<DocumentSymbol[]> {
                 return getDocumentSymbols(document);
             }
         })()
@@ -156,12 +129,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     const signatureProvider = languages.registerSignatureHelpProvider(
         "renpy",
         new (class implements SignatureHelpProvider {
-            provideSignatureHelp(
-                document: TextDocument,
-                position: Position,
-                token: CancellationToken,
-                context: SignatureHelpContext
-            ): ProviderResult<SignatureHelp> {
+            provideSignatureHelp(document: TextDocument, position: Position, token: CancellationToken, context: SignatureHelpContext): ProviderResult<SignatureHelp> {
                 return getSignatureHelp(document, position, context);
             }
         })(),
@@ -175,12 +143,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     const completionProvider = languages.registerCompletionItemProvider(
         "renpy",
         new (class implements CompletionItemProvider {
-            provideCompletionItems(
-                document: TextDocument,
-                position: Position,
-                token: CancellationToken,
-                context: CompletionContext
-            ): ProviderResult<CompletionItem[]> {
+            provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): ProviderResult<CompletionItem[]> {
                 return getCompletionList(document, position, context);
             }
         })(),
@@ -193,22 +156,14 @@ export async function activate(context: ExtensionContext): Promise<any> {
     context.subscriptions.push(completionProvider);
 
     // Color Provider
-    const colorProvider = languages.registerColorProvider(
-        "renpy",
-        new RenpyColorProvider()
-    );
+    const colorProvider = languages.registerColorProvider("renpy", new RenpyColorProvider());
     context.subscriptions.push(colorProvider);
 
     // Find All References provider
     const references = languages.registerReferenceProvider(
         "renpy",
         new (class implements ReferenceProvider {
-            async provideReferences(
-                document: TextDocument,
-                position: Position,
-                context: ReferenceContext,
-                token: CancellationToken
-            ): Promise<Location[] | null | undefined> {
+            async provideReferences(document: TextDocument, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | null | undefined> {
                 return await findAllReferences(document, position, context);
             }
         })()
@@ -223,10 +178,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     const semanticTokens = languages.registerDocumentSemanticTokensProvider(
         "renpy",
         new (class implements DocumentSemanticTokensProvider {
-            provideDocumentSemanticTokens(
-                document: TextDocument,
-                token: CancellationToken
-            ): ProviderResult<SemanticTokens> {
+            provideDocumentSemanticTokens(document: TextDocument, token: CancellationToken): ProviderResult<SemanticTokens> {
                 if (document.languageId !== "renpy") {
                     return;
                 } else {
@@ -246,10 +198,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
             }
 
             const filesConfig = workspace.getConfiguration("files");
-            if (
-                filesConfig.get("autoSave") === undefined ||
-                filesConfig.get("autoSave") !== "off"
-            ) {
+            if (filesConfig.get("autoSave") === undefined || filesConfig.get("autoSave") !== "off") {
                 // only trigger document refreshes if file autoSave is off
                 return;
             }
@@ -262,9 +211,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
             }
 
             if (!NavigationData.isImporting) {
-                updateStatusBar(
-                    "$(sync~spin) Initializing Ren'Py static data..."
-                );
+                updateStatusBar("$(sync~spin) Initializing Ren'Py static data...");
                 const uri = Uri.file(document.fileName);
                 const filename = stripWorkspaceFromFile(uri.path);
                 NavigationData.clearScannedDataForFile(filename);
@@ -280,66 +227,43 @@ export async function activate(context: ExtensionContext): Promise<any> {
     subscribeToDocumentChanges(context, diagnostics);
 
     // custom command - refresh data
-    const refreshCommand = commands.registerCommand(
-        "renpy.refreshNavigationData",
-        async () => {
-            updateStatusBar(
-                "$(sync~spin) Refreshing Ren'Py navigation data..."
-            );
-            try {
-                await NavigationData.refresh(true);
-            } catch (error) {
-                console.log(error);
-            } finally {
-                updateStatusBar(getStatusBarText());
-            }
+    const refreshCommand = commands.registerCommand("renpy.refreshNavigationData", async () => {
+        updateStatusBar("$(sync~spin) Refreshing Ren'Py navigation data...");
+        try {
+            await NavigationData.refresh(true);
+        } catch (error) {
+            console.log(error);
+        } finally {
+            updateStatusBar(getStatusBarText());
         }
-    );
+    });
     context.subscriptions.push(refreshCommand);
 
     // custom command - jump to location
-    const gotoFileLocationCommand = commands.registerCommand(
-        "renpy.jumpToFileLocation",
-        (args) => {
-            const uri = Uri.file(cleanUpPath(args.uri.path));
-            const range = new Range(
-                args.range[0].line,
-                args.range[0].character,
-                args.range[0].line,
-                args.range[0].character
-            );
-            try {
-                window.showTextDocument(uri, { selection: range });
-            } catch (error) {
-                window.showWarningMessage(
-                    `Could not jump to the location (error: ${error})`
-                );
-            }
+    const gotoFileLocationCommand = commands.registerCommand("renpy.jumpToFileLocation", (args) => {
+        const uri = Uri.file(cleanUpPath(args.uri.path));
+        const range = new Range(args.range[0].line, args.range[0].character, args.range[0].line, args.range[0].character);
+        try {
+            window.showTextDocument(uri, { selection: range });
+        } catch (error) {
+            window.showWarningMessage(`Could not jump to the location (error: ${error})`);
         }
-    );
+    });
     context.subscriptions.push(gotoFileLocationCommand);
 
     // custom command - refresh diagnositcs
-    const refreshDiagnosticsCommand = commands.registerCommand(
-        "renpy.refreshDiagnostics",
-        () => {
-            if (window.activeTextEditor) {
-                refreshDiagnostics(
-                    window.activeTextEditor.document,
-                    diagnostics
-                );
-            }
+    const refreshDiagnosticsCommand = commands.registerCommand("renpy.refreshDiagnostics", () => {
+        if (window.activeTextEditor) {
+            refreshDiagnostics(window.activeTextEditor.document, diagnostics);
         }
-    );
+    });
     context.subscriptions.push(refreshDiagnosticsCommand);
 
     // custom command - call renpy to run workspace
     const runCommand = commands.registerCommand("renpy.runCommand", () => {
         //EsLint reccommends config be removed as it has already been decrlaed in a previous scope
         if (!config || !isValidExecutable(config.renpyExecutableLocation)) {
-            window.showErrorMessage(
-                "Ren'Py executable location not configured or is invalid."
-            );
+            window.showErrorMessage("Ren'Py executable location not configured or is invalid.");
         } else {
             //this is kinda a hob botched together attempt that I'm like 30% certain has a chance of working
             debug.startDebugging(
@@ -363,33 +287,24 @@ export async function activate(context: ExtensionContext): Promise<any> {
     context.subscriptions.push(runCommand);
 
     // custom command - call renpy to compile
-    const compileCommand = commands.registerCommand(
-        "renpy.compileNavigationData",
-        () => {
-            // check Settings has the path to Ren'Py executable
-            // Call Ren'Py with the workspace folder and the json-dump argument
-            const config = workspace.getConfiguration("renpy");
-            if (!config) {
-                window.showErrorMessage(
-                    "Ren'Py executable location not configured or is invalid."
-                );
-            } else {
-                if (isValidExecutable(config.renpyExecutableLocation)) {
-                    // call renpy
-                    const result = ExecuteRenpyCompile();
-                    if (result) {
-                        window.showInformationMessage(
-                            "Ren'Py compilation has completed."
-                        );
-                    }
-                } else {
-                    window.showErrorMessage(
-                        "Ren'Py executable location not configured or is invalid."
-                    );
+    const compileCommand = commands.registerCommand("renpy.compileNavigationData", () => {
+        // check Settings has the path to Ren'Py executable
+        // Call Ren'Py with the workspace folder and the json-dump argument
+        const config = workspace.getConfiguration("renpy");
+        if (!config) {
+            window.showErrorMessage("Ren'Py executable location not configured or is invalid.");
+        } else {
+            if (isValidExecutable(config.renpyExecutableLocation)) {
+                // call renpy
+                const result = ExecuteRenpyCompile();
+                if (result) {
+                    window.showInformationMessage("Ren'Py compilation has completed.");
                 }
+            } else {
+                window.showErrorMessage("Ren'Py executable location not configured or is invalid.");
             }
         }
-    );
+    });
     context.subscriptions.push(compileCommand);
 
     // Custom status bar
@@ -407,15 +322,11 @@ export async function activate(context: ExtensionContext): Promise<any> {
         fs.watch(getNavigationJsonFilepath(), async (event, filename) => {
             if (filename) {
                 console.log(`${filename} changed`);
-                updateStatusBar(
-                    "$(sync~spin) Refreshing Ren'Py navigation data..."
-                );
+                updateStatusBar("$(sync~spin) Refreshing Ren'Py navigation data...");
                 try {
                     await NavigationData.refresh();
                 } catch (error) {
-                    console.log(
-                        `${Date()}: error refreshing NavigationData: ${error}`
-                    );
+                    console.log(`${Date()}: error refreshing NavigationData: ${error}`);
                 } finally {
                     updateStatusBar(getStatusBarText());
                 }
@@ -428,32 +339,24 @@ export async function activate(context: ExtensionContext): Promise<any> {
     if (config && config.watchFoldersForChanges) {
         console.log("Starting Watcher for images folder.");
         try {
-            fs.watch(
-                getImagesFolder(),
-                { recursive: true },
-                async (event, filename) => {
-                    if (filename && event === "rename") {
-                        console.log(`${filename} created/deleted`);
-                        await NavigationData.scanForImages();
-                    }
+            fs.watch(getImagesFolder(), { recursive: true }, async (event, filename) => {
+                if (filename && event === "rename") {
+                    console.log(`${filename} created/deleted`);
+                    await NavigationData.scanForImages();
                 }
-            );
+            });
         } catch (error) {
             console.log(`Watch image folder error: ${error}`);
         }
 
         console.log("Starting Watcher for audio folder.");
         try {
-            fs.watch(
-                getAudioFolder(),
-                { recursive: true },
-                async (event, filename) => {
-                    if (filename && event === "rename") {
-                        console.log(`${filename} created/deleted`);
-                        await NavigationData.scanForAudio();
-                    }
+            fs.watch(getAudioFolder(), { recursive: true }, async (event, filename) => {
+                if (filename && event === "rename") {
+                    console.log(`${filename} created/deleted`);
+                    await NavigationData.scanForAudio();
                 }
-            );
+            });
         } catch (error) {
             console.log(`Watch audio folder error: ${error}`);
         }
@@ -465,34 +368,20 @@ export function deactivate() {
     fs.unwatchFile(getNavigationJsonFilepath());
 }
 
-export function getKeywordPrefix(
-    document: TextDocument,
-    position: Position,
-    range: Range
-): string | undefined {
+export function getKeywordPrefix(document: TextDocument, position: Position, range: Range): string | undefined {
     if (range.start.character <= 0) {
         return;
     }
-    const rangeBefore = new Range(
-        new Position(range.start.line, range.start.character - 1),
-        new Position(range.end.line, range.start.character)
-    );
+    const rangeBefore = new Range(new Position(range.start.line, range.start.character - 1), new Position(range.end.line, range.start.character));
     const spaceBefore = document.getText(rangeBefore);
     if (spaceBefore === ".") {
-        const prevPosition = new Position(
-            position.line,
-            range.start.character - 1
-        );
+        const prevPosition = new Position(position.line, range.start.character - 1);
         const prevRange = document.getWordRangeAtPosition(prevPosition);
         if (prevRange) {
             const prevWord = document.getText(prevRange);
             if (prevWord === "music" || prevWord === "sound") {
                 // check for renpy.music.* or renpy.sound.*
-                const newPrefix = getKeywordPrefix(
-                    document,
-                    prevPosition,
-                    prevRange
-                );
+                const newPrefix = getKeywordPrefix(document, prevPosition, prevRange);
                 if (newPrefix === "renpy") {
                     return `${newPrefix}.${prevWord}`;
                 }
@@ -585,12 +474,7 @@ function ExecuteRenpyCompile(): boolean {
         }
         const navData = getNavigationJsonFilepath();
         //const args = `${wf} compile --json-dump ${navData}`;
-        const args: string[] = [
-            `${wf}`,
-            "compile",
-            "--json-dump",
-            `${navData}`,
-        ];
+        const args: string[] = [`${wf}`, "compile", "--json-dump", `${navData}`];
         try {
             NavigationData.isCompiling = true;
             updateStatusBar("$(sync~spin) Compiling Ren'Py navigation data...");

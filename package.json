@@ -74,19 +74,19 @@
     "commands": [
       {
         "command": "renpy.refreshNavigationData",
-        "title": "Refresh Ren'Py Navigation Data"
+        "title": "Renpy: Refresh Ren'Py Navigation Data"
       },
       {
         "command": "renpy.compileNavigationData",
-        "title": "Compile Ren'Py Navigation Data"
+        "title": "Renpy: Compile Ren'Py Navigation Data"
       },
       {
         "command": "renpy.refreshDiagnostics",
-        "title": "Refresh Ren'Py diagnostics for the active editor window"
+        "title": "Renpy: Refresh Ren'Py diagnostics for the active editor window"
       },
       {
         "command": "renpy.runCommand",
-        "title": "Run Project",
+        "title": "Renpy: Run Project",
         "category": "Run",
         "icon": "$(play)"
       }

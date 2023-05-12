@@ -102,7 +102,7 @@
       },
       {
         "command": "renpy.runCommand",
-        "title": "Run Project",
+        "title": "Renpy: Run Project",
         "category": "Run",
         "icon": "$(play)"
       }

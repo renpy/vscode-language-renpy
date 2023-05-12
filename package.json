@@ -86,7 +86,7 @@
       },
       {
         "command": "renpy.migrateOldFiles",
-        "title": "Cleanup unused compiled Ren'Py source files"
+        "title": "Renpy: Cleanup unused compiled Ren'Py source files"
       },
       {
         "command": "renpy.runCommand",

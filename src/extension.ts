@@ -41,7 +41,6 @@ import {
     window,
     workspace,
     WorkspaceConfiguration,
-    RelativePattern,
 } from "vscode";
 import { RenpyColorProvider } from "./color";
 import { getCompletionList } from "./completion";
@@ -252,27 +251,23 @@ export async function activate(context: ExtensionContext): Promise<any> {
     });
     context.subscriptions.push(gotoFileLocationCommand);
 
-    const migrateOldFilesCommand = commands.registerCommand("renpy.migrateOldFiles", () => {
+    const migrateOldFilesCommand = commands.registerCommand("renpy.migrateOldFiles", async () => {
         if (workspace !== null) {
-            workspace.findFiles("**/*.rpyc", null, 50).then((uris: Uri[]) => {
-                uris.forEach((uri) => {
-                    const sourceFile = Uri.parse(uri.toString().replace(".rpyc", ".rpy"));
-                    workspace.fs.stat(sourceFile).then(
-                        function () {
-                            // Do nothing
-                        },
-                        function () {
-                            const endOfPath = uri.toString().replace("game", "old-game").lastIndexOf("/");
-                            const properLocation = Uri.parse(uri.toString().replace("game", "old-game"));
-                            const oldDataDirectory = Uri.parse(properLocation.toString().substring(0, endOfPath));
-                            workspace.fs.createDirectory(oldDataDirectory);
-                            workspace.fs
-                                .readFile(uri)
-                                .then((data) => workspace.fs.writeFile(properLocation, data))
-                                .then(() => workspace.fs.delete(uri));
-                        }
-                    );
-                });
+            const altURIs = await workspace.findFiles("**/*.rpyc", null, 50);
+            altURIs.forEach(async (uri) => {
+                const sourceFile = Uri.parse(uri.toString().replace(".rpyc", ".rpy"));
+                try {
+                    await workspace.fs.stat(sourceFile);
+                } catch (error) {
+                    const endOfPath = uri.toString().replace("game", "old-game").lastIndexOf("/");
+                    const properLocation = Uri.parse(uri.toString().replace("game", "old-game"));
+                    const oldDataDirectory = Uri.parse(properLocation.toString().substring(0, endOfPath));
+                    workspace.fs.createDirectory(oldDataDirectory);
+                    workspace.fs
+                        .readFile(uri)
+                        .then((data) => workspace.fs.writeFile(properLocation, data))
+                        .then(() => workspace.fs.delete(uri));
+                }
             });
         }
     });

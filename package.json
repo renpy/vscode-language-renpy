@@ -85,6 +85,10 @@
         "title": "Renpy: Refresh Ren'Py diagnostics for the active editor window"
       },
       {
+        "command": "renpy.migrateOldFiles",
+        "title": "Renpy: Cleanup unused compiled Ren'Py source files"
+      },
+      {
         "command": "renpy.runCommand",
         "title": "Renpy: Run Project",
         "category": "Run",

@@ -251,7 +251,30 @@ export async function activate(context: ExtensionContext): Promise<any> {
     });
     context.subscriptions.push(gotoFileLocationCommand);
 
-    // custom command - refresh diagnositcs
+    const migrateOldFilesCommand = commands.registerCommand("renpy.migrateOldFiles", async () => {
+        if (workspace !== null) {
+            const altURIs = await workspace.findFiles("**/*.rpyc", null, 50);
+            altURIs.forEach(async (uri) => {
+                const sourceFile = Uri.parse(uri.toString().replace(".rpyc", ".rpy"));
+                try {
+                    await workspace.fs.stat(sourceFile);
+                } catch (error) {
+                    const endOfPath = uri.toString().replace("game", "old-game").lastIndexOf("/");
+                    const properLocation = Uri.parse(uri.toString().replace("game", "old-game"));
+                    const oldDataDirectory = Uri.parse(properLocation.toString().substring(0, endOfPath));
+                    workspace.fs.createDirectory(oldDataDirectory);
+                    workspace.fs
+                        .readFile(uri)
+                        .then((data) => workspace.fs.writeFile(properLocation, data))
+                        .then(() => workspace.fs.delete(uri));
+                }
+            });
+        }
+    });
+
+    context.subscriptions.push(migrateOldFilesCommand);
+
+    // custom command - refresh diagnostics
     const refreshDiagnosticsCommand = commands.registerCommand("renpy.refreshDiagnostics", () => {
         if (window.activeTextEditor) {
             refreshDiagnostics(window.activeTextEditor.document, diagnostics);
@@ -261,7 +284,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 
     // custom command - call renpy to run workspace
     const runCommand = commands.registerCommand("renpy.runCommand", () => {
-        //EsLint reccommends config be removed as it has already been decrlaed in a previous scope
+        //EsLint recommends config be removed as it has already been declared in a previous scope
         if (!config || !isValidExecutable(config.renpyExecutableLocation)) {
             window.showErrorMessage("Ren'Py executable location not configured or is invalid.");
         } else {
@@ -455,6 +478,7 @@ function RunWorkspaceFolder(): boolean {
             }
             return true;
         }
+        return false;
     } else {
         console.log("config for rennpy does not exist");
         return false;

@@ -188,7 +188,9 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test": "npm run compile && node ./node_modules/vscode/bin/test",
-    "lint": "eslint -c .eslintrc.json --ext .ts ./src/"
+    "lint": "eslint -c .eslintrc.json --ext .ts ./src/",
+    "vsce-package": "vsce package -o languague-renpy.vsix",
+    "format-check": "prettier --check 'src/**/*.ts' '.github/**/*.yml'"
   },
   "devDependencies": {
     "@types/vscode": "^1.63.0",
@@ -199,6 +201,8 @@
     "eslint": "^8.33.0",
     "eslint-plugin-import": "^2.27.5",
     "typescript": "^4.8.4",
-    "vscode-test": "^1.6.1"
+    "vscode-test": "^1.6.1",
+    "prettier": "^2.7.1",
+    "@vscode/vsce": "^2.15.0"
   }
 }

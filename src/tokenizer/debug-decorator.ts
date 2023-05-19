@@ -1,7 +1,7 @@
 import { performance } from "perf_hooks";
 import { DecorationOptions, Disposable, ExtensionContext, MarkdownString, Uri, window, workspace } from "vscode";
 import { CharacterTokenType, LiteralTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "./renpy-tokens";
-import { Token } from "./token-definitions";
+import { TokenTree } from "./token-definitions";
 import { tokenizeDocument } from "./tokenizer";
 
 let timeout: NodeJS.Timer | undefined = undefined;
@@ -135,7 +135,7 @@ const allDecorationTypes = [
     errorDecorationType,
 ];
 
-let tokenCache: Token[] = [];
+let tokenCache: TokenTree;
 let documentVersion = -1;
 let documentUri: Uri | null = null;
 
@@ -183,7 +183,7 @@ function updateDecorations() {
         return;
     }
 
-    if (documentVersion !== activeEditor.document.version || documentUri !== activeEditor.document.uri || tokenCache.length === 0) {
+    if (documentVersion !== activeEditor.document.version || documentUri !== activeEditor.document.uri || tokenCache.count() === 0) {
         documentVersion = activeEditor.document.version;
         documentUri = activeEditor.document.uri;
 
@@ -220,7 +220,12 @@ function updateDecorations() {
 
     const errors: DecorationOptions[] = [];
 
-    tokens.forEach((token) => {
+    tokens.forEach((node) => {
+        const token = node.token;
+        if (!token) {
+            return;
+        }
+
         const range = token.getRange();
         const content = activeEditor?.document.getText(range);
 

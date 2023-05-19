@@ -135,6 +135,12 @@ export class Vector<T> implements Iterable<T> {
         this.buffer[elementIndexA] = temp;
     }
 
+    public forEach(callback: (item: T) => void) {
+        for (let i = 0; i < this.itemCount; ++i) {
+            callback(this.buffer[i] as T);
+        }
+    }
+
     /**
      * Swap the item at the specified index with the item at the back of the vector
      * @param index The index of the item to swap to the back

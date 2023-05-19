@@ -1,9 +1,9 @@
 // Color conversion methods for Color provider
 import { CancellationToken, Color, ColorInformation, ColorPresentation, DocumentColorProvider, Range, TextDocument, TextEdit } from "vscode";
+/*import { tokenizeDocument } from "./tokenizer/tokenizer";
 import { injectCustomTextmateTokens, TextMateRule } from "./decorator";
 import { LiteralTokenType } from "./tokenizer/renpy-tokens";
-import { tokenizeDocument } from "./tokenizer/tokenizer";
-import { ValueEqualsSet } from "./utilities/hashset";
+import { ValueEqualsSet } from "./utilities/hashset";*/
 
 export class RenpyColorProvider implements DocumentColorProvider {
     public provideDocumentColors(document: TextDocument, token: CancellationToken): Thenable<ColorInformation[]> {
@@ -112,8 +112,8 @@ export function getColorPresentations(color: Color, document: TextDocument, rang
 }
 
 export function injectCustomColorStyles(document: TextDocument) {
-    const documentTokens = tokenizeDocument(document);
-
+    // Disabled until filter is added to the tree class
+    /*const documentTokens = tokenizeDocument(document);
     // TODO: Should probably make sure this constant is actually part of a tag, but for now this is fine.
     const colorTags = documentTokens.filter((x) => x.tokenType === LiteralTokenType.Color);
     const colorRules = new ValueEqualsSet<TextMateRule>();
@@ -125,7 +125,7 @@ export function injectCustomColorStyles(document: TextDocument) {
         colorRules.add(newRule);
     });
 
-    injectCustomTextmateTokens(colorRules);
+    injectCustomTextmateTokens(colorRules);*/
 }
 
 /**

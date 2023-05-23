@@ -1,0 +1,324 @@
+{
+  "information_for_contributors": ["Please remeber to regenerate the ts token patterns using the 'syntax-to-token-pattern.py' python script"],
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Ren'Py ATL",
+  "scopeName": "source.renpy.atl",
+  "patterns": [{ "include": "#atl" }],
+  "repository": {
+    "atl": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#atl-syntax-and-semantics",
+      "patterns": [{ "include": "#atl-keywords" }, { "include": "#atl-blocks" }, { "include": "#atl-simple-expression" }, { "include": "#atl-warper" }, { "include": "#atl-event" }, { "include": "#atl-on" }, { "include": "#atl-function" }]
+    },
+    "atl-simple-expression": {
+      "patterns": [
+        { "include": "source.renpy#expressions" },
+        { "include": "#atl-build-in-properties" },
+        { "include": "source.renpy.python#literal" },
+        { "include": "source.renpy.python#member-access" },
+        { "include": "source.renpy.python#illegal-operator" },
+        { "include": "source.renpy.python#operator" },
+        { "include": "source.renpy.python#curly-braces" },
+        { "include": "source.renpy.python#item-access" },
+        { "include": "source.renpy.python#list" },
+        { "include": "source.renpy.python#odd-function-call" },
+        { "include": "source.renpy.python#round-braces" },
+        { "include": "source.renpy.python#function-call" },
+        { "include": "source.renpy.python#builtin-functions" },
+        { "include": "source.renpy.python#builtin-types" },
+        { "include": "source.renpy.python#builtin-exceptions" },
+        { "include": "source.renpy.python#magic-names" },
+        { "include": "source.renpy.python#special-names" },
+        { "include": "source.renpy.python#illegal-names" },
+        { "include": "source.renpy.python#special-variables" },
+        { "include": "source.renpy.python#ellipsis" },
+        { "include": "source.renpy.python#punctuation" },
+        { "include": "source.renpy.python#line-continuation" }
+      ]
+    },
+    "atl-expression": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#expression-statement",
+      "patterns": [
+        { "include": "#atl-simple-expression" },
+        {
+          "begin": "\\b(with)\\b[ \\t]*",
+          "beginCaptures": {
+            "1": { "name": "keyword.renpy" }
+          },
+          "end": "$",
+          "patterns": [{ "include": "#atl-simple-expression" }]
+        },
+        { "include": "source.renpy.python#expression" }
+      ]
+    },
+    "atl-keywords": {
+      "patterns": [
+        {
+          "comment": "https://www.renpy.org/doc/html/atl.html#animation-statement",
+          "match": "^[ \\t]*(animation)\\b",
+          "captures": {
+            "1": { "name": "keyword.renpy" }
+          }
+        },
+        {
+          "comment": "https://www.renpy.org/doc/html/atl.html#pass-statement",
+          "match": "^[ \\t]*(pass)\\b",
+          "captures": {
+            "1": { "name": "keyword.control.flow.renpy" }
+          }
+        },
+        {
+          "comment": "https://www.renpy.org/doc/html/atl.html#repeat-statement and https://www.renpy.org/doc/html/atl.html#time-statement",
+          "begin": "^[ \\t]*(repeat|time|pause)\\b[ \\t]*",
+          "beginCaptures": {
+            "1": { "name": "keyword.control.flow.renpy" }
+          },
+          "end": "$",
+          "patterns": [{ "include": "#atl-simple-expression" }]
+        },
+        {
+          "comment": "https://www.renpy.org/doc/html/atl.html#expression-statement",
+          "contentName": "meta.atl.with.renpy",
+          "begin": "^[ \\t]*(with)\\b[ \\t]*",
+          "beginCaptures": {
+            "1": { "name": "keyword.renpy" }
+          },
+          "end": "$",
+          "patterns": [{ "include": "#atl-simple-expression" }]
+        },
+        {
+          "comment": "https://www.renpy.org/doc/html/atl.html#contains-statement",
+          "contentName": "meta.atl.contains.renpy",
+          "begin": "^[ \\t]*(contains)\\b[ \\t]*",
+          "beginCaptures": {
+            "1": { "name": "keyword.control.flow.renpy" }
+          },
+          "end": "$",
+          "patterns": [{ "include": "#atl-expression" }]
+        }
+      ]
+    },
+    "atl-blocks": {
+      "patterns": [
+        {
+          "comment": "See https://www.renpy.org/doc/html/atl.html",
+          "contentName": "meta.atl.block.renpy",
+          "begin": "^([ \\t]+)?(block|parallel|contains)\\b[ \\t]*(:)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.whitespace.leading.block.renpy" },
+            "2": { "name": "keyword.other.renpy" },
+            "3": { "name": "punctuation.section.block.begin.renpy" }
+          },
+          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
+          "patterns": [{ "include": "#atl" }]
+        },
+        {
+          "comment": "https://www.renpy.org/doc/html/atl.html#choice-statement",
+          "contentName": "meta.atl.choice.renpy",
+          "begin": "^([ \\t]+)?(choice)\\b[ \\t]*(.+)?(:)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.whitespace.leading.block.renpy" },
+            "2": { "name": "keyword.other.renpy" },
+            "3": { "patterns": [{ "include": "#atl-simple-expression" }] },
+            "4": { "name": "punctuation.section.block.begin.renpy" }
+          },
+          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
+          "patterns": [{ "include": "#atl" }]
+        }
+      ]
+    },
+    "atl-build-in-events": {
+      "comment": "Pre-defined events (https://www.renpy.org/doc/html/atl.html#external-events)",
+      "name": "support.function.event.renpy",
+      "match": "\\b(?<!\\.)(?:start|show|replace|hide|replaced|update|hover|idle|selected_hover|selected_idle)\\b"
+    },
+    "atl-event-name": {
+      "patterns": [
+        { "include": "source.renpy.python#builtin-possible-callables" },
+        { "include": "#atl-build-in-events" },
+        {
+          "name": "entity.name.function.renpy meta.function-call.generic.renpy",
+          "match": "\\b([[:alpha:]_]\\w*)\\b"
+        }
+      ]
+    },
+    "atl-event-def-name": {
+      "patterns": [
+        { "include": "source.renpy.python#builtin-possible-callables" },
+        { "include": "#atl-build-in-events" },
+        {
+          "name": "entity.name.function.renpy",
+          "match": "\\b([[:alpha:]_]\\w*)\\b"
+        }
+      ]
+    },
+    "atl-event": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#event-statement",
+      "name": "meta.atl.event.renpy",
+      "match": "^[ \\t]*(event)\\b[ \\t]*\\b([[:alpha:]_]\\w*)\\b",
+      "captures": {
+        "1": { "name": "keyword.other.renpy" },
+        "2": { "patterns": [{ "include": "#atl-event-name" }] }
+      }
+    },
+    "atl-on": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#on-statement",
+      "contentName": "meta.atl.on.renpy",
+      "begin": "^([ \\t]+)?(on)\\b[ \\t]*(.+)?(:)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.whitespace.leading.block.renpy" },
+        "2": { "name": "keyword.other.renpy" },
+        "3": {
+          "patterns": [
+            { "include": "#atl-event-name" },
+            {
+              "match": "[ \\t]*,[ \\t]*",
+              "name": "punctuation.separator.parameters.renpy"
+            },
+            { "include": "source.renpy#comments" }
+          ]
+        },
+        "4": { "name": "punctuation.section.block.begin.renpy" }
+      },
+      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
+      "patterns": [{ "include": "#atl" }]
+    },
+    "atl-function": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#function-statement",
+      "name": "meta.atl.function.renpy",
+      "match": "^[ \\t]*(function)\\b[ \\t]*\\b([[:alpha:]_]\\w*)\\b",
+      "captures": {
+        "1": { "name": "keyword.other.renpy" },
+        "2": {
+          "patterns": [
+            { "include": "source.renpy.python#builtin-possible-callables" },
+            {
+              "name": "entity.name.function.renpy meta.function-call.generic.renpy",
+              "match": "\\b([[:alpha:]_]\\w*)\\b"
+            }
+          ]
+        }
+      }
+    },
+    "atl-build-in-warpers": {
+      "comment": "Pre-defined warpers (https://www.renpy.org/doc/html/atl.html#warpers)",
+      "name": "support.function.renpy",
+      "match": "\\b(?<!\\.)(?:linear|ease|easein|easeout|ease_back|ease_bounce|ease_circ|ease_cubic|ease_elastic|ease_expo|ease_quad|ease_quart|ease_quint|easein_back|easein_bounce|easein_circ|easein_cubic|easein_elastic|easein_expo|easein_quad|easein_quart|easein_quint|easeout_back|easeout_bounce|easeout_circ|easeout_cubic|easeout_elastic|easeout_expo|easeout_quad|easeout_quart|easeout_quint)\\b"
+    },
+    "atl-build-in-properties": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#list-of-transform-properties",
+      "patterns": [
+        {
+          "comment": "Special manipulation keywords",
+          "name": "keyword.renpy",
+          "match": "\\b(?<!\\.)(?:warp|circles|clockwise|counterclockwise)\\b"
+        },
+        {
+          "comment": "position props (int, absolute, or a float)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:xpos|ypos|xanchor|yanchor|xcenter|ycenter|radius)\\b"
+        },
+        {
+          "comment": "position pair props",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:pos|anchor|xycenter|around|alignaround|matrixanchor)\\b"
+        },
+        {
+          "comment": "float props",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:xalign|yalign|zoom|xzoom|yzoom|alpha|additive|angle|delay|events|zpos)\\b"
+        },
+        {
+          "comment": "float pair props",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:align|knot)\\b"
+        },
+        {
+          "comment": "int props",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:xoffset|yoffset|xtile|ytile)\\b"
+        },
+        {
+          "comment": "int pair props",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:offset)\\b"
+        },
+        {
+          "comment": "boolean props",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:rotate_pad|transform_anchor|nearest|crop_relative|subpixel|zzoom)\\b"
+        },
+        {
+          "comment": "('#float' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:rotate|xpan|ypan|blur)\\b"
+        },
+        {
+          "comment": "('#position' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:xsize|ysize)\\b"
+        },
+        {
+          "comment": "('\\(int, int, int, int\\)' | '\\(float, float, float, float\\)' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:crop)\\b"
+        },
+        {
+          "comment": "('\\(int, int\\)' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:corner1|corner2)\\b"
+        },
+        {
+          "comment": "('\\(position, position\\)' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:xysize)\\b"
+        },
+        {
+          "comment": "('#string' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:fit)\\b"
+        },
+        {
+          "comment": "('\\(int, int\\)' | None)",
+          "name": "invalid.deprecated.renpy",
+          "match": "\\b(?<!\\.)(?:size|maxsize)\\b"
+        },
+        {
+          "comment": "('#Matrix' | '#MatrixColor' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:matrixcolor)\\b"
+        },
+        {
+          "comment": "('#Matrix' | '#TransformMatrix' | None)",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:matrixtransform)\\b"
+        },
+        {
+          "comment": "('#bool' | '#float' | '\\(float, float, float\\)')",
+          "name": "support.type.property-name.transform.renpy",
+          "match": "\\b(?<!\\.)(?:perspective)\\b"
+        }
+      ]
+    },
+    "atl-warper-name": {
+      "patterns": [
+        { "include": "source.renpy.python#builtin-possible-callables" },
+        { "include": "#atl-build-in-warpers" },
+        { "include": "#atl-build-in-properties" },
+        {
+          "name": "entity.name.function.warper.renpy meta.function-call.generic.renpy",
+          "match": "\\b([[:alpha:]_]\\w*)\\b"
+        }
+      ]
+    },
+    "atl-warper": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#warpers",
+      "name": "meta.atl.warper.renpy",
+      "begin": "\\b(?<!\\.)([[:alpha:]_]\\w*)\\b[ \\t]*",
+      "beginCaptures": {
+        "1": { "patterns": [{ "include": "#atl-warper-name" }] }
+      },
+      "end": "(?!\\G)",
+      "patterns": [{ "include": "#atl-simple-expression" }]
+    }
+  }
+}

@@ -1,10 +1,28 @@
 // Workspace and file functions
 "use strict";
 
-import { Position, Range } from "vscode";
+import { Position, Range as VSRange } from "vscode";
 import { CharacterTokenType, MetaTokenType, TokenType, TokenTypeIndex } from "./renpy-tokens";
 import { TokenPattern, TokenRangePattern, TokenMatchPattern, TokenRepoPattern } from "./token-pattern-types";
 import { Vector } from "../utilities/vector";
+
+export class Range {
+    start: number;
+    end: number;
+
+    constructor(start: number, end: number) {
+        this.start = start;
+        this.end = end;
+    }
+
+    overlaps(other: Range): boolean {
+        return this.start <= other.end && other.start <= this.end;
+    }
+
+    contains(position: number): boolean {
+        return position >= this.start && position <= this.end;
+    }
+}
 
 export class TokenPosition {
     line: number;
@@ -65,7 +83,7 @@ export class Token {
         this.endPos = endPos;
     }
 
-    public getRange() {
+    public getVSCodeRange() {
         const start = new Position(this.startPos.line, this.startPos.character);
         const end = new Position(this.endPos.line, this.endPos.character);
 
@@ -73,7 +91,11 @@ export class Token {
             console.warn(`Empty token detected at L: ${start.line + 1}, C: ${start.character + 1} !`);
         }
 
-        return new Range(start, end);
+        return new VSRange(start, end);
+    }
+
+    public getRange() {
+        return new Range(this.startPos.charStartOffset, this.endPos.charStartOffset);
     }
 
     public isKeyword() {

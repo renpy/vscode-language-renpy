@@ -1,3 +1,5 @@
+/* eslint-disable no-useless-escape */
+/* eslint-disable no-useless-backreference */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { CharacterTokenType, EntityTokenType, EscapedCharacterTokenType, LiteralTokenType, MetaTokenType, OperatorTokenType } from "./renpy-tokens";
 import { TokenPattern } from "./token-pattern-types";
@@ -8,29 +10,28 @@ export const newLine: TokenPattern = {
 };
 
 export const whiteSpace: TokenPattern = {
-    token: CharacterTokenType.WhiteSpace,
+    token: CharacterTokenType.Whitespace,
     match: /[ \t]+/g,
 };
 
 export const invalidToken: TokenPattern = {
-    match: /(.*)/dg,
-    captures: {
-        1: { token: MetaTokenType.Invalid },
-    },
+    match: /.+/g,
+    token: MetaTokenType.Invalid /*invalid.unknown.token.renpy*/,
 };
 
 export const numFloat: TokenPattern = {
     debugName: "numFloat",
 
-    match: /(?<!\w)(?:\.[0-9]+|[0-9]*\.[0-9]*|[0-9]*\.)\b/g,
-    token: LiteralTokenType.Float,
+    token: LiteralTokenType.Float, // constant.numeric.float.renpy
+    match: /(?<!\w)(?:\.[0-9]*|[0-9]*\.[0-9]*|[0-9]*\.)\b/g,
 };
 export const numInt: TokenPattern = {
     debugName: "numInt",
-    match: /(?<![\w.])([1-9]+|0+|0([0-9]+)(?![eE.]))\b/dg,
+
+    token: LiteralTokenType.Integer, // constant.numeric.dec.renpy
+    match: /(?<![\w.])(?:[1-9]*|0+|0([0-9]+)(?![eE.]))\b/dg,
     captures: {
-        1: { token: LiteralTokenType.Integer },
-        2: { token: MetaTokenType.Invalid },
+        1: { token: MetaTokenType.Invalid },
     },
 };
 
@@ -112,225 +113,266 @@ export const stringsInterior: TokenPattern = {
 };
 
 export const stringTags: TokenPattern = {
-    debugName: "stringTags",
-
     patterns: [
         {
+            debugName: "stringTags.patterns![0]",
+
             // Valid tags without params (self-closing)
-            token: MetaTokenType.TagBlock,
+            token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.self-closing.renpy*/,
             match: /({)\s*(nw|done|fast|p|w|clear)\s*(})/dg,
             captures: {
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: EntityTokenType.Tag },
-                3: { token: CharacterTokenType.CloseBracket },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
         },
         {
+            debugName: "stringTags.patterns![1]",
+
             // Valid tags with numeric params (self-closing)
-            token: MetaTokenType.TagBlock,
-            match: /({)\s*(p|w)(=)(\+)?(\d*(?:.\d+)?)\s*(})/dg,
+            token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.self-closing.renpy*/,
+            match: /({)\s*(p|w)(=)(\+?)(\d*(?:.\d+)?)\s*(})/dg,
             captures: {
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: EntityTokenType.Tag },
-                3: { token: OperatorTokenType.Assign },
-                4: { token: OperatorTokenType.Plus },
-                5: { token: LiteralTokenType.Float },
-                6: { token: CharacterTokenType.CloseBracket },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.EqualsSymbol /*punctuation.separator.key-value.renpy keyword.operator.assignment.renpy*/ },
+                4: { token: OperatorTokenType.Plus /*keyword.operator.arithmetic.plus.renpy*/ },
+                5: { token: LiteralTokenType.Float /*constant.numeric.float.renpy support.constant.property-value.renpy*/ },
+                6: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
         },
         {
+            debugName: "stringTags.patterns![2]",
+
             // Valid tags with numeric params (self-closing)
-            token: MetaTokenType.TagBlock,
-            match: /({)\s*(v?space)(=)(\+)?(\d+)\s*(})/dg,
+            token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.self-closing.renpy*/,
+            match: /({)\s*(v?space)(=)(\+?)(\d+)\s*(})/dg,
             captures: {
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: EntityTokenType.Tag },
-                3: { token: OperatorTokenType.Assign },
-                4: { token: OperatorTokenType.Plus },
-                5: { token: LiteralTokenType.Integer },
-                6: { token: CharacterTokenType.CloseBracket },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.EqualsSymbol /*punctuation.separator.key-value.renpy keyword.operator.assignment.renpy*/ },
+                4: { token: OperatorTokenType.Plus /*keyword.operator.arithmetic.plus.renpy*/ },
+                5: { token: LiteralTokenType.Integer /*constant.numeric.integer.renpy support.constant.property-value.renpy*/ },
+                6: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
         },
         {
+            debugName: "stringTags.patterns![3]",
+
             // Comment tag (self-closing)
-            token: MetaTokenType.TagBlock,
+            token: MetaTokenType.StringTag /*meta.string.tag.comment.self-closing.renpy*/,
             match: /({)\s*(#)\s*(.*?)\s*(})/dg,
             captures: {
-                0: { token: MetaTokenType.Comment },
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: EntityTokenType.Tag },
-                3: { token: OperatorTokenType.Assign },
-                4: { token: LiteralTokenType.UnquotedString },
-                5: { token: CharacterTokenType.CloseBracket },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: MetaTokenType.Comment /*comment.line.number-sign.renpy punctuation.definition.comment.renpy*/ },
+                3: { token: MetaTokenType.Comment /*comment.line.number-sign.renpy*/ },
+                4: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
         },
         {
+            debugName: "stringTags.patterns![4]",
+
             // Valid tags with file param
-            token: MetaTokenType.TagBlock,
-            match: /({)\s*(font|image)(=)([\w.]+)\s*(})/dg,
+            token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.self-closing.renpy*/,
+            match: /({)\s*(image)(=)([\w.]+)\s*(})/dg,
             captures: {
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: EntityTokenType.Tag },
-                3: { token: OperatorTokenType.Assign },
-                4: { token: LiteralTokenType.UnquotedString },
-                5: { token: CharacterTokenType.CloseBracket },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.EqualsSymbol /*punctuation.separator.key-value.renpy keyword.operator.assignment.renpy*/ },
+                4: { token: LiteralTokenType.String /*string.unquoted.renpy support.constant.property-value.renpy*/ },
+                5: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
         },
         {
+            debugName: "stringTags.patterns![5]",
+
             // Valid tags without params (close required)
+            contentToken: MetaTokenType.TaggedString /*meta.tagged.string.renpy renpy.meta.${2:/downcase}*/,
             begin: /({)\s*(u|i|b|s|plain|alt|noalt|art|rb|rt)\s*(})/dg,
             beginCaptures: {
-                0: { token: MetaTokenType.TagBlock },
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: EntityTokenType.Tag },
-                3: { token: CharacterTokenType.CloseBracket },
+                0: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.start.renpy*/ },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
-            end: /({)(\/)(\s+)?(\2)(\s+)?(})/dg,
+            end: /({\/)\s*(\2)\s*(})/dg,
             endCaptures: {
-                0: { token: MetaTokenType.TagBlock },
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: CharacterTokenType.ForwardSlash },
-                3: { token: CharacterTokenType.WhiteSpace },
-                4: { token: EntityTokenType.Tag },
-                5: { token: CharacterTokenType.WhiteSpace },
-                6: { token: CharacterTokenType.CloseBracket },
+                0: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.end.renpy*/ },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
             patterns: [stringsInterior],
         },
         {
+            debugName: "stringTags.patterns![6]",
+
             // Valid tags with numeric params (close required)
-            begin: /({)\s*(alpha|cps|k)(=)(?:(\*)|(-)|(\+))?(\d+(?:.\d+)?)\s*(})/dg,
+            contentToken: MetaTokenType.TaggedString /*meta.tagged.string.renpy renpy.meta.${2:/downcase}*/,
+            begin: /({)\s*(alpha|cps|k)(=)(?:(\*)|(\-)|(\+))?(\d*(?:.\d+)?)\s*(})/dg,
             beginCaptures: {
-                0: { token: MetaTokenType.TagBlock },
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: EntityTokenType.Tag },
-                3: { token: OperatorTokenType.Assign },
-                4: { token: OperatorTokenType.Multiply },
-                5: { token: OperatorTokenType.Minus },
-                6: { token: OperatorTokenType.Plus },
-                7: { token: LiteralTokenType.Float },
-                8: { token: CharacterTokenType.CloseBracket },
+                0: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.start.renpy*/ },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.EqualsSymbol /*punctuation.separator.key-value.renpy keyword.operator.assignment.renpy*/ },
+                4: { token: OperatorTokenType.Multiply /*keyword.operator.arithmetic.Multiply.renpy*/ },
+                5: { token: OperatorTokenType.Minus /*keyword.operator.arithmetic.Minus.renpy*/ },
+                6: { token: OperatorTokenType.Plus /*keyword.operator.arithmetic.Plus.renpy*/ },
+                7: { token: MetaTokenType.ConstantNumeric /*constant.numeric.renpy support.constant.property-value.renpy*/ },
+                8: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
-            end: /({)(\/)(\s+)?(\2)(\s+)?(})/dg,
+            end: /({\/)\s*(\2)\s*(})/dg,
             endCaptures: {
-                0: { token: MetaTokenType.TagBlock },
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: CharacterTokenType.ForwardSlash },
-                3: { token: CharacterTokenType.WhiteSpace },
-                4: { token: EntityTokenType.Tag },
-                5: { token: CharacterTokenType.WhiteSpace },
-                6: { token: CharacterTokenType.CloseBracket },
+                0: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.end.renpy*/ },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
             patterns: [stringsInterior],
         },
         {
+            debugName: "stringTags.patterns![7]",
+
             // Valid tags with numeric params (close required)
-            begin: /({)\s*(size)(=)(?:(-)|(\+))?(\d+)\s*(})/dg,
+            contentToken: MetaTokenType.TaggedString /*meta.tagged.string.renpy renpy.meta.${2:/downcase}*/,
+            begin: /({)\s*(size)(=)([\-+]?)(\d+)\s*(})/dg,
             beginCaptures: {
-                0: { token: MetaTokenType.TagBlock },
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: EntityTokenType.Tag },
-                3: { token: OperatorTokenType.Assign },
-                4: { token: OperatorTokenType.Minus },
-                5: { token: OperatorTokenType.Plus },
-                6: { token: LiteralTokenType.Integer },
-                7: { token: CharacterTokenType.CloseBracket },
+                0: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.start.renpy*/ },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.EqualsSymbol /*punctuation.separator.key-value.renpy keyword.operator.assignment.renpy*/ },
+                4: { token: MetaTokenType.ArithmeticOperator /*keyword.operator.arithmetic.renpy*/ },
+                5: { token: LiteralTokenType.Integer /*constant.numeric.integer.renpy support.constant.property-value.renpy*/ },
+                6: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
-            end: /({)(\/)(\s+)?(\2)(\s+)?(})/dg,
+            end: /({\/)\s*(\2)\s*(})/dg,
             endCaptures: {
-                0: { token: MetaTokenType.TagBlock },
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: CharacterTokenType.ForwardSlash },
-                3: { token: CharacterTokenType.WhiteSpace },
-                4: { token: EntityTokenType.Tag },
-                5: { token: CharacterTokenType.WhiteSpace },
-                6: { token: CharacterTokenType.CloseBracket },
+                0: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.end.renpy*/ },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
             patterns: [stringsInterior],
         },
         {
+            debugName: "stringTags.patterns![8]",
+
+            // Valid tags with file param (close required)
+            token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.self-closing.renpy*/,
+            begin: /({)\s*(font)(=)([\w.]+)\s*(})/dg,
+            beginCaptures: {
+                0: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.start.renpy*/ },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.EqualsSymbol /*punctuation.separator.key-value.renpy keyword.operator.assignment.renpy*/ },
+                4: { token: LiteralTokenType.String /*string.unquoted.renpy support.constant.property-value.renpy*/ },
+                5: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
+            },
+            end: /({\/)\s*(\2)\s*(})/dg,
+            endCaptures: {
+                0: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.end.renpy*/ },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
+            },
+            patterns: [stringsInterior],
+        },
+        {
+            debugName: "stringTags.patterns![9]",
+
             // Color tag
+            contentToken: MetaTokenType.TaggedString /*meta.tagged.string.renpy renpy.meta.${2:/downcase}.${4:/downcase}*/,
             begin: /({)\s*(color|outlinecolor)(=)(#?[a-zA-Z0-9]+)\s*(})/dg,
             beginCaptures: {
-                0: { token: MetaTokenType.TagBlock },
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: EntityTokenType.Tag },
-                3: { token: OperatorTokenType.Assign },
+                0: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.start.renpy*/ },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.EqualsSymbol /*punctuation.separator.key-value.renpy keyword.operator.assignment.renpy*/ },
                 4: {
+                    token: LiteralTokenType.Color /*constant.color.renpy*/,
                     patterns: [hexLiteral],
                 },
-                5: { token: CharacterTokenType.CloseBracket },
+                5: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
-            end: /({)(\/)(\s+)?(\2)(\s+)?(})/dg,
+            end: /({\/)\s*(\2)\s*(})/dg,
             endCaptures: {
-                0: { token: MetaTokenType.TagBlock },
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: CharacterTokenType.ForwardSlash },
-                3: { token: CharacterTokenType.WhiteSpace },
-                4: { token: EntityTokenType.Tag },
-                5: { token: CharacterTokenType.WhiteSpace },
-                6: { token: CharacterTokenType.CloseBracket },
+                0: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.end.renpy*/ },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
             patterns: [stringsInterior],
         },
         {
+            debugName: "stringTags.patterns![10]",
+
             // a tag
+            contentToken: MetaTokenType.TaggedString /*meta.tagged.string.renpy renpy.meta.${2:/downcase}*/,
             begin: /({)\s*(a)(=)(.*?)\s*(})/dg,
             beginCaptures: {
-                0: { token: MetaTokenType.TagBlock },
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: EntityTokenType.Tag },
-                3: { token: OperatorTokenType.Assign },
+                0: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.start.renpy*/ },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.EqualsSymbol /*punctuation.separator.key-value.renpy keyword.operator.assignment.renpy*/ },
                 4: {
-                    token: LiteralTokenType.UnquotedString,
+                    token: LiteralTokenType.String /*string.unquoted.renpy support.constant.property-value.renpy*/,
+                    patterns: [],
                 },
-                5: { token: CharacterTokenType.CloseBracket },
+                5: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
-            end: /({)(\/)(\s+)?(\2)(\s+)?(})/dg,
+            end: /({\/)\s*(\2)\s*(})/dg,
             endCaptures: {
-                0: { token: MetaTokenType.TagBlock },
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: CharacterTokenType.ForwardSlash },
-                3: { token: CharacterTokenType.WhiteSpace },
-                4: { token: EntityTokenType.Tag },
-                5: { token: CharacterTokenType.WhiteSpace },
-                6: { token: CharacterTokenType.CloseBracket },
+                0: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.end.renpy*/ },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
             patterns: [stringsInterior],
         },
         {
-            contentToken: MetaTokenType.TagBlock,
-            begin: /({)([ \t]+)?(\w+)\b(?:(=)(.*?))?([ \t]+)?(})/dg,
-            beginCaptures: {
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: CharacterTokenType.WhiteSpace },
-                3: { token: EntityTokenType.Tag },
-                4: { token: OperatorTokenType.Assign },
-                5: { token: MetaTokenType.Arguments },
-                6: { token: CharacterTokenType.WhiteSpace },
-                7: { token: CharacterTokenType.CloseBracket },
-            },
-            end: /({)(\/)([ \t]+)?(\3)([ \t]+)?(})/dg,
-            endCaptures: {
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: CharacterTokenType.ForwardSlash },
-                3: { token: CharacterTokenType.WhiteSpace },
-                4: { token: EntityTokenType.Tag },
-                5: { token: CharacterTokenType.WhiteSpace },
-                6: { token: CharacterTokenType.CloseBracket },
-            },
-            patterns: [stringsInterior],
-        },
-        {
-            // Empty tag end
-            token: MetaTokenType.Invalid,
-            match: /({)(\/)?(\s+)?(})/dg,
+            debugName: "stringTags.patterns![11]",
+
+            // Unknown tag (Single line support only cus \R does not work) (Since we don't know if a tag is self closing, we can't assume that an end pattern exists)
+            match: /({)[ \t]*(\w+)\b(?:(=)(.*?))?\s*(})((?:.|\R)+?)\s*({\/)\s*(\2)\s*(})/dg,
             captures: {
-                0: { token: MetaTokenType.TagBlock },
-                1: { token: CharacterTokenType.OpenBracket },
-                2: { token: CharacterTokenType.ForwardSlash },
-                3: { token: CharacterTokenType.WhiteSpace },
-                4: { token: CharacterTokenType.CloseBracket },
+                1: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.start.renpy punctuation.definition.tag.begin.renpy*/ },
+                2: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.start.renpy renpy.meta.u entity.name.tag.${2:/downcase}.renpy*/ },
+                3: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.start.renpy punctuation.separator.key-value.renpy keyword.operator.assignment.renpy*/ },
+                4: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.start.renpy constant.other.placeholder.tags.renpy*/ },
+                5: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.start.renpy punctuation.definition.tag.end.renpy*/ },
+                6: { token: MetaTokenType.TaggedString /*meta.tagged.string.renpy renpy.meta.string.tag.custom.${2:/downcase }*/, patterns: [stringsInterior] },
+                7: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.end.renpy punctuation.definition.tag.begin.renpy*/ },
+                8: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.end.renpy renpy.meta.u entity.name.tag.${2:/downcase}.renpy*/ },
+                9: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.end.renpy punctuation.definition.tag.end.renpy*/ },
+            },
+        },
+        {
+            debugName: "stringTags.patterns![12]",
+
+            // Unknown tag start
+            match: /({)\s*(\w*)(?:(=)(.*?))?\s*(})/dg,
+            captures: {
+                0: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.start.renpy*/ },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy renpy.meta.u*/ },
+                3: { token: CharacterTokenType.EqualsSymbol /*punctuation.separator.key-value.renpy keyword.operator.assignment.renpy*/ },
+                4: {
+                    token: MetaTokenType.ConstantCaps /*constant.other.placeholder.tags.renpy support.constant.property-value.renpy*/,
+                    patterns: [],
+                },
+                5: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
+            },
+        },
+        {
+            debugName: "stringTags.patterns![13]",
+
+            // Unknown tag end
+            match: /({\/)\s*(\w*?)\b\s*(})/dg,
+            captures: {
+                0: { token: MetaTokenType.StringTag /*meta.string.tag.${2:/downcase}.end.renpy*/ },
+                1: { token: CharacterTokenType.OpenBracket /*punctuation.definition.tag.begin.renpy*/ },
+                2: { token: EntityTokenType.TagName /*entity.name.tag.${2:/downcase}.renpy renpy.meta.u*/ },
+                3: { token: CharacterTokenType.CloseBracket /*punctuation.definition.tag.end.renpy*/ },
             },
         },
     ],
@@ -338,125 +380,25 @@ export const stringTags: TokenPattern = {
 
 stringsInterior.patterns!.push(stringTags);
 
-export const stringQuotedDouble: TokenPattern = {
-    debugName: "stringQuotedDouble",
-
-    patterns: [
-        {
-            // Triple quoted block string
-            token: LiteralTokenType.String,
-            begin: /(")(")(")/dg,
-            beginCaptures: {
-                1: { token: CharacterTokenType.DoubleQuote },
-                2: { token: CharacterTokenType.DoubleQuote },
-                3: { token: CharacterTokenType.DoubleQuote },
-            },
-            end: /(?<!\\)((?<=""")(")""|""")/dg,
-            endCaptures: {
-                1: { token: CharacterTokenType.DoubleQuote },
-                2: { token: MetaTokenType.EmptyString },
-            },
-            patterns: [stringsInterior],
-        },
-        {
-            // Double quoted single line string
-            token: LiteralTokenType.String,
-            begin: /(")/dg,
-            beginCaptures: {
-                1: { token: CharacterTokenType.DoubleQuote },
-            },
-            end: /(?<!\\)((?<=")(")|")/dg,
-            endCaptures: {
-                1: { token: CharacterTokenType.DoubleQuote },
-                2: { token: MetaTokenType.EmptyString },
-                3: { token: MetaTokenType.Invalid },
-            },
-            patterns: [stringsInterior],
-        },
-    ],
-};
-
-export const stringQuotedSingle: TokenPattern = {
-    debugName: "stringQuotedSingle",
-
-    patterns: [
-        {
-            // Single quoted block string
-            token: LiteralTokenType.String,
-            begin: /(''')/dg,
-            beginCaptures: {
-                0: { token: CharacterTokenType.Quote },
-            },
-            end: /(?<!\\)((?<=''')('|''')|''')/dg,
-            endCaptures: {
-                1: { token: CharacterTokenType.Quote },
-                2: { token: MetaTokenType.EmptyString },
-            },
-            patterns: [stringsInterior],
-        },
-        {
-            // Single quoted single line string
-            token: LiteralTokenType.String,
-            begin: /(')/dg,
-            beginCaptures: {
-                1: { token: CharacterTokenType.Quote },
-            },
-            end: /(?<!\\)((?<=')(')|')/dg,
-            endCaptures: {
-                1: { token: CharacterTokenType.Quote },
-                2: { token: MetaTokenType.EmptyString },
-                3: { token: MetaTokenType.Invalid },
-            },
-            patterns: [stringsInterior],
-        },
-    ],
-};
-
-export const stringQuotedBack: TokenPattern = {
-    debugName: "stringQuotedBack",
-
-    patterns: [
-        {
-            // Back quoted block string
-            token: LiteralTokenType.String,
-            begin: /(```)/dg,
-            beginCaptures: {
-                0: { token: CharacterTokenType.BackQuote },
-            },
-            end: /(?<!\\)((?<=```)(`)``|```)/dg,
-            endCaptures: {
-                1: { token: CharacterTokenType.BackQuote },
-                2: { token: MetaTokenType.EmptyString },
-            },
-            patterns: [stringsInterior],
-        },
-        {
-            // Back quoted single line string
-            token: LiteralTokenType.String,
-            begin: /(`)/dg,
-            beginCaptures: {
-                1: { token: CharacterTokenType.BackQuote },
-            },
-            end: /(?<!\\)((?<=`)(`)|`)/dg,
-            endCaptures: {
-                1: { token: CharacterTokenType.BackQuote },
-                2: { token: MetaTokenType.EmptyString },
-                3: { token: MetaTokenType.Invalid },
-            },
-            patterns: [stringsInterior],
-        },
-    ],
-};
-
 export const strings: TokenPattern = {
     debugName: "strings",
 
-    patterns: [stringQuotedDouble, stringQuotedSingle, stringQuotedBack],
+    token: LiteralTokenType.String /*string.quoted.renpy*/,
+    begin: /"""|"|'''|'|```|`/dg,
+    beginCaptures: {
+        0: { token: MetaTokenType.StringBegin /*punctuation.definition.string.begin.renpy*/ },
+    },
+    end: /(?<![^\\]\\)(((?<=\0)\0)|\0)/dg,
+    endCaptures: {
+        1: { token: MetaTokenType.StringEnd /*punctuation.definition.string.end.renpy*/ },
+        2: { token: MetaTokenType.EmptyString /*meta.empty-string.renpy*/ },
+    },
+    patterns: [stringsInterior],
 };
 
 // NOTE: Having these patterns separated increases performance.
 // Benchmark before making a change!
-export const charactersPatten: TokenPattern = {
+export const fallbackCharacters: TokenPattern = {
     debugName: "charactersPatten",
 
     patterns: [
@@ -533,7 +475,7 @@ export const charactersPatten: TokenPattern = {
         },
 
         {
-            token: OperatorTokenType.Assign,
+            token: OperatorTokenType.Assignment,
             match: /=/g,
         },
 

@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { assert } from "console";
 import { performance } from "perf_hooks";
-import { TextDocument, Uri } from "vscode";
-import { Token, isRangePattern, isMatchPattern, isRepoPattern, TokenPosition, TokenTree, TreeNode } from "./token-definitions";
+import { TextDocument, Uri, Range as VSRange } from "vscode";
+import { Token, isRangePattern, isMatchPattern, isRepoPattern, TokenPosition, TokenTree, TreeNode, Range } from "./token-definitions";
 import { basePatterns } from "./token-patterns";
 import { Stack } from "../utilities/stack";
+import { Vector } from "../utilities/vector";
 import { CharacterTokenType } from "./renpy-tokens";
 import { TokenPatternCapture, TokenCapturePattern, TokenRepoPattern, TokenRangePattern, TokenMatchPattern } from "./token-pattern-types";
 
@@ -144,7 +145,7 @@ function setupAndValidatePatterns() {
 
             p._hasBackref = /\\\d+/.test(reEndSource);
             //reEndSource = reEndSource.replaceAll("\\A", "¨0");
-            reEndSource = reEndSource.replaceAll("\\Z", "$(?!\r\n|\r|\n)"); // This assumes (CR)LF without trailing new line right?...
+            reEndSource = reEndSource.replaceAll("\\Z", "$(?!\r\n|\r|\n)");
             reEndSource = reEndSource.replaceAll("\\R", "(?!\r\n|\r|\n)");
             p.end = new RegExp(reEndSource, p.end.flags);
         } else if (isMatchPattern(p)) {
@@ -177,11 +178,49 @@ export function escapeRegExpCharacters(value: string): string {
 class DocumentTokenizer {
     private readonly backrefReplaceRe = /\\(\d+)/g;
     public readonly tokens: TokenTree = new TokenTree();
+    private readonly document: TextDocument;
 
     constructor(document: TextDocument) {
+        this.document = document;
         const text = document.getText();
         const caret = new TokenPosition(0, 0, 0);
         this.executePattern(basePatterns as ExTokenRepoPattern, text, caret, this.tokens.root);
+    }
+
+    private checkTokenTreeCoverage(root: TreeNode, matchRange: Range): { valid: boolean; gaps: Range[] } {
+        // Collect all token ranges
+        const tokenRanges = new Vector<Range>(root.count());
+        if (root.token) {
+            tokenRanges.pushBack(root.token.getRange());
+        }
+        root.forEach((node) => {
+            if (node.token) {
+                tokenRanges.pushBack(node.token.getRange());
+            }
+        });
+
+        // Sort the token ranges by their start position
+        tokenRanges.sort((a, b) => a.start - b.start);
+
+        // Check if the combined ranges of all tokens overlap the entire character range of the match
+        let currentEnd = matchRange.start;
+        const gaps: Range[] = [];
+        for (const range of tokenRanges) {
+            if (!matchRange.contains(range.start)) {
+                // The start of the next token range is outside the match range
+                return { valid: false, gaps };
+            }
+            if (range.start > currentEnd) {
+                // There is a gap between the current end position and the start of the next token range
+                gaps.push(new Range(currentEnd, range.start));
+            }
+            currentEnd = Math.max(currentEnd, range.end);
+        }
+        if (currentEnd < matchRange.end) {
+            // The last token range does not extend to the end of the match
+            gaps.push(new Range(currentEnd, matchRange.end));
+        }
+        return { valid: gaps.length === 0, gaps };
     }
 
     /**
@@ -199,8 +238,6 @@ class DocumentTokenizer {
             parentNode.addChild(rootNode);
         }
 
-        // TODO: Match 0 is like a second iteration on the previously matched text.
-        // What needs to happen is that all matches from the first iteration are merged with the matches from the second iteration.
         const originalCaret = caret.clone();
 
         let lastMatchEnd = match.index;
@@ -263,20 +300,6 @@ class DocumentTokenizer {
             caret.setValue(endCaret);
         }
 
-        // Next steps:
-        // - Treat capture 0 as a MatchPattern, but with the exception that its node should be merged with the local captures
-        // - So if capture 0 exists, create a new node
-        //   - Assign the token to the new node (if capture 0 has a token)
-        //   - All tokens on this level should be considered part of capture 0
-        //   - For that reason the two trees should be merged
-        //   - Since capture 0 can itself contain patterns, which can again contain patterns, this could become an issue
-        //   - The only way to resolve this properly would be to 'zip' the tree nodes together
-        //   - For that reason, it might be better to just not merge them and instead just build up a token range for each
-        //   - Then compare the two ranges and check if any characters would have no token assigned that way
-
-        // TODO: This also gets misaligned if the whole match is a token and contains additional captures
-        // TODO: The system should be updated to build a token list/tree. When that's done we can simply compare and merge the tokens instead of this hack.
-        // Special case for captures[0] which is the entire match
         if (captures[0] !== undefined) {
             const p = captures[0];
             const content = match[0];
@@ -306,9 +329,6 @@ class DocumentTokenizer {
                     endCaret.setValue(captureCaret);
                 }
             }
-
-            // TODO: For now assume that having the 0 capture, means all characters have tokens assigned
-            caret.setValue(endCaret);
         }
     }
 
@@ -483,8 +503,8 @@ class DocumentTokenizer {
                                 `A range begin match was misaligned (expected: ${initialCharOffset + matchBegin.index}, got: ${caret.charStartOffset}) on pattern '${p.begin.source}' that matched '${matchBegin[0]}' near L:${caret.line + 1} C:${
                                     caret.character + 1
                                 }.\nYou probably didn't catch all characters in the match or the match before this one.\nApplying a fix...`;
-                                caret.advance(matchOffset);
                             );*/
+                            caret.advance(matchOffset);
                         }
 
                         const startCaret = caret.clone();
@@ -507,11 +527,6 @@ class DocumentTokenizer {
                         if (p.beginCaptures) {
                             const captureCaret = startCaret.clone();
                             this.applyCaptures(p.beginCaptures, matchBegin, captureCaret, rangeNode);
-
-                            assert(
-                                captureCaret.charStartOffset === contentStartCaret.charStartOffset,
-                                "The token read position was misaligned by the capture context! This means {p.beginCaptures} is not processing white spaces and new lines (individually!)."
-                            );
 
                             if (captureCaret.line !== endCaret.line) {
                                 // Line was moved, all characters should reset to 0 and move by content length
@@ -540,11 +555,6 @@ class DocumentTokenizer {
                             const content = text.substring(matchBegin.index + matchBegin[0].length, matchEnd.index);
                             this.executePattern(p._patternsRepo, content, captureCaret, contentNode);
 
-                            assert(
-                                captureCaret.charStartOffset === contentEndCaret.charStartOffset,
-                                "The token read position was misaligned by the capture context! This means {p.patterns} is not processing white spaces and new lines (individually!)."
-                            );
-
                             if (captureCaret.line !== endCaret.line) {
                                 // TODO: Caret validation logic rewrite
                                 // Line was moved, all characters should reset to 0 and move by content length
@@ -565,11 +575,6 @@ class DocumentTokenizer {
                             const captureCaret = contentEndCaret.clone();
                             this.applyCaptures(p.endCaptures, matchEnd, captureCaret, rangeNode);
 
-                            assert(
-                                captureCaret.charStartOffset === endCaret.charStartOffset,
-                                "The token read position was misaligned by the capture context! This means {p.endCaptures} is not processing white spaces and new lines (individually!)."
-                            );
-
                             if (captureCaret.line !== endCaret.line) {
                                 // TODO: Caret validation logic rewrite
                                 // Line was moved, all characters should reset to 0 and move by content length
@@ -579,6 +584,18 @@ class DocumentTokenizer {
                         }
 
                         assert(!rangeNode.isEmpty(), "A RangePattern must produce a valid token tree!");
+
+                        const coverageResult = this.checkTokenTreeCoverage(rangeNode, new Range(startCaret.charStartOffset, endCaret.charStartOffset));
+                        if (!coverageResult.valid) {
+                            console.warn(`The token tree is not covering the entire match range!`);
+                            for (const gap of coverageResult.gaps) {
+                                const gapStartPos = this.document.positionAt(gap.start);
+                                const gapEndPos = this.document.positionAt(gap.end);
+                                const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
+                                console.warn(`Gap from L${gapStartPos.line + 1}:${gapStartPos.character + 1} to L${gapEndPos.line + 1}:${gapEndPos.character + 1}, Text: '${text}'`);
+                            }
+                        }
+
                         parentNode.addChild(rangeNode);
 
                         caret.setValue(endCaret);

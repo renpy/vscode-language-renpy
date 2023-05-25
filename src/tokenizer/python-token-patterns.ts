@@ -1,23 +1,23 @@
 /* eslint-disable no-useless-escape */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-useless-backreference */
-import { charactersPatten, strings } from "./common-token-patterns";
+import { fallbackCharacters, comments, strings, whiteSpace, newLine } from "./common-token-patterns";
 import { MetaTokenType } from "./renpy-tokens";
 import { TokenPattern, TokenRepoPattern } from "./token-pattern-types";
 
 export const pythonMemberAccess: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 
 export const pythonExpressionBare: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonExpressionBase: TokenPattern = {
     patterns: [strings],
 };
 export const pythonExpression: TokenPattern = {
     // All valid Python expressions
-    patterns: [pythonExpressionBase, pythonMemberAccess, charactersPatten],
+    patterns: [pythonExpressionBase, pythonMemberAccess, fallbackCharacters],
 };
 
 export const semicolon: TokenPattern = {
@@ -30,72 +30,75 @@ export const semicolon: TokenPattern = {
 };
 
 export const pythonLiteral: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonIllegalOperator: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonOperator: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonCurlyBraces: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonItemAccess: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonList: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonOddFunctionCall: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonRoundBraces: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonFunctionCall: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
+};
+export const pythonParameters: TokenPattern = {
+    patterns: [whiteSpace],
 };
 export const pythonBuiltinFunctions: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonBuiltinTypes: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonBuiltinExceptions: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonMagicNames: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonSpecialNames: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonIllegalNames: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonSpecialVariables: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonEllipsis: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonPunctuation: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonLineContinuation: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonBuiltinPossibleCallables: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonFunctionArguments: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 export const pythonNumber: TokenPattern = {
-    patterns: [charactersPatten],
+    patterns: [fallbackCharacters],
 };
 
-export const pythonPatterns: TokenRepoPattern = {
-    patterns: [],
+export const python: TokenRepoPattern = {
+    patterns: [comments, strings, whiteSpace, newLine],
 };

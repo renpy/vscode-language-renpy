@@ -839,45 +839,43 @@
     "say-statements": {
       "patterns": [
         {
+          "name": "meta.say.statement.renpy",
           "contentName": "string.quoted.renpy renpy.meta.say.$1",
-          "begin": "(?<=^[ \\t]+)(?:([a-zA-Z_]\\w*)\\b|\"([a-zA-Z_]\\w*)\\b\")((?:[ \\t]+(?:@|\\w+))*)?[ \\t]*(\"\"\"|\"|'''|'|```|`)",
+          "begin": "^[ \\t]+(?:([a-zA-Z_]\\w*)\\b|\"([a-zA-Z_]\\w*)\\b\")((?:[ \\t]+(?:@|\\w+))*)?[ \\t]*(\"\"\"|\"|'''|'|```|`)",
           "beginCaptures": {
             "1": {
-              "name": "renpy.meta.character.$1",
+              "name": "variable.other.renpy renpy.meta.character.$1",
               "patterns": [
                 {
                   "match": "extend",
-                  "name": "keyword.other.renpy"
+                  "name": "keyword.extend.renpy"
                 },
                 {
                   "match": "voice",
-                  "name": "keyword.other.renpy"
+                  "name": "keyword.voice.renpy"
                 },
                 {
                   "comment": "Match special characters",
                   "match": "adv|nvl|narrator|name_only|centered|vcentered",
                   "name": "variable.other.constant.renpy"
-                },
-                {
-                  "match": ".*"
                 }
               ]
             },
-            "2": { "name": "renpy.meta.string.character.$2" },
+            "2": { "name": "meta.string.character.$2.renpy" },
             "3": {
-              "name": "meta.say.attributes.renpy",
+              "name": "meta.arguments.renpy",
               "patterns": [
                 {
-                  "name": "keyword.renpy",
+                  "name": "keyword.at.renpy",
                   "match": "@"
                 }
               ]
             },
-            "4": { "name": "string.quoted.renpy punctuation.definition.string.begin.renpy" }
+            "4": { "name": "punctuation.definition.string.begin.renpy string.quoted.renpy" }
           },
           "end": "(?<![^\\\\]\\\\)(((?<=\\4)\\4)|\\4)[ \\t]*(\\(.*?\\)(?![^\\(]*?\\)))?",
           "endCaptures": {
-            "1": { "name": "string.quoted.renpy punctuation.definition.string.end.renpy" },
+            "1": { "name": "punctuation.definition.string.end.renpy string.quoted.renpy" },
             "2": { "name": "meta.empty-string.renpy" },
             "3": {
               "patterns": [{ "include": "source.renpy.python#function-arguments" }]
@@ -886,29 +884,21 @@
           "patterns": [{ "include": "#strings-interior" }]
         },
         {
-          "begin": "(?<=^[ \\t]+)(?=[\"'`])",
-          "end": "(?<![^\\\\]\\\\)(?<=[\"'`])[ \\t]*(\\(.*?\\)(?![^\\(]*?\\)))?",
+          "name": "meta.say.narrator.renpy",
+          "contentName": "string.quoted.narrator.renpy",
+          "begin": "^[ \\t]+(\"\"\"|\"|'''|'|```|`)",
+          "beginCaptures": {
+            "1": { "name": "punctuation.definition.string.begin.renpy string.quoted.renpy" }
+          },
+          "end": "(?<![^\\\\]\\\\)(((?<=\\1)\\1)|\\1)[ \\t]*(\\(.*?\\)(?![^\\(]*?\\)))?",
           "endCaptures": {
-            "1": {
+            "1": { "name": "punctuation.definition.string.end.renpy string.quoted.renpy" },
+            "2": { "name": "meta.empty-string.renpy" },
+            "3": {
               "patterns": [{ "include": "source.renpy.python#function-arguments" }]
             }
           },
-          "patterns": [
-            {
-              "name": "string.quoted",
-              "contentName": "renpy.meta.say.narrator",
-              "begin": "\"\"\"|\"|'''|'|```|`",
-              "beginCaptures": {
-                "0": { "name": "punctuation.definition.string.begin.renpy" }
-              },
-              "end": "(?<![^\\\\]\\\\)(((?<=\\0)\\0)|\\0)",
-              "endCaptures": {
-                "1": { "name": "punctuation.definition.string.end.renpy" },
-                "2": { "name": "meta.empty-string.renpy" }
-              },
-              "patterns": [{ "include": "#strings-interior" }]
-            }
-          ]
+          "patterns": [{ "include": "#strings-interior" }]
         }
       ]
     },

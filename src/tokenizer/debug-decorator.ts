@@ -311,6 +311,8 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case KeywordTokenType.Behind:
             case KeywordTokenType.Animation:
             case KeywordTokenType.From:
+            case KeywordTokenType.Time:
+            case KeywordTokenType.Repeat:
             case KeywordTokenType.DollarSign:
             case KeywordTokenType.Sensitive:
             case KeywordTokenType.Text:
@@ -360,6 +362,8 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
                 break;
 
             case EntityTokenType.ClassName: // Types
+            case EntityTokenType.InheritedClassName:
+            case EntityTokenType.TypeName:
             case EntityTokenType.NamespaceName:
                 types.push(decoration);
                 break;
@@ -372,11 +376,11 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
 
             // Variables
             case EntityTokenType.VariableName:
-            case EntityTokenType.PropertyName:
             case EntityTokenType.ImageName:
             case EntityTokenType.TextName:
             case EntityTokenType.AudioName:
             case EntityTokenType.CharacterName:
+            case EntityTokenType.PropertyName:
                 variables.push(decoration);
                 break;
 

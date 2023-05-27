@@ -351,9 +351,8 @@ def convert_token_type_split(name: str) -> str:
 
     return "Error" + " /*Error: Could not convert token type*/"
 
-
 def get_token_type(state: GeneratorState, name: str) -> str:
-    token = name.split(" ")[0] # Multi-tokens are not yet supported. For now assume the first token is the important one
+    token = name.split(" ")[-1] # Multi-tokens are not yet supported. For now assume the last token is the important one
     token = convert_token_type_split(token)
 
     import_token_type = token.split(".")[0]

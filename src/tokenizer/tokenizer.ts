@@ -541,6 +541,181 @@ class DocumentTokenizer {
         return bestResult;
     }
 
+    private executeRangePattern(p: ExTokenRangePattern, bestMatch: ScanResult, source: string, initialCharOffset: number, caret: TokenPosition, parentNode: TreeNode) {
+        if (!bestMatch) {
+            return;
+        }
+        const matchBegin = bestMatch.matchBegin;
+        const matchEnd = bestMatch.matchEnd!;
+        const contentLength = matchEnd.index - (matchBegin.index + matchBegin[0].length);
+
+        // Check for missing characters in a match
+        const matchOffset = initialCharOffset + matchBegin.index - caret.charStartOffset;
+        if (matchOffset !== 0) {
+            /*console.warn(
+                                `A range begin match was misaligned (expected: ${initialCharOffset + matchBegin.index}, got: ${caret.charStartOffset}) on pattern '${p.begin.source}' that matched '${matchBegin[0]}' near L:${caret.line + 1} C:${
+                                    caret.character + 1
+                                }.\nYou probably didn't catch all characters in the match or the match before this one.\nApplying a fix...`;
+                            );*/
+            caret.advance(matchOffset);
+        }
+
+        const startCaret = caret.clone();
+
+        const contentStartCaret = startCaret.clone();
+        contentStartCaret.advance(matchBegin[0].length); // Move caret to end of beginMatch
+
+        const contentEndCaret = contentStartCaret.clone();
+        contentEndCaret.advance(contentLength); // Move caret to end of content
+
+        const endCaret = contentEndCaret.clone();
+        endCaret.advance(matchEnd[0].length); // Move caret to end of match
+
+        // p.token matches the whole range including the begin and end match content
+        const rangeNode = new TreeNode();
+        if (p.token) {
+            rangeNode.token = new Token(p.token, startCaret, endCaret);
+        }
+        // Begin captures are only applied to beginMatch[0] content
+        if (p.beginCaptures) {
+            const captureCaret = startCaret.clone();
+            this.applyCaptures(p.beginCaptures, matchBegin, captureCaret, rangeNode);
+
+            if (captureCaret.line !== endCaret.line) {
+                // Line was moved, all characters should reset to 0 and move by content length
+                contentStartCaret.setValue(captureCaret);
+
+                contentEndCaret.setValue(contentStartCaret);
+                contentEndCaret.advance(contentLength); // Move caret to end of content
+
+                // Note: Moving the endCaret will also move the token, since this is a reference object
+                endCaret.setValue(contentEndCaret);
+                endCaret.advance(matchEnd[0].length); // Move caret to end of match
+            }
+        }
+
+        // Add an additional node for the content of the range pattern, since the content can be wrapped by an additional token
+        const contentNode = new TreeNode();
+
+        // p.contentToken matches the range 'between'; after the end of beginMatch and before the start of endMatch
+        if (p.contentToken) {
+            contentNode.token = new Token(p.contentToken, contentStartCaret, contentEndCaret);
+        }
+
+        // Patterns are only applied on 'content' (see p.contentToken above)
+        if (p._patternsRepo) {
+            const captureCaret = contentStartCaret.clone();
+            const content = source.substring(matchBegin.index + matchBegin[0].length, matchEnd.index);
+            this.executePattern(p._patternsRepo, content, captureCaret, contentNode);
+
+            if (captureCaret.line !== endCaret.line) {
+                // TODO: Caret validation logic rewrite
+                // Line was moved, all characters should reset to 0 and move by content length
+                contentEndCaret.setValue(captureCaret);
+
+                // Note: Moving the endCaret will also move the token, since this is a reference object
+                endCaret.setValue(contentEndCaret);
+                endCaret.advance(matchEnd[0].length); // Move caret to end of match
+            }
+        }
+
+        if (!contentNode.isEmpty()) {
+            rangeNode.addChild(contentNode);
+        }
+
+        // End captures are only applied to endMatch[0] content
+        if (p.endCaptures) {
+            const captureCaret = contentEndCaret.clone();
+            this.applyCaptures(p.endCaptures, matchEnd, captureCaret, rangeNode);
+
+            if (captureCaret.line !== endCaret.line) {
+                // TODO: Caret validation logic rewrite
+                // Line was moved, all characters should reset to 0 and move by content length
+                // Note: Moving the endCaret will also move the token, since this is a reference object
+                endCaret.setValue(captureCaret);
+            }
+        }
+
+        assert(!rangeNode.isEmpty(), "A RangePattern must produce a valid token tree!");
+
+        const coverageResult = this.checkTokenTreeCoverage(rangeNode, new Range(startCaret.charStartOffset, endCaret.charStartOffset));
+        if (!coverageResult.valid) {
+            console.warn(`The token tree is not covering the entire match range!`);
+            for (const gap of coverageResult.gaps) {
+                const gapStartPos = this.document.positionAt(gap.start);
+                const gapEndPos = this.document.positionAt(gap.end);
+                const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
+                console.warn(`Gap from L${gapStartPos.line + 1}:${gapStartPos.character + 1} to L${gapEndPos.line + 1}:${gapEndPos.character + 1}, Text: '${text}'`);
+            }
+        }
+
+        parentNode.addChild(rangeNode);
+
+        caret.setValue(endCaret);
+    }
+
+    private executeMatchPattern(p: ExTokenMatchPattern, bestMatch: ScanResult, initialCharOffset: number, caret: TokenPosition, parentNode: TreeNode) {
+        if (!bestMatch) {
+            return;
+        }
+
+        const match = bestMatch.matchBegin;
+
+        // Check for missing characters in a match
+        const matchOffset = initialCharOffset + match.index - caret.charStartOffset;
+        if (matchOffset !== 0) {
+            /*console.warn(
+                `A match was misaligned (expected: ${initialCharOffset + match.index}, got: ${caret.charStartOffset}) on pattern '${p.match.source}' that matched '${match[0]}' near L:${caret.line + 1} C:${
+                    caret.character + 1
+                }.\nYou probably didn't catch all characters in the match or the match before this one.\nApplying a fix...`
+            );*/
+            caret.advance(matchOffset);
+        }
+
+        const startCaret = caret.clone();
+
+        const endCaret = startCaret.clone();
+        endCaret.advance(match[0].length); // Move caret to end of match
+
+        const contentNode = new TreeNode();
+        if (p.token) {
+            if (p.token === CharacterTokenType.NewLine) {
+                endCaret.nextLine();
+            }
+            contentNode.token = new Token(p.token, startCaret, endCaret);
+        }
+
+        if (p.captures) {
+            const captureCaret = startCaret.clone();
+            this.applyCaptures(p.captures, match, captureCaret, contentNode);
+
+            //assert(captureCaret.charStartOffset === endCaret.charStartOffset, "The token read position was misaligned by the capture context!");
+
+            // Note: Moving the endCaret will also move the token, since this is a reference object
+            if (captureCaret.line !== endCaret.line) {
+                // TODO: Caret validation logic rewrite
+                endCaret.setValue(captureCaret);
+            }
+        }
+
+        const coverageResult = this.checkTokenTreeCoverage(contentNode, new Range(startCaret.charStartOffset, endCaret.charStartOffset));
+        if (!coverageResult.valid) {
+            console.warn(`The token tree is not covering the entire match range!`);
+            for (const gap of coverageResult.gaps) {
+                const gapStartPos = this.document.positionAt(gap.start);
+                const gapEndPos = this.document.positionAt(gap.end);
+                const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
+                console.warn(`Gap from L${gapStartPos.line + 1}:${gapStartPos.character + 1} to L${gapEndPos.line + 1}:${gapEndPos.character + 1}, Text: '${text}'`);
+            }
+        }
+
+        assert(p.token || p.captures, "A MatchPattern must have either a token or captures!");
+        assert(!contentNode.isEmpty(), "A MatchPattern must produce a valid token tree!");
+        parentNode.addChild(contentNode);
+
+        caret.setValue(endCaret);
+    }
+
     /**
      * Executes the pattern on 'text', adding tokens to the token list.
      * @param pattern The repo pattern to use for matches.
@@ -572,176 +747,12 @@ class DocumentTokenizer {
             const p = bestMatch.pattern;
             switch (p._patternType) {
                 case TokenPatternType.RangePattern:
-                    {
-                        const matchBegin = bestMatch.matchBegin;
-                        const matchEnd = bestMatch.matchEnd!;
-                        lastMatchIndex = matchEnd.index + matchEnd[0].length;
-                        const contentLength = matchEnd.index - (matchBegin.index + matchBegin[0].length);
-
-                        // Check for missing characters in a match
-                        const matchOffset = initialCharOffset + matchBegin.index - caret.charStartOffset;
-                        if (matchOffset !== 0) {
-                            /*console.warn(
-                                `A range begin match was misaligned (expected: ${initialCharOffset + matchBegin.index}, got: ${caret.charStartOffset}) on pattern '${p.begin.source}' that matched '${matchBegin[0]}' near L:${caret.line + 1} C:${
-                                    caret.character + 1
-                                }.\nYou probably didn't catch all characters in the match or the match before this one.\nApplying a fix...`;
-                            );*/
-                            caret.advance(matchOffset);
-                        }
-
-                        const startCaret = caret.clone();
-
-                        const contentStartCaret = startCaret.clone();
-                        contentStartCaret.advance(matchBegin[0].length); // Move caret to end of beginMatch
-
-                        const contentEndCaret = contentStartCaret.clone();
-                        contentEndCaret.advance(contentLength); // Move caret to end of content
-
-                        const endCaret = contentEndCaret.clone();
-                        endCaret.advance(matchEnd[0].length); // Move caret to end of match
-
-                        // p.token matches the whole range including the begin and end match content
-                        const rangeNode = new TreeNode();
-                        if (p.token) {
-                            rangeNode.token = new Token(p.token, startCaret, endCaret);
-                        }
-                        // Begin captures are only applied to beginMatch[0] content
-                        if (p.beginCaptures) {
-                            const captureCaret = startCaret.clone();
-                            this.applyCaptures(p.beginCaptures, matchBegin, captureCaret, rangeNode);
-
-                            if (captureCaret.line !== endCaret.line) {
-                                // Line was moved, all characters should reset to 0 and move by content length
-                                contentStartCaret.setValue(captureCaret);
-
-                                contentEndCaret.setValue(contentStartCaret);
-                                contentEndCaret.advance(contentLength); // Move caret to end of content
-
-                                // Note: Moving the endCaret will also move the token, since this is a reference object
-                                endCaret.setValue(contentEndCaret);
-                                endCaret.advance(matchEnd[0].length); // Move caret to end of match
-                            }
-                        }
-
-                        // Add an additional node for the content of the range pattern, since the content can be wrapped by an additional token
-                        const contentNode = new TreeNode();
-
-                        // p.contentToken matches the range 'between'; after the end of beginMatch and before the start of endMatch
-                        if (p.contentToken) {
-                            contentNode.token = new Token(p.contentToken, contentStartCaret, contentEndCaret);
-                        }
-
-                        // Patterns are only applied on 'content' (see p.contentToken above)
-                        if (p._patternsRepo) {
-                            const captureCaret = contentStartCaret.clone();
-                            const content = source.substring(matchBegin.index + matchBegin[0].length, matchEnd.index);
-                            this.executePattern(p._patternsRepo, content, captureCaret, contentNode);
-
-                            if (captureCaret.line !== endCaret.line) {
-                                // TODO: Caret validation logic rewrite
-                                // Line was moved, all characters should reset to 0 and move by content length
-                                contentEndCaret.setValue(captureCaret);
-
-                                // Note: Moving the endCaret will also move the token, since this is a reference object
-                                endCaret.setValue(contentEndCaret);
-                                endCaret.advance(matchEnd[0].length); // Move caret to end of match
-                            }
-                        }
-
-                        if (!contentNode.isEmpty()) {
-                            rangeNode.addChild(contentNode);
-                        }
-
-                        // End captures are only applied to endMatch[0] content
-                        if (p.endCaptures) {
-                            const captureCaret = contentEndCaret.clone();
-                            this.applyCaptures(p.endCaptures, matchEnd, captureCaret, rangeNode);
-
-                            if (captureCaret.line !== endCaret.line) {
-                                // TODO: Caret validation logic rewrite
-                                // Line was moved, all characters should reset to 0 and move by content length
-                                // Note: Moving the endCaret will also move the token, since this is a reference object
-                                endCaret.setValue(captureCaret);
-                            }
-                        }
-
-                        assert(!rangeNode.isEmpty(), "A RangePattern must produce a valid token tree!");
-
-                        const coverageResult = this.checkTokenTreeCoverage(rangeNode, new Range(startCaret.charStartOffset, endCaret.charStartOffset));
-                        if (!coverageResult.valid) {
-                            console.warn(`The token tree is not covering the entire match range!`);
-                            for (const gap of coverageResult.gaps) {
-                                const gapStartPos = this.document.positionAt(gap.start);
-                                const gapEndPos = this.document.positionAt(gap.end);
-                                const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
-                                console.warn(`Gap from L${gapStartPos.line + 1}:${gapStartPos.character + 1} to L${gapEndPos.line + 1}:${gapEndPos.character + 1}, Text: '${text}'`);
-                            }
-                        }
-
-                        parentNode.addChild(rangeNode);
-
-                        caret.setValue(endCaret);
-                    }
+                    lastMatchIndex = bestMatch.matchEnd!.index + bestMatch.matchEnd![0].length;
+                    this.executeRangePattern(p as ExTokenRangePattern, bestMatch, source, initialCharOffset, caret, parentNode);
                     break;
                 case TokenPatternType.MatchPattern:
-                    {
-                        const match = bestMatch.matchBegin;
-                        lastMatchIndex = match.index + match[0].length;
-
-                        // Check for missing characters in a match
-                        const matchOffset = initialCharOffset + match.index - caret.charStartOffset;
-                        if (matchOffset !== 0) {
-                            /*console.warn(
-                                `A match was misaligned (expected: ${initialCharOffset + match.index}, got: ${caret.charStartOffset}) on pattern '${p.match.source}' that matched '${match[0]}' near L:${caret.line + 1} C:${
-                                    caret.character + 1
-                                }.\nYou probably didn't catch all characters in the match or the match before this one.\nApplying a fix...`
-                            );*/
-                            caret.advance(matchOffset);
-                        }
-
-                        const startCaret = caret.clone();
-
-                        const endCaret = startCaret.clone();
-                        endCaret.advance(match[0].length); // Move caret to end of match
-
-                        const contentNode = new TreeNode();
-                        if (p.token) {
-                            if (p.token === CharacterTokenType.NewLine) {
-                                endCaret.nextLine();
-                            }
-                            contentNode.token = new Token(p.token, startCaret, endCaret);
-                        }
-
-                        if (p.captures) {
-                            const captureCaret = startCaret.clone();
-                            this.applyCaptures(p.captures, match, captureCaret, contentNode);
-
-                            //assert(captureCaret.charStartOffset === endCaret.charStartOffset, "The token read position was misaligned by the capture context!");
-
-                            // Note: Moving the endCaret will also move the token, since this is a reference object
-                            if (captureCaret.line !== endCaret.line) {
-                                // TODO: Caret validation logic rewrite
-                                endCaret.setValue(captureCaret);
-                            }
-                        }
-
-                        const coverageResult = this.checkTokenTreeCoverage(contentNode, new Range(startCaret.charStartOffset, endCaret.charStartOffset));
-                        if (!coverageResult.valid) {
-                            console.warn(`The token tree is not covering the entire match range!`);
-                            for (const gap of coverageResult.gaps) {
-                                const gapStartPos = this.document.positionAt(gap.start);
-                                const gapEndPos = this.document.positionAt(gap.end);
-                                const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
-                                console.warn(`Gap from L${gapStartPos.line + 1}:${gapStartPos.character + 1} to L${gapEndPos.line + 1}:${gapEndPos.character + 1}, Text: '${text}'`);
-                            }
-                        }
-
-                        assert(p.token || p.captures, "A MatchPattern must have either a token or captures!");
-                        assert(!contentNode.isEmpty(), "A MatchPattern must produce a valid token tree!");
-                        parentNode.addChild(contentNode);
-
-                        caret.setValue(endCaret);
-                    }
+                    lastMatchIndex = bestMatch.matchBegin.index + bestMatch.matchBegin[0].length;
+                    this.executeMatchPattern(p as ExTokenMatchPattern, bestMatch, initialCharOffset, caret, parentNode);
                     break;
                 default:
                     assert(false, "Should not get here!");

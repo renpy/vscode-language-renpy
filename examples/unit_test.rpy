@@ -837,7 +837,7 @@
         queue sound "woof.mp3" volume 0.75
         queue sound "woof.mp3" volume 1.0
 
-        define audio.woof = "woof.mp23
+        define audio.woof = "woof.mp3"
 
         # ...
 

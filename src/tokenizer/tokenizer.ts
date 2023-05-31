@@ -27,13 +27,17 @@ interface MatchScanResult {
     pattern: ExTokenPattern;
     matchBegin: RegExpExecArray;
     matchEnd?: never;
+    expanded?: never;
     contentMatches?: never;
+    source?: never;
 }
 interface RangeScanResult {
     pattern: ExTokenPattern;
     matchBegin: RegExpExecArray;
     matchEnd: RegExpExecArray | null;
+    expanded: boolean;
     contentMatches: Stack<ScanResult> | null;
+    source: string;
 }
 type ScanResult = MatchScanResult | RangeScanResult | null;
 type TokenCache = { readonly documentVersion: number; readonly tokens: TokenTree };
@@ -116,7 +120,8 @@ function setupAndValidatePatterns() {
     stack.push(basePatterns as ExTokenRepoPattern);
 
     const mFlagRe = /(?<!\[)[\^$]/g;
-    const gReferenceRe = /\\G/g;
+    const gAnchorRe = /\(\\G\)/g;
+    const notGAnchorRe = /\(\?!\\G\)/g;
     while (!stack.isEmpty()) {
         const p = stack.pop()!;
         assert(p !== undefined, "This pattern is undefined! Please make sure that circular includes are added after both patterns are defined.");
@@ -131,8 +136,18 @@ function setupAndValidatePatterns() {
             for (let i = 0; i < p.patterns.length; ++i) stack.push(p.patterns[i]);
         } else if (isRangePattern(p)) {
             p._patternType = TokenPatternType.RangePattern;
-            if (p.begin.source.match(mFlagRe)) {
+            let reBeginSource = p.begin.source;
+
+            if (reBeginSource.match(mFlagRe)) {
                 assert(p.begin.multiline, "To match this pattern the 'm' flag is required on the begin RegExp!");
+            }
+
+            if (gAnchorRe.test(reBeginSource)) {
+                p._anchors |= AnchorFlags.Begin_G;
+                reBeginSource = reBeginSource.replace(gAnchorRe, "");
+            } else if (notGAnchorRe.test(reBeginSource)) {
+                p._anchors |= AnchorFlags.Begin_Not_G;
+                reBeginSource = reBeginSource.replace(notGAnchorRe, "");
             }
 
             assert(p.begin.global && p.end.global, "To match this pattern the 'g' flag is required on the begin and end RegExp!");
@@ -166,8 +181,16 @@ function setupAndValidatePatterns() {
 
             let reEndSource = p.end.source;
 
-            if (reEndSource.match(mFlagRe)) {
+            if (mFlagRe.test(reEndSource)) {
                 assert(p.end.multiline, "To match this pattern the 'm' flag is required on the end RegExp!");
+            }
+
+            if (gAnchorRe.test(reEndSource)) {
+                p._anchors |= AnchorFlags.End_G;
+                reEndSource = reEndSource.replace(gAnchorRe, "");
+            } else if (notGAnchorRe.test(reEndSource)) {
+                p._anchors |= AnchorFlags.End_Not_G;
+                reEndSource = reEndSource.replace(notGAnchorRe, "");
             }
 
             p._hasBackref = /\\\d+/.test(reEndSource);
@@ -175,11 +198,7 @@ function setupAndValidatePatterns() {
             reEndSource = reEndSource.replaceAll("\\Z", "$(?!\r\n|\r|\n)");
             reEndSource = reEndSource.replaceAll("\\R", "(?!\r\n|\r|\n)");
 
-            if (gReferenceRe.test(reEndSource)) {
-                console.warn("Found \\G reference in end pattern. This is currently not supported. Replacing with empty string.");
-                reEndSource = reEndSource.replaceAll("\\G", "");
-            }
-
+            p.begin = new RegExp(reBeginSource, p.begin.flags);
             p.end = new RegExp(reEndSource, p.end.flags);
         } else if (isMatchPattern(p)) {
             p._patternType = TokenPatternType.MatchPattern;
@@ -382,13 +401,13 @@ class DocumentTokenizer {
         const matchBegin = reBegin.exec(source);
 
         if (matchBegin) {
-            return { pattern, matchBegin: matchBegin, matchEnd: null, contentMatches: null };
+            return { pattern, matchBegin: matchBegin, matchEnd: null, expanded: false, contentMatches: null, source };
         }
 
         return null;
     }
 
-    private expandRangeScanResult(result: MatchScanResult, source: string, cache: Array<ScanResult | undefined>): RangeScanResult | null {
+    private expandRangeScanResult(result: RangeScanResult, cache: Array<ScanResult | undefined>) {
         const p = result.pattern as ExTokenRangePattern;
         const matchBegin = result.matchBegin;
 
@@ -411,11 +430,11 @@ class DocumentTokenizer {
 
         // Start end pattern after the last matched character in the begin pattern
         reEnd.lastIndex = matchBegin.index + matchBegin[0].length;
-        let matchEnd = reEnd.exec(source);
+        let matchEnd = reEnd.exec(result.source);
+        const contentMatches = new Stack<ScanResult>();
 
         if (matchEnd) {
             // Check if any child pattern has content that would extend the currently determined end match
-            const contentMatches = new Stack<ScanResult>(8);
             if (p._patternsRepo) {
                 const contentStartIndex = matchBegin.index + matchBegin[0].length;
                 const contentEndIndex = matchEnd.index;
@@ -426,7 +445,7 @@ class DocumentTokenizer {
                 //const tempCache = new Array<ScanResult | undefined>(uniquePatternCount).fill(undefined);
 
                 for (let lastMatchIndex = contentStartIndex; lastMatchIndex < contentEndIndex; ) {
-                    const bestChildMatch = this.scanPattern(p._patternsRepo, source, lastMatchIndex, tempCache);
+                    const bestChildMatch = this.scanPattern(p._patternsRepo, result.source, lastMatchIndex, tempCache);
                     if (!bestChildMatch) {
                         break; // No more matches
                     }
@@ -455,7 +474,7 @@ class DocumentTokenizer {
 
                     // The child match is outside the range, so we should find a new end match
                     reEnd.lastIndex = lastMatchIndex;
-                    matchEnd = reEnd.exec(source);
+                    matchEnd = reEnd.exec(result.source);
 
                     // If no end match could be found, assume the whole pattern is invalid
                     if (!matchEnd) {
@@ -463,18 +482,18 @@ class DocumentTokenizer {
                     }
                 }
             }
-
-            if (matchEnd) {
-                return {
-                    pattern: p,
-                    matchBegin: matchBegin,
-                    matchEnd: matchEnd,
-                    contentMatches: contentMatches,
-                };
-            }
         }
 
-        return null;
+        if (!matchEnd) {
+            // If no end match could be found, we'll need to expand the range to the end of the source
+            const reLastChar = /$(?!\r\n|\r|\n)/g;
+            reLastChar.lastIndex = Math.max(0, result.source.length - 1);
+            matchEnd = reLastChar.exec(result.source);
+        }
+
+        result.matchEnd = matchEnd;
+        result.contentMatches = contentMatches;
+        result.expanded = true;
     }
 
     /**
@@ -492,6 +511,9 @@ class DocumentTokenizer {
         if (cachedP !== undefined) {
             // If the cached value is null, no match was found in the entire text
             if (cachedP === null || cachedP.matchBegin.index >= sourceStartOffset) {
+                if (cachedP?.pattern._patternType === TokenPatternType.RangePattern && !cachedP.expanded) {
+                    this.expandRangeScanResult(cachedP as RangeScanResult, cache);
+                }
                 return cachedP;
             }
         }
@@ -558,16 +580,21 @@ class DocumentTokenizer {
             }
         }
 
-        if (bestResult?.pattern._patternType === TokenPatternType.RangePattern) {
-            bestResult = this.expandRangeScanResult(bestResult as MatchScanResult, source, cache);
-        }
-
         cache[p._patternId] = bestResult;
+
+        if (bestResult?.pattern._patternType === TokenPatternType.RangePattern && !bestResult.expanded) {
+            this.expandRangeScanResult(bestResult as RangeScanResult, cache);
+        }
 
         return bestResult;
     }
 
-    private executeRangePattern(bestMatch: RangeScanResult, source: string, initialCharOffset: number, caret: TokenPosition, parentNode: TreeNode) {
+    private executeRangePattern(bestMatch: ScanResult, source: string, initialCharOffset: number, caret: TokenPosition, parentNode: TreeNode) {
+        if (!bestMatch) {
+            return;
+        }
+        assert(bestMatch.expanded, "A range pattern should always be expanded on execute.");
+
         const p = bestMatch.pattern as ExTokenRangePattern;
         const matchBegin = bestMatch.matchBegin;
         const matchEnd = bestMatch.matchEnd;
@@ -662,7 +689,7 @@ class DocumentTokenizer {
             }
         }
 
-        assert(!rangeNode.isEmpty(), "A RangePattern must produce a valid token tree!");
+        //assert(!rangeNode.isEmpty(), "A RangePattern must produce a valid token tree!");
 
         const coverageResult = this.checkTokenTreeCoverage(rangeNode, new Range(startCaret.charStartOffset, endCaret.charStartOffset));
         if (!coverageResult.valid) {
@@ -775,6 +802,7 @@ class DocumentTokenizer {
             const failSafeIndex = lastMatchIndex; // Debug index to break in case of an infinite loop
 
             if (bestMatch.pattern._patternType === TokenPatternType.RangePattern) {
+                assert(bestMatch.expanded, "A RangePattern must be expanded!");
                 const matchEnd = bestMatch.matchEnd!;
                 lastMatchIndex = matchEnd.index + matchEnd[0].length;
             } else {
@@ -797,6 +825,20 @@ const enum TokenPatternType {
     RepoPattern = 0,
     RangePattern = 1,
     MatchPattern = 2,
+}
+
+// eslint-disable-next-line no-shadow
+const enum AnchorFlags {
+    None = 0,
+    Begin_G = 1 << 0,
+    End_G = 1 << 1,
+    Begin_Not_G = 1 << 2,
+    End_Not_G = 1 << 3,
+
+    Begin_G_End_G = Begin_G | End_G,
+    Begin_G_End_Not_G = Begin_G | End_Not_G,
+    Begin_Not_G_End_G = Begin_Not_G | End_G,
+    Begin_Not_G_End_Not_G = Begin_Not_G | End_Not_G,
 }
 
 // These private cache properties are added to the pattern objects by the setupAndValidatePatterns() function.
@@ -824,6 +866,7 @@ interface ExTokenRepoPattern extends TokenRepoPattern, PatternStateProperties {
 interface ExTokenRangePattern extends TokenRangePattern, PatternStateProperties {
     _patternType: TokenPatternType.RangePattern;
     _hasBackref: boolean;
+    _anchors: AnchorFlags;
     _patternsRepo?: ExTokenRepoPattern;
 
     readonly beginCaptures?: ExTokenPatternCapture;

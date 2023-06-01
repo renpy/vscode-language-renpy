@@ -72,8 +72,6 @@ export class TokenPosition {
 
 export class Token {
     readonly tokenType: TokenType;
-
-    // README: The tokenizer abuses the fact that 'startPos' and 'endPos' are reference objects to move the positions!
     readonly startPos: TokenPosition;
     readonly endPos: TokenPosition;
 
@@ -176,6 +174,16 @@ export class TreeNode {
         });
     }
 
+    public filter(callback: (node: TreeNode) => boolean): TreeNode[] {
+        const result: TreeNode[] = [];
+        this.forEach((node) => {
+            if (callback(node)) {
+                result.push(node);
+            }
+        });
+        return result;
+    }
+
     public count(): number {
         // Recursively iterate over all children
         let count = 0;
@@ -199,6 +207,10 @@ export class TokenTree {
 
     public forEach(callback: (node: TreeNode) => void): void {
         this.root.forEach(callback);
+    }
+
+    public filter(callback: (node: TreeNode) => boolean): TreeNode[] {
+        return this.root.filter(callback);
     }
 
     public count(): number {

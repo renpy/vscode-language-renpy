@@ -131,7 +131,7 @@
         "4": { "name": "punctuation.section.atl.begin.renpy" }
       },
       "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-      "patterns": [{ "include": "source.renpy.atl#atl" }]
+      "patterns": [{ "include": "source.renpy.atl" }]
     },
     "at": {
       "name": "meta.at.renpy",
@@ -212,7 +212,7 @@
             "4": { "name": "punctuation.section.atl.begin.renpy" }
           },
           "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [{ "include": "source.renpy.atl#atl" }]
+          "patterns": [{ "include": "source.renpy.atl" }]
         },
         {
           "name": "meta.image.renpy",

@@ -1,6 +1,5 @@
 from datetime import datetime
 import json
-from math import e
 import re
 from typing import Any
 
@@ -8,19 +7,15 @@ class GeneratorState:
     defined_variables: list[str] = []
     used_token_types: list[str] = []
     pattern_include_entries: list[str] = []
-    python_imports: list[str] = []
-    atl_imports: list[str] = []
-    renpy_imports: list[str] = []
-    pattern_prefix = ""
+    external_pattern_include_entries: list[str] = []
+    source_imports: list[str] = []
 
-    def __init__(self, pattern_prefix: str):
+    def __init__(self):
         self.defined_variables = []
         self.used_token_types = []
         self.pattern_include_entries = []
-        self.python_imports = []
-        self.atl_imports = []
-        self.renpy_imports = []
-        self.pattern_prefix = pattern_prefix
+        self.external_pattern_include_entries = []
+        self.source_imports = []
 
 def get_indent(indent: int) -> str:
     return " " * indent
@@ -369,6 +364,9 @@ def get_match_str(match: str, hasCaptures: bool) -> str:
         iFlagSet = True
         match = match.replace("(?i)", "")
 
+    match = match.replace("[:alpha:]", "a-zA-Z")
+    match = match.replace("[:alnum:]", "a-zA-Z0-9")
+    match = match.replace("[:upper:]", "A-Z")
 
     iFlag: str = "i" if iFlagSet else ""
     mFlag: str = "m" if re.search("(?<!\\[)[\\^$]", match) != None else ""
@@ -445,46 +443,86 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
         typescript_entry += f"{get_indent(indent)}patterns: [\n"
         indent += 4
 
-        includes: list[str] = []
+        includes: list[tuple[str, int]] = []
+        external_includes: list[tuple[str, int]] = []
+        last_pattern_index = 0
+
+        # Handle includes first to make sure they are pushed in the correct order
+        for i in range(len(patterns)):
+            pattern = patterns[i]
+
+            if "include" not in pattern:
+                last_pattern_index = i
+                continue
+
+            include: str = pattern["include"]
+
+            if include.startswith("source.renpy"):
+                include_parts = include.split("#")
+
+                source = include_parts[0]
+                reference = include_parts[1] if len(include_parts) > 1 else None
+
+                language = source.split(".")[-1]
+                language_accessor = titleCase(language) + "Patterns."
+
+                if reference == None:
+                    include = language_accessor + language
+                else:
+                    include = language_accessor + camelCase(reference)
+                
+                if language not in state.source_imports:
+                    state.source_imports.append(language)
+                
+                external_includes.append((include, i))
+            else:
+                include = camelCase(include)
+
+                # All includes that have not been defined yet, are pushed at the bottom of the file
+                if include not in state.defined_variables:
+                    includes.append((include, i))
+                else:
+                    last_pattern_index = i
+
+        # Add the includes to the list of includes
+        def process_includes(include_list: list[tuple[str, int]], entries_list: list[str]):
+            push_list: list[str] = []
+            for i in range(len(include_list)):
+                [include, index] = include_list[i]
+                if index < last_pattern_index: # 0 < 0
+                    entries_list.append(f"{access_str}.patterns!.splice({index}, 0, {include});")
+                else:
+                    push_list.append(include)
+
+            if len(push_list) > 0:
+                entries_list.append(f"{access_str}.patterns!.push({', '.join(push_list)});")
+
+        if len(includes) > 0:
+            process_includes(includes, state.pattern_include_entries)
+            last_pattern_index = includes[-1][1]
+
+        if len(external_includes) > 0:
+            process_includes(external_includes, state.external_pattern_include_entries)
+
+        # Now write the pattern source
         for i in range(len(patterns)):
             pattern = patterns[i]
 
             # Handle includes
             if "include" in pattern:
                 include: str = pattern["include"]
+                if include.startswith("source.renpy"):
+                    continue
 
-                if include.startswith("source.renpy.python"):
-                    include = camelCase(include.replace("source.renpy.python", "python"))
-                    if include not in state.python_imports:
-                        state.python_imports.append(include)
-                        state.defined_variables.append(include)
-                elif include.startswith("source.renpy.atl"):
-                    include = camelCase(include.replace("source.renpy.atl", "atl"))
-                    if include not in state.atl_imports:
-                        state.atl_imports.append(include)
-                        state.defined_variables.append(include)
-                elif include.startswith("source.renpy"):
-                    include = camelCase(include.replace("source.renpy", ""))
-                    if include not in state.renpy_imports:
-                        state.renpy_imports.append(include)
-                        state.defined_variables.append(include)
-                else:
-                    include = camelCase(state.pattern_prefix + include)
-
-                # All includes that have not been defined yet, are pushed at the bottom of the file
-                if include not in state.defined_variables:
-                    includes.append(include)
-                else:
+                include = camelCase(include)
+                if include in state.defined_variables:
                     typescript_entry += f"{get_indent(indent)}{include},\n"
+                
                 continue
 
             typescript_entry += get_indent(indent)
             typescript_entry += transform_pattern(state, indent, pattern, f"{access_str}.patterns![{i}]")
             typescript_entry += ",\n"
-
-        # Add the includes to the list of includes
-        if len(includes) > 0:
-            state.pattern_include_entries.append(f"{access_str}.patterns!.push({', '.join(includes)});")
 
         indent -= 4
         typescript_entry += f"{get_indent(indent)}]\n"
@@ -493,8 +531,8 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
     typescript_entry += f"{get_indent(indent)}}}"
     return typescript_entry
 
-def generate_file(source_file: str, output_file: str, pattern_prefix: str):
-    state = GeneratorState(pattern_prefix)
+def generate_file(state: GeneratorState, source_file: str, output_file: str):
+    
 
     # load the input data from the file
     with open(source_file, "r") as file:
@@ -506,7 +544,7 @@ def generate_file(source_file: str, output_file: str, pattern_prefix: str):
     # Iterate through the repository entries
     src_lines: list[str] = []
     for key, value in repository.items():
-        patternName = camelCase(pattern_prefix + key)
+        patternName = camelCase(key)
 
         # Keep track of the defined variables to reduce the amount of variables we need to push later
         state.defined_variables.append(patternName)
@@ -528,30 +566,14 @@ def generate_file(source_file: str, output_file: str, pattern_prefix: str):
             "/* eslint-disable @typescript-eslint/no-non-null-assertion */",
         ]
         
-        time_now = datetime.utcnow().strftime("%d/%m/%Y %H:%M:%S")
-
         contents: str = "\n".join(eslint_comments) + "\n\n"
         contents += "// THIS FILE HAS BEEN GENERATED BY THE `syntax-to-token-pattern.py` GENERATOR\n"
         contents += "// DO NOT EDIT THIS FILE DIRECTLY! INSTEAD RUN THE PYTHON SCRIPT.\n"
         contents += "// ANY MANUAL EDITS MADE TO THIS FILE WILL BE OVERWRITTEN. YOU HAVE BEEN WARNED.\n"
-        contents += f"// Last generated: {time_now} (UTC+0)\n"
+        contents += f"// Last generated: {datetime.utcnow().strftime('%d/%m/%Y %H:%M:%S')} (UTC+0)\n"
         contents += "\n"
 
-        token_type_imports = ", ".join(state.used_token_types)
-        contents += f"import {{ {token_type_imports} }} from \"./renpy-tokens\";\n"
-
-        if len(state.python_imports) > 0:
-            imports: str = ", ".join(state.python_imports)
-            contents += f"import {{ {imports} }} from \"./python-token-patterns\";\n"
-
-        if len(state.atl_imports) > 0:
-            imports: str = ", ".join(state.atl_imports)
-            contents += f"import {{ {imports} }} from \"./atl-token-patterns.g\";\n"
-
-        if len(state.renpy_imports) > 0:
-            imports: str = ", ".join(state.renpy_imports)
-            contents += f"import {{ {imports} }} from \"./token-patterns\";\n"
-
+        contents += f"import {{ {', '.join(state.used_token_types)} }} from \"./renpy-tokens\";\n"
         contents += "import { TokenPattern } from \"./token-pattern-types\";\n\n"
         contents += "\n".join(src_lines)
 
@@ -567,6 +589,51 @@ def generate_file(source_file: str, output_file: str, pattern_prefix: str):
 
         file.write(contents)
 
-generate_file("./syntaxes/renpy.tmLanguage.json", "./src/tokenizer/token-patterns.g.ts", "")
-generate_file("./syntaxes/renpy.atl.tmLanguage.json", "./src/tokenizer/atl-token-patterns.g.ts", "")
-generate_file("./syntaxes/renpy.python.tmLanguage.json", "./src/tokenizer/python-token-patterns.g.ts", "python#")
+def generate_token_patterns():
+    renpy_state = GeneratorState()
+    atl_state = GeneratorState()
+    python_state = GeneratorState()
+
+    generate_file(renpy_state, "./syntaxes/renpy.tmLanguage.json", "./src/tokenizer/renpy-token-patterns.g.ts")
+    generate_file(atl_state, "./syntaxes/renpy.atl.tmLanguage.json", "./src/tokenizer/atl-token-patterns.g.ts")
+    generate_file(python_state, "./syntaxes/renpy.python.tmLanguage.json", "./src/tokenizer/python-token-patterns.g.ts")
+
+    # Write the typescript entries to a file
+    output_file = "./src/tokenizer/token-patterns.g.ts"
+    with open(output_file, "w") as file:
+        contents = "/* eslint-disable @typescript-eslint/no-non-null-assertion */\n\n"
+        contents += "// THIS FILE HAS BEEN GENERATED BY THE `syntax-to-token-pattern.py` GENERATOR\n"
+        contents += "// DO NOT EDIT THIS FILE DIRECTLY! INSTEAD RUN THE PYTHON SCRIPT.\n"
+        contents += "// ANY MANUAL EDITS MADE TO THIS FILE WILL BE OVERWRITTEN. YOU HAVE BEEN WARNED.\n"
+        contents += f"// Last generated: {datetime.utcnow().strftime('%d/%m/%Y %H:%M:%S')} (UTC+0)\n"
+        contents += "\n"
+
+        # Add all source import from all states, but only the unique ones
+        source_imports = set(renpy_state.source_imports + atl_state.source_imports + python_state.source_imports)
+        
+        for source_import in source_imports:
+            contents += f"import * as {titleCase(source_import)}Patterns from \"./{source_import}-token-patterns.g\";\n"
+
+        def add_entries(entries: list[str], prefix: str) -> str:
+            contents = ""
+            if len(entries) > 0:
+                contents += f"\n// Push all {prefix} external includes\n"
+                for entry in entries:
+                    contents += f"{prefix}.{entry}\n"
+
+            return contents
+
+        contents += add_entries(renpy_state.external_pattern_include_entries, "RenpyPatterns")
+        contents += add_entries(atl_state.external_pattern_include_entries, "AtlPatterns")
+        contents += add_entries(python_state.external_pattern_include_entries, "PythonPatterns")
+
+        exports: list[str] = []
+        for source_import in source_imports:
+            exports.append(f"{titleCase(source_import)}Patterns")
+
+        contents += f"\n\nexport {{ {', '.join(exports)} }};"
+
+        file.write(contents)
+
+# main
+generate_token_patterns()

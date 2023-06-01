@@ -3,7 +3,7 @@ import { assert } from "console";
 import { performance } from "perf_hooks";
 import { TextDocument, Uri, Range as VSRange } from "vscode";
 import { Token, isRangePattern, isMatchPattern, isRepoPattern, TokenPosition, TokenTree, TreeNode, Range } from "./token-definitions";
-import { basePatterns } from "./token-patterns.g";
+import { RenpyPatterns } from "./token-patterns.g";
 import { Stack } from "../utilities/stack";
 import { Vector } from "../utilities/vector";
 import { TokenPatternCapture, TokenCapturePattern, TokenRepoPattern, TokenRangePattern, TokenMatchPattern } from "./token-pattern-types";
@@ -116,7 +116,7 @@ function setupAndValidatePatterns() {
 
     uniquePatternCount = 0;
     const stack = new Stack<ExTokenPattern>(32);
-    stack.push(basePatterns as ExTokenRepoPattern);
+    stack.push(RenpyPatterns.basePatterns as ExTokenRepoPattern);
 
     const mFlagRe = /(?<!\[)[\^$]/g;
     const gAnchorRe = /\(\\G\)|\(\?!\\G\)/g;
@@ -227,7 +227,7 @@ class DocumentTokenizer {
     constructor(document: TextDocument) {
         this.document = document;
         const text = document.getText();
-        this.executePattern(basePatterns as ExTokenRepoPattern, text, new Range(0, text.length), this.tokens.root);
+        this.executePattern(RenpyPatterns.basePatterns as ExTokenRepoPattern, text, new Range(0, text.length), this.tokens.root);
     }
 
     private checkTokenTreeCoverage(root: TreeNode, matchRange: Range): { valid: boolean; gaps: Range[] } {
@@ -295,9 +295,6 @@ class DocumentTokenizer {
             }
 
             const p = captures[i];
-
-            // Update the position carets
-
             const captureNode = new TreeNode();
             if (p.token) {
                 captureNode.token = new Token(p.token, this.positionAt(startPos), this.positionAt(endPos));
@@ -553,7 +550,6 @@ class DocumentTokenizer {
         const endPos = matchEnd!.index + matchEnd![0].length;
         const contentStart = matchBegin.index + matchBegin[0].length;
         const contentEnd = matchEnd!.index;
-        const contentLength = contentEnd - contentStart;
 
         // p.token matches the whole range including the begin and end match content
         const rangeNode = new TreeNode();
@@ -577,7 +573,7 @@ class DocumentTokenizer {
         if (p._patternsRepo) {
             /*while (!bestMatch.contentMatches!.isEmpty()) {
                 const contentScanResult = bestMatch.contentMatches!.pop()!;
-                this.applyScanResult(contentScanResult, source, new Range(contentStart, matchEnd!.index), contentNode);
+                this.applyScanResult(contentScanResult, source, contentNode);
             }*/
 
             this.executePattern(p._patternsRepo, source, new Range(contentStart, matchEnd!.index), contentNode);

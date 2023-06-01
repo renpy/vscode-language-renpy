@@ -303,12 +303,6 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case KeywordTokenType.Fadeout:
             case KeywordTokenType.Set: // Renpy sub expression keywords
             case KeywordTokenType.Expression:
-            case KeywordTokenType.At:
-            case KeywordTokenType.As:
-            case KeywordTokenType.With:
-            case KeywordTokenType.Onlayer:
-            case KeywordTokenType.Zorder:
-            case KeywordTokenType.Behind:
             case KeywordTokenType.Animation:
             case KeywordTokenType.From:
             case KeywordTokenType.Time:
@@ -340,7 +334,6 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case OperatorTokenType.Not:
             case OperatorTokenType.Is:
             case OperatorTokenType.IsNot:
-            case OperatorTokenType.In:
             case OperatorTokenType.NotIn:
                 keywords.push(decoration);
                 break;
@@ -348,7 +341,8 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case KeywordTokenType.If: // Conditional control flow keywords
             case KeywordTokenType.Elif:
             case KeywordTokenType.Else:
-            case KeywordTokenType.For: // Control flow keywords
+            case KeywordTokenType.In: // Control flow keywords
+            case KeywordTokenType.For:
             case KeywordTokenType.While:
             case KeywordTokenType.Pass:
             case KeywordTokenType.Return:
@@ -358,6 +352,12 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case KeywordTokenType.Parallel:
             case KeywordTokenType.Block:
             case KeywordTokenType.Choice:
+            case KeywordTokenType.At: // Renpy control flow keywords
+            case KeywordTokenType.As:
+            case KeywordTokenType.With:
+            case KeywordTokenType.Onlayer:
+            case KeywordTokenType.Zorder:
+            case KeywordTokenType.Behind:
                 controlKeywords.push(decoration);
                 break;
 
@@ -718,6 +718,7 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     Elif: { name: "Elif", value: KeywordTokenType.Elif },
     Else: { name: "Else", value: KeywordTokenType.Else },
 
+    In: { name: "In", value: KeywordTokenType.In },
     For: { name: "For", value: KeywordTokenType.For },
     While: { name: "While", value: KeywordTokenType.While },
     Pass: { name: "Pass", value: KeywordTokenType.Pass },
@@ -815,7 +816,6 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     Is: { name: "Is", value: OperatorTokenType.Is },
     IsNot: { name: "IsNot", value: OperatorTokenType.IsNot },
 
-    In: { name: "In", value: OperatorTokenType.In },
     NotIn: { name: "NotIn", value: OperatorTokenType.NotIn },
 
     Unpacking: { name: "Unpacking", value: OperatorTokenType.Unpacking },

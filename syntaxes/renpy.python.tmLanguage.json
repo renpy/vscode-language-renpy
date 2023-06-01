@@ -32,15 +32,18 @@
   "version": "https://github.com/MagicStack/MagicPython/commit/7d0f2b22a5ad8fccbd7341bc7b7a715169283044",
   "name": "Ren'Py Python",
   "scopeName": "source.renpy.python",
-  "patterns": [{ "include": "#statement" }, { "include": "#expression" }],
+  "patterns": [{ "include": "#python" }],
   "repository": {
+    "python": {
+      "patterns": [{ "include": "#statement" }, { "include": "#expression" }]
+    },
     "impossible": {
       "comment": "This is a special rule that should be used where no match is desired. It is not a good idea to match something like '1{0}' because in some cases that can result in infinite loops in token generation. So the rule instead matches and impossible expression to allow a match to fail and move to the next token.",
       "match": "$.^"
     },
     "statement": {
       "patterns": [
-        { "include": "#import" },
+        { "include": "#import-statement" },
         { "include": "#class-declaration" },
         { "include": "#function-declaration" },
         { "include": "#generator" },
@@ -71,7 +74,7 @@
         {
           "name": "comment.line.number-sign.python",
           "contentName": "meta.typehint.comment.python",
-          "begin": "(?:\\#\\s*(type:)\\s*+(?!$|\\#))",
+          "begin": "(?:\\#\\s*(type:)\\s*(?!$|\\#))",
           "end": "(?:$|(?=\\#))",
           "beginCaptures": {
             "0": { "name": "meta.typehint.comment.python" },
@@ -80,7 +83,7 @@
           "patterns": [
             {
               "name": "comment.typehint.ignore.notation.python",
-              "match": "\\Gignore(?=\\s*(?:$|\\#))"
+              "match": "ignore(?=\\s*(?:$|\\#))"
             },
             {
               "name": "comment.typehint.type.notation.python",
@@ -165,7 +168,7 @@
       "patterns": [{ "include": "#escape-sequence-unicode" }, { "include": "#escape-sequence" }, { "include": "#string-line-continuation" }]
     },
     "docstring-prompt": {
-      "match": "(?:(?:^|\\G)\\s*((?:>>>|\\.\\.\\.)\\s)(?=\\s*\\S))",
+      "match": "(?:\\s*((?:>>>|\\.\\.\\.)\\s)(?=\\s*\\S))",
       "captures": {
         "1": { "name": "keyword.control.flow.python" }
       }
@@ -250,6 +253,7 @@
         { "include": "#member-access" },
         {
           "comment": "Tokenize identifiers to help linters",
+          "name": "variable.name.python",
           "match": "\\b([[:alpha:]_]\\w*)\\b"
         }
       ]
@@ -334,7 +338,7 @@
         },
         {
           "begin": "(\\\\)\\s*$\\n?",
-          "end": "(?=^\\s*$)|(?!(\\s*[rR]?(\\'\\'\\'|\\\"\\\"\\\"|\\'|\\\"))|(\\G$))",
+          "end": "(?=^\\s*$)|(?!(\\s*[rR]?(\\'\\'\\'|\\\"\\\"\\\"|\\'|\\\"))|((?<=\\\\\\s*)$))",
           "beginCaptures": {
             "1": { "name": "punctuation.separator.continuation.line.python" }
           },
@@ -554,7 +558,7 @@
       "name": "invalid.illegal.brace.python",
       "match": "(}(?!}))"
     },
-    "import": {
+    "import-statement": {
       "comment": "Import statements used to correctly mark `from`, `import`, and `as`",
       "patterns": [
         {
@@ -757,7 +761,7 @@
     },
     "function-declaration": {
       "name": "meta.function.python",
-      "begin": "\\s*(?:\\b(async)\\s+)?\\b(def)\\s+(?=[[:alpha:]_][[:word:]]*\\s*\\()",
+      "begin": "\\s*(?:\\b(async)\\s+)?\\b(def)\\s+(?=\\w+\\s*\\()",
       "end": "(:|(?=[#'\"\\n]))",
       "beginCaptures": {
         "1": { "name": "storage.type.function.async.python" },

@@ -53,12 +53,6 @@ export const enum KeywordTokenType {
     // Renpy sub expression keywords
     Set,
     Expression,
-    At,
-    As,
-    With,
-    Onlayer,
-    Zorder,
-    Behind,
     Animation,
     From,
     Time,
@@ -70,12 +64,21 @@ export const enum KeywordTokenType {
     OtherPython,
     OtherAudio,
 
+    // Renpy control flow keywords
+    At,
+    As,
+    With,
+    Onlayer,
+    Zorder,
+    Behind,
+
     // Conditional control flow keywords
     If,
     Elif,
     Else,
 
     // Control flow keywords
+    In, // in
     For,
     While,
     Pass,
@@ -187,7 +190,6 @@ export const enum OperatorTokenType {
     Is, // is
     IsNot, // is not
 
-    In, // in
     NotIn, // not in
 
     Unpacking, // * or **

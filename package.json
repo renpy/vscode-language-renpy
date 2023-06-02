@@ -219,6 +219,7 @@
     "webpack": "^5.72.1",
     "webpack-cli": "^4.9.2",
     "vsce": "^2.9.2",
-    "prettier": "^2.7.1"
+    "prettier": "^2.7.1",
+    "@vscode/vsce": "^2.15.0"
   }
 }

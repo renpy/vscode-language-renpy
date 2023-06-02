@@ -104,7 +104,7 @@
         },
 
         {
-          "name": "invalid.illegal.word.renpy",
+          "name": "debug.invalid.illegal.unmatched.renpy",
           "match": "\\b\\w+\\b"
         },
         {

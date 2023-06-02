@@ -10,6 +10,7 @@ export const enum TokenTypeIndex {
     CharactersStart = 4001,
     EscapedCharacterStart = 5001,
     MetaStart = 6001,
+    DeprecatedTokenID = 9997,
     UnknownCharacterID = 9998,
     InvalidTokenID = 9999,
 }
@@ -52,17 +53,24 @@ export const enum KeywordTokenType {
     // Renpy sub expression keywords
     Set,
     Expression,
-    At,
-    As,
-    With,
-    OnLayer,
-    ZOrder,
-    Behind,
     Animation,
     From,
     Time,
     Repeat,
     DollarSign,
+    Sensitive,
+    Text,
+    Other,
+    OtherPython,
+    OtherAudio,
+
+    // Renpy control flow keywords
+    At,
+    As,
+    With,
+    Onlayer,
+    Zorder,
+    Behind,
 
     // Conditional control flow keywords
     If,
@@ -70,6 +78,7 @@ export const enum KeywordTokenType {
     Else,
 
     // Control flow keywords
+    In, // in
     For,
     While,
     Pass,
@@ -89,14 +98,32 @@ export const enum KeywordTokenType {
     Event,
     On,
     Function,
+
+    // Python keywords
+    Import,
+    Class,
+    Metaclass,
+    Lambda,
+    Async,
+    Def,
+    Global,
+    Nonlocal,
 }
 
 export const enum EntityTokenType {
-    Class = TokenTypeIndex.EntityStart,
-    Namespace,
+    ClassName = TokenTypeIndex.EntityStart,
+    InheritedClassName,
+    TypeName,
+    NamespaceName,
     FunctionName,
-    Tag,
+    TagName,
     VariableName,
+
+    // Renpy entities
+    ImageName,
+    TextName,
+    AudioName,
+    CharacterName,
 
     // ATL entities
     EventName,
@@ -134,7 +161,7 @@ export const enum OperatorTokenType {
     BitwiseRightShift, // >>
 
     // Assignment operators
-    Assign, // =
+    Assignment, // =
     PlusAssign, // +=
     MinusAssign, // -=
     MultiplyAssign, // *=
@@ -163,8 +190,21 @@ export const enum OperatorTokenType {
     Is, // is
     IsNot, // is not
 
-    In, // in
     NotIn, // not in
+
+    Unpacking, // * or **
+    PositionalParameter, // /
+
+    // Regex operators
+    Quantifier, // [+*?]\??
+    Disjunction, // |
+    Negation, // ^
+    Lookahead, // (?=
+    LookaheadNegative, // (?!
+    Lookbehind, // (?<=
+    LookbehindNegative, // (?<!
+    Conditional, // ?
+    ConditionalNegative, // ?!
 }
 
 export const enum CharacterTokenType {
@@ -180,7 +220,7 @@ export const enum CharacterTokenType {
     CloseSquareBracket, // ]
 
     // Other characters
-    WhiteSpace, // Tab or space
+    Whitespace, // Tab or space
     NewLine,
 
     Period, // .
@@ -188,6 +228,10 @@ export const enum CharacterTokenType {
     Semicolon, // ;
     Comma, // ,
     Hashtag, // #
+    Caret, // ^
+    DollarSymbol, // $
+    AtSymbol, // @
+    EqualsSymbol, // =
 
     Quote, // '
     DoubleQuote, // "
@@ -211,16 +255,31 @@ export const enum EscapedCharacterTokenType {
 
 export const enum MetaTokenType {
     Invalid = TokenTypeIndex.InvalidTokenID,
-    Comment = TokenTypeIndex.MetaStart,
-    CodeBlock,
+    Deprecated = TokenTypeIndex.DeprecatedTokenID,
 
+    Comment = TokenTypeIndex.MetaStart,
+    CommentCodeTag,
+    CommentRegionTag, // #region / #endregion
+    TypehintComment,
+    TypehintDirective,
+    TypehintIgnore,
+    TypehintType,
+    TypehintPunctuation,
+    TypehintVariable,
+    Docstring,
+
+    StringBegin,
+    StringEnd,
+
+    CodeBlock,
     PythonLine,
     PythonBlock,
     Arguments,
 
-    CommentCodeTag,
     EmptyString,
+    StringTag,
     TagBlock,
+    TaggedString,
     Placeholder,
 
     MenuStatement,
@@ -228,28 +287,48 @@ export const enum MetaTokenType {
     MenuOption,
     MenuOptionBlock,
 
+    LabelStatement,
+    LabelCall,
+    LabelAccess,
+
+    BehindStatement,
+    OnlayerStatement,
+    ZorderStatement,
+    AtStatement,
+    AsStatement,
+    WithStatement,
+
+    ImageStatement,
     CameraStatement,
     SceneStatement,
     ShowStatement,
-    ImageStatement,
-
-    NarratorSayStatement,
-    SayStatement,
-    CharacterNameString,
 
     CallStatement,
     JumpStatement,
 
     PlayAudioStatement,
+    QueueAudioStatement,
     StopAudioStatement,
 
-    LabelStatement,
-    LabelCall,
-    LabelAccess,
+    ScreenStatement,
+    ScreenSensitive,
+    ScreenFrame,
+    ScreenWindow,
+    ScreenText,
+    ScreenBlock,
 
-    AtStatement,
-    AsStatement,
-    WithStatement,
+    NarratorSayStatement,
+    SayStatement,
+    CharacterNameString,
+    SayNarrator,
+    SayCharacter,
+
+    AtParameters,
+    AsParameters,
+    BehindParameters,
+    OnlayerParameters,
+    WithParameters,
+    ZorderParameters,
 
     ATLBlock,
     ATLChoiceBlock,
@@ -259,6 +338,57 @@ export const enum MetaTokenType {
     ATLFunction,
     ATLWarper,
     ATLOn,
+
+    MemberAccess,
+    ItemAccess,
+    IndexedName,
+    Attribute,
+    ClassDefinition,
+    ClassInheritance,
+    FunctionDefinition,
+    LambdaFunction,
+    FunctionLambdaParameters,
+    FunctionParameters,
+    FunctionDecorator,
+    FunctionCall,
+    FunctionCallGeneric,
+
+    Fstring,
+
+    // Temporary tokens for python parsing
+    ControlFlowKeyword,
+    LogicalOperatorKeyword,
+    Operator,
+    ArithmeticOperator,
+    BitwiseOperatorKeyword,
+    ComparisonOperatorKeyword,
+    ConstantLiteral,
+    ConstantNumeric,
+    ConstantCaps,
+    BuiltinExceptionType,
+    BuiltinType,
+    MagicVariable,
+
+    EscapeSequence,
+
+    FormatPercent,
+    FormatBrace,
+
+    StringStorageType,
+    FormatStorageType,
+    ImaginaryNumberStorageType,
+    NumberStorageType,
+    ClassStorageType,
+
+    // Regex
+    CommentBegin,
+    CommentEnd,
+
+    Backreference,
+    BackreferenceNamed,
+    CharacterSet,
+    Named,
+    ModifierFlagStorageType,
 }
 
 export type TokenType = KeywordTokenType | EntityTokenType | MetaTokenType | LiteralTokenType | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;

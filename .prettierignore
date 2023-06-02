@@ -4,3 +4,6 @@
 
 # Ignore all markdown files:
 *.md
+
+# Ignore all generated typescript files:
+*.g.ts

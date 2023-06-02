@@ -1,7 +1,7 @@
 import { performance } from "perf_hooks";
 import { DecorationOptions, Disposable, ExtensionContext, MarkdownString, Uri, window, workspace } from "vscode";
 import { CharacterTokenType, LiteralTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "./renpy-tokens";
-import { Token } from "./token-definitions";
+import { TokenTree } from "./token-definitions";
 import { tokenizeDocument } from "./tokenizer";
 
 let timeout: NodeJS.Timer | undefined = undefined;
@@ -115,6 +115,13 @@ const errorDecorationType = window.createTextEditorDecorationType({
     textDecoration: "underline wavy red 2px",
 });
 
+const deprecatedDecorationType = window.createTextEditorDecorationType({
+    borderWidth: "1px",
+    borderStyle: "dotted",
+    borderColor: "#f44747",
+    textDecoration: "underline wavy yellow 2px",
+});
+
 const allDecorationTypes = [
     keywordDecorationType,
     controlKeywordDecorationType,
@@ -135,7 +142,7 @@ const allDecorationTypes = [
     errorDecorationType,
 ];
 
-let tokenCache: Token[] = [];
+let tokenCache: TokenTree;
 let documentVersion = -1;
 let documentUri: Uri | null = null;
 
@@ -183,7 +190,7 @@ function updateDecorations() {
         return;
     }
 
-    if (documentVersion !== activeEditor.document.version || documentUri !== activeEditor.document.uri || tokenCache.length === 0) {
+    if (documentVersion !== activeEditor.document.version || documentUri !== activeEditor.document.uri || tokenCache.count() === 0) {
         documentVersion = activeEditor.document.version;
         documentUri = activeEditor.document.uri;
 
@@ -219,9 +226,15 @@ function updateDecorations() {
     const escCharacters: DecorationOptions[] = [];
 
     const errors: DecorationOptions[] = [];
+    const deprecated: DecorationOptions[] = [];
 
-    tokens.forEach((token) => {
-        const range = token.getRange();
+    tokens.forEach((node) => {
+        const token = node.token;
+        if (!token) {
+            return;
+        }
+
+        const range = token.getVSCodeRange();
         const content = activeEditor?.document.getText(range);
 
         const decoration: DecorationOptions = {
@@ -290,15 +303,16 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case KeywordTokenType.Fadeout:
             case KeywordTokenType.Set: // Renpy sub expression keywords
             case KeywordTokenType.Expression:
-            case KeywordTokenType.At:
-            case KeywordTokenType.As:
-            case KeywordTokenType.With:
-            case KeywordTokenType.OnLayer:
-            case KeywordTokenType.ZOrder:
-            case KeywordTokenType.Behind:
             case KeywordTokenType.Animation:
             case KeywordTokenType.From:
+            case KeywordTokenType.Time:
+            case KeywordTokenType.Repeat:
             case KeywordTokenType.DollarSign:
+            case KeywordTokenType.Sensitive:
+            case KeywordTokenType.Text:
+            case KeywordTokenType.Other:
+            case KeywordTokenType.OtherPython:
+            case KeywordTokenType.OtherAudio:
             case KeywordTokenType.Warp: // ATL keywords
             case KeywordTokenType.Circles:
             case KeywordTokenType.Clockwise:
@@ -306,13 +320,20 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case KeywordTokenType.Event:
             case KeywordTokenType.On:
             case KeywordTokenType.Function:
+            case KeywordTokenType.Import: // Python keywords
+            case KeywordTokenType.Class:
+            case KeywordTokenType.Metaclass:
+            case KeywordTokenType.Lambda:
+            case KeywordTokenType.Async:
+            case KeywordTokenType.Def:
+            case KeywordTokenType.Global:
+            case KeywordTokenType.Nonlocal:
             case LiteralTokenType.Boolean: // Language keywords
             case OperatorTokenType.And:
             case OperatorTokenType.Or:
             case OperatorTokenType.Not:
             case OperatorTokenType.Is:
             case OperatorTokenType.IsNot:
-            case OperatorTokenType.In:
             case OperatorTokenType.NotIn:
                 keywords.push(decoration);
                 break;
@@ -320,7 +341,8 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case KeywordTokenType.If: // Conditional control flow keywords
             case KeywordTokenType.Elif:
             case KeywordTokenType.Else:
-            case KeywordTokenType.For: // Control flow keywords
+            case KeywordTokenType.In: // Control flow keywords
+            case KeywordTokenType.For:
             case KeywordTokenType.While:
             case KeywordTokenType.Pass:
             case KeywordTokenType.Return:
@@ -330,11 +352,19 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case KeywordTokenType.Parallel:
             case KeywordTokenType.Block:
             case KeywordTokenType.Choice:
+            case KeywordTokenType.At: // Renpy control flow keywords
+            case KeywordTokenType.As:
+            case KeywordTokenType.With:
+            case KeywordTokenType.Onlayer:
+            case KeywordTokenType.Zorder:
+            case KeywordTokenType.Behind:
                 controlKeywords.push(decoration);
                 break;
 
-            case EntityTokenType.Class: // Types
-            case EntityTokenType.Namespace:
+            case EntityTokenType.ClassName: // Types
+            case EntityTokenType.InheritedClassName:
+            case EntityTokenType.TypeName:
+            case EntityTokenType.NamespaceName:
                 types.push(decoration);
                 break;
 
@@ -346,42 +376,58 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
 
             // Variables
             case EntityTokenType.VariableName:
+            case EntityTokenType.ImageName:
+            case EntityTokenType.TextName:
+            case EntityTokenType.AudioName:
+            case EntityTokenType.CharacterName:
             case EntityTokenType.PropertyName:
                 variables.push(decoration);
                 break;
 
             // Other entities
-            case EntityTokenType.Tag:
+            case EntityTokenType.TagName:
                 otherEntities.push(decoration);
                 break;
 
             // Comments
             case MetaTokenType.Comment:
             case MetaTokenType.CommentCodeTag:
+            case MetaTokenType.CommentRegionTag:
+            case MetaTokenType.TypehintComment:
+            case MetaTokenType.TypehintDirective:
+            case MetaTokenType.TypehintIgnore:
+            case MetaTokenType.TypehintType:
+            case MetaTokenType.TypehintPunctuation:
+            case MetaTokenType.TypehintVariable:
+            case MetaTokenType.Docstring:
                 comments.push(decoration);
                 break;
 
+            case MetaTokenType.StringBegin:
+            case MetaTokenType.StringEnd:
             case MetaTokenType.CodeBlock:
             case MetaTokenType.PythonLine:
             case MetaTokenType.PythonBlock:
             case MetaTokenType.Arguments:
             case MetaTokenType.EmptyString:
+            case MetaTokenType.StringTag:
             case MetaTokenType.TagBlock:
+            case MetaTokenType.TaggedString:
             case MetaTokenType.Placeholder:
             case MetaTokenType.MenuStatement:
             case MetaTokenType.MenuBlock:
             case MetaTokenType.MenuOption:
             case MetaTokenType.MenuOptionBlock:
+            case MetaTokenType.BehindStatement:
+            case MetaTokenType.OnlayerStatement:
             case MetaTokenType.CameraStatement:
             case MetaTokenType.SceneStatement:
             case MetaTokenType.ShowStatement:
             case MetaTokenType.ImageStatement:
-            case MetaTokenType.NarratorSayStatement:
-            case MetaTokenType.SayStatement:
-            case MetaTokenType.CharacterNameString:
             case MetaTokenType.CallStatement:
             case MetaTokenType.JumpStatement:
             case MetaTokenType.PlayAudioStatement:
+            case MetaTokenType.QueueAudioStatement:
             case MetaTokenType.StopAudioStatement:
             case MetaTokenType.LabelStatement:
             case MetaTokenType.LabelCall:
@@ -389,6 +435,23 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case MetaTokenType.AtStatement:
             case MetaTokenType.AsStatement:
             case MetaTokenType.WithStatement:
+            case MetaTokenType.ScreenStatement:
+            case MetaTokenType.ScreenSensitive:
+            case MetaTokenType.ScreenFrame:
+            case MetaTokenType.ScreenWindow:
+            case MetaTokenType.ScreenText:
+            case MetaTokenType.ScreenBlock:
+            case MetaTokenType.NarratorSayStatement:
+            case MetaTokenType.SayStatement:
+            case MetaTokenType.CharacterNameString:
+            case MetaTokenType.SayNarrator:
+            case MetaTokenType.SayCharacter:
+            case MetaTokenType.AtParameters:
+            case MetaTokenType.AsParameters:
+            case MetaTokenType.BehindParameters:
+            case MetaTokenType.OnlayerParameters:
+            case MetaTokenType.WithParameters:
+            case MetaTokenType.ZorderParameters:
             case MetaTokenType.ATLBlock:
             case MetaTokenType.ATLChoiceBlock:
             case MetaTokenType.ATLContains:
@@ -397,6 +460,47 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case MetaTokenType.ATLFunction:
             case MetaTokenType.ATLWarper:
             case MetaTokenType.ATLOn:
+            case MetaTokenType.MemberAccess:
+            case MetaTokenType.ItemAccess:
+            case MetaTokenType.IndexedName:
+            case MetaTokenType.Attribute:
+            case MetaTokenType.ClassDefinition:
+            case MetaTokenType.ClassInheritance:
+            case MetaTokenType.FunctionDefinition:
+            case MetaTokenType.LambdaFunction:
+            case MetaTokenType.FunctionLambdaParameters:
+            case MetaTokenType.FunctionParameters:
+            case MetaTokenType.FunctionDecorator:
+            case MetaTokenType.FunctionCall:
+            case MetaTokenType.FunctionCallGeneric:
+            case MetaTokenType.Fstring:
+            case MetaTokenType.ControlFlowKeyword:
+            case MetaTokenType.LogicalOperatorKeyword:
+            case MetaTokenType.Operator:
+            case MetaTokenType.ArithmeticOperator:
+            case MetaTokenType.BitwiseOperatorKeyword:
+            case MetaTokenType.ComparisonOperatorKeyword:
+            case MetaTokenType.ConstantLiteral:
+            case MetaTokenType.ConstantNumeric:
+            case MetaTokenType.ConstantCaps:
+            case MetaTokenType.BuiltinExceptionType:
+            case MetaTokenType.BuiltinType:
+            case MetaTokenType.MagicVariable:
+            case MetaTokenType.EscapeSequence:
+            case MetaTokenType.FormatPercent:
+            case MetaTokenType.FormatBrace:
+            case MetaTokenType.StringStorageType:
+            case MetaTokenType.FormatStorageType:
+            case MetaTokenType.ImaginaryNumberStorageType:
+            case MetaTokenType.NumberStorageType:
+            case MetaTokenType.ClassStorageType:
+            case MetaTokenType.CommentBegin:
+            case MetaTokenType.CommentEnd:
+            case MetaTokenType.Backreference:
+            case MetaTokenType.BackreferenceNamed:
+            case MetaTokenType.CharacterSet:
+            case MetaTokenType.Named:
+            case MetaTokenType.ModifierFlagStorageType:
                 otherMeta.push(decoration);
                 break;
 
@@ -439,7 +543,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case OperatorTokenType.BitwiseNot:
             case OperatorTokenType.BitwiseLeftShift:
             case OperatorTokenType.BitwiseRightShift:
-            case OperatorTokenType.Assign: // Assignment operators
+            case OperatorTokenType.Assignment: // Assignment operators
             case OperatorTokenType.PlusAssign:
             case OperatorTokenType.MinusAssign:
             case OperatorTokenType.MultiplyAssign:
@@ -461,13 +565,17 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
                 operators.push(decoration);
                 break;
 
-            case CharacterTokenType.WhiteSpace:
+            case CharacterTokenType.Whitespace:
             case CharacterTokenType.NewLine:
             case CharacterTokenType.Period:
             case CharacterTokenType.Colon:
             case CharacterTokenType.Semicolon:
             case CharacterTokenType.Comma:
             case CharacterTokenType.Hashtag:
+            case CharacterTokenType.Caret:
+            case CharacterTokenType.DollarSymbol:
+            case CharacterTokenType.AtSymbol:
+            case CharacterTokenType.EqualsSymbol:
             case CharacterTokenType.Quote:
             case CharacterTokenType.DoubleQuote:
             case CharacterTokenType.BackQuote:
@@ -499,6 +607,11 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
             case MetaTokenType.Invalid:
                 errors.push(decoration);
                 break;
+
+            case MetaTokenType.Deprecated:
+                deprecated.push(decoration);
+                break;
+
             default:
                 throw new Error(`Unhandled token case: ${tokenTypeToStringMap[token.tokenType]}(id: ${token.tokenType})`);
         }
@@ -527,6 +640,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`);
     activeEditor.setDecorations(escCharacterDecorationType, escCharacters);
 
     activeEditor.setDecorations(errorDecorationType, errors);
+    activeEditor.setDecorations(deprecatedDecorationType, deprecated);
 }
 
 function triggerUpdateDecorations(throttle = false) {
@@ -557,6 +671,7 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     Early: { name: "Early", value: KeywordTokenType.Early },
     Define: { name: "Define", value: KeywordTokenType.Define },
     Default: { name: "Default", value: KeywordTokenType.Default },
+
     Label: { name: "Label", value: KeywordTokenType.Label },
     Menu: { name: "Menu", value: KeywordTokenType.Menu },
     Pause: { name: "Pause", value: KeywordTokenType.Pause },
@@ -585,19 +700,25 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     At: { name: "At", value: KeywordTokenType.At },
     As: { name: "As", value: KeywordTokenType.As },
     With: { name: "With", value: KeywordTokenType.With },
-    OnLayer: { name: "OnLayer", value: KeywordTokenType.OnLayer },
-    ZOrder: { name: "ZOrder", value: KeywordTokenType.ZOrder },
+    Onlayer: { name: "Onlayer", value: KeywordTokenType.Onlayer },
+    Zorder: { name: "Zorder", value: KeywordTokenType.Zorder },
     Behind: { name: "Behind", value: KeywordTokenType.Behind },
     Animation: { name: "Animation", value: KeywordTokenType.Animation },
     From: { name: "From", value: KeywordTokenType.From },
     Time: { name: "Time", value: KeywordTokenType.Time },
     Repeat: { name: "Repeat", value: KeywordTokenType.Repeat },
     DollarSign: { name: "DollarSign", value: KeywordTokenType.DollarSign },
+    Sensitive: { name: "Sensitive", value: KeywordTokenType.Sensitive },
+    Text: { name: "Text", value: KeywordTokenType.Text },
+    Other: { name: "Other", value: KeywordTokenType.Other },
+    OtherPython: { name: "OtherPython", value: KeywordTokenType.OtherPython },
+    OtherAudio: { name: "OtherAudio", value: KeywordTokenType.OtherAudio },
 
     If: { name: "If", value: KeywordTokenType.If },
     Elif: { name: "Elif", value: KeywordTokenType.Elif },
     Else: { name: "Else", value: KeywordTokenType.Else },
 
+    In: { name: "In", value: KeywordTokenType.In },
     For: { name: "For", value: KeywordTokenType.For },
     While: { name: "While", value: KeywordTokenType.While },
     Pass: { name: "Pass", value: KeywordTokenType.Pass },
@@ -617,11 +738,27 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     On: { name: "On", value: KeywordTokenType.On },
     Function: { name: "Function", value: KeywordTokenType.Function },
 
-    Class: { name: "Class", value: EntityTokenType.Class },
-    Namespace: { name: "Namespace", value: EntityTokenType.Namespace },
+    Import: { name: "Import", value: KeywordTokenType.Import },
+    Class: { name: "Class", value: KeywordTokenType.Class },
+    Metaclass: { name: "Metaclass", value: KeywordTokenType.Metaclass },
+    Lambda: { name: "Lambda", value: KeywordTokenType.Lambda },
+    Async: { name: "Async", value: KeywordTokenType.Async },
+    Def: { name: "Def", value: KeywordTokenType.Def },
+    Global: { name: "Global", value: KeywordTokenType.Global },
+    Nonlocal: { name: "Nonlocal", value: KeywordTokenType.Nonlocal },
+
+    ClassName: { name: "ClassName", value: EntityTokenType.ClassName },
+    InheritedClassName: { name: "InheritedClassName", value: EntityTokenType.InheritedClassName },
+    TypeName: { name: "TypeName", value: EntityTokenType.TypeName },
+    NamespaceName: { name: "NamespaceName", value: EntityTokenType.NamespaceName },
     FunctionName: { name: "FunctionName", value: EntityTokenType.FunctionName },
-    Tag: { name: "Tag", value: EntityTokenType.Tag },
+    TagName: { name: "TagName", value: EntityTokenType.TagName },
     VariableName: { name: "VariableName", value: EntityTokenType.VariableName },
+
+    ImageName: { name: "ImageName", value: EntityTokenType.ImageName },
+    TextName: { name: "TextName", value: EntityTokenType.TextName },
+    AudioName: { name: "AudioName", value: EntityTokenType.AudioName },
+    CharacterName: { name: "CharacterName", value: EntityTokenType.CharacterName },
 
     EventName: { name: "EventName", value: EntityTokenType.EventName },
     PropertyName: { name: "PropertyName", value: EntityTokenType.PropertyName },
@@ -651,7 +788,7 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     BitwiseLeftShift: { name: "BitwiseLeftShift", value: OperatorTokenType.BitwiseLeftShift },
     BitwiseRightShift: { name: "BitwiseRightShift", value: OperatorTokenType.BitwiseRightShift },
 
-    Assign: { name: "Assign", value: OperatorTokenType.Assign },
+    Assignment: { name: "Assignment", value: OperatorTokenType.Assignment },
     PlusAssign: { name: "PlusAssign", value: OperatorTokenType.PlusAssign },
     MinusAssign: { name: "MinusAssign", value: OperatorTokenType.MinusAssign },
     MultiplyAssign: { name: "MultiplyAssign", value: OperatorTokenType.MultiplyAssign },
@@ -679,8 +816,20 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     Is: { name: "Is", value: OperatorTokenType.Is },
     IsNot: { name: "IsNot", value: OperatorTokenType.IsNot },
 
-    In: { name: "In", value: OperatorTokenType.In },
     NotIn: { name: "NotIn", value: OperatorTokenType.NotIn },
+
+    Unpacking: { name: "Unpacking", value: OperatorTokenType.Unpacking },
+    PositionalParameter: { name: "PositionalParameter", value: OperatorTokenType.PositionalParameter },
+
+    Quantifier: { name: "Quantifier", value: OperatorTokenType.Quantifier },
+    Disjunction: { name: "Disjunction", value: OperatorTokenType.Disjunction },
+    Negation: { name: "Negation", value: OperatorTokenType.Negation },
+    Lookahead: { name: "Lookahead", value: OperatorTokenType.Lookahead },
+    LookaheadNegative: { name: "LookaheadNegative", value: OperatorTokenType.LookaheadNegative },
+    Lookbehind: { name: "Lookbehind", value: OperatorTokenType.Lookbehind },
+    LookbehindNegative: { name: "LookbehindNegative", value: OperatorTokenType.LookbehindNegative },
+    Conditional: { name: "Conditional", value: OperatorTokenType.Conditional },
+    ConditionalNegative: { name: "ConditionalNegative", value: OperatorTokenType.ConditionalNegative },
 
     Unknown: { name: "Unknown", value: CharacterTokenType.Unknown },
 
@@ -693,7 +842,7 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     OpenSquareBracket: { name: "OpenSquareBracket", value: CharacterTokenType.OpenSquareBracket },
     CloseSquareBracket: { name: "CloseSquareBracket", value: CharacterTokenType.CloseSquareBracket },
 
-    WhiteSpace: { name: "WhiteSpace", value: CharacterTokenType.WhiteSpace },
+    Whitespace: { name: "Whitespace", value: CharacterTokenType.Whitespace },
     NewLine: { name: "NewLine", value: CharacterTokenType.NewLine },
 
     Period: { name: "Period", value: CharacterTokenType.Period },
@@ -701,6 +850,10 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     Semicolon: { name: "Semicolon", value: CharacterTokenType.Semicolon },
     Comma: { name: "Comma", value: CharacterTokenType.Comma },
     Hashtag: { name: "Hashtag", value: CharacterTokenType.Hashtag },
+    Caret: { name: "Caret", value: CharacterTokenType.Caret },
+    DollarSymbol: { name: "DollarSymbol", value: CharacterTokenType.DollarSymbol },
+    AtSymbol: { name: "AtSymbol", value: CharacterTokenType.AtSymbol },
+    EqualsSymbol: { name: "EqualsSymbol", value: CharacterTokenType.EqualsSymbol },
 
     Quote: { name: "Quote", value: CharacterTokenType.Quote },
     DoubleQuote: { name: "DoubleQuote", value: CharacterTokenType.DoubleQuote },
@@ -719,16 +872,31 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     EscOpenBracket: { name: "EscOpenBracket", value: EscapedCharacterTokenType.EscOpenBracket },
 
     Invalid: { name: "Invalid", value: MetaTokenType.Invalid },
-    Comment: { name: "Comment", value: MetaTokenType.Comment },
-    CodeBlock: { name: "CodeBlock", value: MetaTokenType.CodeBlock },
+    Deprecated: { name: "Deprecated", value: MetaTokenType.Deprecated },
 
+    Comment: { name: "Comment", value: MetaTokenType.Comment },
+    CommentCodeTag: { name: "CommentCodeTag", value: MetaTokenType.CommentCodeTag },
+    CommentRegionTag: { name: "CommentRegionTag", value: MetaTokenType.CommentRegionTag },
+    TypehintComment: { name: "TypehintComment", value: MetaTokenType.TypehintComment },
+    TypehintDirective: { name: "TypehintDirective", value: MetaTokenType.TypehintDirective },
+    TypehintIgnore: { name: "TypehintIgnore", value: MetaTokenType.TypehintIgnore },
+    TypehintType: { name: "TypehintType", value: MetaTokenType.TypehintType },
+    TypehintPunctuation: { name: "TypehintPunctuation", value: MetaTokenType.TypehintPunctuation },
+    TypehintVariable: { name: "TypehintVariable", value: MetaTokenType.TypehintVariable },
+    Docstring: { name: "Docstring", value: MetaTokenType.Docstring },
+
+    StringBegin: { name: "StringBegin", value: MetaTokenType.StringBegin },
+    StringEnd: { name: "StringEnd", value: MetaTokenType.StringEnd },
+
+    CodeBlock: { name: "CodeBlock", value: MetaTokenType.CodeBlock },
     PythonLine: { name: "PythonLine", value: MetaTokenType.PythonLine },
     PythonBlock: { name: "PythonBlock", value: MetaTokenType.PythonBlock },
     Arguments: { name: "Arguments", value: MetaTokenType.Arguments },
 
-    CommentCodeTag: { name: "CommentCodeTag", value: MetaTokenType.CommentCodeTag },
     EmptyString: { name: "EmptyString", value: MetaTokenType.EmptyString },
+    StringTag: { name: "StringTag", value: MetaTokenType.StringTag },
     TagBlock: { name: "TagBlock", value: MetaTokenType.TagBlock },
+    TaggedString: { name: "TaggedString", value: MetaTokenType.TaggedString },
     Placeholder: { name: "Placeholder", value: MetaTokenType.Placeholder },
 
     MenuStatement: { name: "MenuStatement", value: MetaTokenType.MenuStatement },
@@ -736,28 +904,48 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     MenuOption: { name: "MenuOption", value: MetaTokenType.MenuOption },
     MenuOptionBlock: { name: "MenuOptionBlock", value: MetaTokenType.MenuOptionBlock },
 
-    CameraStatement: { name: "CameraStatement", value: MetaTokenType.CameraStatement },
-    SceneStatement: { name: "SceneStatement", value: MetaTokenType.SceneStatement },
-    ShowStatement: { name: "ShowStatement", value: MetaTokenType.ShowStatement },
-    ImageStatement: { name: "ImageStatement", value: MetaTokenType.ImageStatement },
-
-    NarratorSayStatement: { name: "NarratorSayStatement", value: MetaTokenType.NarratorSayStatement },
-    SayStatement: { name: "SayStatement", value: MetaTokenType.SayStatement },
-    CharacterNameString: { name: "CharacterNameString", value: MetaTokenType.CharacterNameString },
-
-    CallStatement: { name: "CallStatement", value: MetaTokenType.CallStatement },
-    JumpStatement: { name: "JumpStatement", value: MetaTokenType.JumpStatement },
-
-    PlayAudioStatement: { name: "PlayAudioStatement", value: MetaTokenType.PlayAudioStatement },
-    StopAudioStatement: { name: "StopAudioStatement", value: MetaTokenType.StopAudioStatement },
-
     LabelStatement: { name: "LabelStatement", value: MetaTokenType.LabelStatement },
     LabelCall: { name: "LabelCall", value: MetaTokenType.LabelCall },
     LabelAccess: { name: "LabelAccess", value: MetaTokenType.LabelAccess },
 
+    BehindStatement: { name: "BehindStatement", value: MetaTokenType.BehindStatement },
+    OnlayerStatement: { name: "OnlayerStatement", value: MetaTokenType.OnlayerStatement },
+    ZorderStatement: { name: "ZorderStatement", value: MetaTokenType.ZorderStatement },
     AtStatement: { name: "AtStatement", value: MetaTokenType.AtStatement },
     AsStatement: { name: "AsStatement", value: MetaTokenType.AsStatement },
     WithStatement: { name: "WithStatement", value: MetaTokenType.WithStatement },
+
+    ImageStatement: { name: "ImageStatement", value: MetaTokenType.ImageStatement },
+    CameraStatement: { name: "CameraStatement", value: MetaTokenType.CameraStatement },
+    SceneStatement: { name: "SceneStatement", value: MetaTokenType.SceneStatement },
+    ShowStatement: { name: "ShowStatement", value: MetaTokenType.ShowStatement },
+
+    JumpStatement: { name: "JumpStatement", value: MetaTokenType.JumpStatement },
+    CallStatement: { name: "CallStatement", value: MetaTokenType.CallStatement },
+
+    PlayAudioStatement: { name: "PlayAudioStatement", value: MetaTokenType.PlayAudioStatement },
+    QueueAudioStatement: { name: "QueueAudioStatement", value: MetaTokenType.QueueAudioStatement },
+    StopAudioStatement: { name: "StopAudioStatement", value: MetaTokenType.StopAudioStatement },
+
+    ScreenStatement: { name: "ScreenStatement", value: MetaTokenType.ScreenStatement },
+    ScreenSensitive: { name: "ScreenSensitive", value: MetaTokenType.ScreenSensitive },
+    ScreenFrame: { name: "ScreenFrame", value: MetaTokenType.ScreenFrame },
+    ScreenWindow: { name: "ScreenWindow", value: MetaTokenType.ScreenWindow },
+    ScreenText: { name: "ScreenText", value: MetaTokenType.ScreenText },
+    ScreenBlock: { name: "ScreenBlock", value: MetaTokenType.ScreenBlock },
+
+    NarratorSayStatement: { name: "NarratorSayStatement", value: MetaTokenType.NarratorSayStatement },
+    SayStatement: { name: "SayStatement", value: MetaTokenType.SayStatement },
+    CharacterNameString: { name: "CharacterNameString", value: MetaTokenType.CharacterNameString },
+    SayNarrator: { name: "SayNarrator", value: MetaTokenType.SayNarrator },
+    SayCharacter: { name: "SayCharacter", value: MetaTokenType.SayCharacter },
+
+    AtParameters: { name: "AtParameters", value: MetaTokenType.AtParameters },
+    AsParameters: { name: "AsParameters", value: MetaTokenType.AsParameters },
+    BehindParameters: { name: "BehindParameters", value: MetaTokenType.BehindParameters },
+    OnlayerParameters: { name: "OnlayerParameters", value: MetaTokenType.OnlayerParameters },
+    WithParameters: { name: "WithParameters", value: MetaTokenType.WithParameters },
+    ZorderParameters: { name: "ZorderParameters", value: MetaTokenType.ZorderParameters },
 
     ATLBlock: { name: "ATLBlock", value: MetaTokenType.ATLBlock },
     ATLChoiceBlock: { name: "ATLChoiceBlock", value: MetaTokenType.ATLChoiceBlock },
@@ -767,6 +955,48 @@ const tokenTypeDefinitions: EnumToString<AllTokenTypes> = {
     ATLFunction: { name: "ATLFunction", value: MetaTokenType.ATLFunction },
     ATLWarper: { name: "ATLWarper", value: MetaTokenType.ATLWarper },
     ATLOn: { name: "ATLOn", value: MetaTokenType.ATLOn },
+
+    MemberAccess: { name: "MemberAccess", value: MetaTokenType.MemberAccess },
+    ItemAccess: { name: "ItemAccess", value: MetaTokenType.ItemAccess },
+    IndexedName: { name: "IndexedName", value: MetaTokenType.IndexedName },
+    Attribute: { name: "Attribute", value: MetaTokenType.Attribute },
+    ClassDefinition: { name: "ClassDefinition", value: MetaTokenType.ClassDefinition },
+    ClassInheritance: { name: "ClassInheritance", value: MetaTokenType.ClassInheritance },
+    FunctionDefinition: { name: "FunctionDefinition", value: MetaTokenType.FunctionDefinition },
+    LambdaFunction: { name: "LambdaFunction", value: MetaTokenType.LambdaFunction },
+    FunctionLambdaParameters: { name: "FunctionLambdaParameters", value: MetaTokenType.FunctionLambdaParameters },
+    FunctionParameters: { name: "FunctionParameters", value: MetaTokenType.FunctionParameters },
+    FunctionDecorator: { name: "FunctionDecorator", value: MetaTokenType.FunctionDecorator },
+    FunctionCall: { name: "FunctionCall", value: MetaTokenType.FunctionCall },
+    FunctionCallGeneric: { name: "FunctionCallGeneric", value: MetaTokenType.FunctionCallGeneric },
+    Fstring: { name: "Fstring", value: MetaTokenType.Fstring },
+    ControlFlowKeyword: { name: "ControlFlowKeyword", value: MetaTokenType.ControlFlowKeyword },
+    LogicalOperatorKeyword: { name: "LogicalOperatorKeyword", value: MetaTokenType.LogicalOperatorKeyword },
+    Operator: { name: "Operator", value: MetaTokenType.Operator },
+    ArithmeticOperator: { name: "ArithmeticOperator", value: MetaTokenType.ArithmeticOperator },
+    BitwiseOperatorKeyword: { name: "BitwiseOperatorKeyword", value: MetaTokenType.BitwiseOperatorKeyword },
+    ComparisonOperatorKeyword: { name: "ComparisonOperatorKeyword", value: MetaTokenType.ComparisonOperatorKeyword },
+    ConstantLiteral: { name: "ConstantLiteral", value: MetaTokenType.ConstantLiteral },
+    ConstantNumeric: { name: "ConstantNumeric", value: MetaTokenType.ConstantNumeric },
+    ConstantCaps: { name: "ConstantCaps", value: MetaTokenType.ConstantCaps },
+    BuiltinExceptionType: { name: "BuiltinExceptionType", value: MetaTokenType.BuiltinExceptionType },
+    BuiltinType: { name: "BuiltinType", value: MetaTokenType.BuiltinType },
+    MagicVariable: { name: "MagicVariable", value: MetaTokenType.MagicVariable },
+    EscapeSequence: { name: "EscapeSequence", value: MetaTokenType.EscapeSequence },
+    FormatPercent: { name: "FormatPercent", value: MetaTokenType.FormatPercent },
+    FormatBrace: { name: "FormatBrace", value: MetaTokenType.FormatBrace },
+    StringStorageType: { name: "StringStorageType", value: MetaTokenType.StringStorageType },
+    FormatStorageType: { name: "FormatStorageType", value: MetaTokenType.FormatStorageType },
+    ImaginaryNumberStorageType: { name: "ImaginaryNumberStorageType", value: MetaTokenType.ImaginaryNumberStorageType },
+    NumberStorageType: { name: "NumberStorageType", value: MetaTokenType.NumberStorageType },
+    ClassStorageType: { name: "ClassStorageType", value: MetaTokenType.ClassStorageType },
+    CommentBegin: { name: "CommentBegin", value: MetaTokenType.CommentBegin },
+    CommentEnd: { name: "CommentEnd", value: MetaTokenType.CommentEnd },
+    Backreference: { name: "Backreference", value: MetaTokenType.Backreference },
+    BackreferenceNamed: { name: "BackreferenceNamed", value: MetaTokenType.BackreferenceNamed },
+    CharacterSet: { name: "CharacterSet", value: MetaTokenType.CharacterSet },
+    Named: { name: "Named", value: MetaTokenType.Named },
+    ModifierFlagStorageType: { name: "ModifierFlagStorageType", value: MetaTokenType.ModifierFlagStorageType },
 };
 
 export const tokenTypeToStringMap = Object.fromEntries(Object.entries(tokenTypeDefinitions).map(([, v]) => [v.value, v.name]));

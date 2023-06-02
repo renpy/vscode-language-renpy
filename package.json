@@ -71,6 +71,10 @@
       {
         "scopeName": "source.renpy.python",
         "path": "./syntaxes/renpy.python.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.renpy.atl",
+        "path": "./syntaxes/renpy.atl.tmLanguage.json"
       }
     ],
     "snippets": [

@@ -51,6 +51,17 @@ export class Vector<T> implements Iterable<T> {
     }
 
     /**
+     * Sort the vector using the specified comparison function
+     * @param compareFn The comparison function to use
+     */
+    public sort(compareFn: (a: T, b: T) => number) {
+        this.buffer.sort((a, b) => {
+            if (a === null || b === null) return 0;
+            return compareFn(a, b);
+        });
+    }
+
+    /**
      * Get the item at the end of the vector, and remove it from the vector
      * @returns The item at the end
      */
@@ -133,6 +144,12 @@ export class Vector<T> implements Iterable<T> {
         const temp = this.buffer[elementIndexB];
         this.buffer[elementIndexB] = this.buffer[elementIndexA];
         this.buffer[elementIndexA] = temp;
+    }
+
+    public forEach(callback: (item: T) => void) {
+        for (let i = 0; i < this.itemCount; ++i) {
+            callback(this.buffer[i] as T);
+        }
     }
 
     /**

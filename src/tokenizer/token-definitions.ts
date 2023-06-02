@@ -1,9 +1,28 @@
 // Workspace and file functions
 "use strict";
 
-import { Position, Range } from "vscode";
+import { Position, Range as VSRange } from "vscode";
 import { CharacterTokenType, MetaTokenType, TokenType, TokenTypeIndex } from "./renpy-tokens";
 import { TokenPattern, TokenRangePattern, TokenMatchPattern, TokenRepoPattern } from "./token-pattern-types";
+import { Vector } from "../utilities/vector";
+
+export class Range {
+    start: number;
+    end: number;
+
+    constructor(start: number, end: number) {
+        this.start = start;
+        this.end = end;
+    }
+
+    overlaps(other: Range): boolean {
+        return this.start <= other.end && other.start <= this.end;
+    }
+
+    contains(position: number): boolean {
+        return position >= this.start && position <= this.end;
+    }
+}
 
 export class TokenPosition {
     line: number;
@@ -53,8 +72,6 @@ export class TokenPosition {
 
 export class Token {
     readonly tokenType: TokenType;
-
-    // README: The tokenizer abuses that 'startPos' and 'endPos' are reference objects to move the positions!
     readonly startPos: TokenPosition;
     readonly endPos: TokenPosition;
 
@@ -64,7 +81,7 @@ export class Token {
         this.endPos = endPos;
     }
 
-    public getRange() {
+    public getVSCodeRange() {
         const start = new Position(this.startPos.line, this.startPos.character);
         const end = new Position(this.endPos.line, this.endPos.character);
 
@@ -72,7 +89,11 @@ export class Token {
             console.warn(`Empty token detected at L: ${start.line + 1}, C: ${start.character + 1} !`);
         }
 
-        return new Range(start, end);
+        return new VSRange(start, end);
+    }
+
+    public getRange() {
+        return new Range(this.startPos.charStartOffset, this.endPos.charStartOffset);
     }
 
     public isKeyword() {
@@ -122,4 +143,77 @@ export function isMatchPattern(p: TokenPattern): p is TokenMatchPattern {
 
 export function isRepoPattern(p: TokenPattern): p is TokenRepoPattern {
     return !isRangePattern(p) && (p as TokenRepoPattern).patterns !== undefined;
+}
+
+export class TreeNode {
+    public token: Token | null;
+    public children: Vector<TreeNode>;
+
+    constructor(token: Token | null = null) {
+        this.token = token;
+        this.children = new Vector<TreeNode>();
+    }
+
+    public addChild(child: TreeNode): void {
+        this.children.pushBack(child);
+    }
+
+    public hasChildren(): boolean {
+        return !this.children.isEmpty();
+    }
+
+    public isEmpty(): boolean {
+        return this.token === null && !this.hasChildren();
+    }
+
+    // Recursively iterate over all children
+    public forEach(callback: (node: TreeNode) => void): void {
+        this.children.forEach((child) => {
+            callback(child);
+            child.forEach(callback);
+        });
+    }
+
+    public filter(callback: (node: TreeNode) => boolean): TreeNode[] {
+        const result: TreeNode[] = [];
+        this.forEach((node) => {
+            if (callback(node)) {
+                result.push(node);
+            }
+        });
+        return result;
+    }
+
+    public count(): number {
+        // Recursively iterate over all children
+        let count = 0;
+        this.forEach(() => {
+            ++count;
+        });
+        return count;
+    }
+}
+
+export class TokenTree {
+    public root: TreeNode;
+
+    constructor() {
+        this.root = new TreeNode();
+    }
+
+    public isEmpty(): boolean {
+        return !this.root.hasChildren();
+    }
+
+    public forEach(callback: (node: TreeNode) => void): void {
+        this.root.forEach(callback);
+    }
+
+    public filter(callback: (node: TreeNode) => boolean): TreeNode[] {
+        return this.root.filter(callback);
+    }
+
+    public count(): number {
+        return this.root.count();
+    }
 }

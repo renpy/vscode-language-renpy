@@ -1,9 +1,13 @@
 // Color conversion methods for Color provider
 import { CancellationToken, Color, ColorInformation, ColorPresentation, DocumentColorProvider, Range, TextDocument, TextEdit } from "vscode";
+import { ValueEqualsSet } from "./utilities/hashset";
+import { tokenizeDocument } from "./tokenizer/tokenizer";
+import { LiteralTokenType } from "./tokenizer/renpy-tokens";
+import { TextMateRule, injectCustomTextmateTokens } from "./decorator";
+/*import { tokenizeDocument } from "./tokenizer/tokenizer";
 import { injectCustomTextmateTokens, TextMateRule } from "./decorator";
 import { LiteralTokenType } from "./tokenizer/renpy-tokens";
-import { tokenizeDocument } from "./tokenizer/tokenizer";
-import { ValueEqualsSet } from "./utilities/hashset";
+import { ValueEqualsSet } from "./utilities/hashset";*/
 
 export class RenpyColorProvider implements DocumentColorProvider {
     public provideDocumentColors(document: TextDocument, token: CancellationToken): Thenable<ColorInformation[]> {
@@ -112,15 +116,15 @@ export function getColorPresentations(color: Color, document: TextDocument, rang
 }
 
 export function injectCustomColorStyles(document: TextDocument) {
+    // Disabled until filter is added to the tree class
     const documentTokens = tokenizeDocument(document);
-
     // TODO: Should probably make sure this constant is actually part of a tag, but for now this is fine.
-    const colorTags = documentTokens.filter((x) => x.tokenType === LiteralTokenType.Color);
+    const colorTags = documentTokens.filter((x) => x.token?.tokenType === LiteralTokenType.Color);
     const colorRules = new ValueEqualsSet<TextMateRule>();
 
     // Build the new rules for this file
-    colorTags.forEach((color) => {
-        const lowerColor = document.getText(color.getRange()).toLowerCase();
+    colorTags.forEach((colorNode) => {
+        const lowerColor = document.getText(colorNode.token?.getVSCodeRange()).toLowerCase();
         const newRule = new TextMateRule(`renpy.meta.color.${lowerColor}`, { foreground: lowerColor });
         colorRules.add(newRule);
     });

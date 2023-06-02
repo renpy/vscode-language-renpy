@@ -76,7 +76,7 @@ export function refreshDiagnostics(doc: TextDocument, diagnosticCollection: Diag
 
         const filename = extractFilename(doc.uri.path);
         if (filename) {
-            if (!filename.match(/^[a-zA-Z0-9]/) || filename.startsWith("00")) {
+            if ((!filename.match(/^[a-zA-Z0-9]/) || filename.startsWith("00")) && !doc.uri.path.includes("renpy/common")) {
                 const invalidRange = new Range(0, 0, doc.lineCount, 0);
                 const range = doc.validateRange(invalidRange);
                 const diagnostic = new Diagnostic(range, "Filenames must begin with a letter or number, but may not begin with '00' as Ren'Py uses such files for its own purposes.", severity);

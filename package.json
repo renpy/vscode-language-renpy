@@ -99,6 +99,16 @@
       {
         "command": "renpy.toggleTokenDebugView",
         "title": "Renpy: Toggle token debug visualization"
+      },
+      {
+        "command": "renpy.migrateOldFiles",
+        "title": "Renpy: Cleanup unused compiled Ren'Py source files"
+      },
+      {
+        "command": "renpy.runCommand",
+        "title": "Renpy: Run Project",
+        "category": "Run",
+        "icon": "$(play)"
       }
     ],
     "configuration": [

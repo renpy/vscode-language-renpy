@@ -3,19 +3,15 @@ import json
 import re
 from typing import Any
 
-class GeneratorState:
-    defined_variables: list[str] = []
-    used_token_types: list[str] = []
-    pattern_include_entries: list[str] = []
-    external_pattern_include_entries: list[str] = []
-    source_imports: list[str] = []
+from dataclasses import dataclass, field
 
-    def __init__(self):
-        self.defined_variables = []
-        self.used_token_types = []
-        self.pattern_include_entries = []
-        self.external_pattern_include_entries = []
-        self.source_imports = []
+@dataclass
+class GeneratorState:
+    defined_variables: list[str] = field(default_factory=list[str])
+    used_token_types: list[str] = field(default_factory=list[str])
+    pattern_include_entries: list[str] = field(default_factory=list[str])
+    external_pattern_include_entries: list[str] = field(default_factory=list[str])
+    source_imports: list[str] = field(default_factory=list[str])
 
 def get_indent(indent: int) -> str:
     return " " * indent

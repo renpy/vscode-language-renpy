@@ -2,7 +2,7 @@
 "use strict";
 
 import { Diagnostic, DiagnosticCollection, DiagnosticSeverity, ExtensionContext, Range, TextDocument, window, workspace } from "vscode";
-import { NavigationData } from "./navigationdata";
+import { NavigationData } from "./navigation-data";
 import { extractFilename } from "./workspace";
 
 // Renpy Store Variables (https://www.renpy.org/doc/html/store_variables.html)
@@ -121,7 +121,7 @@ export function refreshDiagnostics(doc: TextDocument, diagnosticCollection: Diag
                 const diagnostic = new Diagnostic(range, `Tab characters are not allowed. Indentation must consist only of spaces in Ren'Py scripts. (4 spaces is strongly recommended.)`, severity);
                 diagnostics.push(diagnostic);
             } else {
-                const indention = line.length - line.trimLeft().length;
+                const indention = line.length - line.trimStart().length;
                 if (indention > 0 && firstIndentation === 0) {
                     firstIndentation = indention;
                 }
@@ -138,13 +138,8 @@ export function refreshDiagnostics(doc: TextDocument, diagnosticCollection: Diag
             }
         }
 
-        const checkVariables: string = config.warnOnInvalidVariableNames;
-        if (checkVariables.toLowerCase() !== "disabled") {
-            let severity = DiagnosticSeverity.Error;
-            if (checkVariables.toLowerCase() === "warning") {
-                severity = DiagnosticSeverity.Warning;
-            }
-            checkInvalidVariableNames(diagnostics, line, lineIndex, severity);
+        if (config.warnOnInvalidVariableNames) {
+            checkInvalidVariableNames(diagnostics, line, lineIndex);
         }
 
         if (config.warnOnReservedVariableNames) {
@@ -243,7 +238,7 @@ function checkStrayDollarSigns(diagnostics: Diagnostic[], line: string, lineInde
     }
 }
 
-function checkInvalidVariableNames(diagnostics: Diagnostic[], line: string, lineIndex: number, severity: DiagnosticSeverity) {
+function checkInvalidVariableNames(diagnostics: Diagnostic[], line: string, lineIndex: number) {
     // check line for invalid define/default variable names
     // Variables must begin with a letter or number, and may not begin with '_'
     let matches;
@@ -251,7 +246,7 @@ function checkInvalidVariableNames(diagnostics: Diagnostic[], line: string, line
         if (!renpyStore.includes(matches[2])) {
             const offset = matches.index + matches[0].indexOf(matches[2]);
             const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
-            const diagnostic = new Diagnostic(range, `"${matches[2]}": Variables must begin with a letter (and may contain numbers, letters, or underscores).`, severity);
+            const diagnostic = new Diagnostic(range, `"${matches[2]}": Variables must begin with a letter (and may contain numbers, letters, or underscores).`, DiagnosticSeverity.Error);
             diagnostics.push(diagnostic);
         }
     }
@@ -268,7 +263,7 @@ function checkStoreVariables(diagnostics: Diagnostic[], line: string, lineIndex:
     }
 
     if (defaults) {
-        const filtered = Object.keys(defaults).filter((key) => defaults[key].define === "default");
+        const filtered: string[] = Object.keys(defaults).filter((key: string) => defaults[key].define === "default");
         let matches;
         while ((matches = rxStoreCheck.exec(line)) !== null) {
             if (!matches[1].startsWith("_") && !filtered.includes(matches[1]) && !renpyStore.includes(matches[1]) && !classes[matches[1]] && !callables[matches[1]]) {
@@ -282,7 +277,7 @@ function checkStoreVariables(diagnostics: Diagnostic[], line: string, lineIndex:
 }
 
 function checkUndefinedPersistent(diagnostics: Diagnostic[], persistents: string[], line: string, lineIndex: number) {
-    let matches;
+    let matches: RegExpExecArray | null;
     while ((matches = rxPersistentCheck.exec(line)) !== null) {
         if (line.match(rxPersistentDefines)) {
             if (!persistents.includes(matches[1])) {

@@ -1,7 +1,13 @@
 // Color conversion methods for Color provider
-"use strict";
-
 import { CancellationToken, Color, ColorInformation, ColorPresentation, DocumentColorProvider, Range, TextDocument, TextEdit } from "vscode";
+import { ValueEqualsSet } from "./utilities/hashset";
+import { tokenizeDocument } from "./tokenizer/tokenizer";
+import { LiteralTokenType } from "./tokenizer/renpy-tokens";
+import { TextMateRule, injectCustomTextmateTokens } from "./decorator";
+/*import { tokenizeDocument } from "./tokenizer/tokenizer";
+import { injectCustomTextmateTokens, TextMateRule } from "./decorator";
+import { LiteralTokenType } from "./tokenizer/renpy-tokens";
+import { ValueEqualsSet } from "./utilities/hashset";*/
 
 export class RenpyColorProvider implements DocumentColorProvider {
     public provideDocumentColors(document: TextDocument, token: CancellationToken): Thenable<ColorInformation[]> {
@@ -18,6 +24,8 @@ export class RenpyColorProvider implements DocumentColorProvider {
  * @returns - Thenable<ColorInformation[]> - an array that provides a range and color for each match
  */
 export function getColorInformation(document: TextDocument): Thenable<ColorInformation[]> {
+    injectCustomColorStyles(document);
+
     // find all colors in the document
     const colors: ColorInformation[] = [];
     for (let i = 0; i < document.lineCount; ++i) {
@@ -107,6 +115,23 @@ export function getColorPresentations(color: Color, document: TextDocument, rang
     return Promise.resolve(colors);
 }
 
+export function injectCustomColorStyles(document: TextDocument) {
+    // Disabled until filter is added to the tree class
+    const documentTokens = tokenizeDocument(document);
+    // TODO: Should probably make sure this constant is actually part of a tag, but for now this is fine.
+    const colorTags = documentTokens.filter((x) => x.token?.tokenType === LiteralTokenType.Color);
+    const colorRules = new ValueEqualsSet<TextMateRule>();
+
+    // Build the new rules for this file
+    colorTags.forEach((colorNode) => {
+        const lowerColor = document.getText(colorNode.token?.getVSCodeRange()).toLowerCase();
+        const newRule = new TextMateRule(`renpy.meta.color.${lowerColor}`, { foreground: lowerColor });
+        colorRules.add(newRule);
+    });
+
+    injectCustomTextmateTokens(colorRules);
+}
+
 /**
  * Search the given text for any color references
  * @remarks
@@ -130,9 +155,9 @@ export function findColorMatches(text: string): RegExpMatchArray | null {
  * @param a - The alpha value (0-255) [optional]
  * @returns The hex color representation (`"#rrggbbaa"`) of the given rgba values
  */
-export function convertRgbToHex(r: number, g: number, b: number, a?: number): string | undefined {
-    if (r > 255 || g > 255 || b > 255) {
-        return;
+export function convertRgbToHex(r: number, g: number, b: number, a?: number): string | null {
+    if (r > 255 || g > 255 || b > 255 || (a ?? 0) > 255) {
+        return null;
     }
 
     if (a === undefined) {
@@ -158,27 +183,33 @@ export function convertColorToRgbTuple(color: Color): string {
 
 /**
  * Returns a Color provider object based on the given html hex color
- * @param hex - The html hex representation
+ * @param htmlHex - The html hex representation
  * @returns The `Color` provider object
  */
-export function convertHtmlToColor(hex: string): Color | null {
-    hex = hex.replace(/"/g, "").replace(/'/g, "");
-    // Add alpha value if not supplied
-    if (hex.length === 4) {
-        hex = hex + "f";
-    } else if (hex.length === 7) {
-        hex = hex + "ff";
+export function convertHtmlToColor(htmlHex: string): Color | null {
+    // Check if this is a valid hex color
+    const hexRe = /^(?:"|')?#(?:[a-f\d]{8}|[a-f\d]{6}|[a-f\d]{3,4})(?:"|')?$/gi;
+    if (!hexRe.test(htmlHex)) {
+        return null;
     }
 
-    // Expand shorthand form (e.g. "#03FF") to full form (e.g. "#0033FFFF")
-    const shorthandRegex = /^#?([A-Fa-f\d])([A-Fa-f\d])([A-Fa-f\d])([A-Fa-f\d])$/i;
-    hex = hex.replace(shorthandRegex, function (m, r, g, b, a) {
-        return r + r + g + g + b + b + a + a;
-    });
+    let hex = htmlHex.replace(/"|'|#/g, "");
 
-    // Parse #rrggbbaa into Color object
-    const result = /^#?([A-Fa-f\d]{2})([A-Fa-f\d]{2})([A-Fa-f\d]{2})([A-Fa-f\d]{2})$/i.exec(hex);
-    return result ? new Color(parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255, parseInt(result[4], 16) / 255) : null;
+    // Add alpha value if not supplied
+    if (hex.length === 3) {
+        hex += "f";
+    } else if (hex.length === 6) {
+        hex += "ff";
+    }
+
+    if (hex.length === 4) {
+        // Expand shorthand form (e.g. "#03FF") to full form (e.g. "#0033FFFF")
+        hex = hex.replace(/([a-f\d])/gi, "$1$1");
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const result = hex.match(/[a-f\d]{2}/gi)!;
+    return new Color(parseInt(result[0], 16) / 255, parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255);
 }
 
 /**

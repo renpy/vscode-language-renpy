@@ -3,7 +3,7 @@
 
 import { TextDocument, Position, ReferenceContext, Location, workspace } from "vscode";
 import { getKeywordPrefix } from "./extension";
-import { NavigationData } from "./navigationdata";
+import { NavigationData } from "./navigation-data";
 
 /**
  * Returns an array of Locations that describe all matches for the keyword at the current position

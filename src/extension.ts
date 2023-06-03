@@ -1,13 +1,17 @@
 // Based on https://raw.githubusercontent.com/Microsoft/vscode/master/extensions/python/src/pythonMain.ts from Microsoft vscode
 //
 // Licensed under MIT License. See LICENSE in the project root for license information.
-"use strict";
 
 import * as cp from "child_process";
 import * as fs from "fs";
 import {
-    CancellationToken,
+    ExtensionContext,
+    languages,
     commands,
+    window,
+    TextDocument,
+    Position,
+    CancellationToken,
     CompletionContext,
     CompletionItem,
     CompletionItemProvider,
@@ -18,56 +22,44 @@ import {
     DocumentSymbol,
     debug,
     DocumentSymbolProvider,
-    ExtensionContext,
     Hover,
     HoverProvider,
-    IndentAction,
-    languages,
     Location,
-    Position,
     ProviderResult,
     Range,
     ReferenceContext,
     ReferenceProvider,
     SemanticTokens,
     SemanticTokensLegend,
-    SignatureHelp,
-    SignatureHelpContext,
-    SignatureHelpProvider,
-    StatusBarAlignment,
+    DocumentSelector,
     StatusBarItem,
-    TextDocument,
-    Uri,
-    window,
     workspace,
     WorkspaceConfiguration,
+    SignatureHelpProvider,
+    SignatureHelp,
+    SignatureHelpContext,
+    StatusBarAlignment,
+    Uri,
 } from "vscode";
 import { RenpyColorProvider } from "./color";
+import { getStatusBarText, NavigationData } from "./navigation-data";
+import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
+import { refreshDiagnostics, subscribeToDocumentChanges } from "./diagnostics";
+import { getSemanticTokens } from "./semantics";
+import { getHover } from "./hover";
 import { getCompletionList } from "./completion";
 import { getDefinition } from "./definition";
-import { refreshDiagnostics, subscribeToDocumentChanges } from "./diagnostics";
-import { getHover } from "./hover";
-import { getStatusBarText, NavigationData } from "./navigationdata";
 import { getDocumentSymbols } from "./outline";
 import { findAllReferences } from "./references";
-import { getSemanticTokens } from "./semantics";
+import { registerDebugDecorator, unregisterDebugDecorator } from "./tokenizer/debug-decorator";
+import { clearTokenCache } from "./tokenizer/tokenizer";
 import { getSignatureHelp } from "./signature";
-import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
 
+const selector: DocumentSelector = { scheme: "file", language: "renpy" };
 let myStatusBarItem: StatusBarItem;
 
-export async function activate(context: ExtensionContext): Promise<any> {
+export async function activate(context: ExtensionContext): Promise<void> {
     console.log("Ren'Py extension activated");
-
-    languages.setLanguageConfiguration("renpy", {
-        onEnterRules: [
-            {
-                // indentation for Ren'Py and Python blocks
-                beforeText: /^\s*(?:def|class|for|if|elif|else|while|try|with|finally|except|label|menu|init|":|':|python|).*?:\s*$/,
-                action: { indentAction: IndentAction.Indent },
-            },
-        ],
-    });
 
     const filepath = getNavigationJsonFilepath();
     const jsonFileExists = fs.existsSync(filepath);
@@ -94,7 +86,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 
     // hover provider for code tooltip
     const hoverProvider = languages.registerHoverProvider(
-        "renpy",
+        selector,
         new (class implements HoverProvider {
             async provideHover(document: TextDocument, position: Position, token: CancellationToken): Promise<Hover | null | undefined> {
                 return getHover(document, position);
@@ -105,7 +97,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 
     // provider for Go To Definition
     const definitionProvider = languages.registerDefinitionProvider(
-        "renpy",
+        selector,
         new (class implements DefinitionProvider {
             provideDefinition(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Definition> {
                 return getDefinition(document, position);
@@ -116,7 +108,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 
     // provider for Outline view
     const symbolProvider = languages.registerDocumentSymbolProvider(
-        "renpy",
+        selector,
         new (class implements DocumentSymbolProvider {
             provideDocumentSymbols(document: TextDocument, token: CancellationToken): ProviderResult<DocumentSymbol[]> {
                 return getDocumentSymbols(document);
@@ -127,7 +119,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 
     // provider for Method Signature Help
     const signatureProvider = languages.registerSignatureHelpProvider(
-        "renpy",
+        selector,
         new (class implements SignatureHelpProvider {
             provideSignatureHelp(document: TextDocument, position: Position, token: CancellationToken, context: SignatureHelpContext): ProviderResult<SignatureHelp> {
                 return getSignatureHelp(document, position, context);
@@ -141,7 +133,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 
     // Completion provider
     const completionProvider = languages.registerCompletionItemProvider(
-        "renpy",
+        selector,
         new (class implements CompletionItemProvider {
             provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): ProviderResult<CompletionItem[]> {
                 return getCompletionList(document, position, context);
@@ -161,7 +153,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 
     // Find All References provider
     const references = languages.registerReferenceProvider(
-        "renpy",
+        selector,
         new (class implements ReferenceProvider {
             async provideReferences(document: TextDocument, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | null | undefined> {
                 return await findAllReferences(document, position, context);
@@ -176,7 +168,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
 
     // Semantic Token Provider
     const semanticTokens = languages.registerDocumentSemanticTokensProvider(
-        "renpy",
+        selector,
         new (class implements DocumentSemanticTokensProvider {
             provideDocumentSemanticTokens(document: TextDocument, token: CancellationToken): ProviderResult<SemanticTokens> {
                 if (document.languageId !== "renpy") {
@@ -190,7 +182,7 @@ export async function activate(context: ExtensionContext): Promise<any> {
     );
     context.subscriptions.push(semanticTokens);
 
-    // A TextDocument was changed
+    // A TextDocument was saved
     context.subscriptions.push(
         workspace.onDidSaveTextDocument((document) => {
             if (document.languageId !== "renpy") {
@@ -281,6 +273,19 @@ export async function activate(context: ExtensionContext): Promise<any> {
         }
     });
     context.subscriptions.push(refreshDiagnosticsCommand);
+
+    // custom command - toggle token debug view
+    let isShowingTokenDebugView = false;
+    const toggleTokenDebugViewCommand = commands.registerCommand("renpy.toggleTokenDebugView", () => {
+        if (!isShowingTokenDebugView) {
+            clearTokenCache();
+            registerDebugDecorator(context);
+        } else {
+            unregisterDebugDecorator();
+        }
+        isShowingTokenDebugView = !isShowingTokenDebugView;
+    });
+    context.subscriptions.push(toggleTokenDebugViewCommand);
 
     // custom command - call renpy to run workspace
     const runCommand = commands.registerCommand("renpy.runCommand", () => {

@@ -3,7 +3,7 @@
 .vscode-test/**
 examples/**
 src
-#out
+out
 node_modules
 **/*.map
 

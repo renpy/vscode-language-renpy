@@ -2,7 +2,7 @@
   "name": "languague-renpy",
   "displayName": "Ren'Py Language",
   "description": "Adds rich support for the Ren'Py programming language to Visual Studio Code.",
-  "version": "2.0.16",
+  "version": "2.1.7",
   "publisher": "LuqueDaniel",
   "license": "MIT",
   "homepage": "https://github.com/LuqueDaniel/vscode-language-renpy",
@@ -27,7 +27,7 @@
     "Snippets"
   ],
   "engines": {
-    "vscode": "^1.63.0"
+    "vscode": "^1.67.2"
   },
   "capabilities": {
     "untrustedWorkspaces": {
@@ -38,7 +38,8 @@
     "onLanguage:renpy",
     "workspaceContains:**/*.rpy"
   ],
-  "main": "./out/extension",
+  "main": "./dist/extension",
+  "browser": "./dist/extension.js",
   "contributes": {
     "languages": [
       {
@@ -49,9 +50,12 @@
         ],
         "extensions": [
           ".rpy",
-          ".rpym"
+          ".rpym",
+          ".rpymc",
+          ".rpyc"
         ],
         "configuration": "./language-configuration.json",
+        "firstLine": "^#!\\s*/?.*\\brenpy\\b",
         "icon": {
           "light": "./renpy.svg",
           "dark": "./renpy.svg"
@@ -63,6 +67,14 @@
         "language": "renpy",
         "scopeName": "source.renpy",
         "path": "./syntaxes/renpy.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.renpy.python",
+        "path": "./syntaxes/renpy.python.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.renpy.atl",
+        "path": "./syntaxes/renpy.atl.tmLanguage.json"
       }
     ],
     "snippets": [
@@ -83,6 +95,10 @@
       {
         "command": "renpy.refreshDiagnostics",
         "title": "Renpy: Refresh Ren'Py diagnostics for the active editor window"
+      },
+      {
+        "command": "renpy.toggleTokenDebugView",
+        "title": "Renpy: Toggle token debug visualization"
       },
       {
         "command": "renpy.migrateOldFiles",
@@ -135,19 +151,9 @@
             "description": "Enable reserved variable warnings. If checked (true), variables will be marked with an error in the editor if they are in the list of names reserved by Python."
           },
           "renpy.warnOnInvalidVariableNames": {
-            "type": "string",
-            "default": "Error",
-            "enum": [
-              "Error",
-              "Warning",
-              "Disabled"
-            ],
-            "enumDescriptions": [
-              "Display invalid variable name issues as errors",
-              "Display invalid variable name issues as warnings",
-              "Ignore invalid variable name issues"
-            ],
-            "description": "Enable invalid variable warnings. Variables must begin with a letter or number. They may contain a '_' but may not begin with '_'. If set to Warning or Error, variables will be flagged in the editor if they do not meet Ren'Py's specifications."
+            "type": "boolean",
+            "default": true,
+            "description": "Enable invalid variable errors. Variables must begin with a letter or number. They may contain a '_' but may not begin with '_'. If set to true, variables will be flagged in the editor if they do not meet Ren'Py's specifications."
           },
           "renpy.warnOnIndentationAndSpacingIssues": {
             "type": "string",
@@ -184,24 +190,35 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "test": "npm run compile && node ./node_modules/vscode/bin/test",
+    "vscode:prepublish": "npm run package",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "watch": "webpack --mode development --watch",
+    "watch-release": "webpack --mode production --watch",
+    "test-compile": "tsc -p ./",
+    "test": "npm run test-compile && node ./node_modules/vscode/bin/test",
     "lint": "eslint -c .eslintrc.json --ext .ts ./src/",
     "vsce-package": "vsce package -o languague-renpy.vsix",
     "format-check": "prettier --check 'src/**/*.ts' '.github/**/*.yml'"
   },
   "devDependencies": {
-    "@types/vscode": "^1.63.0",
     "@types/mocha": "^9.1.1",
     "@types/node": "^18.13.0",
+    "@types/vscode": "^1.67.2",
+    "@types/webpack": "^5.28.0",
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
+    "copy-webpack-plugin": "^11.0.0",
     "eslint": "^8.33.0",
     "eslint-plugin-import": "^2.27.5",
+    "fork-ts-checker-webpack-plugin": "^7.2.11",
+    "node-polyfill-webpack-plugin": "^1.1.4",
+    "ts-loader": "^9.3.0",
+    "ts-node": "^10.8.0",
     "typescript": "^4.8.4",
     "vscode-test": "^1.6.1",
+    "webpack": "^5.72.1",
+    "webpack-cli": "^4.9.2",
+    "vsce": "^2.9.2",
     "prettier": "^2.7.1",
     "@vscode/vsce": "^2.15.0"
   }

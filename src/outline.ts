@@ -3,7 +3,7 @@
 
 import { TextDocument, DocumentSymbol, Uri, Range, SymbolKind } from "vscode";
 import { Navigation } from "./navigation";
-import { NavigationData } from "./navigationdata";
+import { NavigationData } from "./navigation-data";
 import { stripWorkspaceFromFile } from "./workspace";
 
 /**

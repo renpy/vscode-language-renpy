@@ -1,11 +1,9 @@
 // Completion Provider
-"use strict";
-
 import { TextDocument, Position, CompletionContext, CompletionItem, CompletionTriggerKind, CompletionItemKind, workspace } from "vscode";
 import { Displayable } from "./displayable";
 import { getDefinitionFromFile } from "./hover";
 import { getCurrentContext } from "./navigation";
-import { NavigationData } from "./navigationdata";
+import { NavigationData } from "./navigation-data";
 
 /**
  * Returns an array of auto-complete items related to the keyword at the given document/position
@@ -37,12 +35,12 @@ export function getCompletionList(document: TextDocument, position: Position, co
             const range = document.getWordRangeAtPosition(prefixPosition);
             const parentContext = getCurrentContext(document, position);
             if (range) {
-                const parentPosition = new Position(position.line, line.length - line.trimLeft().length);
+                const parentPosition = new Position(position.line, line.length - line.trimStart().length);
                 const parent = document.getText(document.getWordRangeAtPosition(parentPosition));
                 const kwPrefix = document.getText(range);
                 return getAutoCompleteList(kwPrefix, parent, parentContext);
             } else if (context.triggerCharacter === "-" || context.triggerCharacter === "@" || context.triggerCharacter === "=" || context.triggerCharacter === " ") {
-                const parentPosition = new Position(position.line, line.length - line.trimLeft().length);
+                const parentPosition = new Position(position.line, line.length - line.trimStart().length);
                 const parent = document.getText(document.getWordRangeAtPosition(parentPosition));
                 if (parent) {
                     if (context.triggerCharacter === "=") {
@@ -65,7 +63,7 @@ export function getCompletionList(document: TextDocument, position: Position, co
  * @returns A list of CompletionItem objects
  */
 export function getAutoCompleteList(prefix: string, parent = "", context = ""): CompletionItem[] | undefined {
-    const newlist: CompletionItem[] = [];
+    const newList: CompletionItem[] = [];
     const channels = getAudioChannels();
     const characters = Object.keys(NavigationData.gameObjects["characters"]);
 
@@ -78,37 +76,37 @@ export function getAutoCompleteList(prefix: string, parent = "", context = ""): 
         });
         for (const item of list) {
             if (typeof item.label === "string") {
-                newlist.push(new CompletionItem(item.label.replace(prefix, ""), item.kind));
+                newList.push(new CompletionItem(item.label.replace(prefix, ""), item.kind));
             }
         }
-        return newlist;
+        return newList;
     } else if (prefix === "persistent") {
         // get list of persistent definitions
         const gameObjects = NavigationData.data.location["persistent"];
         for (const key in gameObjects) {
-            newlist.push(new CompletionItem(key, CompletionItemKind.Value));
+            newList.push(new CompletionItem(key, CompletionItemKind.Value));
         }
-        return newlist;
+        return newList;
     } else if (prefix === "store") {
         // get list of default variables
         const defaults = NavigationData.gameObjects["define_types"];
         const filtered = Object.keys(defaults).filter((key) => defaults[key].define === "default");
         for (const key of filtered) {
-            newlist.push(new CompletionItem(key, CompletionItemKind.Variable));
+            newList.push(new CompletionItem(key, CompletionItemKind.Variable));
         }
-        return newlist;
+        return newList;
     } else if (channels.includes(prefix)) {
         // get list of audio definitions
         if (parent && parent === "stop") {
-            newlist.push(new CompletionItem("fadeout", CompletionItemKind.Keyword));
+            newList.push(new CompletionItem("fadeout", CompletionItemKind.Keyword));
         } else {
             const category = NavigationData.data.location["define"];
             const audio = Object.keys(category).filter((key) => key.startsWith("audio."));
             for (const key of audio) {
-                newlist.push(new CompletionItem(key.substring(6), CompletionItemKind.Variable));
+                newList.push(new CompletionItem(key.substring(6), CompletionItemKind.Variable));
             }
         }
-        return newlist;
+        return newList;
     } else if (NavigationData.isClass(prefix)) {
         const className = NavigationData.isClass(prefix);
         if (className) {
@@ -125,7 +123,7 @@ export function getAutoCompleteList(prefix: string, parent = "", context = ""): 
         const category = NavigationData.gameObjects["attributes"][parent];
         if (category) {
             for (const key of category) {
-                newlist.push(new CompletionItem(key, CompletionItemKind.Value));
+                newList.push(new CompletionItem(key, CompletionItemKind.Value));
             }
         }
     } else if (isPythonType(prefix)) {
@@ -137,7 +135,7 @@ export function getAutoCompleteList(prefix: string, parent = "", context = ""): 
         return getAutoCompleteKeywords(prefix, parent, context);
     }
 
-    return newlist;
+    return newList;
 }
 
 /**
@@ -148,7 +146,7 @@ export function getAutoCompleteList(prefix: string, parent = "", context = ""): 
  * @returns A list of CompletionItem objects
  */
 export function getAutoCompleteKeywords(keyword: string, parent: string, context: string): CompletionItem[] {
-    let newlist: CompletionItem[] = [];
+    let newList: CompletionItem[] = [];
     let enumerations;
     if (context) {
         enumerations = NavigationData.autoCompleteKeywords[`${context}.${keyword}`];
@@ -165,11 +163,11 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                 let quoted = false;
                 let args = 0;
                 if (gameDataKey.indexOf("!") > 0) {
-                    const split = gameDataKey.split("!");
-                    gameDataKey = split[0];
-                    quoted = split[1] === "q";
-                    if (isNormalInteger(split[1])) {
-                        args = Math.floor(Number(split[1]));
+                    const split2 = gameDataKey.split("!");
+                    gameDataKey = split2[0];
+                    quoted = split2[1] === "q";
+                    if (isNormalInteger(split2[1])) {
+                        args = Math.floor(Number(split2[1]));
                     }
                 }
 
@@ -180,7 +178,7 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                     if (transitions) {
                         for (const key of transitions) {
                             const detail = category[key][2];
-                            newlist.push(new CompletionItem({ label: key, detail: detail }, CompletionItemKind.Value));
+                            newList.push(new CompletionItem({ label: key, detail: detail }, CompletionItemKind.Value));
                         }
                     }
                     continue;
@@ -201,14 +199,14 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                                     }
                                 }
                             }
-                            newlist.push(new CompletionItem({ label: key, detail: detail }, CompletionItemKind.Function));
+                            newList.push(new CompletionItem({ label: key, detail: detail }, CompletionItemKind.Function));
                         }
                     }
                 } else if (gameDataKey === "layer") {
                     const layers = getLayerConfiguration(quoted);
                     if (layers) {
                         for (const key of layers) {
-                            newlist.push(key);
+                            newList.push(key);
                         }
                     }
                     continue;
@@ -219,19 +217,19 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                         if (quoted) {
                             key = '"' + key + '"';
                         }
-                        newlist.push(new CompletionItem(key, CompletionItemKind.Variable));
+                        newList.push(new CompletionItem(key, CompletionItemKind.Variable));
                     }
-                    return newlist;
+                    return newList;
                 } else if (gameDataKey === "label") {
-                    newlist.push(new CompletionItem("expression", CompletionItemKind.Keyword));
+                    newList.push(new CompletionItem("expression", CompletionItemKind.Keyword));
                     const category = NavigationData.data.location["label"];
                     for (let key in category) {
                         if (quoted) {
                             key = '"' + key + '"';
                         }
-                        newlist.push(new CompletionItem(key, CompletionItemKind.Value));
+                        newList.push(new CompletionItem(key, CompletionItemKind.Value));
                     }
-                    return newlist;
+                    return newList;
                 } else if (gameDataKey === "outlines") {
                     let gameObjects = [];
                     if (NavigationData.data.location[gameDataKey]) {
@@ -240,7 +238,7 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                             for (const key of gameObjects) {
                                 const ci = new CompletionItem(key, CompletionItemKind.Value);
                                 ci.sortText = "1" + key;
-                                newlist.push(ci);
+                                newList.push(ci);
                             }
                         } else {
                             gameObjects = [];
@@ -248,19 +246,19 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                     }
 
                     if (!gameObjects.includes('[(1, "#000000", 0, 0)]')) {
-                        newlist.push(new CompletionItem('[(1, "#000000", 0, 0)]', CompletionItemKind.Value));
+                        newList.push(new CompletionItem('[(1, "#000000", 0, 0)]', CompletionItemKind.Value));
                     }
                     if (!gameObjects.includes('[(1, "#000000", 1, 1)]')) {
-                        newlist.push(new CompletionItem('[(1, "#000000", 1, 1)]', CompletionItemKind.Value));
+                        newList.push(new CompletionItem('[(1, "#000000", 1, 1)]', CompletionItemKind.Value));
                     }
-                    newlist.push(new CompletionItem('[(absolute(1), "#000000", absolute(1), absolute(1))]', CompletionItemKind.Value));
-                    newlist.push(new CompletionItem("[(size, color, xoffset, yoffset)]", CompletionItemKind.Value));
+                    newList.push(new CompletionItem('[(absolute(1), "#000000", absolute(1), absolute(1))]', CompletionItemKind.Value));
+                    newList.push(new CompletionItem("[(size, color, xoffset, yoffset)]", CompletionItemKind.Value));
                     continue;
                 } else if (gameDataKey === "displayable") {
                     const display = getDisplayableAutoComplete(quoted);
                     if (display) {
                         for (const ci of display) {
-                            newlist.push(ci);
+                            newList.push(ci);
                         }
                     }
                     continue;
@@ -271,13 +269,13 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                     for (const key of audio) {
                         const ci = new CompletionItem(key, CompletionItemKind.Variable);
                         ci.sortText = "0" + key;
-                        newlist.push(ci);
+                        newList.push(ci);
                     }
                     // get auto detected audio variables
                     const gameObjects = NavigationData.gameObjects["audio"];
                     if (gameObjects) {
                         for (const key in gameObjects) {
-                            if (!newlist.some((e) => e.label === key)) {
+                            if (!newList.some((e) => e.label === key)) {
                                 const obj = gameObjects[key];
                                 let ci: CompletionItem;
                                 if (obj.startsWith('"')) {
@@ -287,7 +285,7 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                                     ci = new CompletionItem(gameObjects[key], CompletionItemKind.Value);
                                     ci.sortText = "1" + key;
                                 }
-                                newlist.push(ci);
+                                newList.push(ci);
                             }
                         }
                     }
@@ -298,32 +296,33 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                     const transforms = Object.keys(internal).filter((key) => internal[key][0] === "transforms");
                     for (const key of transforms) {
                         const detail = internal[key][2];
-                        newlist.push(new CompletionItem({ label: key, detail: detail }, CompletionItemKind.Value));
+                        newList.push(new CompletionItem({ label: key, detail: detail }, CompletionItemKind.Value));
                     }
                     // get list of defined Transforms
                     const category = NavigationData.data.location["transform"];
                     for (const key in category) {
                         const defType = NavigationData.gameObjects["define_types"][key];
                         if (defType) {
-                            newlist.push(new CompletionItem(key, CompletionItemKind.Value));
+                            newList.push(new CompletionItem(key, CompletionItemKind.Value));
                         }
                     }
+
                     continue;
                 } else if (gameDataKey === "transitions") {
                     // get list of Transitions
                     const category = NavigationData.renpyFunctions.internal;
-                    newlist.push(new CompletionItem("None", CompletionItemKind.Value));
+                    newList.push(new CompletionItem("None", CompletionItemKind.Value));
                     // get the Renpy default transitions and Transition classes
                     const transitions = Object.keys(category).filter((key) => category[key][0] === "transitions");
                     for (const key of transitions) {
                         const detail = category[key][2];
-                        newlist.push(new CompletionItem({ label: key, detail: detail }, CompletionItemKind.Value));
+                        newList.push(new CompletionItem({ label: key, detail: detail }, CompletionItemKind.Value));
                     }
                     // get the user define transitions
                     const defines = NavigationData.gameObjects["define_types"];
-                    const deftransitions = Object.keys(defines).filter((key) => defines[key].type === "transitions");
-                    for (const key of deftransitions) {
-                        newlist.push(new CompletionItem(key, CompletionItemKind.Value));
+                    const defTransitions = Object.keys(defines).filter((key) => defines[key].type === "transitions");
+                    for (const key of defTransitions) {
+                        newList.push(new CompletionItem(key, CompletionItemKind.Value));
                     }
                     continue;
                 }
@@ -336,7 +335,7 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                         }
                         const ci = new CompletionItem(key, CompletionItemKind.Value);
                         ci.sortText = quoted ? "2" + key : "1" + key;
-                        newlist.push(ci);
+                        newList.push(ci);
                     }
                 } else {
                     const navObjects = NavigationData.data.location[gameDataKey];
@@ -347,7 +346,7 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                             }
                             const ci = new CompletionItem(key, CompletionItemKind.Value);
                             ci.sortText = quoted ? "2" + key : "1" + key;
-                            newlist.push(ci);
+                            newList.push(ci);
                         }
                     }
                 }
@@ -359,20 +358,20 @@ export function getAutoCompleteKeywords(keyword: string, parent: string, context
                     ci = new CompletionItem({ label: key, detail: detail }, CompletionItemKind.Method);
                 }
                 ci.sortText = "0" + split[index];
-                newlist.push(ci);
+                newList.push(ci);
             }
         }
     }
 
-    if (newlist.length === 0 && parent.length > 0) {
-        newlist = getAutoCompleteKeywords(`parent.${context}.${parent}`, "", "");
-        if (newlist.length > 0) {
-            return newlist;
+    if (newList.length === 0 && parent.length > 0) {
+        newList = getAutoCompleteKeywords(`parent.${context}.${parent}`, "", "");
+        if (newList.length > 0) {
+            return newList;
         }
         return getAutoCompleteKeywords(`parent.${parent}`, "", "");
     }
 
-    return newlist;
+    return newList;
 }
 
 /**
@@ -390,7 +389,7 @@ function isNormalInteger(str: string) {
  * @returns An array of strings containing the names of the available audio channels
  */
 function getAudioChannels(): string[] {
-    const newlist: string[] = [];
+    const newList: string[] = [];
     const enumerations = NavigationData.autoCompleteKeywords["play"];
     if (enumerations) {
         const split = enumerations.split("|");
@@ -399,14 +398,14 @@ function getAudioChannels(): string[] {
                 const gameDataKey = split[index].replace("{", "").replace("}", "");
                 const gameObjects = NavigationData.gameObjects[gameDataKey];
                 for (const key in gameObjects) {
-                    newlist.push(key);
+                    newList.push(key);
                 }
             } else {
-                newlist.push(split[index]);
+                newList.push(split[index]);
             }
         }
     }
-    return newlist;
+    return newList;
 }
 
 /**
@@ -417,7 +416,7 @@ function getAudioChannels(): string[] {
  * @returns The config.layer configuration as string[] (e.g, `[ 'master', 'transient', 'screens', 'overlay']`)
  */
 function getLayerConfiguration(quoted = false): CompletionItem[] | undefined {
-    const newlist: CompletionItem[] = [];
+    const newList: CompletionItem[] = [];
     const layers = NavigationData.find("config.layers");
     if (layers) {
         for (const layer of layers) {
@@ -429,9 +428,9 @@ function getLayerConfiguration(quoted = false): CompletionItem[] | undefined {
                         if (quoted) {
                             l = '"' + l + '"';
                         }
-                        newlist.push(new CompletionItem(l, CompletionItemKind.Variable));
+                        newList.push(new CompletionItem(l, CompletionItemKind.Variable));
                     }
-                    return newlist;
+                    return newList;
                 }
             } else {
                 const docs = getDefinitionFromFile(layer.filename, layer.location);
@@ -442,9 +441,9 @@ function getLayerConfiguration(quoted = false): CompletionItem[] | undefined {
                         if (quoted) {
                             l = '"' + l + '"';
                         }
-                        newlist.push(new CompletionItem(l, CompletionItemKind.Variable));
+                        newList.push(new CompletionItem(l, CompletionItemKind.Variable));
                     }
-                    return newlist;
+                    return newList;
                 }
             }
         }

@@ -5,16 +5,116 @@
   "tasks": [
     {
       "type": "npm",
+      "script": "package",
+      "problemMatcher": {
+        "owner": "typescript",
+        "fileLocation": "relative",
+        "source": "webpack-ts-checker",
+        "applyTo": "allDocuments",
+        "pattern": [
+          {
+            "regexp": "(ERROR|WARNING) in (.*?):(\\d+):(\\d+)",
+            "severity": 1,
+            "file": 2,
+            "line": 3,
+            "column": 4
+          },
+          {
+            "regexp": "\\s*TS(\\d+):\\s*(.*)$",
+            "code": 1,
+            "message": 2
+          }
+        ]
+      },
+      "presentation": {
+        "reveal": "never",
+        "clear": true,
+        "close": true
+      },
+      "group": "build"
+    },
+    {
+      "type": "npm",
       "script": "watch",
-      "problemMatcher": "$tsc-watch",
+      "problemMatcher": {
+        "owner": "typescript",
+        "fileLocation": "relative",
+        "source": "webpack-ts-checker",
+        "applyTo": "allDocuments",
+        "pattern": [
+          {
+            "regexp": "(ERROR|WARNING) in (.*?):(\\d+):(\\d+)",
+            "severity": 1,
+            "file": 2,
+            "line": 3,
+            "column": 4
+          },
+          {
+            "regexp": "\\s*TS(\\d+):\\s*(.*)$",
+            "code": 1,
+            "message": 2
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "^Type-checking in progress|[Cc]ompiled (?:.*?successfully|with .*?(?:error|warning))"
+          },
+          "endsPattern": {
+            "regexp": "^Found \\d+ (?:error|warning)|^No errors found"
+          }
+        }
+      },
       "isBackground": true,
       "presentation": {
-        "reveal": "never"
+        "reveal": "never",
+        "clear": true,
+        "close": true
       },
       "group": {
         "kind": "build",
         "isDefault": true
       }
+    },
+    {
+      "type": "npm",
+      "script": "watch-release",
+      "problemMatcher": {
+        "owner": "typescript",
+        "fileLocation": "relative",
+        "source": "webpack-ts-checker",
+        "applyTo": "allDocuments",
+        "pattern": [
+          {
+            "regexp": "(ERROR|WARNING) in (.*?):(\\d+):(\\d+)",
+            "severity": 1,
+            "file": 2,
+            "line": 3,
+            "column": 4
+          },
+          {
+            "regexp": "\\s*TS(\\d+):\\s*(.*)$",
+            "code": 1,
+            "message": 2
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": {
+            "regexp": "^Type-checking in progress|[Cc]ompiled (?:.*?successfully|with .*?(?:error|warning))"
+          },
+          "endsPattern": {
+            "regexp": "^Found \\d+ (?:error|warning)|^No errors found"
+          }
+        }
+      },
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never",
+        "clear": true,
+        "close": true
+      },
+      "group": "build"
     },
     {
       "type": "npm",

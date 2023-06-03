@@ -4,7 +4,7 @@
 import { TextDocument, Position, SignatureHelp, SignatureHelpContext } from "vscode";
 import { getKeywordPrefix } from "./extension";
 import { getArgumentParameterInfo } from "./navigation";
-import { NavigationData } from "./navigationdata";
+import { NavigationData } from "./navigation-data";
 
 /**
  * Gets method signature help for the keyword at the given position in the given document

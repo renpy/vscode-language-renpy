@@ -3,14 +3,14 @@
 
 import { Position, Range, SemanticTokens, SemanticTokensBuilder, SemanticTokensLegend, TextDocument } from "vscode";
 import { Navigation, splitParameters, rangeAsString, getCurrentContext, DataType } from "./navigation";
-import { NavigationData, updateNavigationData } from "./navigationdata";
+import { NavigationData, updateNavigationData } from "./navigation-data";
 import { stripWorkspaceFromFile } from "./workspace";
 
 export function getSemanticTokens(document: TextDocument, legend: SemanticTokensLegend): SemanticTokens {
     const tokensBuilder = new SemanticTokensBuilder(legend);
     const rxKeywordList = /\s*(screen|label|transform|def|class)\s+/;
     const rxParameterList =
-        /\s*(screen|label|transform|def|class)\s+([a-zA-Z_]\w+)\s*\((.*)\)\s*:|\s*(label)\s+([a-zA-Z0-9_.]+)\s*:|^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):|^(python)\s+early\s+in\s+(\w+):|\s*(class)\s+([a-zA-Z0-9_]+)\s*/s;
+        /\s*(screen|label|transform|class)\s+([a-zA-Z_]\w*)\s*\((.*)\)\s*:|\s*(label)\s+([a-zA-Z_]\w*)\s*:|^(init)\s+([-\d]+\s+)*python\s+in\s+(\w+):|^(python)\s+early\s+in\s+(\w+):|\s*(class)\s+([a-zA-Z_]\w*)\s*:|\s*(def)\s+([a-zA-Z_]\w*)\s*\((.*)\)\s*(->\s*[a-zA-Z_]\w*\s*)?:/s;
     const rxVariableDefines = /^\s*(default|define)\s+([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const rxPersistentDefines = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*)/;
     const filename = stripWorkspaceFromFile(document.uri.path);
@@ -88,11 +88,6 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                         length = m.split("=")[0].trimEnd().length;
                     }
                     const range = new Range(i, start + offset, i, start + length);
-                    if (m.substring(offset, length) === "self" || m.substring(offset, length) === "cls") {
-                        tokensBuilder.push(range, "keyword");
-                    } else {
-                        tokensBuilder.push(range, "parameter", ["declaration"]);
-                    }
                     parentArgs.push(line.substring(start + offset, length - offset));
                     parentDefaults[m.substring(offset, length)] = new Navigation("parameter", m.substring(offset, length), filename, i + 1, "", m.trim(), "", start + offset);
                     // create a Navigation dictionary entry for this token range

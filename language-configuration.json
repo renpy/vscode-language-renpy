@@ -1,39 +1,82 @@
 {
-    "comments": {
-        // symbol used for single line comment. Remove this entry if your language does not support line comments
-        "lineComment": "#"
-    },
-    // symbols used as brackets
-    "brackets": [
-        ["{", "}"],
-        ["[", "]"],
-        ["(", ")"]
-    ],
-    // symbols that are auto closed when typing
-    "autoClosingPairs": [
-		{ "open": "{", "close": "}" },
-		{ "open": "[", "close": "]" },
-		{ "open": "(", "close": ")" },
-		{ "open": "\"", "close": "\"", "notIn": ["string"] },
-		{ "open": "'", "close": "'", "notIn": ["string"] },
-        { "open": "`", "close": "`", "notIn": ["string"] },
-        { "open": "\"\"\"", "close": "\"\"\"", "notIn": ["string"] }
-    ],
-    // symbols that that can be used to surround a selection
-    "surroundingPairs": [
-        ["{", "}"],
-        ["[", "]"],
-        ["(", ")"],
-        ["\"", "\""],
-        ["'", "'"],
-        ["`", "`"],
-        ["\"\"\"", "\"\"\""]
-    ],
-    "folding": {
-        "markers": {
-          "start": "^#region",
-          "end": "^#endregion"
-        },
-        "offSide": true
+  "comments": {
+    // symbol used for single line comment. Remove this entry if your language does not support line comments
+    "lineComment": "#",
+    "blockComment": ["\"\"\"", "\"\"\""]
+  },
+  // symbols used as brackets
+  "brackets": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"]
+  ],
+  // symbols that are auto closed when typing
+  "autoClosingPairs": [
+    { "open": "{", "close": "}" },
+    { "open": "[", "close": "]" },
+    { "open": "(", "close": ")" },
+
+    { "open": "\"", "close": "\"", "notIn": ["string"] },
+    { "open": "r\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "R\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "u\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "U\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "f\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "F\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "b\"", "close": "\"", "notIn": ["string", "comment"] },
+    { "open": "B\"", "close": "\"", "notIn": ["string", "comment"] },
+
+    { "open": "'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "r'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "R'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "u'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "U'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "f'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "F'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "b'", "close": "'", "notIn": ["string", "comment"] },
+    { "open": "B'", "close": "'", "notIn": ["string", "comment"] },
+
+    { "open": "`", "close": "`", "notIn": ["string", "comment"] },
+
+    { "open": "\"\"\"", "close": "\"\"\"", "notIn": ["string"] }
+  ],
+  // symbols that that can be used to surround a selection
+  "surroundingPairs": [
+    ["{", "}"],
+    ["[", "]"],
+    ["(", ")"],
+    ["\"", "\""],
+    ["'", "'"],
+    ["`", "`"],
+    ["\"\"\"", "\"\"\""]
+  ],
+  "folding": {
+    "offSide": true,
+    "markers": {
+      "start": "^[ \\t]*#[ \\t]*region\\b",
+      "end": "^[ \\t]*#[ \\t]*endregion\\b"
     }
+  },
+  "onEnterRules": [
+    // Renpy keywords
+    {
+      "beforeText": "^[ \\t]*(?:image|init|label|menu|python|scene|screen|transform)\\b.*?:[ \\t]*$",
+      "action": { "indent": "indent" }
+    },
+    // Outdent keywords
+    {
+      "beforeText": "^[ \\t]*(?:pass|return|repeat)\\b.*?$",
+      "action": { "indent": "outdent" }
+    },
+    // For menu's
+    {
+      "beforeText": "^[ \\t]+(?:\".*?\"|\\'.*?\\').*?:[ \\t]*$",
+      "action": { "indent": "indent" }
+    },
+    // Python code
+    {
+      "beforeText": "^[ \\t]*(?:class|def|for|if|elif|else|while|try|with|finally|except|async)\\b.*?:[ \\t]*$",
+      "action": { "indent": "indent" }
+    }
+  ]
 }

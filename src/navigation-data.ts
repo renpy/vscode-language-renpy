@@ -9,7 +9,6 @@ import { Displayable } from "./displayable";
 import { Character } from "./character";
 import data from "./renpy.json";
 import kwData from "./renpyauto.json";
-
 const filterCharacter = "\u2588";
 
 export class NavigationData {
@@ -327,10 +326,10 @@ export class NavigationData {
             if (base && base[0].keyword.indexOf(".") > 0) {
                 return base[0].keyword.split(".")[0];
             }
-            const defineType = NavigationData.gameObjects["define_types"][keyword];
-            if (defineType && defineType.baseclass && defineType.baseclass.indexOf("(") > 0) {
-                const base = defineType.baseclass.substring(0, defineType.baseclass.indexOf("("));
-                return this.isClass(base);
+            const defineType: DataType = NavigationData.gameObjects["define_types"][keyword];
+            if (defineType && defineType.baseClass && defineType.baseClass.indexOf("(") > 0) {
+                const baseC = defineType.baseClass.substring(0, defineType.baseClass.indexOf("("));
+                return this.isClass(baseC);
             }
         }
 
@@ -338,7 +337,7 @@ export class NavigationData {
     }
 
     static getClassAutoComplete(keyword: string): CompletionItem[] | undefined {
-        const newlist: CompletionItem[] = [];
+        const newList: CompletionItem[] = [];
         const prefix = keyword + ".";
 
         // get any inherited class items
@@ -350,7 +349,7 @@ export class NavigationData {
                     const items = NavigationData.getClassAutoComplete(base.trim());
                     if (items) {
                         for (const item of items) {
-                            newlist.push(item);
+                            newList.push(item);
                         }
                     }
                 }
@@ -364,8 +363,8 @@ export class NavigationData {
             if (filtered) {
                 for (const key in filtered) {
                     const label = filtered[key].substring(prefix.length);
-                    if (!newlist.some((e) => e.label === label)) {
-                        newlist.push(new CompletionItem(label, CompletionItemKind.Method));
+                    if (!newList.some((e) => e.label === label)) {
+                        newList.push(new CompletionItem(label, CompletionItemKind.Method));
                     }
                 }
             }
@@ -375,11 +374,11 @@ export class NavigationData {
         const properties = NavigationData.gameObjects["properties"][keyword];
         if (properties) {
             for (const p of properties) {
-                if (!newlist.some((e) => e.label === p.keyword)) {
+                if (!newList.some((e) => e.label === p.keyword)) {
                     if (p.source === "property") {
-                        newlist.push(new CompletionItem(p.keyword, CompletionItemKind.Property));
+                        newList.push(new CompletionItem(p.keyword, CompletionItemKind.Property));
                     } else {
-                        newlist.push(new CompletionItem(p.keyword, CompletionItemKind.Variable));
+                        newList.push(new CompletionItem(p.keyword, CompletionItemKind.Variable));
                     }
                 }
             }
@@ -389,13 +388,13 @@ export class NavigationData {
         const fields = NavigationData.gameObjects["fields"][keyword];
         if (fields) {
             for (const p of fields) {
-                if (!newlist.some((e) => e.label === p.keyword)) {
-                    newlist.push(new CompletionItem(p.keyword, CompletionItemKind.Field));
+                if (!newList.some((e) => e.label === p.keyword)) {
+                    newList.push(new CompletionItem(p.keyword, CompletionItemKind.Field));
                 }
             }
         }
 
-        return newlist;
+        return newList;
     }
 
     static resolve(keyword: string): Navigation[] | undefined {
@@ -441,9 +440,9 @@ export class NavigationData {
                         const bases = location.type.split(",");
                         for (const base of bases) {
                             if (location.args.length === 0) {
-                                const init = NavigationData.data.location["callable"][`${base}.__init__`];
-                                if (init) {
-                                    const initData = getDefinitionFromFile(init[0], init[1]);
+                                const initFunc = NavigationData.data.location["callable"][`${base}.__init__`];
+                                if (initFunc) {
+                                    const initData = getDefinitionFromFile(initFunc[0], initFunc[1]);
                                     if (initData && initData.args && initData.args.length > 0) {
                                         let args = initData.args.replace("(self, ", "(");
                                         args = args.replace("(self)", "()");
@@ -473,15 +472,15 @@ export class NavigationData {
             const spacing = line.indexOf("class " + keyword);
             let finished = false;
             while (!finished && index < document.lineCount) {
-                let line = document.lineAt(index).text.replace(/[\n\r]/g, "");
-                const indent = line.length - line.trimLeft().length;
-                if (line.length > 0 && indent <= spacing) {
+                let line2 = document.lineAt(index).text.replace(/[\n\r]/g, "");
+                const indent = line2.length - line2.trimStart().length;
+                if (line2.length > 0 && indent <= spacing) {
                     finished = true;
                     break;
                 }
-                line = line.trim();
+                line2 = line2.trim();
 
-                const matches = line.match(rxDef);
+                const matches = line2.match(rxDef);
                 if (matches) {
                     // if document edits moved the callables, then update the location
                     const defineKeyword = `${keyword}.${matches[1]}`;
@@ -496,14 +495,14 @@ export class NavigationData {
                 }
 
                 // class variables and constants
-                const variable = line.match(rxVariable);
+                const variable = line2.match(rxVariable);
                 if (variable && indent === spacing * 2) {
-                    const documentation = `::class ${keyword}:\n    ${line}`;
+                    const documentation = `::class ${keyword}:\n    ${line2}`;
                     const nav = new Navigation("variable", variable[1], filename, index + 2, documentation, "", keyword, variable.index);
                     props.push(nav);
                 }
 
-                if (line.startsWith("@property")) {
+                if (line2.startsWith("@property")) {
                     const matches = document
                         .lineAt(index + 1)
                         .text.trim()
@@ -547,7 +546,7 @@ export class NavigationData {
             let finished = false;
             while (!finished && index < document.lineCount) {
                 let line = document.lineAt(index).text.replace(/[\n\r]/g, "");
-                if (line.length > 0 && line.length - line.trimLeft().length <= spacing) {
+                if (line.length > 0 && line.length - line.trimStart().length <= spacing) {
                     finished = true;
                     break;
                 }
@@ -571,7 +570,7 @@ export class NavigationData {
 
     static getNavigationObject(source: string, keyword: string, array: any): Navigation {
         /*
-		0 basefile,
+		0 base file,
 		1 kind,
 		2 args,
 		3 class,

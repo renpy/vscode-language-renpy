@@ -2,7 +2,7 @@
 "use strict";
 
 import { MarkdownString, ParameterInformation, Position, Range, SignatureInformation, TextDocument } from "vscode";
-import { NavigationData } from "./navigationdata";
+import { NavigationData } from "./navigation-data";
 
 export class Navigation {
     source: string;
@@ -36,33 +36,33 @@ export class Navigation {
 export class DataType {
     variable: string;
     define: string;
-    baseclass: string;
+    baseClass: string;
     type: string;
 
-    constructor(variable: string, define: string, baseclass: string) {
+    constructor(variable: string, define: string, baseClass: string) {
         this.variable = variable;
         this.define = define;
-        this.baseclass = baseclass;
+        this.baseClass = baseClass;
         this.type = "";
-        if (baseclass === "True" || baseclass === "False") {
+        if (baseClass === "True" || baseClass === "False") {
             this.type = "boolean";
-        } else if (!isNaN(+this.baseclass)) {
+        } else if (!isNaN(+this.baseClass)) {
             this.type = "number";
-        } else if (baseclass === "_" || baseclass.startsWith('"') || baseclass.startsWith("`") || baseclass.startsWith("'")) {
+        } else if (baseClass === "_" || baseClass.startsWith('"') || baseClass.startsWith("`") || baseClass.startsWith("'")) {
             this.type = "str";
-        } else if (baseclass.startsWith("[")) {
+        } else if (baseClass.startsWith("[")) {
             this.type = "list";
-        } else if (baseclass.startsWith("{")) {
+        } else if (baseClass.startsWith("{")) {
             this.type = "dictionary";
-        } else if (baseclass.startsWith("(") && baseclass.endsWith(")")) {
+        } else if (baseClass.startsWith("(") && baseClass.endsWith(")")) {
             this.type = "tuple";
-        } else if (baseclass === "store") {
+        } else if (baseClass === "store") {
             this.type = "store";
         }
     }
 
     checkTypeArray(type: string, typeArray: string[]) {
-        if (typeArray.includes(this.baseclass)) {
+        if (typeArray.includes(this.baseClass)) {
             this.type = type;
         }
     }

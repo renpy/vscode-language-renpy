@@ -4,7 +4,7 @@
 import { Hover, MarkdownString, Position, Range, TextDocument, Uri } from "vscode";
 import { getKeywordPrefix } from "./extension";
 import { rangeAsString, Navigation, getPyDocsAtLine, formatDocumentationAsMarkdown } from "./navigation";
-import { NavigationData } from "./navigationdata";
+import { NavigationData } from "./navigation-data";
 import { stripWorkspaceFromFile, extractFilename, getFileWithPath } from "./workspace";
 import * as fs from "fs";
 

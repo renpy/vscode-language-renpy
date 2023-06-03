@@ -208,7 +208,7 @@
     "@typescript-eslint/eslint-plugin": "^5.52.0",
     "@typescript-eslint/parser": "^5.52.0",
     "copy-webpack-plugin": "^11.0.0",
-    "eslint": "^8.33.0",
+    "eslint": "^8.42.0",
     "eslint-plugin-import": "^2.27.5",
     "fork-ts-checker-webpack-plugin": "^7.2.11",
     "node-polyfill-webpack-plugin": "^1.1.4",

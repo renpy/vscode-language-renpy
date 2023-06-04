@@ -1073,7 +1073,7 @@
         "1": { "name": "keyword.control.flow.return.renpy" }
       },
       "end": "$",
-      "patterns": [{ "include": "#expressions" }, { "include": "source.renpy.python#expression" }]
+      "patterns": [{ "include": "#expressions-renpy-only" }, { "include": "source.renpy.python#expression" }]
     },
     "call-jump-expression": {
       "begin": "\\b(?<!\\.)(expression)\\b",
@@ -1081,7 +1081,7 @@
         "1": { "name": "keyword.expression.renpy" }
       },
       "end": "(?=\\b(?<!\\.)(?:pass|from)\\b)|$",
-      "patterns": [{ "include": "#expressions" }, { "include": "source.renpy.python#expression" }]
+      "patterns": [{ "include": "#expressions-renpy-only" }, { "include": "source.renpy.python#expression" }]
     },
     "jump": {
       "name": "meta.jump.statement.renpy",
@@ -1106,7 +1106,7 @@
     "call-pass": {
       "begin": "\\b(?<!\\.)(pass)\\b[ \\t]*(?=\\()",
       "beginCaptures": {
-        "1": { "name": "keyword.pass.renpy" }
+        "1": { "name": "keyword.control.flow.pass.renpy" }
       },
       "end": "(\\))",
       "endCaptures": {
@@ -1124,9 +1124,10 @@
     },
     "call": {
       "name": "meta.call.statement.renpy",
-      "begin": "(?<=^[ \\t]+)(call)\\b[ \\t]*",
+      "begin": "(?<=^[ \\t]+)(call)\\b(?:[ \\t]+(screen))?",
       "beginCaptures": {
-        "1": { "name": "keyword.control.flow.call.renpy" }
+        "1": { "name": "keyword.control.flow.call.renpy" },
+        "2": { "name": "keyword.screen.renpy" }
       },
       "end": "(?=#)|$",
       "endCaptures": {

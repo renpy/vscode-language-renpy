@@ -8,6 +8,12 @@
   "editor.tokenColorCustomizations": {
     "textMateRules": [
       {
+        "scope": "debug.invalid.illegal.unmatched.renpy",
+        "settings": {
+          "foreground": "#f00"
+        }
+      },
+      {
         "scope": "renpy.meta.plain",
         "settings": {
           "fontStyle": ""

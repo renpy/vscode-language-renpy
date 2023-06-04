@@ -2,7 +2,11 @@
   "name": "languague-renpy",
   "displayName": "Ren'Py Language",
   "description": "Adds rich support for the Ren'Py programming language to Visual Studio Code.",
-  "version": "2.2.0",
+
+  "version": "2.2.1",
+
+
+
   "publisher": "LuqueDaniel",
   "license": "MIT",
   "homepage": "https://github.com/LuqueDaniel/vscode-language-renpy",
@@ -69,12 +73,16 @@
         "path": "./syntaxes/renpy.tmLanguage.json"
       },
       {
-        "scopeName": "source.renpy.python",
-        "path": "./syntaxes/renpy.python.tmLanguage.json"
+        "scopeName": "source.renpy.screen",
+        "path": "./syntaxes/renpy.screen.tmLanguage.json"
       },
       {
         "scopeName": "source.renpy.atl",
         "path": "./syntaxes/renpy.atl.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.renpy.python",
+        "path": "./syntaxes/renpy.python.tmLanguage.json"
       }
     ],
     "snippets": [

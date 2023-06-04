@@ -272,67 +272,8 @@
     "strings-interior": {
       "patterns": [{ "include": "#new-line" }, { "include": "#escaped_char" }, { "include": "#string-tags" }, { "include": "#constant_placeholder" }]
     },
-    "string-tags": {
+    "string-tags-broken": {
       "patterns": [
-        {
-          "comment": "Valid tags without params (self-closing)",
-          "name": "meta.string.tag.${2:/downcase}.self-closing.renpy",
-          "match": "({)\\s*(nw|done|fast|p|w|clear)\\s*(})",
-          "captures": {
-            "1": { "name": "punctuation.definition.tag.begin.renpy" },
-            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
-            "3": { "name": "punctuation.definition.tag.end.renpy" }
-          }
-        },
-        {
-          "comment": "Valid tags with numeric params (self-closing)",
-          "name": "meta.string.tag.${2:/downcase}.self-closing.renpy",
-          "match": "({)\\s*(p|w)(=)(\\+?)(\\d*(?:.\\d+)?)\\s*(})",
-          "captures": {
-            "1": { "name": "punctuation.definition.tag.begin.renpy" },
-            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
-            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
-            "4": { "name": "keyword.operator.arithmetic.plus.renpy" },
-            "5": { "name": "support.constant.property-value.renpy constant.numeric.float.renpy" },
-            "6": { "name": "punctuation.definition.tag.end.renpy" }
-          }
-        },
-        {
-          "comment": "Valid tags with numeric params (self-closing)",
-          "name": "meta.string.tag.${2:/downcase}.self-closing.renpy",
-          "match": "({)\\s*(v?space)(=)(\\+?)(\\d+)\\s*(})",
-          "captures": {
-            "1": { "name": "punctuation.definition.tag.begin.renpy" },
-            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
-            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
-            "4": { "name": "keyword.operator.arithmetic.plus.renpy" },
-            "5": { "name": "support.constant.property-value.renpy constant.numeric.integer.renpy" },
-            "6": { "name": "punctuation.definition.tag.end.renpy" }
-          }
-        },
-        {
-          "comment": "Comment tag (self-closing)",
-          "name": "meta.string.tag.comment.self-closing.renpy",
-          "match": "({)\\s*(#)\\s*(.*?)\\s*(})",
-          "captures": {
-            "1": { "name": "punctuation.definition.tag.begin.renpy" },
-            "2": { "name": "comment.line.number-sign.renpy punctuation.definition.comment.renpy" },
-            "3": { "name": "comment.line.number-sign.renpy" },
-            "4": { "name": "punctuation.definition.tag.end.renpy" }
-          }
-        },
-        {
-          "comment": "Valid tags with file param",
-          "name": "meta.string.tag.${2:/downcase}.self-closing.renpy",
-          "match": "({)\\s*(image)(=)([\\w.]+)\\s*(})",
-          "captures": {
-            "1": { "name": "punctuation.definition.tag.begin.renpy" },
-            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
-            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
-            "4": { "name": "support.constant.property-value.renpy string.unquoted.renpy" },
-            "5": { "name": "punctuation.definition.tag.end.renpy" }
-          }
-        },
         {
           "comment": "Valid tags without params (close required)",
           "contentName": "renpy.meta.${2:/downcase} meta.tagged.string.renpy",
@@ -466,6 +407,154 @@
             "3": { "name": "punctuation.definition.tag.end.renpy" }
           },
           "patterns": [{ "include": "#strings-interior" }]
+        }
+      ]
+    },
+    "string-tags": {
+      "patterns": [
+        {
+          "comment": "Valid tags without params (self-closing)",
+          "name": "meta.string.tag.${2:/downcase}.self-closing.renpy",
+          "match": "({)\\s*(nw|done|fast|p|w|clear)\\s*(})",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
+            "3": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Valid tags with numeric params (self-closing)",
+          "name": "meta.string.tag.${2:/downcase}.self-closing.renpy",
+          "match": "({)\\s*(p|w)(=)(\\+?)(\\d*(?:.\\d+)?)\\s*(})",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": { "name": "keyword.operator.arithmetic.plus.renpy" },
+            "5": { "name": "support.constant.property-value.renpy constant.numeric.float.renpy" },
+            "6": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Valid tags with numeric params (self-closing)",
+          "name": "meta.string.tag.${2:/downcase}.self-closing.renpy",
+          "match": "({)\\s*(v?space)(=)(\\+?)(\\d+)\\s*(})",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": { "name": "keyword.operator.arithmetic.plus.renpy" },
+            "5": { "name": "support.constant.property-value.renpy constant.numeric.integer.renpy" },
+            "6": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Comment tag (self-closing)",
+          "name": "meta.string.tag.comment.self-closing.renpy",
+          "match": "({)\\s*(#)\\s*(.*?)\\s*(})",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "comment.line.number-sign.renpy punctuation.definition.comment.renpy" },
+            "3": { "name": "comment.line.number-sign.renpy" },
+            "4": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Valid tags with file param",
+          "name": "meta.string.tag.${2:/downcase}.self-closing.renpy",
+          "match": "({)\\s*(image)(=)([\\w.]+)\\s*(})",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": { "name": "support.constant.property-value.renpy string.unquoted.renpy" },
+            "5": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Valid tags without params (close required)",
+          "match": "({)\\s*(u|i|b|s|plain|alt|noalt|art|rb|rt)\\s*(})",
+          "captures": {
+            "0": { "name": "meta.string.tag.${2:/downcase}.start.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
+            "3": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Valid tags with numeric params (close required)",
+          "contentName": "renpy.meta.${2:/downcase} meta.tagged.string.renpy",
+          "match": "({)\\s*(alpha|cps|k)(=)(?:(\\*)|(\\-)|(\\+))?(\\d*(?:.\\d+)?)\\s*(})",
+          "captures": {
+            "0": { "name": "meta.string.tag.${2:/downcase}.start.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": { "name": "keyword.operator.arithmetic.Multiply.renpy" },
+            "5": { "name": "keyword.operator.arithmetic.Minus.renpy" },
+            "6": { "name": "keyword.operator.arithmetic.Plus.renpy" },
+            "7": { "name": "support.constant.property-value.renpy constant.numeric.renpy" },
+            "8": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Valid tags with numeric params (close required)",
+          "contentName": "renpy.meta.${2:/downcase} meta.tagged.string.renpy",
+          "match": "({)\\s*(size)(=)([\\-+]?)(\\d+)\\s*(})",
+          "captures": {
+            "0": { "name": "meta.string.tag.${2:/downcase}.start.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": { "name": "keyword.operator.arithmetic.renpy" },
+            "5": { "name": "support.constant.property-value.renpy constant.numeric.integer.renpy" },
+            "6": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Valid tags with file param (close required)",
+          "name": "meta.string.tag.${2:/downcase}.self-closing.renpy",
+          "match": "({)\\s*(font)(=)([\\w.]+)\\s*(})",
+          "captures": {
+            "0": { "name": "meta.string.tag.${2:/downcase}.start.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": { "name": "support.constant.property-value.renpy string.unquoted.renpy" },
+            "5": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "Color tag",
+          "contentName": "renpy.meta.${2:/downcase}.${4:/downcase} meta.tagged.string.renpy",
+          "match": "({)\\s*(color|outlinecolor)(=)(#?[a-zA-Z0-9]+)\\s*(})",
+          "captures": {
+            "0": { "name": "meta.string.tag.${2:/downcase}.start.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": {
+              "name": "constant.color.renpy",
+              "patterns": [{ "include": "#hex_literal" }]
+            },
+            "5": { "name": "punctuation.definition.tag.end.renpy" }
+          }
+        },
+        {
+          "comment": "a tag",
+          "contentName": "renpy.meta.${2:/downcase} meta.tagged.string.renpy",
+          "match": "({)\\s*(a)(=)(.*?)\\s*(})",
+          "captures": {
+            "0": { "name": "meta.string.tag.${2:/downcase}.start.renpy" },
+            "1": { "name": "punctuation.definition.tag.begin.renpy" },
+            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
+            "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
+            "4": {
+              "name": "support.constant.property-value.renpy string.unquoted.renpy",
+              "patterns": []
+            },
+            "5": { "name": "punctuation.definition.tag.end.renpy" }
+          }
         },
         {
           "comment": "Unknown tag (Single line support only cus \\R does not work) (Since we don't know if a tag is self closing, we can't assume that an end pattern exists)",
@@ -491,7 +580,7 @@
           "captures": {
             "0": { "name": "meta.string.tag.${2:/downcase}.start.renpy" },
             "1": { "name": "punctuation.definition.tag.begin.renpy" },
-            "2": { "name": "renpy.meta.u entity.name.tag.${2:/downcase}.renpy" },
+            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
             "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
             "4": {
               "name": "support.constant.property-value.renpy constant.other.placeholder.tags.renpy",
@@ -506,7 +595,7 @@
           "captures": {
             "0": { "name": "meta.string.tag.${2:/downcase}.end.renpy" },
             "1": { "name": "punctuation.definition.tag.begin.renpy" },
-            "2": { "name": "renpy.meta.u entity.name.tag.${2:/downcase}.renpy" },
+            "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
             "3": { "name": "punctuation.definition.tag.end.renpy" }
           }
         }

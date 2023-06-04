@@ -6,10 +6,16 @@
   "patterns": [{ "include": "#base-patterns" }],
   "repository": {
     "statements": {
-      "patterns": [{ "include": "#renpy-statements" }, { "include": "#python-statements" }, { "include": "#keywords" }, { "include": "#say-statements" }]
+      "patterns": [{ "include": "#renpy-statements" }, { "include": "#python-statements" }, { "include": "#conditionals" }, { "include": "#keywords" }, { "include": "#say-statements" }]
     },
     "expressions": {
-      "patterns": [{ "include": "#comments" }, { "include": "#strings" }, { "include": "#literal" }, { "include": "#fallback-characters" }]
+      "patterns": [{ "include": "#renpy-python-expressions" }, { "include": "#fallback-characters" }]
+    },
+    "renpy-only-expressions": {
+      "patterns": [{ "include": "#comments" }, { "include": "#strings" }, { "include": "#literal" }]
+    },
+    "renpy-python-expressions": {
+      "patterns": [{ "include": "#renpy-only-expressions" }]
     },
     "invalid-token": {
       "match": ".+",
@@ -120,7 +126,8 @@
           "comment": "Python literals",
           "name": "constant.language.renpy",
           "match": "\\b(?<!\\.)(True|False|None)\\b"
-        }
+        },
+        { "include": "source.renpy.python#literal" }
       ]
     },
     "num-float": {
@@ -170,7 +177,12 @@
         {
           "comment": "[TODO: Should probably only be a keyword in the expression] Renpy sub expression keywords",
           "name": "keyword.other.renpy",
-          "match": "\\b(?<!\\.)(?:set|expression|at|with|from)\\b"
+          "match": "\\b(?<!\\.)(?:set|expression|at|with|from|style|style_prefix|spacing|textbutton)\\b"
+        },
+        {
+          "comment": "[TODO: Should probably only be a keyword in the expression] Renpy sub expression keywords",
+          "name": "keyword.control.flow.other.renpy",
+          "match": "\\b(?<!\\.)(?:action)\\b"
         }
       ]
     },
@@ -658,7 +670,7 @@
     },
 
     "pause": {
-      "match": "^([ \\t]+)(pause)\\b([ \\t]+[^#\\n]*)?$",
+      "match": "(?<=^[ \\t]+)(pause)\\b([ \\t]+[^#\\n]*)?$",
       "captures": {
         "1": { "name": "punctuation.whitespace.leading.renpy" },
         "2": { "name": "keyword.control.flow.pause.renpy" },
@@ -670,24 +682,18 @@
       }
     },
 
-    "transform": {
-      "begin": "^([ \\t]+)?(transform)\\b[ \\t]*(.*)?(:)",
-      "beginCaptures": {
-        "1": { "name": "punctuation.whitespace.leading.renpy" },
-        "2": { "name": "keyword.transform.renpy" },
-        "3": {
-          "patterns": [
-            {
-              "name": "variable.name.transform.renpy",
-              "match": "\\b([[:alpha:]_]\\w*)\\b"
-            }
-          ]
+    "conditionals": {
+      "match": "(?<=^[ \\t]+)(if|elif|else)\\b([^#\\n:]+)?(:)",
+      "captures": {
+        "1": { "name": "keyword.control.conditional.renpy" },
+        "2": {
+          "name": "meta.condition.renpy",
+          "patterns": [{ "include": "source.renpy.python#expression" }]
         },
-        "4": { "name": "punctuation.section.atl.begin.renpy" }
-      },
-      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-      "patterns": [{ "include": "source.renpy.atl" }]
+        "3": { "name": "punctuation.section.condition.begin.renpy" }
+      }
     },
+
     "at-statement": {
       "name": "meta.at.statement.renpy",
       "match": "\\b(at)\\b[ \\t]*(.+)?",
@@ -920,7 +926,7 @@
         { "include": "source.renpy.python#builtin-possible-callables" },
         { "include": "#builtin-labels" },
         {
-          "name": "entity.name.function.renpy",
+          "name": "entity.name.function.label.renpy",
           "match": "\\b(?:[a-zA-Z_]\\w*)\\b"
         }
       ]
@@ -953,9 +959,9 @@
         {
           "match": "(?<=^|[ \\t])(\\b(?:[a-zA-Z_]\\w*)\\b)?(\\.)?(\\b(?:[a-zA-Z_]\\w*)\\b)",
           "captures": {
-            "1": { "name": "entity.name.function.renpy" },
+            "1": { "name": "entity.name.function.label.renpy" },
             "2": { "name": "punctuation.separator.period.renpy" },
-            "3": { "name": "entity.name.function.renpy" }
+            "3": { "name": "entity.name.function.label.renpy" }
           }
         }
       ]
@@ -1105,7 +1111,7 @@
             {
               "comment": "Menu name",
               "match": "[a-zA-Z_.]\\w*",
-              "name": "entity.name.function.renpy"
+              "name": "entity.name.function.menu.renpy"
             },
             { "include": "source.renpy.python#function-arguments" }
           ]
@@ -1202,14 +1208,14 @@
         { "include": "#image" },
         { "include": "#audio" },
         { "include": "#pause" },
-        { "include": "#transform" },
+        { "include": "source.renpy.atl#transform" },
         { "include": "#scene" },
         { "include": "#camera" },
         { "include": "#show" },
         { "include": "#with-statement" },
         { "include": "#style-old" },
         { "include": "#use-old" },
-        { "include": "#screen" },
+        { "include": "source.renpy.screen#screen" },
         { "include": "#return-statements" },
         { "include": "#jump" },
         { "include": "#call" }

@@ -171,7 +171,7 @@
         },
         {
           "name": "keyword.other.renpy",
-          "match": "\\b(?<!\\.)(?:has|vbox|label|add|xfill)\\b"
+          "match": "\\b(?<!\\.)(?:has|vbox|hbox|label|add|xfill)\\b"
         }
       ]
     },
@@ -239,12 +239,12 @@
         { "include": "source.renpy#at-statement" }
       ]
     },
-    "screen-vbox": {
-      "contentName": "meta.vbox.block.renpy",
-      "begin": "^([ \\t]+)?(vbox)\\b[ \\t]*(?:.*?)(:)",
+    "screen-box": {
+      "contentName": "meta.box.block.renpy",
+      "begin": "^([ \\t]+)?([vh]box)\\b[ \\t]*(?:.*?)(:)",
       "beginCaptures": {
         "1": { "name": "punctuation.whitespace.leading.block.renpy" },
-        "2": { "name": "keyword.vbox.renpy" },
+        "2": { "name": "keyword.box.renpy" },
         "3": { "name": "punctuation.section.block.begin.renpy" }
       },
       "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
@@ -280,7 +280,7 @@
       "patterns": [
         { "include": "#screen-frame" },
         { "include": "#screen-window" },
-        { "include": "#screen-vbox" },
+        { "include": "#screen-box" },
         { "include": "#screen-text" },
         { "include": "#screen-keywords" },
         { "include": "#screen-simple-expression" },

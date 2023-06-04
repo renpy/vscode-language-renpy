@@ -7,7 +7,17 @@
   "repository": {
     "atl": {
       "comment": "https://www.renpy.org/doc/html/atl.html#atl-syntax-and-semantics",
-      "patterns": [{ "include": "#atl-keywords" }, { "include": "#atl-blocks" }, { "include": "#atl-simple-expression" }, { "include": "#atl-warper" }, { "include": "#atl-event" }, { "include": "#atl-on" }, { "include": "#atl-function" }]
+      "patterns": [
+        { "include": "source.renpy#conditionals" },
+        { "include": "#atl-keywords" },
+        { "include": "#atl-warper" },
+        { "include": "#atl-blocks" },
+        { "include": "#atl-simple-expression" },
+        { "include": "#atl-event" },
+        { "include": "#atl-on" },
+        { "include": "#atl-function" },
+        { "include": "#atl-fallback" }
+      ]
     },
     "atl-build-in-properties": {
       "comment": "https://www.renpy.org/doc/html/atl.html#list-of-transform-properties",
@@ -24,67 +34,67 @@
         },
         {
           "comment": "position props (int, absolute, or a float)",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:xpos|ypos|xanchor|yanchor|xcenter|ycenter|radius)\\b"
         },
         {
           "comment": "position pair props",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:pos|anchor|xycenter|around|alignaround|matrixanchor)\\b"
         },
         {
           "comment": "float props",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:xalign|yalign|zoom|xzoom|yzoom|alpha|additive|angle|delay|events|zpos)\\b"
         },
         {
           "comment": "float pair props",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:align|knot)\\b"
         },
         {
           "comment": "int props",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:xoffset|yoffset|xtile|ytile)\\b"
         },
         {
           "comment": "int pair props",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:offset)\\b"
         },
         {
           "comment": "boolean props",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:rotate_pad|transform_anchor|nearest|crop_relative|subpixel|zzoom)\\b"
         },
         {
           "comment": "('#float' | None)",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:rotate|xpan|ypan|blur)\\b"
         },
         {
           "comment": "('#position' | None)",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:xsize|ysize)\\b"
         },
         {
           "comment": "('\\(int, int, int, int\\)' | '\\(float, float, float, float\\)' | None)",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:crop)\\b"
         },
         {
           "comment": "('\\(int, int\\)' | None)",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:corner1|corner2)\\b"
         },
         {
           "comment": "('\\(position, position\\)' | None)",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:xysize)\\b"
         },
         {
           "comment": "('#string' | None)",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:fit)\\b"
         },
         {
@@ -94,26 +104,25 @@
         },
         {
           "comment": "('#Matrix' | '#MatrixColor' | None)",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:matrixcolor)\\b"
         },
         {
           "comment": "('#Matrix' | '#TransformMatrix' | None)",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:matrixtransform)\\b"
         },
         {
           "comment": "('#bool' | '#float' | '\\(float, float, float\\)')",
-          "name": "support.type.property-name.transform.renpy",
+          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:perspective)\\b"
         }
       ]
     },
     "atl-simple-expression": {
       "patterns": [
-        { "include": "source.renpy#expressions" },
+        { "include": "source.renpy#renpy-only-expressions" },
         { "include": "#atl-build-in-properties" },
-        { "include": "source.renpy.python#literal" },
         { "include": "source.renpy.python#member-access" },
         { "include": "source.renpy.python#illegal-operator" },
         { "include": "source.renpy.python#operator" },
@@ -132,7 +141,13 @@
         { "include": "source.renpy.python#special-variables" },
         { "include": "source.renpy.python#ellipsis" },
         { "include": "source.renpy.python#punctuation" },
-        { "include": "source.renpy.python#line-continuation" }
+        { "include": "source.renpy.python#line-continuation" },
+        {
+          "comment": "Tokenize identifiers",
+          "name": "variable.name.python",
+          "match": "\\b([[:alpha:]_]\\w*)\\b"
+        },
+        { "include": "source.renpy#whitespace" }
       ]
     },
     "atl-expression": {
@@ -196,6 +211,10 @@
           },
           "end": "$",
           "patterns": [{ "include": "#atl-expression" }]
+        },
+        {
+          "comment": "TODO: This is a temporary include until we have proper support for all ATL keywords",
+          "include": "source.renpy#keywords"
         }
       ]
     },
@@ -240,7 +259,7 @@
         { "include": "source.renpy.python#builtin-possible-callables" },
         { "include": "#atl-build-in-events" },
         {
-          "name": "entity.name.function.renpy meta.function-call.generic.renpy",
+          "name": "entity.name.function.event.renpy meta.function-call.generic.renpy",
           "match": "\\b([[:alpha:]_]\\w*)\\b"
         }
       ]
@@ -250,7 +269,7 @@
         { "include": "source.renpy.python#builtin-possible-callables" },
         { "include": "#atl-build-in-events" },
         {
-          "name": "entity.name.function.renpy",
+          "name": "entity.name.function.event.def.renpy",
           "match": "\\b([[:alpha:]_]\\w*)\\b"
         }
       ]
@@ -296,7 +315,7 @@
           "patterns": [
             { "include": "source.renpy.python#builtin-possible-callables" },
             {
-              "name": "entity.name.function.renpy meta.function-call.generic.renpy",
+              "name": "entity.name.function.atl-function.renpy meta.function-call.generic.renpy",
               "match": "\\b([[:alpha:]_]\\w*)\\b"
             }
           ]
@@ -314,20 +333,56 @@
         { "include": "#atl-build-in-warpers" },
         { "include": "#atl-build-in-properties" },
         {
-          "name": "entity.name.function.renpy meta.function-call.generic.renpy",
+          "name": "entity.name.function.warper.renpy meta.function-call.generic.renpy",
           "match": "\\b([[:alpha:]_]\\w*)\\b"
         }
       ]
     },
-    "atl-warper": {
-      "comment": "https://www.renpy.org/doc/html/atl.html#warpers",
+    "atl-warper-broken": {
+      "comment": "TODO: This doesn't work right now, we can't assume all identifiers are warpers",
       "name": "meta.atl.warper.renpy",
-      "begin": "\\b(?<!\\.)([[:alpha:]_]\\w*)\\b[ \\t]*",
+      "begin": "(?<=^[ \\t]*)([[:alpha:]_]\\w*)\\b",
       "beginCaptures": {
         "1": { "patterns": [{ "include": "#atl-warper-name" }] }
       },
-      "end": "(?!\\G)",
+      "end": "(?=[ \\t]*#)|$",
       "patterns": [{ "include": "#atl-simple-expression" }]
+    },
+
+    "atl-warper": {
+      "comment": "(TODO: For now we only support build-in warper highlighting) https://www.renpy.org/doc/html/atl.html#warpers",
+      "name": "meta.atl.warper.renpy",
+      "begin": "(?<=^[ \\t]*)(linear|ease|easein|easeout|ease_back|ease_bounce|ease_circ|ease_cubic|ease_elastic|ease_expo|ease_quad|ease_quart|ease_quint|easein_back|easein_bounce|easein_circ|easein_cubic|easein_elastic|easein_expo|easein_quad|easein_quart|easein_quint|easeout_back|easeout_bounce|easeout_circ|easeout_cubic|easeout_elastic|easeout_expo|easeout_quad|easeout_quart|easeout_quint)\\b",
+      "beginCaptures": {
+        "1": { "patterns": [{ "include": "#atl-warper-name" }] }
+      },
+      "end": "(?=[ \\t]*#)|$",
+      "patterns": [{ "include": "#atl-simple-expression" }]
+    },
+
+    "atl-fallback": {
+      "comment": "TODO: This is a temp fix for missing pattern references",
+      "patterns": [{ "include": "source.renpy" }]
+    },
+
+    "transform": {
+      "contentName": "meta.transform.block.renpy",
+      "begin": "^([ \\t]+)?(transform)\\b[ \\t]*(.*)?(:)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.whitespace.leading.renpy" },
+        "2": { "name": "keyword.transform.renpy" },
+        "3": {
+          "patterns": [
+            {
+              "name": "variable.name.transform.renpy",
+              "match": "\\b([[:alpha:]_]\\w*)\\b"
+            }
+          ]
+        },
+        "4": { "name": "punctuation.section.atl.begin.renpy" }
+      },
+      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
+      "patterns": [{ "include": "#atl" }]
     }
   }
 }

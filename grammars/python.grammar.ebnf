@@ -1,3 +1,15 @@
+PYTHON_CONTROL_FLOW_KEYWORD = "if" | "else" | "elif" | "while" | "for"
+    |"return" | "continue" | "yield" | "break" | "pass"
+    | "try" | "finally";
+
+PYTHON_KEYWORD = "True" | "False" | "None" 
+    | PYTHON_CONTROL_FLOW_KEYWORD
+    | "raise" | "except"
+    | "as" | "with" | "from" | "in" | "is" 
+    | "and" | "not" | "or" | "del"
+    | "global" | "nonlocal" | "async" | "await"
+    | "def" | "class" | "lambda" | "import" | "assert";
+
 # PEG grammar for Python
 
 

@@ -18,7 +18,7 @@ WORD_CHAR = ALNUM | "\p{Connector_Punctuation}";
 NEWLINE = "\n" | "\r";
 CHARACTER = "\p{Any}";
 
-IDENTIFIER   =  "\p{XID_Start}", { "\p{XID_Continue}" }; (* Based on Python specification. See: https://docs.python.org/3/reference/lexical_analysis.html#identifiers *)
+IDENTIFIER = "\p{XID_Start}", { "\p{XID_Continue}" }; (* Based on Python specification. See: https://docs.python.org/3/reference/lexical_analysis.html#identifiers *)
 RENPY_KEYWORD = "as" | "at" | "behind" | "call" | "expression" | "hide" | "if" | "in" | "image" | "init" | "jump" | "menu" | "onlayer" | "python" | "return" | "scene" | "show" | "with" | "while" | "zorder";
 OPERATOR = "<>" | "<<" | "<=" | "<" | ">>" | ">=" | ">" | "!=" | "==" | "|" | "^" | "&" | "+" | "-" | "**" | "*" | "//" | "/" | "%" | "~";
 
@@ -39,7 +39,8 @@ INTEGER = [ "+" | "-" ], DIGIT, { DIGIT };
 FLOAT = [ "+" | "-" ], ( DIGIT, { DIGIT }, [ ".", { DIGIT } ] | ".", DIGIT, { DIGIT } ), [ ( "e" | "E" ), [ "+" | "-" ], DIGIT, { DIGIT } ];
 
 (*---Entities---*)
-NAME = IDENTIFIER - KEYWORD;
+WORD = IDENTIFIER;
+NAME = WORD - RENPY_KEYWORD;
 
 (* image specifier *)
 IMAGE_NAME_COMPONENT_NO_DASH = WORD_CHAR - "-", { WORD_CHAR - "-" };
@@ -113,6 +114,34 @@ CAMERA = "camera", [ NAME | "master" ], [ AT_EXPRESSION ], (ATL_SUB_BLOCK | NEWL
 (* image *)
 IMAGE = "image", IMAGE_NAME_NO_DASH, (ATL_SUB_BLOCK | "=", PYTHON_EXPRESSION, NEWLINE);
 
+(* style *)
+STYLE_PROPERTY_PREFIX_GROUP = ("hover" | "idle" | "insensitive" | "activate"), "_";
+STYLE_PROPERTY_PREFIX_SELECTED =  "selected", "_", [ STYLE_PROPERTY_GROUP_PREFIX ];
+STYLE_PROPERTY_PREFIX = STYLE_PROPERTY_PREFIX_SELECTED | STYLE_PROPERTY_PREFIX_GROUP;
+STYLE_PROPERTY =  "activate_sound" | "adjust_spacing" | "aft_bar" | "aft_gutter" | "align" | "alt" | "altruby_style" | "anchor" | "antialias" | "area" | "background" | "bar_invert"
+    | "bar_resizing" | "bar_vertical" | "base_bar" | "black_color" | "bold" | "bottom_bar" | "bottom_gutter" | "bottom_margin" | "bottom_padding" | "box_first_spacing" | "box_layout" | "box_reverse"
+    | "box_spacing" | "box_wrap" | "box_wrap_spacing" | "caret" | "child" | "clipping" | "color" | "debug" | "drop_shadow" | "drop_shadow_color" | "enable_hover" | "first_indent"
+    | "first_spacing" | "fit_first" | "focus_mask" | "focus_rect" | "font" | "fore_bar" | "fore_gutter" | "foreground" | "hinting" | "hover_sound" | "hyperlink_functions" | "italic"
+    | "justify" | "kerning" | "key_events" | "keyboard_focus" | "language" | "layout" | "left_bar" | "left_gutter" | "left_margin" | "left_padding" | "line_leading" | "line_overlap_split"
+    | "line_spacing" | "margin" | "maximum" | "min_width" | "minimum" | "minwidth" | "mipmap" | "modal" | "mouse" | "newline_indent" | "offset" | "order_reverse"
+    | "outline_scaling" | "outlines" | "padding" | "pos" | "rest_indent" | "right_bar" | "right_gutter" | "right_margin" | "right_padding" | "ruby_style" | "size" | "size_group"
+    | "slow_abortable" | "slow_cps" | "slow_cps_multiplier" | "slow_speed" | "sound" | "spacing" | "strikethrough" | "subpixel" | "subtitle_width" | "text_align" | "text_y_fudge" | "textalign"
+    | "thumb" | "thumb_offset" | "thumb_shadow" | "time_policy" | "top_bar" | "top_gutter" | "top_margin" | "top_padding" | "underline" | "unscrollable" | "vertical" | "xalign"
+    | "xanchor" | "xcenter" | "xfill" | "xfit" | "xmargin" | "xmaximum" | "xminimum" | "xoffset" | "xpadding" | "xpos" | "xsize" | "xspacing"
+    | "xysize" | "yalign" | "yanchor" | "ycenter" | "yfill" | "yfit" | "ymargin" | "ymaximum" | "yminimum" | "yoffset" | "ypadding" | "ypos" | "ysize" | "yspacing";
+STYLE_PROPERTY_NAME = [STYLE_PROPERTY_PREFIX, "_"], STYLE_PROPERTY;
+STYLE_IS_CLAUSE = "is", WORD;
+STYLE_CLEAR_CLAUSE = "clear";
+STYLE_TAKE_CLAUSE = "take", NAME;
+STYLE_DEL_CLAUSE = "del", STYLE_PROPERTY_NAME;
+STYLE_VARIANT_CLAUSE = "variant", SIMPLE_EXPRESSION;
+STYLE_PROPERTY_CLAUSE = STYLE_PROPERTY_NAME, SIMPLE_EXPRESSION;
+STYLE_CLAUSE = IS_CLAUSE | CLEAR_CLAUSE | TAKE_CLAUSE | DEL_CLAUSE | VARIANT_CLAUSE | PROPERTY_CLAUSE;
+STYLE_CLAUSE_STATEMENT = STYLE_CLAUSE, NEWLINE;
+STYLE = "style", WORD, { STYLE_CLAUSE };
+STYLE_SUB_BLOCK = ":", NEWLINE, { STYLE_CLAUSE_STATEMENT };
+STYLE = "style", WORD, { STYLE_CLAUSE }, ( STYLE_SUB_BLOCK | NEWLINE );
+
 
 
 
@@ -179,14 +208,7 @@ TRANSLATE_STRING = "translate", NAME, "strings", ":";
 TRANSLATE_BLOCK = "translate", NAME, ( "python" | "style" ), ":";
 TRANSLATE_EARLY_BLOCK = "translate early", NAME, ( "python" | "style" ), ":";
 END_TRANSLATE = "end translate";
-STYLE = "style", [ INTEGER ], NAME, { STYLE_CLAUSE }, [ ":" ];
-STYLE_CLAUSE = ( PARENT_CLAUSE | CLEAR_CLAUSE | TAKE_CLAUSE | DEL_CLAUSE | VARIANT_CLAUSE | PROPERTY_CLAUSE );
-PARENT_CLAUSE = "is", NAME;
-CLEAR_CLAUSE = "clear";
-TAKE_CLAUSE = "take", NAME;
-DEL_CLAUSE = "del", NAME;
-VARIANT_CLAUSE = "variant", SIMPLE_EXPRESSION;
-PROPERTY_CLAUSE = NAME, "=", PYTHON_EXPRESSION;
+
 
 
 WHILE_STATEMENT= WHILE, BLOCK;
@@ -212,19 +234,6 @@ SCREEN_SPACE = " ";
 SCREEN_INDENT = "\t";
 SCREEN_CHILD = SCREEN_PROPERTY | SCREEN_STYLE | SCREEN_USE | SCREEN_VBAR | SCREEN_TAG | SCREEN_TEXT | NEWLINE | SCREEN_NL | SCREEN_SPACE | SCREEN_INDENT;
 SCREEN_CHILDREN = { SCREEN_CHILD };
-
-STYLE_PROPERTY = NAME, "=", PYTHON_EXPRESSION;
-STYLE_PARENT_PROPERTY = "is", NAME;
-STYLE_TAKE_PROPERTY = "take", NAME;
-STYLE_DEL_PROPERTY = "del", NAME;
-STYLE_VARIANT_PROPERTY = "variant", PYTHON_EXPRESSION;
-STYLE_CLEAR_PROPERTY = "clear";
-STYLE_PROPERTIES = STYLE_PARENT_PROPERTY | STYLE_TAKE_PROPERTY | STYLE_DEL_PROPERTY | STYLE_VARIANT_PROPERTY | STYLE_CLEAR_PROPERTY | STYLE_PROPERTY;
-STYLE_CLAUSE = STYLE_PROPERTIES, { ",", STYLE_PROPERTIES };
-STYLE_BLOCK_CLAUSE = STYLE_CLAUSE, NEWLINE;
-STYLE_BLOCK_CLAUSES = { STYLE_BLOCK_CLAUSE };
-STYLE_BLOCK = STYLE_BLOCK_CLAUSES;
-STYLE_STATEMENT = "style", NAME, { STYLE_CLAUSE }, [ ":" ], [ STYLE_BLOCK ];
 
 DEFINE = "define", [ INTEGER ], DOTTED_NAME, "=", PYTHON_EXPRESSION;
 DEFAULT = "default", [ INTEGER ], DOTTED_NAME, "=", PYTHON_EXPRESSION;

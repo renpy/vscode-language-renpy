@@ -3,6 +3,7 @@ import { DecorationOptions, Disposable, ExtensionContext, MarkdownString, Uri, w
 import { CharacterTokenType, LiteralTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "./renpy-tokens";
 import { TokenTree } from "./token-definitions";
 import { tokenizeDocument } from "./tokenizer";
+import { LogLevel, logMessage, logToast } from "../logger";
 
 let timeout: NodeJS.Timer | undefined = undefined;
 
@@ -199,7 +200,7 @@ function updateDecorations() {
         tokenCache = tokenizeDocument(activeEditor.document);
         const t1 = performance.now();
 
-        window.showInformationMessage(`DocumentTokenizer took ${(t1 - t0).toFixed(2)} milliseconds to complete.`);
+        logToast(LogLevel.Info, `DocumentTokenizer took ${(t1 - t0).toFixed(2)} milliseconds to complete.`);
     }
 
     const tokens = tokenCache;
@@ -252,24 +253,36 @@ Content: {${content?.replaceAll("\n", "\\n")}}`,
         const start = activeEditor?.document.positionAt(token.startPos.charStartOffset);
         const end = activeEditor?.document.positionAt(token.endPos.charStartOffset);
         if (range.start.line !== start.line) {
-            console.error(`Start line number is incorrect!. Got: ${range.start.line + 1}, expected: ${start.line + 1}. On token:
-${(decoration.hoverMessage as MarkdownString).value}`);
+            logMessage(
+                LogLevel.Error,
+                `Start line number is incorrect!. Got: ${range.start.line + 1}, expected: ${start.line + 1}. On token:
+${(decoration.hoverMessage as MarkdownString).value}`
+            );
         }
 
         if (range.end.line !== end.line) {
-            console.error(`End line number is incorrect!. Got: ${range.end.line + 1}, expected: ${end.line + 1}. On token:
-${(decoration.hoverMessage as MarkdownString).value}`);
+            logMessage(
+                LogLevel.Error,
+                `End line number is incorrect!. Got: ${range.end.line + 1}, expected: ${end.line + 1}. On token:
+${(decoration.hoverMessage as MarkdownString).value}`
+            );
         }
 
         // Debug char numbers
         if (range.start.character !== start.character) {
-            console.error(`Start char number is incorrect!. Got: ${range.start.character + 1}, expected: ${start.character + 1}. On token:
-${(decoration.hoverMessage as MarkdownString).value}`);
+            logMessage(
+                LogLevel.Error,
+                `Start char number is incorrect!. Got: ${range.start.character + 1}, expected: ${start.character + 1}. On token:
+${(decoration.hoverMessage as MarkdownString).value}`
+            );
         }
 
         if (range.end.character !== end.character) {
-            console.error(`End char number is incorrect!. Got: ${range.end.character + 1}, expected: ${end.character + 1}. On token:
-${(decoration.hoverMessage as MarkdownString).value}`);
+            logMessage(
+                LogLevel.Error,
+                `End char number is incorrect!. Got: ${range.end.character + 1}, expected: ${end.character + 1}. On token:
+${(decoration.hoverMessage as MarkdownString).value}`
+            );
         }
 
         switch (token.tokenType) {

@@ -5,6 +5,7 @@ import { Position, Range as VSRange } from "vscode";
 import { CharacterTokenType, MetaTokenType, TokenType, TokenTypeIndex } from "./renpy-tokens";
 import { TokenPattern, TokenRangePattern, TokenMatchPattern, TokenRepoPattern } from "./token-pattern-types";
 import { Vector } from "../utilities/vector";
+import { LogLevel, logMessage } from "../logger";
 
 export class Range {
     start: number;
@@ -86,7 +87,7 @@ export class Token {
         const end = new Position(this.endPos.line, this.endPos.character);
 
         if (start.isEqual(end)) {
-            console.warn(`Empty token detected at L: ${start.line + 1}, C: ${start.character + 1} !`);
+            logMessage(LogLevel.Warning, `Empty token detected at L: ${start.line + 1}, C: ${start.character + 1} !`);
         }
 
         return new VSRange(start, end);

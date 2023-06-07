@@ -1,0 +1,145 @@
+{
+  "name": "Ren'Py Log",
+  "scopeName": "text.renpy-log",
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+
+  "patterns": [{ "include": "#debug-msg" }, { "include": "#info-msg" }, { "include": "#warning-msg" }, { "include": "#error-msg" }],
+
+  "repository": {
+    "debug-msg": {
+      "name": "markup.changed log.debug.renpy",
+      "begin": "^(\\[)Debug(\\])",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.log.begin" },
+        "2": { "name": "punctuation.definition.log.end" }
+      },
+      "end": "(?=^\\[)",
+      "patterns": [{ "include": "#msg-content" }]
+    },
+    "info-msg": {
+      "name": "log.info.renpy",
+      "begin": "^(\\[)(Info)(\\])",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.log.begin" },
+        "2": { "name": "markup.inserted" },
+        "3": { "name": "punctuation.definition.log.end" }
+      },
+      "end": "(?=^\\[)",
+      "patterns": [{ "include": "#msg-content" }]
+    },
+    "warning-msg": {
+      "name": "entity.name.function.warning, strong log.warning.renpy",
+      "begin": "^(\\[)Warning(\\])",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin" },
+        "2": { "name": "punctuation.definition.tag.end" }
+      },
+      "end": "(?=^\\[)",
+      "patterns": [{ "include": "#msg-content" }]
+    },
+    "error-msg": {
+      "name": "invalid.error, strong log.error.renpy",
+      "begin": "^(\\[)Error(\\])",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.tag.begin" },
+        "2": { "name": "punctuation.definition.tag.end" }
+      },
+      "end": "(?=^\\[)",
+      "patterns": [{ "include": "#msg-content" }]
+    },
+    "msg-content": {
+      "patterns": [
+        {
+          "name": "log.category.renpy",
+          "match": "(?<=^\\[.+?\\] )(\\[)(.+?)(\\])",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.begin" },
+            "2": { "name": "keyword.other" },
+            "3": { "name": "punctuation.definition.tag.end" }
+          }
+        },
+        {
+          "name": "keyword.operator",
+          "match": "(?<=\\[.+?\\]) > "
+        },
+
+        { "include": "#strings" },
+        { "include": "#dates" },
+        { "include": "#other" }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted",
+      "begin": "(\"\"\"|\"|'''|'|```|`)(?=.+?\\1)",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.string.begin" }
+      },
+      "end": "\\1",
+      "endCaptures": {
+        "0": { "name": "punctuation.definition.string.end" }
+      }
+    },
+    "dates": {
+      "patterns": [
+        {
+          "match": "\\b\\d{4}-\\d{2}-\\d{2}(T|\\b)",
+          "name": "comment log.date"
+        },
+        {
+          "match": "(?<=(^|\\s))\\d{2}[^\\w\\s]\\d{2}[^\\w\\s]\\d{4}\\b",
+          "name": "comment log.date"
+        },
+        {
+          "match": "\\b\\d{1,2}:\\d{2}(:\\d{2}([.,]\\d{1,})?)?(Z| ?[+-]\\d{1,2}:\\d{2})?\\b",
+          "name": "comment log.date"
+        }
+      ]
+    },
+    "other": {
+      "patterns": [
+        {
+          "name": "constant.language log.constant",
+          "comment": "Match line numbers in the format L:123 C:456",
+          "match": "\\b(L)(:)(\\d+) (C)(:)(\\d+)\\b",
+          "captures": {
+            "1": { "name": "constant.language" },
+            "2": { "name": "keyword.operator" },
+            "3": { "name": "constant.numeric" },
+            "4": { "name": "constant.language" },
+            "5": { "name": "keyword.operator" },
+            "6": { "name": "constant.numeric" }
+          }
+        },
+
+        {
+          "match": "\\b([0-9a-fA-F]{40}|[0-9a-fA-F]{10}|[0-9a-fA-F]{7})\\b",
+          "name": "constant.language"
+        },
+        {
+          "match": "\\b[0-9a-fA-F]{8}[-]?([0-9a-fA-F]{4}[-]?){3}[0-9a-fA-F]{12}\\b",
+          "name": "constant.language log.constant"
+        },
+        {
+          "match": "\\b([0-9a-fA-F]{2,}[:-])+[0-9a-fA-F]{2,}+\\b",
+          "name": "constant.language log.constant"
+        },
+        {
+          "match": "\\b([0-9]+|true|false|null)\\b",
+          "name": "constant.language log.constant"
+        },
+        {
+          "match": "\\b(0x[a-fA-F0-9]+)\\b",
+          "name": "constant.language log.constant"
+        },
+        {
+          "match": "\\b[a-z]+://\\S+\\b/?",
+          "name": "constant.language log.constant"
+        },
+        {
+          "match": "(?<![\\w/\\\\])([\\w-]+\\.)+([\\w-])+(?![\\w/\\\\])",
+          "name": "constant.language log.constant"
+        }
+      ]
+    }
+  }
+}

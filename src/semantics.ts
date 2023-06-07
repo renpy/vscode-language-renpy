@@ -5,6 +5,7 @@ import { Position, Range, SemanticTokens, SemanticTokensBuilder, SemanticTokensL
 import { Navigation, splitParameters, rangeAsString, getCurrentContext, DataType } from "./navigation";
 import { NavigationData, updateNavigationData } from "./navigation-data";
 import { stripWorkspaceFromFile } from "./workspace";
+import { LogLevel, logMessage } from "./logger";
 
 export function getSemanticTokens(document: TextDocument, legend: SemanticTokensLegend): SemanticTokens {
     const tokensBuilder = new SemanticTokensBuilder(legend);
@@ -178,7 +179,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                             }
                         }
                     } catch (error) {
-                        console.log(error);
+                        logMessage(LogLevel.Error, error as string);
                     }
                 }
             }
@@ -213,7 +214,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                             }
                         }
                     } catch (error) {
-                        console.log(`error at ${filename}:${i}: ${error}`);
+                        logMessage(LogLevel.Error, `error at ${filename}:${i}: ${error}`);
                     }
                 }
             }
@@ -297,7 +298,7 @@ export function getSemanticTokens(document: TextDocument, legend: SemanticTokens
                                 start += m.length + 1;
                             }
                         } catch (error) {
-                            console.log(`error at ${filename}:${i}: ${error}`);
+                            logMessage(LogLevel.Error, `error at ${filename}:${i}: ${error}`);
                         }
                     }
                 }

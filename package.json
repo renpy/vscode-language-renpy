@@ -60,6 +60,14 @@
           "light": "./renpy.svg",
           "dark": "./renpy.svg"
         }
+      },
+      {
+        "id": "renpy-log",
+        "aliases": [
+          "Ren'Py Log"
+        ],
+        "configuration": "./language-configuration.json",
+        "scopeName": "text.renpy-log"
       }
     ],
     "grammars": [
@@ -79,6 +87,11 @@
       {
         "scopeName": "source.renpy.python",
         "path": "./syntaxes/renpy.python.tmLanguage.json"
+      },
+      {
+        "language": "renpy-log",
+        "scopeName": "text.renpy-log",
+        "path": "./syntaxes/renpy.log.tmLanguage.json"
       }
     ],
     "snippets": [

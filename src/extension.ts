@@ -54,17 +54,18 @@ import { findAllReferences } from "./references";
 import { registerDebugDecorator, unregisterDebugDecorator } from "./tokenizer/debug-decorator";
 import { clearTokenCache } from "./tokenizer/tokenizer";
 import { getSignatureHelp } from "./signature";
+import { LogCategory, LogLevel, logCatMessage, logMessage, logToast } from "./logger";
 
 const selector: DocumentSelector = { scheme: "file", language: "renpy" };
 let myStatusBarItem: StatusBarItem;
 
 export async function activate(context: ExtensionContext): Promise<void> {
-    console.log("Ren'Py extension activated");
+    logMessage(LogLevel.Info, "Ren'Py extension activated");
 
     const filepath = getNavigationJsonFilepath();
     const jsonFileExists = fs.existsSync(filepath);
     if (!jsonFileExists) {
-        console.log("Navigation.json file is missing.");
+        logMessage(LogLevel.Warning, "Navigation.json file is missing.");
     }
 
     // hide rpyc files if the setting is enabled
@@ -224,7 +225,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
         try {
             await NavigationData.refresh(true);
         } catch (error) {
-            console.log(error);
+            logMessage(LogLevel.Error, error as string);
         } finally {
             updateStatusBar(getStatusBarText());
         }
@@ -238,7 +239,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
         try {
             window.showTextDocument(uri, { selection: range });
         } catch (error) {
-            window.showWarningMessage(`Could not jump to the location (error: ${error})`);
+            logToast(LogLevel.Warning, `Could not jump to the location (error: ${error})`);
         }
     });
     context.subscriptions.push(gotoFileLocationCommand);
@@ -291,7 +292,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     const runCommand = commands.registerCommand("renpy.runCommand", () => {
         //EsLint recommends config be removed as it has already been declared in a previous scope
         if (!config || !isValidExecutable(config.renpyExecutableLocation)) {
-            window.showErrorMessage("Ren'Py executable location not configured or is invalid.");
+            logToast(LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
         } else {
             //this is kinda a hob botched together attempt that I'm like 30% certain has a chance of working
             debug.startDebugging(
@@ -308,7 +309,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
             //call renpy
             const result = RunWorkspaceFolder();
             if (result) {
-                window.showInformationMessage("Ren'Py is running successfully");
+                logToast(LogLevel.Info, "Ren'Py is running successfully");
             }
         }
     });
@@ -320,16 +321,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
         // Call Ren'Py with the workspace folder and the json-dump argument
         const config = workspace.getConfiguration("renpy");
         if (!config) {
-            window.showErrorMessage("Ren'Py executable location not configured or is invalid.");
+            logToast(LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
         } else {
             if (isValidExecutable(config.renpyExecutableLocation)) {
                 // call renpy
                 const result = ExecuteRenpyCompile();
                 if (result) {
-                    window.showInformationMessage("Ren'Py compilation has completed.");
+                    logToast(LogLevel.Info, "Ren'Py compilation has completed.");
                 }
             } else {
-                window.showErrorMessage("Ren'Py executable location not configured or is invalid.");
+                logToast(LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
             }
         }
     });
@@ -349,50 +350,50 @@ export async function activate(context: ExtensionContext): Promise<void> {
     try {
         fs.watch(getNavigationJsonFilepath(), async (event, filename) => {
             if (filename) {
-                console.log(`${filename} changed`);
+                logMessage(LogLevel.Debug, `${filename} changed`);
                 updateStatusBar("$(sync~spin) Refreshing Ren'Py navigation data...");
                 try {
                     await NavigationData.refresh();
                 } catch (error) {
-                    console.log(`${Date()}: error refreshing NavigationData: ${error}`);
+                    logMessage(LogLevel.Error, `${Date()}: error refreshing NavigationData: ${error}`);
                 } finally {
                     updateStatusBar(getStatusBarText());
                 }
             }
         });
     } catch (error) {
-        console.log(`Watch navigation.json file error: ${error}`);
+        logMessage(LogLevel.Error, `Watch navigation.json file error: ${error}`);
     }
 
     if (config && config.watchFoldersForChanges) {
-        console.log("Starting Watcher for images folder.");
+        logMessage(LogLevel.Info, "Starting Watcher for images folder.");
         try {
             fs.watch(getImagesFolder(), { recursive: true }, async (event, filename) => {
                 if (filename && event === "rename") {
-                    console.log(`${filename} created/deleted`);
+                    logMessage(LogLevel.Debug, `${filename} created/deleted`);
                     await NavigationData.scanForImages();
                 }
             });
         } catch (error) {
-            console.log(`Watch image folder error: ${error}`);
+            logMessage(LogLevel.Error, `Watch image folder error: ${error}`);
         }
 
-        console.log("Starting Watcher for audio folder.");
+        logMessage(LogLevel.Info, "Starting Watcher for audio folder.");
         try {
             fs.watch(getAudioFolder(), { recursive: true }, async (event, filename) => {
                 if (filename && event === "rename") {
-                    console.log(`${filename} created/deleted`);
+                    logMessage(LogLevel.Debug, `${filename} created/deleted`);
                     await NavigationData.scanForAudio();
                 }
             });
         } catch (error) {
-            console.log(`Watch audio folder error: ${error}`);
+            logMessage(LogLevel.Error, `Watch audio folder error: ${error}`);
         }
     }
 }
 
 export function deactivate() {
-    console.log("Ren'Py extension deactivating");
+    logMessage(LogLevel.Info, "Ren'Py extension deactivating");
     fs.unwatchFile(getNavigationJsonFilepath());
 }
 
@@ -426,6 +427,7 @@ function updateStatusBar(text: string) {
     if (text === "") {
         myStatusBarItem.hide();
     } else {
+        logCatMessage(LogLevel.Info, LogCategory.Status, text);
         myStatusBarItem.text = text;
         myStatusBarItem.show();
     }
@@ -468,15 +470,15 @@ function RunWorkspaceFolder(): boolean {
                     env: { PATH: process.env.PATH },
                 });
                 if (result.error) {
-                    console.log(`renpy spawn error: ${result.error}`);
+                    logMessage(LogLevel.Error, `renpy spawn error: ${result.error}`);
                     return false;
                 }
                 if (result.stderr && result.stderr.length > 0) {
-                    console.log(`renpy spawn stderr: ${result.stderr}`);
+                    logMessage(LogLevel.Error, `renpy spawn stderr: ${result.stderr}`);
                     return false;
                 }
             } catch (error) {
-                console.log(`renpy spawn error: ${error}`);
+                logMessage(LogLevel.Error, `renpy spawn error: ${error}`);
                 return false;
             } finally {
                 updateStatusBar(getStatusBarText());
@@ -485,7 +487,7 @@ function RunWorkspaceFolder(): boolean {
         }
         return false;
     } else {
-        console.log("config for rennpy does not exist");
+        logMessage(LogLevel.Warning, "config for rennpy does not exist");
         return false;
     }
 }
@@ -514,15 +516,15 @@ function ExecuteRenpyCompile(): boolean {
                 windowsHide: true,
             });
             if (result.error) {
-                console.log(`renpy spawn error: ${result.error}`);
+                logMessage(LogLevel.Error, `renpy spawn error: ${result.error}`);
                 return false;
             }
             if (result.stderr && result.stderr.length > 0) {
-                console.log(`renpy spawn stderr: ${result.stderr}`);
+                logMessage(LogLevel.Error, `renpy spawn stderr: ${result.stderr}`);
                 return false;
             }
         } catch (error) {
-            console.log(`renpy spawn error: ${error}`);
+            logMessage(LogLevel.Error, `renpy spawn error: ${error}`);
             return false;
         } finally {
             NavigationData.isCompiling = false;

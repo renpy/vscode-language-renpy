@@ -1,5 +1,3 @@
-"use strict";
-
 import { commands, CompletionItem, CompletionItemKind, Position, TextDocument, window, workspace } from "vscode";
 import { getDefinitionFromFile } from "./hover";
 import { DataType, getBaseTypeFromDefine, getNamedParameter, getPyDocsFromTextDocumentAtLine, Navigation, splitParameters, stripQuotes } from "./navigation";
@@ -9,6 +7,8 @@ import { Displayable } from "./displayable";
 import { Character } from "./character";
 import data from "./renpy.json";
 import kwData from "./renpyauto.json";
+import { LogLevel, logMessage, logToast } from "./logger";
+
 const filterCharacter = "\u2588";
 
 export class NavigationData {
@@ -26,7 +26,7 @@ export class NavigationData {
     static isCompiling = false;
 
     static async init(extensionPath: string) {
-        console.log(`NavigationData init`);
+        logMessage(LogLevel.Info, `NavigationData init`);
 
         NavigationData.renpyFunctions = data;
         NavigationData.autoCompleteKeywords = kwData;
@@ -58,13 +58,13 @@ export class NavigationData {
     }
 
     static async refresh(interactive = false): Promise<boolean> {
-        console.log(`${Date()}: NavigationData refresh`);
+        logMessage(LogLevel.Info, `${Date()}: NavigationData refresh`);
         NavigationData.isImporting = true;
         try {
             NavigationData.data = readNavigationJson();
 
             if (NavigationData.data.error) {
-                window.showWarningMessage("Navigation data is empty. Ren'Py could not compile your project. Please check your project can start successfully.");
+                logToast(LogLevel.Warning, "Navigation data is empty. Ren'Py could not compile your project. Please check your project can start successfully.");
             }
             if (NavigationData.data.location === undefined) {
                 NavigationData.data.location = {};
@@ -99,14 +99,14 @@ export class NavigationData {
             await NavigationData.scanForFonts();
             await NavigationData.scanForAudio();
             commands.executeCommand("renpy.refreshDiagnostics");
-            console.log(`NavigationData for ${NavigationData.data.name} v${NavigationData.data.version} loaded`);
+            logMessage(LogLevel.Info, `NavigationData for ${NavigationData.data.name} v${NavigationData.data.version} loaded`);
             if (interactive) {
-                window.showInformationMessage(`NavigationData for ${NavigationData.data.name} v${NavigationData.data.version} loaded`);
+                logToast(LogLevel.Info, `NavigationData for ${NavigationData.data.name} v${NavigationData.data.version} loaded`);
             }
         } catch (error) {
-            console.log(`Error loading NavigationData.json: ${error}`);
+            logMessage(LogLevel.Error, `Error loading NavigationData.json: ${error}`);
             if (interactive) {
-                window.showErrorMessage(`NavigationData.json not loaded. Please check Ren'Py can start your project successfully.`);
+                logToast(LogLevel.Error, `NavigationData.json not loaded. Please check Ren'Py can start your project successfully.`);
             }
         } finally {
             NavigationData.isImporting = false;
@@ -913,7 +913,7 @@ export class NavigationData {
     }
 
     static async getCharacterImageAttributes() {
-        //console.log("getCharacterImageAttributes");
+        //logMessage(LogLevel.Info, "getCharacterImageAttributes");
         const characters = NavigationData.gameObjects["characters"];
         const displayables = NavigationData.data.location["displayable"];
         for (const key in characters) {
@@ -1034,7 +1034,7 @@ export class NavigationData {
 export function readNavigationJson() {
     try {
         const filepath = getNavigationJsonFilepath();
-        console.log(`readNavigationJson: ${filepath}`);
+        logMessage(LogLevel.Info, `readNavigationJson: ${filepath}`);
         let flatData;
         try {
             flatData = fs.readFileSync(filepath, "utf-8");
@@ -1044,7 +1044,7 @@ export function readNavigationJson() {
         const json = JSON.parse(flatData);
         return json;
     } catch (error) {
-        window.showErrorMessage(`readNavigationJson error: ${error}`);
+        logToast(LogLevel.Error, `readNavigationJson error: ${error}`);
     }
 }
 

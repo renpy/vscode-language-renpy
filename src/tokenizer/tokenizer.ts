@@ -7,6 +7,7 @@ import { RenpyPatterns } from "./token-patterns.g";
 import { Stack } from "../utilities/stack";
 import { Vector } from "../utilities/vector";
 import { TokenPatternCapture, TokenCapturePattern, TokenRepoPattern, TokenRangePattern, TokenMatchPattern } from "./token-pattern-types";
+import { LogCategory, LogLevel, logCatMessage } from "../logger";
 
 const cloneScanResult = (obj: ScanResult | undefined): ScanResult | undefined => {
     if (obj === undefined) return undefined;
@@ -57,9 +58,9 @@ export function tokenizeDocument(document: TextDocument): TokenTree {
         return cachedTokens.tokens;
     }
 
-    console.log(`Running tokenizer on document: ${document.fileName}`);
+    logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Running tokenizer on document: ${document.fileName}`);
     const tokenizer = new DocumentTokenizer(document);
-    console.log(`Tokenizer completed!`);
+    logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Tokenizer completed!`);
     tokenCache.set(document.uri, { documentVersion: document.version, tokens: tokenizer.tokens });
     return tokenizer.tokens;
 }
@@ -78,7 +79,7 @@ function benchmark(document: TextDocument) {
     const onePercent = loops / 100;
     const everyX = onePercent * reportEveryXPercent;
 
-    console.log(`Running tokenizer benchmark for ${loops} loops...`);
+    logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Running tokenizer benchmark for ${loops} loops...`);
 
     let avg = 0;
     for (let i = 0; i < loops; ++i) {
@@ -90,7 +91,7 @@ function benchmark(document: TextDocument) {
 
         // This is really just here to prevent the unused variable error
         if (tokenizer.tokens.isEmpty()) {
-            console.error("No tokens were found.");
+            logCatMessage(LogLevel.Error, LogCategory.Tokenizer, "No tokens were found.");
         }
 
         // Show timer
@@ -104,11 +105,13 @@ function benchmark(document: TextDocument) {
             .join(":")
             .replace(/\b(\d)(?=[hms])/g, "0$1");
 
-        if (i % everyX === 0) console.log(`${i / onePercent}% complete... (avg.: ${msLoop.toFixed(2)}ms, approx. ${timeString} remaining)`);
+        if (i % everyX === 0) {
+            logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `${i / onePercent}% complete... (avg.: ${msLoop.toFixed(2)}ms, approx. ${timeString} remaining)`);
+        }
     }
     avg /= loops;
 
-    console.log(`DocumentTokenizer took ${avg} avg. milliseconds to complete.`);
+    logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `DocumentTokenizer took ${avg} avg. milliseconds to complete.`);
 }
 
 function setupAndValidatePatterns() {
@@ -141,7 +144,7 @@ function setupAndValidatePatterns() {
             }
 
             if (gAnchorRe.test(reBeginSource)) {
-                console.warn("\\G anchor is not supported and will be ignored!");
+                logCatMessage(LogLevel.Warning, LogCategory.Tokenizer, "\\G anchor is not supported and will be ignored!", true);
                 reBeginSource = reBeginSource.replace(gAnchorRe, "");
             }
 
@@ -181,7 +184,7 @@ function setupAndValidatePatterns() {
             }
 
             if (gAnchorRe.test(reEndSource)) {
-                console.warn("\\G anchor is not supported and will be ignored!");
+                logCatMessage(LogLevel.Warning, LogCategory.Tokenizer, "\\G anchor is not supported and will be ignored!", true);
                 reEndSource = reEndSource.replace(gAnchorRe, "");
             }
 
@@ -290,7 +293,12 @@ class DocumentTokenizer {
 
             if (captures[i] === undefined) {
                 const pos = this.positionAt(startPos);
-                console.warn(`There is no pattern defined for capture group '${i}', on a pattern that matched '${match[i]}' near L:${pos.line + 1} C:${pos.character + 1}.\nThis should probably be added or be a non-capturing group.`);
+                logCatMessage(
+                    LogLevel.Warning,
+                    LogCategory.Tokenizer,
+                    `There is no pattern defined for capture group '${i}', on a pattern that matched '${match[i]}' near L:${pos.line + 1} C:${pos.character + 1}.\nThis should probably be added or be a non-capturing group.`,
+                    true
+                );
                 continue;
             }
 
@@ -592,12 +600,12 @@ class DocumentTokenizer {
 
         const coverageResult = this.checkTokenTreeCoverage(rangeNode, new Range(startPos, endPos));
         if (!coverageResult.valid) {
-            console.warn(`The token tree is not covering the entire match range!`);
+            logCatMessage(LogLevel.Warning, LogCategory.Tokenizer, `The token tree is not covering the entire match range!`, true);
             for (const gap of coverageResult.gaps) {
                 const gapStartPos = this.document.positionAt(gap.start);
                 const gapEndPos = this.document.positionAt(gap.end);
                 const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
-                console.warn(`Gap from L${gapStartPos.line + 1}:${gapStartPos.character + 1} to L${gapEndPos.line + 1}:${gapEndPos.character + 1}, Text: '${text}'`);
+                logCatMessage(LogLevel.Warning, LogCategory.Tokenizer, `Gap from L:${gapStartPos.line + 1} C:${gapStartPos.character + 1} to L:${gapEndPos.line + 1} C:${gapEndPos.character + 1}, Text: '${text}'`, true);
             }
         }
 
@@ -622,12 +630,12 @@ class DocumentTokenizer {
 
         const coverageResult = this.checkTokenTreeCoverage(contentNode, new Range(startPos, endPos));
         if (!coverageResult.valid) {
-            console.warn(`The token tree is not covering the entire match range!`);
+            logCatMessage(LogLevel.Warning, LogCategory.Tokenizer, `The token tree is not covering the entire match range!`, true);
             for (const gap of coverageResult.gaps) {
                 const gapStartPos = this.document.positionAt(gap.start);
                 const gapEndPos = this.document.positionAt(gap.end);
                 const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
-                console.warn(`Gap from L${gapStartPos.line + 1}:${gapStartPos.character + 1} to L${gapEndPos.line + 1}:${gapEndPos.character + 1}, Text: '${text}'`);
+                logCatMessage(LogLevel.Warning, LogCategory.Tokenizer, `Gap from L${gapStartPos.line + 1}:${gapStartPos.character + 1} to L${gapEndPos.line + 1}:${gapEndPos.character + 1}, Text: '${text}'`, true);
             }
         }
 
@@ -692,7 +700,7 @@ class DocumentTokenizer {
             this.applyScanResult(bestMatch, source, parentNode);
 
             if (failSafeIndex === lastMatchIndex) {
-                console.error("The loop has not advanced since the last cycle. This indicates a programming error. Breaking the loop!");
+                logCatMessage(LogLevel.Error, LogCategory.Tokenizer, "The loop has not advanced since the last cycle. This indicates a programming error. Breaking the loop!", true);
                 break;
             }
         }

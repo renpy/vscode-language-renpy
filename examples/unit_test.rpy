@@ -1199,6 +1199,14 @@
         translate piglatin python:
             style.default.font = "stonecutter.ttf"
 
+            old "These two lines will be combined together to form a long line.\n\nThis line will be separate."
+            new _p("""
+                These two lines will be combined together
+                to form a long line. Bork bork bork.
+
+                This line will be separate. Bork bork bork.
+                """)
+
         frame:
             style_prefix "pref"
             has vbox
@@ -1214,13 +1222,7 @@
             This line will be separate.
             """)
 
-        old "These two lines will be combined together to form a long line.\n\nThis line will be separate."
-        new _p("""
-            These two lines will be combined together
-            to form a long line. Bork bork bork.
-
-            This line will be separate. Bork bork bork.
-            """)
+        
 
     #endregion Translation
 

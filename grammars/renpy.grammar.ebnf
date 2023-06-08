@@ -1,6 +1,6 @@
 (* Recommended extension for EBNF syntax highlighting: https://marketplace.visualstudio.com/items?itemName=omkov.vscode-ebnf *)
 
-(*===Common Expressions===*)
+(*===Tokens with definition===*)
 (* 
     POSIX character classes defined using unicode categories 
     For POSIX see: https://www.regular-expressions.info/posixbrackets.html
@@ -16,108 +16,28 @@ HEX_DIGIT = "\p{Hex_Digit}";
 ALNUM = ALPHA | DIGIT;
 WORD_CHAR = ALNUM | "\p{Connector_Punctuation}";
 NEWLINE = "\n" | "\r";
+WHITESPACE = " " | "\t";
+IDENT = WHITESPACE, { WHITESPACE };
 CHARACTER = "\p{Any}";
 
 IDENTIFIER = "\p{XID_Start}", { "\p{XID_Continue}" }; (* Based on Python specification. See: https://docs.python.org/3/reference/lexical_analysis.html#identifiers *)
 RENPY_KEYWORD = "as" | "at" | "behind" | "call" | "expression" | "hide" | "if" | "in" | "image" | "init" | "jump" | "menu" | "onlayer" | "python" | "return" | "scene" | "show" | "with" | "while" | "zorder";
 OPERATOR = "<>" | "<<" | "<=" | "<" | ">>" | ">=" | ">" | "!=" | "==" | "|" | "^" | "&" | "+" | "-" | "**" | "*" | "//" | "/" | "%" | "~";
 
-(*===Renpy Expressions===*)
-AS_EXPRESSION = "as", NAME;
-AT_EXPRESSION = "at", SIMPLE_EXPRESSION_LIST;
-ONLAYER_EXPRESSION = "onlayer", NAME;
-ZORDER_EXPRESSION = "zorder", SIMPLE_EXPRESSION;
-BEHIND_EXPRESSION = "behind", NAME, {",", NAME};
-IF_EXPRESSION = "if", PYTHON_EXPRESSION;
-EXPRESSION_CLAUSE = "expression", SIMPLE_EXPRESSION;
-FROM_EXPRESSION = "from", LABEL_NAME;
-WITH_EXPRESSION = "with", SIMPLE_EXPRESSION;
-
-(*---Literals---*)
 HASH = HEX_DIGIT, { HEX_DIGIT };
 INTEGER = [ "+" | "-" ], DIGIT, { DIGIT };
 FLOAT = [ "+" | "-" ], ( DIGIT, { DIGIT }, [ ".", { DIGIT } ] | ".", DIGIT, { DIGIT } ), [ ( "e" | "E" ), [ "+" | "-" ], DIGIT, { DIGIT } ];
 
-(*---Entities---*)
 WORD = IDENTIFIER;
 NAME = WORD - RENPY_KEYWORD;
-
-(* image specifier *)
+DOTTED_NAME = NAME, { ".", NAME };
+LABEL_NAME = ["."], NAME, [ ".", NAME ];
 IMAGE_NAME_COMPONENT_NO_DASH = WORD_CHAR - "-", { WORD_CHAR - "-" };
-IMAGE_NAME_COMPONENT = WORD_CHAR, { WORD_CHAR };
-IMAGE_NAME = IMAGE_NAME_COMPONENT, { IMAGE_NAME_COMPONENT };
-IMAGE_NAME_NO_DASH = IMAGE_NAME_COMPONENT_NO_DASH, { IMAGE_NAME_COMPONENT_NO_DASH };
+IMAGE_NAME_COMPONENT = WORD_CHAR+;
+IMAGE_NAME_NO_DASH = IMAGE_NAME_COMPONENT_NO_DASH, { WHITESPACE, IMAGE_NAME_COMPONENT_NO_DASH };
+IMAGE_NAME = IMAGE_NAME_COMPONENT, { WHITESPACE, IMAGE_NAME_COMPONENT };
 
-IMAGE_SPECIFIER_CLAUSE = AS_EXPRESSION | AT_EXPRESSION | ONLAYER_EXPRESSION | ZORDER_EXPRESSION | BEHIND_EXPRESSION;
-IMAGE_SPECIFIER = [ EXPRESSION_CLAUSE | IMAGE_NAME ], { IMAGE_SPECIFIER_CLAUSE };
-
-
-(*===Renpy Statements===*)
-
-SUB_BLOCK = ":", NEWLINE, BLOCK;
-ATL_SUB_BLOCK = ":", NEWLINE, ATL_BLOCK;
-
-(* if *)
-IF_CLAUSE = IF_EXPRESSION, SUB_BLOCK;
-ELIF_CLAUSE = "elif", PYTHON_EXPRESSION, SUB_BLOCK;
-ELSE_CLAUSE = "else", SUB_BLOCK;
-IF_STATEMENT = IF_CLAUSE, { ELIF_CLAUSE }, [ ELSE_CLAUSE ];
-
-(* while *)
-WHILE = "while", PYTHON_EXPRESSION, SUB_BLOCK;
-
-(* pass *)
-PASS = "pass", NEWLINE;
-
-(* return *)
-RETURN = "return", [ PYTHON_EXPRESSION ], NEWLINE;
-
-(* jump *)
-JUMP = "jump", ( EXPRESSION_CLAUSE | LABEL_NAME ), NEWLINE;
-
-(* call *)
-CALL = "call", ( EXPRESSION_CLAUSE, [ "pass" ] | LABEL_NAME ), [ ARGUMENTS ], [ FROM_EXPRESSION ], NEWLINE;
-
-(* with *)
-WITH = WITH_EXPRESSION, NEWLINE;
-
-(* say *)
-SAY_WHO = SIMPLE_EXPRESSION;
-SAY_WHAT = TRIPLE_STRING | STRING;
-SAY_ATTRIBUTES = "-", {IMAGE_NAME_COMPONENT};
-SAY_TEMPORARY_ATTRIBUTES = "@", SAY_ATTRIBUTES;
-SAY = [SAY_WHO], [SAY_ATTRIBUTES], [SAY_TEMPORARY_ATTRIBUTES], SAY_WHAT;
-
-(* menu *)
-MENU = "menu", [ LABEL_NAME ], [ ARGUMENTS ], MENU_BLOCK;
-
-(* menu block *)
-MENUITEM_SET = "set", PYTHON_EXPRESSION, NEWLINE;
-MENUITEM_CAPTION = SAY;
-MENUITEM_CHOICE = STRING, [ ARGUMENTS ], [ IF_EXPRESSION ], SUB_BLOCK;
-MENUITEM_BLOCK_STATEMENT = MENUITEM_SET | WITH | MENUITEM_CAPTION | MENUITEM_CHOICE;
-MENU_BLOCK = MENUITEM_BLOCK_STATEMENT, { MENUITEM_BLOCK_STATEMENT };
-
-(* scene *)
-SCENE = "scene", [ ONLAYER_EXPRESSION ], [ IMAGE_SPECIFIER, [ WITH ] ], (ATL_SUB_BLOCK | NEWLINE);
-
-(* show *)
-SHOW = "show", IMAGE_SPECIFIER, [ WITH ], (ATL_SUB_BLOCK | NEWLINE);
-SHOW_LAYER = "show", "layer", NAME, [ AT_EXPRESSION ], (ATL_SUB_BLOCK | NEWLINE);
-
-(* hide *)
-HIDE = "hide", IMAGE_SPECIFIER, [ WITH ], NEWLINE;
-
-(* camera *)
-CAMERA = "camera", [ NAME | "master" ], [ AT_EXPRESSION ], (ATL_SUB_BLOCK | NEWLINE);
-
-(* image *)
-IMAGE = "image", IMAGE_NAME_NO_DASH, (ATL_SUB_BLOCK | "=", PYTHON_EXPRESSION, NEWLINE);
-
-(* style *)
-STYLE_PROPERTY_PREFIX_GROUP = ("hover" | "idle" | "insensitive" | "activate"), "_";
-STYLE_PROPERTY_PREFIX_SELECTED =  "selected", "_", [ STYLE_PROPERTY_GROUP_PREFIX ];
-STYLE_PROPERTY_PREFIX = STYLE_PROPERTY_PREFIX_SELECTED | STYLE_PROPERTY_PREFIX_GROUP;
+STYLE_PROPERTY_PREFIX =  [ "selected_" ], [ ("hover_" | "idle_" | "insensitive_" | "activate_") ];
 STYLE_PROPERTY =  "activate_sound" | "adjust_spacing" | "aft_bar" | "aft_gutter" | "align" | "alt" | "altruby_style" | "anchor" | "antialias" | "area" | "background" | "bar_invert"
     | "bar_resizing" | "bar_vertical" | "base_bar" | "black_color" | "bold" | "bottom_bar" | "bottom_gutter" | "bottom_margin" | "bottom_padding" | "box_first_spacing" | "box_layout" | "box_reverse"
     | "box_spacing" | "box_wrap" | "box_wrap_spacing" | "caret" | "child" | "clipping" | "color" | "debug" | "drop_shadow" | "drop_shadow_color" | "enable_hover" | "first_indent"
@@ -129,18 +49,115 @@ STYLE_PROPERTY =  "activate_sound" | "adjust_spacing" | "aft_bar" | "aft_gutter"
     | "thumb" | "thumb_offset" | "thumb_shadow" | "time_policy" | "top_bar" | "top_gutter" | "top_margin" | "top_padding" | "underline" | "unscrollable" | "vertical" | "xalign"
     | "xanchor" | "xcenter" | "xfill" | "xfit" | "xmargin" | "xmaximum" | "xminimum" | "xoffset" | "xpadding" | "xpos" | "xsize" | "xspacing"
     | "xysize" | "yalign" | "yanchor" | "ycenter" | "yfill" | "yfit" | "ymargin" | "ymaximum" | "yminimum" | "yoffset" | "ypadding" | "ypos" | "ysize" | "yspacing";
-STYLE_PROPERTY_NAME = [STYLE_PROPERTY_PREFIX, "_"], STYLE_PROPERTY;
-STYLE_IS_CLAUSE = "is", WORD;
-STYLE_CLEAR_CLAUSE = "clear";
-STYLE_TAKE_CLAUSE = "take", NAME;
-STYLE_DEL_CLAUSE = "del", STYLE_PROPERTY_NAME;
-STYLE_VARIANT_CLAUSE = "variant", SIMPLE_EXPRESSION;
-STYLE_PROPERTY_CLAUSE = STYLE_PROPERTY_NAME, SIMPLE_EXPRESSION;
-STYLE_CLAUSE = IS_CLAUSE | CLEAR_CLAUSE | TAKE_CLAUSE | DEL_CLAUSE | VARIANT_CLAUSE | PROPERTY_CLAUSE;
-STYLE_CLAUSE_STATEMENT = STYLE_CLAUSE, NEWLINE;
-STYLE = "style", WORD, { STYLE_CLAUSE };
-STYLE_SUB_BLOCK = ":", NEWLINE, { STYLE_CLAUSE_STATEMENT };
-STYLE = "style", WORD, { STYLE_CLAUSE }, ( STYLE_SUB_BLOCK | NEWLINE );
+STYLE_PROPERTY_NAME = [STYLE_PROPERTY_PREFIX], STYLE_PROPERTY;
+
+PYTHON_EXPRESSION = ? any valid Python expression ?;
+PARENTHESIZED_PYTHON = ( "(", PYTHON_EXPRESSION, ")" )
+    | ( "[", PYTHON_EXPRESSION, "]" )
+    | ( "{", PYTHON_EXPRESSION, "}" )
+    ;
+
+(*===Renpy Expressions===*)
+as_expression = "as", NAME;
+at_expression = "at", simple_expression_list;
+onlayer_expression = "onlayer", NAME;
+zorder_expression = "zorder", simple_expression;
+behind_expression = "behind", NAME, {",", NAME};
+if_expression = "if", python_expression;
+expression_clause = "expression", simple_expression;
+from_expression = "from", LABEL_NAME;
+with_expression = "with", simple_expression;
+
+(* image specifier *)
+image_specifier = [ expression_clause | IMAGE_NAME ], { image_specifier_clause };
+image_specifier_clause = as_expression | at_expression | onlayer_expression | zorder_expression | behind_expression;
+
+simple_expression = { OPERATOR }, ( PYTHON_STRING | NAME | FLOAT | PARENTHESIZED_PYTHON ), [ (".", NAME) | PARENTHESIZED_PYTHON ]
+simple_operator_expression = simple_expression, { OPERATOR , simple_expression };
+simple_expression_list = simple_expression, { ",", simple_expression };
+
+
+(*===Renpy Statements===*)
+
+sub_block = ":", NEWLINE, BLOCK;
+atl_sub_block = ":", NEWLINE, ATL_BLOCK;
+
+(* if *)
+if_clause = if_expression, sub_block;
+elif_clause = "elif", python_expression, sub_block;
+else_clause = "else", sub_block;
+if_statement = if_clause, { elif_clause }, [ else_clause ];
+
+(* while *)
+while = "while", python_expression, sub_block;
+
+(* pass *)
+pass = "pass", NEWLINE;
+
+(* return *)
+return = "return", [ python_expression ], NEWLINE;
+
+(* jump *)
+jump = "jump", ( expression_clause | LABEL_NAME ), NEWLINE;
+
+(* call *)
+call = "call", ( expression_clause, [ "pass" ] | LABEL_NAME ), [ ARGUMENTS ], [ from_expression ], NEWLINE;
+
+(* with *)
+with = with_expression, NEWLINE;
+
+(* say *)
+say_who = simple_expression;
+say_what = TRIPLE_STRING | STRING;
+say_attributes = "-", {IMAGE_NAME_COMPONENT};
+say_temporary_attributes = "@", say_attributes;
+say = [say_who], [say_attributes], [say_temporary_attributes], say_what;
+
+(* menu *)
+menu = "menu", [ LABEL_NAME ], [ ARGUMENTS ], menu_block;
+
+(* menu block *)
+menuitem_set = "set", python_expression, NEWLINE;
+menuitem_caption = say;
+menuitem_choice = STRING, [ ARGUMENTS ], [ if_expression ], sub_block;
+menuitem_block_statement = menuitem_set | with | menuitem_caption | menuitem_choice;
+menu_block = menuitem_block_statement, { menuitem_block_statement };
+
+(* scene *)
+scene = "scene", [ onlayer_expression ], [ image_specifier, [ with ] ], (atl_sub_block | NEWLINE);
+
+(* show *)
+show = "show", image_specifier, [ with ], (atl_sub_block | NEWLINE);
+show_layer = "show", "layer", NAME, [ at_expression ], (atl_sub_block | NEWLINE);
+
+(* hide *)
+hide = "hide", image_specifier, [ with ], NEWLINE;
+
+(* camera *)
+camera = "camera", [ NAME | "master" ], [ at_expression ], (atl_sub_block | NEWLINE);
+
+(* image *)
+image = "image", IMAGE_NAME_NO_DASH, (atl_sub_block | "=", python_expression, NEWLINE);
+
+(* style *)
+style = "style", WORD, { style_clause }, ( style_sub_block | NEWLINE );
+style_clause = style_is_clause 
+    | style_clear_clause 
+    | style_take_clause 
+    | style_del_clause 
+    | style_variant_clause 
+    | style_property_clause
+    ;
+
+style_sub_block = ":", NEWLINE, INDENT, { style_clause_statement };
+style_clause_statement = style_clause, NEWLINE;
+
+style_is_clause = "is", WORD;
+style_clear_clause = "clear";
+style_take_clause = "take", NAME;
+style_del_clause = "del", STYLE_PROPERTY_NAME;
+style_variant_clause = "variant", simple_expression;
+style_property_clause = STYLE_PROPERTY_NAME, simple_expression;
 
 
 
@@ -162,8 +179,7 @@ UNICODE_ESCAPE = "u", HEX_DIGIT, HEX_DIGIT, HEX_DIGIT, HEX_DIGIT;
 ESCAPE_SEQUENCE = "\\", ( CHARACTER | UNICODE_ESCAPE );
 
 
-DOTTED_NAME = NAME, { ".", NAME };
-LABEL_NAME = ["."], NAME, [ ".", NAME ];
+
 
 
 STRING = [ "r" ], ( SINGLE_QUOTED_STRING | DOUBLE_QUOTED_STRING );
@@ -174,17 +190,14 @@ TRIPLE_SINGLE_QUOTED_STRING = "'''", { CHARACTER - "'" | ESCAPE_SEQUENCE }, "'''
 TRIPLE_DOUBLE_QUOTED_STRING = '"""', { CHARACTER - '"' | ESCAPE_SEQUENCE }, '"""';
 
 PYTHON_STRING = STRING;
-PARENTHESIZED_PYTHON = "(", PYTHON_EXPRESSION, ")";
-PYTHON_EXPRESSION = ? any valid Python expression ?;
 
-PARAMETER = NAME, [ "=", PYTHON_EXPRESSION ];
+
+PARAMETER = NAME, [ "=", python_expression ];
 PARAMETERS = "(", [ PARAMETER, { ",", PARAMETER } ], ")";
-ARGUMENT = [ NAME, "=" ], PYTHON_EXPRESSION;
+ARGUMENT = [ NAME, "=" ], python_expression;
 ARGUMENTS = "(", [ ARGUMENT, { ",", ARGUMENT } ], ")";
 
-SIMPLE_EXPRESSION = [ OPERATOR ], ( NAME | PYTHON_STRING | PARENTHESIZED_PYTHON ), { ".", ( NAME | PARENTHESIZED_PYTHON ) }, [ OPERATOR ];
-SIMPLE_EXPRESSION_LIST = SIMPLE_EXPRESSION, { ",", SIMPLE_EXPRESSION };
-EXPRESSION = "expression", SIMPLE_EXPRESSION;
+EXPRESSION = "expression", simple_expression;
 
 
 
@@ -211,20 +224,20 @@ END_TRANSLATE = "end translate";
 
 
 
-WHILE_STATEMENT= WHILE, BLOCK;
+while_statement= while, BLOCK;
 LABEL_STATEMENT= LABEL, BLOCK;
 PYTHON_STATEMENT= PYTHON, BLOCK;
 
 BLOCK = { STATEMENT };
-STATEMENT = WHILE_STATEMENT | IF_STATEMENT | JUMP | CALL | RETURN | PYTHON_STATEMENT | SCENE | LABEL_STATEMENT | MENU_STATEMENT | PASS | HIDE | SHOW | WITH | TRANSFORM | DEFINE | DEFAULT | SCREEN;
+STATEMENT = while_statement | if_statement | jump | call | return | PYTHON_STATEMENT | scene | LABEL_STATEMENT | menu_statement | pass | hide | show | with | TRANSFORM | DEFINE | DEFAULT | SCREEN;
 
 
 
 
 SCREEN = "screen", NAME, [ PARAMETERS ], ":";
-SCREEN_PROPERTY = NAME, "=", PYTHON_EXPRESSION;
-SCREEN_STYLE_PROPERTY = NAME, "=", PYTHON_EXPRESSION;
-SCREEN_STYLE = "style", NAME, { SCREEN_STYLE_PROPERTY }, ":";
+SCREEN_PROPERTY = NAME, "=", python_expression;
+SCREEN_STYLE_PROPERTY = NAME, "=", python_expression;
+SCREEN_style = "style", NAME, { SCREEN_STYLE_PROPERTY }, ":";
 SCREEN_USE = "use", NAME, [ ARGUMENTS ];
 SCREEN_VBAR = "|";
 SCREEN_TAG = "$";
@@ -232,19 +245,19 @@ SCREEN_TEXT = PYTHON_STRING;
 SCREEN_NL = "%";
 SCREEN_SPACE = " ";
 SCREEN_INDENT = "\t";
-SCREEN_CHILD = SCREEN_PROPERTY | SCREEN_STYLE | SCREEN_USE | SCREEN_VBAR | SCREEN_TAG | SCREEN_TEXT | NEWLINE | SCREEN_NL | SCREEN_SPACE | SCREEN_INDENT;
+SCREEN_CHILD = SCREEN_PROPERTY | SCREEN_style | SCREEN_USE | SCREEN_VBAR | SCREEN_TAG | SCREEN_TEXT | NEWLINE | SCREEN_NL | SCREEN_SPACE | SCREEN_INDENT;
 SCREEN_CHILDREN = { SCREEN_CHILD };
 
-DEFINE = "define", [ INTEGER ], DOTTED_NAME, "=", PYTHON_EXPRESSION;
-DEFAULT = "default", [ INTEGER ], DOTTED_NAME, "=", PYTHON_EXPRESSION;
+DEFINE = "define", [ INTEGER ], DOTTED_NAME, "=", python_expression;
+DEFAULT = "default", [ INTEGER ], DOTTED_NAME, "=", python_expression;
 
 INIT_STATEMENT = "init", [ INTEGER ], STATEMENT;
 
 
 
-BLOCK_STATEMENT = WHILE, BLOCK | IF_STATEMENT | MENU, BLOCK | SCREEN;
+BLOCK_STATEMENT = while, BLOCK | if_statement | menu, BLOCK | SCREEN;
 
-STATEMENT = JUMP | CALL | RETURN | SHOW | HIDE | SCENE | WITH | MENU_ITEM | CAPTION | SAY_MENU_ITEM | SAY | DEFINE_STATEMENT | DEFAULT_STATEMENT | INIT_STATEMENT | BLOCK_STATEMENT;
+STATEMENT = jump | call | return | show | hide | scene | with | menu_item | CAPTION | say_menu_item | say | DEFINE_STATEMENT | DEFAULT_STATEMENT | INIT_STATEMENT | BLOCK_STATEMENT;
 
 BLOCK = STATEMENT, { STATEMENT };
 

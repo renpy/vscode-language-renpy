@@ -25,7 +25,7 @@
       ]
     },
     "screen-build-in-properties": {
-      "comment": "https://www.renpy.org/doc/html/atl.html#list-of-transform-properties",
+      "comment": "These are the ATL keywords, will need to fix this later",
       "patterns": [
         {
           "comment": "Special manipulation keywords",
@@ -36,6 +36,18 @@
             "3": { "name": "keyword.clockwise.renpy" },
             "4": { "name": "keyword.counterclockwise.renpy" }
           }
+        },
+        {
+          "comment": "Special manipulation keywords",
+          "match": "\\b(?<!\\.)(key|input|(image)?button|grid|auto|mousearea|side|timer|[vh]?bar|viewport|scrollbars|mousewheel|vpgrid|imagemap)\\b",
+          "captures": {
+            "1": { "name": "keyword.other.screen.renpy" }
+          }
+        },
+        {
+          "comment": "Random props",
+          "name": "entity.name.tag.css.transform.renpy",
+          "match": "\\b(?<!\\.)(?:[xy]padding|area|(un)?hovered|draggable|cols|spacing|side_[xy]align)\\b"
         },
         {
           "comment": "position props (int, absolute, or a float)",
@@ -248,7 +260,7 @@
         "3": { "name": "punctuation.section.block.begin.renpy" }
       },
       "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-      "patterns": [{ "include": "source.renpy.atl#atl" }]
+      "patterns": [{ "include": "#screen-language" }]
     },
     "screen": {
       "patterns": [
@@ -278,6 +290,7 @@
     "screen-language": {
       "comment": "https://www.renpy.org/doc/html/screens.html#screen-language",
       "patterns": [
+        { "include": "source.renpy#conditionals" },
         { "include": "#screen-frame" },
         { "include": "#screen-window" },
         { "include": "#screen-box" },

@@ -1,4 +1,33 @@
-(* Recommended extension for EBNF syntax highlighting: https://marketplace.visualstudio.com/items?itemName=omkov.vscode-ebnf *)
+(* 
+    This document is speficied using extended EBNF syntax.
+    For EBNF see: https://en.wikipedia.org/wiki/Extended_Backus%E2%80%93Naur_form
+    For EBNF syntax highlighting see: https://marketplace.visualstudio.com/items?itemName=omkov.vscode-ebnf
+
+    Symbol specification for this document:
+    =               - definition
+    ;               - end of definition
+    |               - alternation (or) 
+    ,               - concatenation (and)
+    -               - except (not)
+
+    "..."           - literal
+    (...)           - grouping
+    ? ... ?         - special sequence (For anything that can't be (easily) expressed using other symbols)
+    [...] or ...?   - optional (zero or one)
+    {...} or ...*   - optionally repeating (zero or more)
+    ...+            - repeating (one or more, same as `e, {e}`)
+    s.e+            - join (Match one or more occurrences of e, separated by s. Same as `e, {s, e}`)
+
+    &...            - positive lookahead (fail if ... does not match)
+    !...            - negative lookahead (fail if ... matches)
+    &<...           - positive lookbehind (fail if ... was not matched in the current expression)
+    !<...           - negative lookbehind (fail if ... was already matched in the current expression)
+
+    Note that:
+    - Whitespaces between concatenations are implied, but can be specified for clarity.
+    - Expressions with alternations on a new line are considered grouped.
+    - Convention is to put the most significant (higher precedence) expressions first.
+*)
 
 (*===Tokens with definition===*)
 (* 
@@ -21,25 +50,29 @@ INDENT = ? Block opening sequence of WHITESPACE ?;
 DEDENT = ? Block closing sequence of WHITESPACE less then INDENT ?;
 CHARACTER = "\p{Any}";
 
-IDENTIFIER = "\p{XID_Start}", { "\p{XID_Continue}" }; (* Based on Python specification. See: https://docs.python.org/3/reference/lexical_analysis.html#identifiers *)
-RENPY_KEYWORD = "as" | "at" | "behind" | "call" | "expression" | "hide" | "if" | "in" | "image" | "init" | "jump" | "menu" | "onlayer" | "python" | "return" | "scene" | "show" | "with" | "while" | "zorder";
-OPERATOR = "<>" | "<<" | "<=" | "<" | ">>" | ">=" | ">" | "!=" | "==" | "|" | "^" | "&" | "+" | "-" | "**" | "*" | "//" | "/" | "%" | "~";
+HASH = HEX_DIGIT+;
+INTEGER = ["+" | "-"], DIGIT+;
+FLOAT = ["+" | "-"], (DIGIT+, [".", DIGIT*] | ".", DIGIT+), [("e" | "E"), INTEGER];
 
-HASH = HEX_DIGIT, { HEX_DIGIT };
-INTEGER = [ "+" | "-" ], DIGIT, { DIGIT };
-FLOAT = [ "+" | "-" ], ( DIGIT, { DIGIT }, [ ".", { DIGIT } ] | ".", DIGIT, { DIGIT } ), [ ( "e" | "E" ), [ "+" | "-" ], DIGIT, { DIGIT } ];
+OPERATOR = "<>" | "<<" | "<=" | "<" | ">>" | ">=" | ">" | "!=" | "==" 
+    | "|" | "^" | "&" | "+" | "-" | "**" | "*" | "//" | "/" | "%" | "~"
+    | "\bor\b" | "\band\b" | "\bnot\b" | "\bin\b" | "\bis\b"
+    ;
 
+RENPY_KEYWORD = "as" | "at" | "behind" | "call" | "expression" | "hide" | "if" | "in" 
+    | "image" | "init" | "jump" | "menu" | "onlayer" | "python" | "return" | "scene" 
+    | "show" | "with" | "while" | "zorder";
+
+IDENTIFIER = "\p{XID_Start}", {"\p{XID_Continue}"}; (* Based on Python specification. See: https://docs.python.org/3/reference/lexical_analysis.html#identifiers *)
 WORD = IDENTIFIER;
 NAME = WORD - RENPY_KEYWORD;
-DOTTED_NAME = NAME, { ".", NAME };
-LABEL_NAME = ["."], NAME, [ ".", NAME ];
-IMAGE_NAME_COMPONENT_NO_DASH = WORD_CHAR - "-", { WORD_CHAR - "-" };
+DOTTED_NAME = NAME, {".", NAME};
+LABEL_NAME = [NAME?, "."], NAME;
 IMAGE_NAME_COMPONENT = WORD_CHAR+;
-IMAGE_NAME_NO_DASH = IMAGE_NAME_COMPONENT_NO_DASH, { WHITESPACE, IMAGE_NAME_COMPONENT_NO_DASH };
-IMAGE_NAME = IMAGE_NAME_COMPONENT, { WHITESPACE, IMAGE_NAME_COMPONENT };
+IMAGE_NAME = WHITESPACE.IMAGE_NAME_COMPONENT+;
 
-STYLE_PROPERTY_PREFIX =  [ "selected_" ], [ ("hover_" | "idle_" | "insensitive_" | "activate_") ];
-STYLE_PROPERTY =  "activate_sound" | "adjust_spacing" | "aft_bar" | "aft_gutter" | "align" | "alt" | "altruby_style" | "anchor" | "antialias" | "area" | "background" | "bar_invert"
+STYLE_PROPERTY_PREFIX = ["selected_"], [("hover_" | "idle_" | "insensitive_" | "activate_")];
+STYLE_PROPERTY = "activate_sound" | "adjust_spacing" | "aft_bar" | "aft_gutter" | "align" | "alt" | "altruby_style" | "anchor" | "antialias" | "area" | "background" | "bar_invert"
     | "bar_resizing" | "bar_vertical" | "base_bar" | "black_color" | "bold" | "bottom_bar" | "bottom_gutter" | "bottom_margin" | "bottom_padding" | "box_first_spacing" | "box_layout" | "box_reverse"
     | "box_spacing" | "box_wrap" | "box_wrap_spacing" | "caret" | "child" | "clipping" | "color" | "debug" | "drop_shadow" | "drop_shadow_color" | "enable_hover" | "first_indent"
     | "first_spacing" | "fit_first" | "focus_mask" | "focus_rect" | "font" | "fore_bar" | "fore_gutter" | "foreground" | "hinting" | "hover_sound" | "hyperlink_functions" | "italic"
@@ -50,7 +83,7 @@ STYLE_PROPERTY =  "activate_sound" | "adjust_spacing" | "aft_bar" | "aft_gutter"
     | "thumb" | "thumb_offset" | "thumb_shadow" | "time_policy" | "top_bar" | "top_gutter" | "top_margin" | "top_padding" | "underline" | "unscrollable" | "vertical" | "xalign"
     | "xanchor" | "xcenter" | "xfill" | "xfit" | "xmargin" | "xmaximum" | "xminimum" | "xoffset" | "xpadding" | "xpos" | "xsize" | "xspacing"
     | "xysize" | "yalign" | "yanchor" | "ycenter" | "yfill" | "yfit" | "ymargin" | "ymaximum" | "yminimum" | "yoffset" | "ypadding" | "ypos" | "ysize" | "yspacing";
-STYLE_PROPERTY_NAME = [STYLE_PROPERTY_PREFIX], STYLE_PROPERTY;
+STYLE_PROPERTY_NAME = STYLE_PROPERTY_PREFIX?, STYLE_PROPERTY;
 
 PYTHON_EXPRESSION = ? any valid Python expression ?;
 PYTHON_STRING = ? python string ?;
@@ -58,34 +91,39 @@ STRING = ? renpy string ?;
 
 
 (*===Renpy Expressions===*)
+simple_expression = OPERATOR*, (PYTHON_STRING | NAME | FLOAT | parenthesized_python), [(".", NAME) | parenthesized_python]
+simple_operator_expression = simple_expression, {OPERATOR, simple_expression};
+simple_expression_list = simple_expression, {",", simple_expression};
+
+parenthesized_python =
+    | "(", PYTHON_EXPRESSION, ")"
+    | "[", PYTHON_EXPRESSION, "]"
+    | "{", PYTHON_EXPRESSION, "}"
+    ;
+python_assignment_operation = "=", PYTHON_EXPRESSION;
+
+(* TODO: These 4 have some special rules that are not yet defined here *)
+parameter = NAME, [python_assignment_operation];
+parameters = "(", [",".parameter+], ")";
+argument = [NAME, "="], PYTHON_EXPRESSION;
+arguments = "(", [",".argument+], ")";
+
+guard_expression = "if", PYTHON_EXPRESSION;
+expression_clause = "expression", simple_expression;
 as_expression = "as", NAME;
 at_expression = "at", simple_expression_list;
 onlayer_expression = "onlayer", NAME;
 zorder_expression = "zorder", simple_expression;
-behind_expression = "behind", NAME, {",", NAME};
-if_expression = "if", PYTHON_EXPRESSION;
-expression_clause = "expression", simple_expression;
+behind_expression = "behind", ",".NAME+;
 from_expression = "from", LABEL_NAME;
 with_expression = "with", simple_expression;
 
-(* TODO: These 4 have some special rules that are not yet defined here *)
-parameter = NAME, [ "=", PYTHON_EXPRESSION ];
-parameters = "(", [ parameter, { ",", parameter } ], ")";
-argument = [ NAME, "=" ], PYTHON_EXPRESSION;
-arguments = "(", [ argument, { ",", argument } ], ")";
 
-parenthesized_python = ( "(", PYTHON_EXPRESSION, ")" )
-    | ( "[", PYTHON_EXPRESSION, "]" )
-    | ( "{", PYTHON_EXPRESSION, "}" )
-    ;
 
 (* image specifier *)
-image_specifier = [ expression_clause | IMAGE_NAME ], { image_specifier_clause };
+image_specifier_keywords = "as" | "at" | "onlayer" | "zorder" | "behind";
+image_specifier = [expression_clause | IMAGE_NAME], { !<image_specifier_keywords, image_specifier_clause };
 image_specifier_clause = as_expression | at_expression | onlayer_expression | zorder_expression | behind_expression;
-
-simple_expression = { OPERATOR }, ( PYTHON_STRING | NAME | FLOAT | parenthesized_python ), [ (".", NAME) | parenthesized_python ]
-simple_operator_expression = simple_expression, { OPERATOR , simple_expression };
-simple_expression_list = simple_expression, { ",", simple_expression };
 
 (* style *)
 style_is_clause = "is", WORD;
@@ -114,6 +152,7 @@ statement = if_statement
     | return 
     | jump
     | call
+    | init
     | scene
     | show
     | show_layer
@@ -127,9 +166,6 @@ statement = if_statement
     | one_line_python
     | python
     | label
-    | init_offset
-    | init_label
-    | init
     | rpy_monologue
     | screen
     | testcase
@@ -137,13 +173,13 @@ statement = if_statement
     | style
     | rpy_python
     | say
-    | ;
+    ;
 
 (* if *)
-if_clause = if_expression, begin_block;
+if_clause = "if", PYTHON_EXPRESSION, begin_block;
 elif_clause = "elif", PYTHON_EXPRESSION, begin_block;
 else_clause = "else", begin_block;
-if_statement = if_clause, { elif_clause }, [ else_clause ];
+if_statement = if_clause, elif_clause*, else_clause?;
 
 (* while *)
 while = "while", PYTHON_EXPRESSION, begin_block;
@@ -152,84 +188,120 @@ while = "while", PYTHON_EXPRESSION, begin_block;
 pass = "pass", NEWLINE;
 
 (* return *)
-return = "return", [ PYTHON_EXPRESSION ], NEWLINE;
+return = "return", PYTHON_EXPRESSION?, NEWLINE;
 
 (* jump *)
-jump = "jump", ( expression_clause | LABEL_NAME ), NEWLINE;
+jump = 
+    | "jump", expression_clause, NEWLINE
+    | "jump", LABEL_NAME, NEWLINE
+    ;
 
 (* call *)
-call = "call", ( expression_clause, [ "pass" ] | LABEL_NAME ), [ arguments ], [ from_expression ], NEWLINE;
+call = 
+    | "call", expression_clause, "pass"?, arguments?, from_expression?, NEWLINE
+    | "call", LABEL_NAME, "pass"?, arguments?, from_expression?, NEWLINE
+    ;
 
 (* with *)
 with = with_expression, NEWLINE;
 
 (* say *)
 say_who = simple_expression;
-say_what = TRIPLE_STRING | STRING;
-say_attributes = "-", {IMAGE_NAME_COMPONENT};
+say_what = STRING;
+say_attribute = "-"?, IMAGE_NAME_COMPONENT;
+say_attributes = WHITESPACE.say_attribute+;
 say_temporary_attributes = "@", say_attributes;
-say = [say_who], [say_attributes], [say_temporary_attributes], say_what;
+say = say_who?, say_attributes?, say_temporary_attributes?, say_what;
 
 (* menu *)
-menu = "menu", [ LABEL_NAME ], [ arguments ], menu_block;
+menu = "menu", LABEL_NAME?, arguments?, menu_block;
 
 (* menu block *)
 menuitem_set = "set", PYTHON_EXPRESSION, NEWLINE;
 menuitem_caption = say;
-menuitem_choice = STRING, [ arguments ], [ if_expression ], begin_block;
+menuitem_choice = STRING, arguments?, guard_expression?, begin_block;
 menuitem_block_statement = menuitem_set | with | menuitem_caption | menuitem_choice;
-menu_block = menuitem_block_statement, { menuitem_block_statement };
+menu_block = menuitem_block_statement+;
 
 (* scene *)
-scene = "scene", [ onlayer_expression ], [ image_specifier, [ with ] ], (begin_atl_block | NEWLINE);
+scene = 
+    | "scene", image_specifier, with?, begin_atl_block
+    | "scene", image_specifier, with?, NEWLINE
+    | "scene", onlayer_expression?, NEWLINE
+    ;
 
 (* show *)
-show = "show", image_specifier, [ with ], (begin_atl_block | NEWLINE);
-show_layer = "show", "layer", NAME, [ at_expression ], (begin_atl_block | NEWLINE);
+show = 
+    | "show", image_specifier, with?, begin_atl_block
+    | "show", image_specifier, with?, NEWLINE
+    ;
+
+show_layer = 
+    | "show", "layer", NAME, at_expression?, begin_atl_block
+    | "show", "layer", NAME, at_expression?, NEWLINE
+    ;
 
 (* hide *)
-hide = "hide", image_specifier, [ with ], NEWLINE;
+hide = "hide", image_specifier, with?, NEWLINE;
 
 (* camera *)
-camera = "camera", [ NAME ], [ at_expression ], (begin_atl_block | NEWLINE);
+camera = 
+    | "camera", NAME?, at_expression?, begin_atl_block
+    | "camera", NAME?, at_expression?, NEWLINE
+    ;
 
 (* image *)
-image = "image", IMAGE_NAME_NO_DASH, (begin_atl_block | "=", PYTHON_EXPRESSION, NEWLINE);
+image_name_component_def = !"-", IMAGE_NAME_COMPONENT; (* OnFail: Image name components may not begin with a '-'. *)
+image_name_def = WHITESPACE.image_name_component_def+;
+image = 
+    | "image", image_name_def, begin_atl_block 
+    | "image", image_name_def, python_assignment_operation, NEWLINE
+    ;
 
 (* define *)
-define = "define", [ INTEGER ], DOTTED_NAME, [ "[", PYTHON_EXPRESSION, "]" ], [ "+" | "|" ], "=", PYTHON_EXPRESSION, NEWLINE;
+define_operator = "+=" | "|=" | "=";
+define_python_assignment_operation = define_operator, PYTHON_EXPRESSION;
+define_identifier = DOTTED_NAME, ["[", PYTHON_EXPRESSION, "]"];
+define = "define", INTEGER?, define_identifier, define_python_assignment_operation, NEWLINE;
 
 (* default *)
-default = "default", [ INTEGER ], DOTTED_NAME, "=", PYTHON_EXPRESSION, NEWLINE;
+default = "default", INTEGER?, DOTTED_NAME, python_assignment_operation, NEWLINE;
 
 (* transform *)
-transform = "transform", [ INTEGER ], DOTTED_NAME, [ parameters ], begin_atl_block;
+transform = "transform", INTEGER?, DOTTED_NAME, parameters?, begin_atl_block;
 
 (* $ *)
 one_line_python = "$", PYTHON_EXPRESSION, NEWLINE;
 
 (* python *)
-python = "python", [ "early" ], [ "hide" ], [ "in", DOTTED_NAME ], begin_python_block;
+python_in_clause = "in", DOTTED_NAME;
+python = "python", "early"?, "hide"?, python_in_clause?, begin_python_block;
 
 (* label *)
-label = "label", LABEL_NAME, [ parameters ], [ "hide" ], begin_block;
+label = "label", LABEL_NAME, parameters?, "hide"?, begin_block;
 
 (* init *)
-init = "init", [ INTEGER ], ( begin_block | statement );
-init_offset = "init", "offset", "=", [ INTEGER ], NEWLINE;
-init_label = "init", label;
+init = 
+    | "init", "offset", "=", INTEGER?, NEWLINE
+    | "init", label
+    | "init", INTEGER?, begin_block
+    | "init", INTEGER?, statement (* Note: This is a 'bug' in current the parser source *)
+    ;
 
 (* rpy monologue *)
-rpy_monologue = "rpy", "monologue", ( "double" | "single" | "none" ), NEWLINE;
+rpy_monologue = "rpy", "monologue", ("double" | "single" | "none"), NEWLINE;
 
 (* screen *)
 screen = "screen" ? TODO ?;
-testcase = ? TODO ?;
 translate = "translate" ? TODO ?;
-rpy_python = ? TODO ?;
+
+testcase = ? TODO ?;
+
+(* rpy python *)
+rpy_python = "rpy", "python", "3", NEWLINE;
 
 (* style *)
-style = "style", WORD, { style_clause }, ( begin_style_block | NEWLINE );
+style = "style", WORD, {style_clause}, (begin_style_block | NEWLINE);
 style_clause = style_is_clause 
     | style_clear_clause 
     | style_take_clause 
@@ -243,23 +315,20 @@ style_clause_statement = style_clause, NEWLINE;
 
 
 
+
 (* GENERATED *)
-EXPRESSION = "expression", simple_expression;
-
-SCREEN = "screen", NAME, [ parameters ], ":";
-
-USER_STATEMENT = "user", NAME, [ arguments ];
+USER_STATEMENT = "user", NAME, [arguments];
 
 TRANSLATE = "translate", NAME, HASH, ":";
 TRANSLATE_STRING = "translate", NAME, "strings", ":";
-TRANSLATE_BLOCK = "translate", NAME, ( "python" | "style" ), ":";
-TRANSLATE_EARLY_BLOCK = "translate early", NAME, ( "python" | "style" ), ":";
+TRANSLATE_BLOCK = "translate", NAME, ("python" | "style"), ":";
+TRANSLATE_EARLY_BLOCK = "translate early", NAME, ("python" | "style"), ":";
 
-SCREEN = "screen", NAME, [ parameters ], ":";
-SCREEN_PROPERTY = NAME, "=", PYTHON_EXPRESSION;
-SCREEN_STYLE_PROPERTY = NAME, "=", PYTHON_EXPRESSION;
-SCREEN_style = "style", NAME, { SCREEN_STYLE_PROPERTY }, ":";
-SCREEN_USE = "use", NAME, [ arguments ];
+SCREEN = "screen", NAME, [parameters], ":";
+SCREEN_PROPERTY = NAME, python_assignment_operation;
+SCREEN_STYLE_PROPERTY = NAME, python_assignment_operation;
+SCREEN_style = "style", NAME, {SCREEN_STYLE_PROPERTY}, ":";
+SCREEN_USE = "use", NAME, [arguments];
 SCREEN_VBAR = "|";
 SCREEN_TAG = "$";
 SCREEN_TEXT = PYTHON_STRING;
@@ -267,4 +336,16 @@ SCREEN_NL = "%";
 SCREEN_SPACE = " ";
 SCREEN_INDENT = "\t";
 SCREEN_CHILD = SCREEN_PROPERTY | SCREEN_style | SCREEN_USE | SCREEN_VBAR | SCREEN_TAG | SCREEN_TEXT | NEWLINE | SCREEN_NL | SCREEN_SPACE | SCREEN_INDENT;
-SCREEN_CHILDREN = { SCREEN_CHILD };
+SCREEN_CHILDREN = {SCREEN_CHILD};
+
+
+
+(* Proposal parser changes (WIP! Incomplete!) *)
+IDENTIFIER = "\p{XID_Start}", {"\p{XID_Continue}"}; (* Based on Python specification. See: https://docs.python.org/3/reference/lexical_analysis.html#identifiers *)
+WORD = IDENTIFIER;
+
+renpy_literal = NAME | INTEGER | FLOAT | STRING;
+python_literal = PYTHON_STRING;
+literal = renpy_literal | python_literal;
+
+init = ? fixed init ? 

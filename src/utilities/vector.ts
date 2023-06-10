@@ -18,6 +18,16 @@ export class Vector<T> implements Iterable<T> {
         if (capacity > 0) this.buffer = new Array<T | null>(capacity).fill(null);
     }
 
+    public clone(): Vector<T> {
+        const newVector = new Vector<T>(this.capacity);
+        newVector.buffer = this.buffer.slice();
+        newVector.headPtr = this.headPtr;
+        newVector.itemCount = this.itemCount;
+        newVector.tailRef = this.tailRef;
+        newVector.headRef = this.headRef;
+        return newVector;
+    }
+
     [Symbol.iterator](): Iterator<T> {
         let index = 0;
         return {
@@ -114,6 +124,14 @@ export class Vector<T> implements Iterable<T> {
     public erase(item: T) {
         const index = this.indexOf(item);
         this.eraseAt(index);
+    }
+
+    /**
+     * Checks if the vector contains the specified item
+     * @param item The item to check for
+     */
+    public contains(item: T) {
+        return this.indexOf(item) !== -1;
     }
 
     /**

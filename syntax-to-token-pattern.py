@@ -55,6 +55,8 @@ def convert_token_type_split(name: str) -> str:
                 return "MetaTokenType.FormatStorageType"
             elif get_part(2) == "class":
                 return "KeywordTokenType.Class"
+            elif get_part(2) == "style":
+                return "KeywordTokenType.Style"
             elif get_part(2) == "imaginary":
                 return "MetaTokenType.ImaginaryNumberStorageType"
             elif get_part(2) == "number":
@@ -122,6 +124,9 @@ def convert_token_type_split(name: str) -> str:
         else:
             return "MetaTokenType.Invalid"
         
+    elif get_part(0) == "debug":
+        return "MetaTokenType.Invalid"
+
     elif get_part(0) == "punctuation":
         if get_part(1) == "definition":
             if get_part(2) == "tag" or get_part(2) == "dict" or get_part(2) == "inheritance":
@@ -174,12 +179,8 @@ def convert_token_type_split(name: str) -> str:
                 return "CharacterTokenType.CloseSquareBracket"
             
         elif get_part(1) == "section":
-            if (get_part(2) == "python" or get_part(2) =="block" or \
-                    get_part(2) == "class" or get_part(2) == "function" or \
-                    get_part(2) == "atl" or get_part(2) == "label" or \
-                    get_part(2) == "menu" or get_part(2) == "menu-option"):
-                if get_part(3) == "begin" or get_part(4) == "begin":
-                    return "CharacterTokenType.Colon"
+            if get_part(3) == "begin" or get_part(4) == "begin":
+                return "CharacterTokenType.Colon"
                 
         elif get_part(1) == "separator":
             if get_part(2) == "parameters" or get_part(2) == "arguments" or get_part(2) == "element" or get_part(2) == "inheritance":
@@ -528,8 +529,6 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
     return typescript_entry
 
 def generate_file(state: GeneratorState, source_file: str, output_file: str):
-    
-
     # load the input data from the file
     with open(source_file, "r") as file:
         data = json.load(file)
@@ -588,10 +587,12 @@ def generate_file(state: GeneratorState, source_file: str, output_file: str):
 def generate_token_patterns():
     renpy_state = GeneratorState()
     atl_state = GeneratorState()
+    screen_state = GeneratorState()
     python_state = GeneratorState()
 
     generate_file(renpy_state, "./syntaxes/renpy.tmLanguage.json", "./src/tokenizer/renpy-token-patterns.g.ts")
     generate_file(atl_state, "./syntaxes/renpy.atl.tmLanguage.json", "./src/tokenizer/atl-token-patterns.g.ts")
+    generate_file(screen_state, "./syntaxes/renpy.screen.tmLanguage.json", "./src/tokenizer/screen-token-patterns.g.ts")
     generate_file(python_state, "./syntaxes/renpy.python.tmLanguage.json", "./src/tokenizer/python-token-patterns.g.ts")
 
     # Write the typescript entries to a file
@@ -605,7 +606,7 @@ def generate_token_patterns():
         contents += "\n"
 
         # Add all source import from all states, but only the unique ones
-        source_imports = set(renpy_state.source_imports + atl_state.source_imports + python_state.source_imports)
+        source_imports = set(renpy_state.source_imports + atl_state.source_imports + screen_state.source_imports + python_state.source_imports)
         
         for source_import in source_imports:
             contents += f"import * as {titleCase(source_import)}Patterns from \"./{source_import}-token-patterns.g\";\n"
@@ -621,6 +622,7 @@ def generate_token_patterns():
 
         contents += add_entries(renpy_state.external_pattern_include_entries, "RenpyPatterns")
         contents += add_entries(atl_state.external_pattern_include_entries, "AtlPatterns")
+        contents += add_entries(screen_state.external_pattern_include_entries, "ScreenPatterns")
         contents += add_entries(python_state.external_pattern_include_entries, "PythonPatterns")
 
         exports: list[str] = []

@@ -29,6 +29,7 @@ export const enum KeywordTokenType {
     Label,
     Menu,
     Pause,
+    Style,
     Screen,
     Scene,
     Camera,
@@ -63,6 +64,16 @@ export const enum KeywordTokenType {
     Other,
     OtherPython,
     OtherAudio,
+
+    // Renpy style sub-expression keywords
+    Take,
+    Del,
+    Clear,
+    Variant,
+
+    // Renpy screen sub-expression keywords
+    Vbox,
+    Hbox,
 
     // Renpy control flow keywords
     At,
@@ -118,6 +129,7 @@ export const enum EntityTokenType {
     FunctionName,
     TagName,
     VariableName,
+    StyleName,
 
     // Renpy entities
     ImageName,
@@ -271,6 +283,8 @@ export const enum MetaTokenType {
     StringBegin,
     StringEnd,
 
+    SimpleExpression,
+
     CodeBlock,
     PythonLine,
     PythonBlock,
@@ -317,6 +331,9 @@ export const enum MetaTokenType {
     ScreenText,
     ScreenBlock,
 
+    StyleStatement,
+    StyleBlock,
+
     NarratorSayStatement,
     SayStatement,
     CharacterNameString,
@@ -329,9 +346,11 @@ export const enum MetaTokenType {
     OnlayerParameters,
     WithParameters,
     ZorderParameters,
+    PauseParameters,
 
     ATLBlock,
     ATLChoiceBlock,
+    TransformBlock,
     ATLContains,
     ATLWith,
     ATLEvent,
@@ -391,4 +410,5 @@ export const enum MetaTokenType {
     ModifierFlagStorageType,
 }
 
+export type TypeOfTokenType = typeof KeywordTokenType & typeof EntityTokenType & typeof MetaTokenType & typeof LiteralTokenType & typeof OperatorTokenType & typeof CharacterTokenType & typeof EscapedCharacterTokenType;
 export type TokenType = KeywordTokenType | EntityTokenType | MetaTokenType | LiteralTokenType | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;

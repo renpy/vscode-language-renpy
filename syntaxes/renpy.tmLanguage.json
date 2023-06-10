@@ -143,8 +143,8 @@
       }
     },
     "num-int": {
-      "match": "(?<![\\w.])(?:[1-9]*|0+|0([0-9]+)(?![eE.]))\\b",
       "name": "constant.numeric.integer.renpy",
+      "match": "(?<![\\w.])(?:[1-9]+|0+|0([0-9]+)(?![eE.]))\\b",
       "captures": {
         "1": { "name": "invalid.illegal.integer.renpy" }
       }
@@ -155,33 +155,33 @@
         {
           "begin": "\\(",
           "beginCaptures": {
-            "0": { "name": "punctuation.section.python.begin.renpy" }
+            "0": { "name": "punctuation.parenthesis.begin.python.renpy" }
           },
           "end": "\\)",
           "endCaptures": {
-            "0": { "name": "punctuation.section.python.end.renpy" }
+            "0": { "name": "punctuation.parenthesis.end.python.renpy" }
           },
           "patterns": [{ "include": "source.renpy.python#expression" }]
         },
         {
           "begin": "\\[",
           "beginCaptures": {
-            "1": { "name": "punctuation.section.python.begin.renpy" }
+            "1": { "name": "punctuation.square-bracket.begin.python.renpy" }
           },
           "end": "\\]",
           "endCaptures": {
-            "1": { "name": "punctuation.section.python.end.renpy" }
+            "1": { "name": "punctuation.square-bracket.end.python.renpy" }
           },
           "patterns": [{ "include": "source.renpy.python#expression" }]
         },
         {
           "begin": "\\{",
           "beginCaptures": {
-            "1": { "name": "punctuation.section.python.begin.renpy" }
+            "1": { "name": "punctuation.bracket.begin.python.renpy" }
           },
           "end": "\\}",
           "endCaptures": {
-            "1": { "name": "punctuation.section.python.end.renpy" }
+            "1": { "name": "punctuation.bracket.end.python.renpy" }
           },
           "patterns": [{ "include": "source.renpy.python#expression" }]
         }
@@ -203,7 +203,7 @@
     },
 
     "name": {
-      "patterns": [{ "include": "#illegal-identifier" }, { "include": "#identifier" }]
+      "patterns": [{ "include": "#illegal-identifiers" }, { "include": "#identifier" }]
     },
 
     "simple-expression": {
@@ -743,27 +743,65 @@
           "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
           "patterns": [{ "include": "source.renpy.python" }]
         },
+        { "include": "#define" },
+        { "include": "#default-statement" },
+        { "include": "#one-line-python" }
+      ]
+    },
+
+    "define": {
+      "comment": "Match begin and end of python one line statements",
+      "begin": "(?<=^[ \\t]*)(define)(?=[ \\t])",
+      "beginCaptures": {
+        "1": { "name": "keyword.define.renpy" }
+      },
+      "end": "$",
+      "patterns": [
         {
-          "comment": "Match begin and end of python one line statements",
-          "contentName": "meta.embedded.line.python",
-          "begin": "(?<=^[ \\t]*)(?:(\\$)|(define)|(default))(?=[ \\t])",
-          "beginCaptures": {
-            "1": { "name": "keyword.dollar.sign.renpy" },
-            "2": { "name": "keyword.define.renpy" },
-            "3": { "name": "keyword.default.renpy" }
-          },
-          "end": "$",
-          "patterns": [
-            {
-              "comment": "Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)",
-              "match": "(?<!\\.)\\b([a-zA-Z_]\\w*)(?=\\s=\\s)",
-              "name": "variable.other.renpy"
-            },
-            { "include": "#strings" },
-            { "include": "source.renpy.python#expression" },
-            { "include": "#whitespace" }
-          ]
-        }
+          "comment": "Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)",
+          "match": "(?<!\\.)\\b([a-zA-Z_]\\w*)(?=\\s=\\s)",
+          "name": "variable.other.renpy"
+        },
+        { "include": "#num-int" },
+        { "include": "#strings" },
+        { "include": "source.renpy.python#expression" },
+        { "include": "#fallback-characters" }
+      ]
+    },
+    "default-statement": {
+      "comment": "Match begin and end of python one line statements",
+      "begin": "(?<=^[ \\t]*)(default)(?=[ \\t])",
+      "beginCaptures": {
+        "1": { "name": "keyword.default.renpy" }
+      },
+      "end": "$",
+      "patterns": [
+        {
+          "comment": "Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)",
+          "match": "(?<!\\.)\\b([a-zA-Z_]\\w*)(?=\\s=\\s)",
+          "name": "variable.other.renpy"
+        },
+        { "include": "#strings" },
+        { "include": "source.renpy.python#expression" },
+        { "include": "#whitespace" }
+      ]
+    },
+    "one-line-python": {
+      "comment": "Match begin and end of python one line statements",
+      "begin": "(?<=^[ \\t]*)(\\$)(?=[ \\t])",
+      "beginCaptures": {
+        "1": { "name": "keyword.dollar.sign.renpy" }
+      },
+      "end": "$",
+      "patterns": [
+        {
+          "comment": "Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)",
+          "match": "(?<!\\.)\\b([a-zA-Z_]\\w*)(?=\\s=\\s)",
+          "name": "variable.other.renpy"
+        },
+        { "include": "#strings" },
+        { "include": "source.renpy.python#expression" },
+        { "include": "#whitespace" }
       ]
     },
 
@@ -849,10 +887,7 @@
       "match": "(?<=^[ \\t]+)(if|elif|else)\\b(.*?)(:)",
       "captures": {
         "1": { "name": "keyword.control.conditional.renpy" },
-        "2": {
-          "name": "meta.condition.renpy",
-          "patterns": [{ "include": "#simple-expression" }]
-        },
+        "2": { "patterns": [{ "include": "#simple-expression" }] },
         "3": { "name": "punctuation.section.condition.begin.renpy" }
       }
     },
@@ -1086,7 +1121,7 @@
         {
           "match": "\\b(?<!\\.)(is)\\b[ \\t]*(\\w*)",
           "captures": {
-            "1": { "name": "keyword.is.renpy" },
+            "1": { "name": "keyword.operator.is.renpy" },
             "2": { "name": "entity.name.type.style.parent.renpy" }
           }
         },
@@ -1232,7 +1267,7 @@
         "1": { "name": "keyword.control.flow.return.renpy" }
       },
       "end": "$",
-      "patterns": [{ "include": "#expressions-renpy-only" }, { "include": "source.renpy.python#expression" }]
+      "patterns": [{ "include": "#renpy-only-expressions" }, { "include": "source.renpy.python#expression" }]
     },
     "call-jump-expression": {
       "begin": "\\b(?<!\\.)(expression)\\b",
@@ -1240,7 +1275,7 @@
         "1": { "name": "keyword.expression.renpy" }
       },
       "end": "(?=\\b(?<!\\.)(?:pass|from)\\b)|$",
-      "patterns": [{ "include": "#expressions-renpy-only" }, { "include": "source.renpy.python#expression" }]
+      "patterns": [{ "include": "#renpy-only-expressions" }, { "include": "source.renpy.python#expression" }]
     },
     "jump": {
       "name": "meta.jump.statement.renpy",

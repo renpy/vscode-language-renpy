@@ -41,7 +41,7 @@
           "comment": "Special manipulation keywords",
           "match": "\\b(?<!\\.)(key|input|(image)?button|grid|auto|mousearea|side|timer|[vh]?bar|viewport|scrollbars|mousewheel|vpgrid|imagemap)\\b",
           "captures": {
-            "1": { "name": "keyword.other.screen.renpy" }
+            "1": { "name": "keyword.other.renpy" }
           }
         },
         {
@@ -252,12 +252,13 @@
       ]
     },
     "screen-box": {
-      "contentName": "meta.box.block.renpy",
-      "begin": "^([ \\t]+)?([vh]box)\\b[ \\t]*(?:.*?)(:)",
+      "contentName": "meta.screen.block.renpy",
+      "begin": "^([ \\t]+)?(?:(vbox)|(hbox))\\b[ \\t]*(?:.*?)(:)",
       "beginCaptures": {
         "1": { "name": "punctuation.whitespace.leading.block.renpy" },
-        "2": { "name": "keyword.box.renpy" },
-        "3": { "name": "punctuation.section.block.begin.renpy" }
+        "2": { "name": "keyword.vbox.renpy" },
+        "3": { "name": "keyword.hbox.renpy" },
+        "4": { "name": "punctuation.section.block.begin.renpy" }
       },
       "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
       "patterns": [{ "include": "#screen-language" }]
@@ -284,7 +285,7 @@
 
     "screen-fallback": {
       "comment": "TODO: This is a temp fix for missing pattern references",
-      "patterns": [{ "include": "source.renpy" }]
+      "patterns": [{ "include": "source.renpy#base-patterns" }]
     },
 
     "screen-language": {

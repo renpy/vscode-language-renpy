@@ -7,8 +7,8 @@ import { RenpyPatterns } from "./token-patterns.g";
 import { Stack } from "../utilities/stack";
 import { Vector } from "../utilities/vector";
 import { TokenPatternCapture, TokenCapturePattern, TokenRepoPattern, TokenRangePattern, TokenMatchPattern } from "./token-pattern-types";
-import { LogCategory, LogLevel, logCatMessage, logToast } from "../logger";
-import { escapeRegExpCharacters, withTimeout } from "../utilities/utils";
+import { LogCategory, LogLevel, logCatMessage } from "../logger";
+import { escapeRegExpCharacters } from "../utilities/utils";
 
 const cloneScanResult = (obj: ScanResult | undefined): ScanResult | undefined => {
     if (obj === undefined) return undefined;
@@ -44,7 +44,7 @@ type ScanResult = MatchScanResult | RangeScanResult | null;
 type TokenCache = { readonly documentVersion: number; readonly tokens: TokenTree };
 
 const RUN_BENCHMARKS = false;
-const TOKENIZER_TIMEOUT = 5_000;
+//const TOKENIZER_TIMEOUT = 5_000;
 
 export class Tokenizer {
     private static _uniquePatternCount = -1;
@@ -73,7 +73,7 @@ export class Tokenizer {
         this._tokenCache.clear();
     }
 
-    private static async runTokenizer(document: TextDocument): TokenTree {
+    private static async runTokenizer(document: TextDocument) {
         logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Running tokenizer on document: ${document.fileName}`);
         const tokenizer = new DocumentTokenizer(document);
         await Promise.resolve(tokenizer.tokenize());
@@ -415,42 +415,53 @@ class DocumentTokenizer {
 
         // Start end pattern after the last matched character in the begin pattern
         reEnd.lastIndex = matchBegin.index + matchBegin[0].length;
+        if (p._endNotG) {
+            ++reEnd.lastIndex;
+        }
         let matchEnd = reEnd.exec(result.source);
         const contentMatches = new Stack<ScanResult>();
 
         if (matchEnd) {
             // Check if any child pattern has content that would extend the currently determined end match
             if (p._patternsRepo) {
-                const contentStartIndex = matchBegin.index + matchBegin[0].length;
-                const contentEndIndex = matchEnd.index;
+                const sourceRange = new Range(matchBegin.index + matchBegin[0].length, matchEnd.index);
                 const lastMatchedChar = matchEnd.index + matchEnd[0].length;
 
                 // Scan the content for any matches that would extend beyond the current end match
                 const tempCache = cloneCache(cache);
                 //const tempCache = new Array<ScanResult | undefined>(uniquePatternCount).fill(undefined);
 
-                for (let lastMatchIndex = contentStartIndex; lastMatchIndex < contentEndIndex; ) {
-                    const bestChildMatch = this.scanPattern(p._patternsRepo, result.source, lastMatchIndex, tempCache);
-                    if (!bestChildMatch) {
-                        break; // No more matches
+                const lastCharIndex = sourceRange.end;
+                let lastMatchIndex = sourceRange.start;
+                while (lastMatchIndex < lastCharIndex) {
+                    const bestMatch = this.scanPattern(p._patternsRepo, result.source, lastMatchIndex, tempCache);
+
+                    if (!bestMatch || bestMatch.matchBegin.index >= lastCharIndex) {
+                        break; // No valid match was found in the remaining text. Break the loop
                     }
 
+                    const failSafeIndex = lastMatchIndex; // Debug index to break in case of an infinite loop
+
                     // Update the last match index to the end of the child match, so the next scan starts after it
-                    const childMatchBegin = bestChildMatch.matchBegin;
-                    if (bestChildMatch.pattern._patternType === TokenPatternType.RangePattern) {
-                        const childMatchEnd = bestChildMatch.matchEnd!;
+                    const childMatchBegin = bestMatch.matchBegin;
+                    if (bestMatch.pattern._patternType === TokenPatternType.RangePattern) {
+                        if (bestMatch?.pattern._patternType === TokenPatternType.RangePattern && !bestMatch.expanded) {
+                            this.expandRangeScanResult(bestMatch as RangeScanResult, cache);
+                        }
+
+                        const childMatchEnd = bestMatch.matchEnd!;
                         lastMatchIndex = childMatchEnd.index + childMatchEnd[0].length;
                     } else {
                         lastMatchIndex = childMatchBegin.index + childMatchBegin[0].length;
                     }
 
-                    // Check if the match starts after the currently determined end match start, if so we ignore it
-                    if (childMatchBegin.index >= contentEndIndex) {
-                        continue;
+                    if (failSafeIndex === lastMatchIndex) {
+                        logCatMessage(LogLevel.Error, LogCategory.Tokenizer, "The range expand loop has not advanced since the last cycle. This indicates a programming error. Breaking the loop!", true);
+                        break;
                     }
 
                     // To speed up the search, we can add any tokens that are within the content range
-                    contentMatches.push(bestChildMatch);
+                    contentMatches.push(bestMatch);
 
                     // If the child match last char doesn't extend the current range, we can also ignore it
                     if (lastMatchIndex <= lastMatchedChar) {
@@ -548,7 +559,9 @@ class DocumentTokenizer {
                 cache[next._patternId] = scanResult;
             }
 
-            if (!scanResult) continue;
+            if (!scanResult) {
+                continue;
+            }
 
             const matchRating = scanResult.matchBegin.index;
             if (matchRating >= bestMatchRating) {
@@ -566,10 +579,6 @@ class DocumentTokenizer {
         }
 
         cache[p._patternId] = bestResult;
-
-        if (bestResult?.pattern._patternType === TokenPatternType.RangePattern && !bestResult.expanded) {
-            this.expandRangeScanResult(bestResult as RangeScanResult, cache);
-        }
 
         return bestResult;
     }
@@ -609,12 +618,12 @@ class DocumentTokenizer {
 
         // Patterns are only applied on 'content' (see p.contentToken above)
         if (p._patternsRepo) {
-            /*while (!bestMatch.contentMatches!.isEmpty()) {
+            while (!bestMatch.contentMatches!.isEmpty()) {
                 const contentScanResult = bestMatch.contentMatches!.pop()!;
                 this.applyScanResult(contentScanResult, source, contentNode);
-            }*/
+            }
 
-            this.executePattern(p._patternsRepo, source, new Range(contentStart, matchEnd!.index), contentNode);
+            //this.executePattern(p._patternsRepo, source, new Range(contentStart, matchEnd!.index), contentNode);
         }
 
         if (!contentNode.isEmpty()) {
@@ -703,23 +712,24 @@ class DocumentTokenizer {
             return;
         }
 
-        const cache = new Array<ScanResult | undefined>(uniquePatternCount).fill(undefined);
+        const cache = new Array<ScanResult | undefined>(Tokenizer.UNIQUE_PATTERN_COUNT).fill(undefined);
         const lastCharIndex = sourceRange.end;
 
         let lastMatchIndex = sourceRange.start;
         while (lastMatchIndex < lastCharIndex) {
             const bestMatch = this.scanPattern(pattern, source, lastMatchIndex, cache);
 
-            if (bestMatch === null || bestMatch.matchBegin.index >= lastCharIndex) {
-                // No match was found in the remaining text. Break the loop
-                lastMatchIndex = lastCharIndex;
-                continue;
+            if (!bestMatch || bestMatch.matchBegin.index >= lastCharIndex) {
+                break; // No valid match was found in the remaining text. Break the loop
             }
 
             const failSafeIndex = lastMatchIndex; // Debug index to break in case of an infinite loop
 
             if (bestMatch.pattern._patternType === TokenPatternType.RangePattern) {
-                assert(bestMatch.expanded, "A RangePattern must be expanded!");
+                if (bestMatch?.pattern._patternType === TokenPatternType.RangePattern && !bestMatch.expanded) {
+                    this.expandRangeScanResult(bestMatch as RangeScanResult, cache);
+                }
+
                 const matchEnd = bestMatch.matchEnd!;
                 lastMatchIndex = matchEnd.index + matchEnd[0].length;
             } else {
@@ -727,12 +737,12 @@ class DocumentTokenizer {
                 lastMatchIndex = matchBegin.index + matchBegin[0].length;
             }
 
-            this.applyScanResult(bestMatch, source, parentNode);
-
             if (failSafeIndex === lastMatchIndex) {
                 logCatMessage(LogLevel.Error, LogCategory.Tokenizer, "The loop has not advanced since the last cycle. This indicates a programming error. Breaking the loop!", true);
                 break;
             }
+
+            this.applyScanResult(bestMatch, source, parentNode);
         }
     }
 
@@ -774,6 +784,7 @@ interface ExTokenRepoPattern extends TokenRepoPattern, PatternStateProperties {
 interface ExTokenRangePattern extends TokenRangePattern, PatternStateProperties {
     _patternType: TokenPatternType.RangePattern;
     _hasBackref: boolean;
+    _endNotG: boolean;
     _patternsRepo?: ExTokenRepoPattern;
 
     readonly beginCaptures?: ExTokenPatternCapture;

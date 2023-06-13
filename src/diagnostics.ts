@@ -1,6 +1,4 @@
 // Diagnostics (warnings and errors)
-"use strict";
-
 import { Diagnostic, DiagnosticCollection, DiagnosticSeverity, ExtensionContext, Range, TextDocument, window, workspace } from "vscode";
 import { NavigationData } from "./navigation-data";
 import { extractFilename } from "./workspace";

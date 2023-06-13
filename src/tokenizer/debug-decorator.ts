@@ -2,7 +2,7 @@ import { performance } from "perf_hooks";
 import { DecorationOptions, Disposable, ExtensionContext, MarkdownString, Uri, window, workspace } from "vscode";
 import { CharacterTokenType, LiteralTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "./renpy-tokens";
 import { TokenTree, tokenTypeToStringMap } from "./token-definitions";
-import { tokenizeDocument } from "./tokenizer";
+import { Tokenizer } from "./tokenizer";
 import { LogLevel, logMessage, logToast } from "../logger";
 
 let timeout: NodeJS.Timer | undefined = undefined;
@@ -150,24 +150,24 @@ let documentUri: Uri | null = null;
 let textChangedEvent: Disposable | null = null;
 let activeEditorChangedEvent: Disposable | null = null;
 
-export function registerDebugDecorator(context: ExtensionContext) {
-    triggerUpdateDecorations();
+export async function registerDebugDecorator(context: ExtensionContext) {
+    await triggerUpdateDecorations();
 
     // A TextDocument was changed
     context.subscriptions.push(
-        (textChangedEvent = workspace.onDidChangeTextDocument((event) => {
+        (textChangedEvent = workspace.onDidChangeTextDocument(async (event) => {
             const activeEditor = window.activeTextEditor;
 
             if (activeEditor && event.document === activeEditor.document) {
-                triggerUpdateDecorations(true);
+                await triggerUpdateDecorations(true);
             }
         }))
     );
 
     // The active text editor was changed
     context.subscriptions.push(
-        (activeEditorChangedEvent = window.onDidChangeActiveTextEditor(() => {
-            triggerUpdateDecorations();
+        (activeEditorChangedEvent = window.onDidChangeActiveTextEditor(async () => {
+            await triggerUpdateDecorations();
         }))
     );
 }
@@ -185,7 +185,7 @@ export function unregisterDebugDecorator() {
     allDecorationTypes.forEach((x) => activeEditor.setDecorations(x, []));
 }
 
-function updateDecorations() {
+async function updateDecorations() {
     const activeEditor = window.activeTextEditor;
     if (!activeEditor) {
         return;
@@ -197,7 +197,7 @@ function updateDecorations() {
 
         // Update tokens only if document has changed
         const t0 = performance.now();
-        tokenCache = tokenizeDocument(activeEditor.document);
+        tokenCache = await Tokenizer.tokenizeDocument(activeEditor.document);
         const t1 = performance.now();
 
         logToast(LogLevel.Info, `DocumentTokenizer took ${(t1 - t0).toFixed(2)} milliseconds to complete.`);
@@ -669,14 +669,16 @@ ${(decoration.hoverMessage as MarkdownString).value}`
     activeEditor.setDecorations(deprecatedDecorationType, deprecated);
 }
 
-function triggerUpdateDecorations(throttle = false) {
+async function triggerUpdateDecorations(throttle = false) {
     if (timeout) {
         clearTimeout(timeout);
         timeout = undefined;
     }
     if (throttle) {
-        timeout = setTimeout(updateDecorations, 500);
+        timeout = setTimeout(async () => {
+            await updateDecorations();
+        }, 500);
     } else {
-        updateDecorations();
+        await updateDecorations();
     }
 }

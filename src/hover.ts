@@ -1,14 +1,26 @@
 // Hover Provider
 "use strict";
 
-import { Hover, MarkdownString, Position, Range, TextDocument, Uri } from "vscode";
+import { CancellationToken, Hover, MarkdownString, Position, ProviderResult, Range, TextDocument, Uri, languages } from "vscode";
 import { getKeywordPrefix } from "./extension";
 import { rangeAsString, Navigation, getPyDocsAtLine, formatDocumentationAsMarkdown } from "./navigation";
 import { NavigationData } from "./navigation-data";
 import { stripWorkspaceFromFile, extractFilename, getFileWithPath } from "./workspace";
 import * as fs from "fs";
 
-export function getHover(document: TextDocument, position: Position): Hover | null | undefined {
+export const hoverProvider = languages.registerHoverProvider("renpy", {
+    provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
+        if (token.isCancellationRequested) {
+            return;
+        }
+
+        return new Promise((resolve) => {
+            resolve(getHoverContent(document, position));
+        });
+    },
+});
+
+export function getHoverContent(document: TextDocument, position: Position): Hover | null | undefined {
     let range = document.getWordRangeAtPosition(position);
     if (!range) {
         return undefined;

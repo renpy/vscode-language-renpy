@@ -1,9 +1,29 @@
 // Completion Provider
-import { TextDocument, Position, CompletionContext, CompletionItem, CompletionTriggerKind, CompletionItemKind, workspace } from "vscode";
+import { TextDocument, Position, CompletionContext, CompletionItem, CompletionTriggerKind, CompletionItemKind, workspace, languages, CancellationToken, ProviderResult } from "vscode";
 import { Displayable } from "./displayable";
 import { getDefinitionFromFile } from "./hover";
 import { getCurrentContext } from "./navigation";
 import { NavigationData } from "./navigation-data";
+
+export const completionProvider = languages.registerCompletionItemProvider(
+    "renpy",
+    {
+        provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): ProviderResult<CompletionItem[]> {
+            if (token.isCancellationRequested) {
+                return;
+            }
+
+            return new Promise((resolve) => {
+                resolve(getCompletionList(document, position, context));
+            });
+        },
+    },
+    ".",
+    " ",
+    "@",
+    "-",
+    "("
+);
 
 /**
  * Returns an array of auto-complete items related to the keyword at the given document/position

@@ -1,5 +1,4 @@
 // Displayable Class
-"use strict";
 
 export class Displayable {
     name: string;

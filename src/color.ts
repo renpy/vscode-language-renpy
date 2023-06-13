@@ -1,30 +1,44 @@
 // Color conversion methods for Color provider
-import { CancellationToken, Color, ColorInformation, ColorPresentation, DocumentColorProvider, Range, TextDocument, TextEdit } from "vscode";
+import { CancellationToken, Color, ColorInformation, ColorPresentation, ProviderResult, Range, TextDocument, TextEdit, languages } from "vscode";
 import { ValueEqualsSet } from "./utilities/hashset";
-import { tokenizeDocument } from "./tokenizer/tokenizer";
+import { Tokenizer } from "./tokenizer/tokenizer";
 import { LiteralTokenType } from "./tokenizer/renpy-tokens";
 import { TextMateRule, injectCustomTextmateTokens } from "./decorator";
-/*import { tokenizeDocument } from "./tokenizer/tokenizer";
-import { injectCustomTextmateTokens, TextMateRule } from "./decorator";
-import { LiteralTokenType } from "./tokenizer/renpy-tokens";
-import { ValueEqualsSet } from "./utilities/hashset";*/
 
-export class RenpyColorProvider implements DocumentColorProvider {
-    public provideDocumentColors(document: TextDocument, token: CancellationToken): Thenable<ColorInformation[]> {
-        return getColorInformation(document);
-    }
-    public provideColorPresentations(color: Color, context: { document: TextDocument; range: Range }, token: CancellationToken): Thenable<ColorPresentation[]> {
-        return getColorPresentations(color, context.document, context.range);
-    }
-}
+export type DocumentColorContext = {
+    document: TextDocument;
+    range: Range;
+};
+
+export const colorProvider = languages.registerColorProvider("renpy", {
+    provideDocumentColors(document: TextDocument, token: CancellationToken): ProviderResult<ColorInformation[]> {
+        if (token.isCancellationRequested) {
+            return;
+        }
+
+        return new Promise((resolve) => {
+            resolve(getColorInformation(document));
+        });
+    },
+
+    provideColorPresentations(color: Color, context: DocumentColorContext, token: CancellationToken): ProviderResult<ColorPresentation[]> {
+        if (token.isCancellationRequested) {
+            return;
+        }
+
+        return new Promise((resolve) => {
+            resolve(getColorPresentations(color, context));
+        });
+    },
+});
 
 /**
  * Finds all colors in the given document and returns their ranges and color
  * @param document - the TextDocument to search
- * @returns - Thenable<ColorInformation[]> - an array that provides a range and color for each match
+ * @returns - ColorInformation[] - an array that provides a range and color for each match
  */
-export function getColorInformation(document: TextDocument): Thenable<ColorInformation[]> {
-    injectCustomColorStyles(document);
+export async function getColorInformation(document: TextDocument) {
+    await injectCustomColorStyles(document);
 
     // find all colors in the document
     const colors: ColorInformation[] = [];
@@ -67,7 +81,7 @@ export function getColorInformation(document: TextDocument): Thenable<ColorInfor
             }
         }
     }
-    return Promise.resolve(colors);
+    return colors;
 }
 
 /**
@@ -77,12 +91,12 @@ export function getColorInformation(document: TextDocument): Thenable<ColorInfor
  * @param range - The Range of the color match
  * @returns - ColorPresentation to replace the color in the document with the new chosen color
  */
-export function getColorPresentations(color: Color, document: TextDocument, range: Range): Thenable<ColorPresentation[]> {
+export function getColorPresentations(color: Color, context: DocumentColorContext): ColorPresentation[] {
     // user hovered/tapped the color block/return the color they picked
     const colors: ColorPresentation[] = [];
-    const line = document.lineAt(range.start.line).text;
-    const text = line.substring(range.start.character, range.end.character);
-    const oldRange = new Range(range.start.line, range.start.character, range.start.line, range.start.character + text.length);
+    const range = context.range;
+    const text = context.document.getText(range);
+    const oldRange = new Range(range.start, range.end);
 
     const colR = Math.round(color.red * 255);
     const colG = Math.round(color.green * 255);
@@ -112,12 +126,12 @@ export function getColorPresentations(color: Color, document: TextDocument, rang
         colors.push(rgbColorPres);
     }
 
-    return Promise.resolve(colors);
+    return colors;
 }
 
-export function injectCustomColorStyles(document: TextDocument) {
+export async function injectCustomColorStyles(document: TextDocument) {
     // Disabled until filter is added to the tree class
-    const documentTokens = tokenizeDocument(document);
+    const documentTokens = await Tokenizer.tokenizeDocument(document);
     // TODO: Should probably make sure this constant is actually part of a tag, but for now this is fine.
     const colorTags = documentTokens.filter((x) => x.token?.tokenType === LiteralTokenType.Color);
     const colorRules = new ValueEqualsSet<TextMateRule>();
@@ -221,32 +235,55 @@ export function convertHtmlToColor(htmlHex: string): Color | null {
  */
 export function convertRenpyColorToColor(renpy: string): Color | null {
     try {
-        const colorTuple = renpy.replace("Color(", "").replace("color", "").replace("=", "").replace(" ", "").replace("(", "[").replace(")", "]");
-        const result = JSON.parse(colorTuple);
-        if (result.length === 3) {
-            return new Color(parseInt(result[0], 16) / 255, parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, 1.0);
-        } else if (result.length === 4) {
-            return new Color(parseInt(result[0], 16) / 255, parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255);
+        const colorTuple = renpy
+            .replaceAll(" ", "")
+            .replace(/[Cc]olor=?\(/g, "")
+            .replace(")", "");
+
+        const result = colorTuple.split(",");
+        if (result.length < 3) {
+            return null;
         }
-        return null;
+
+        const r = parseInt(result[0], 16) / 255;
+        const g = parseInt(result[1], 16) / 255;
+        const b = parseInt(result[2], 16) / 255;
+        const a = result.length === 4 ? parseInt(result[3], 16) / 255 : 1.0;
+        return new Color(r, g, b, a);
     } catch (error) {
         return null;
     }
 }
 
 /**
+ * Returns a float value based on the given Ren'Py float string value
+ * @remarks Values starting with a dot (e.g., `.5`) are forced to be parsed as `0.5` due to javascript's `parseFloat` behavior.
+ * @param value The renpy float value to parse
+ * @returns The parsed float value
+ */
+function parseRenpyFloat(value: string): number {
+    if (value.startsWith(".")) {
+        return parseFloat("0" + value);
+    }
+    return parseFloat(value);
+}
+
+/**
  * Returns a Color provider object based on the given Ren'Py rgb tuple
- * @remarks
- * The rgb tuple values should be numeric values between 0.0 and 1.0 (e.g., `rgb=(1.0, 0.0, 0.0)`)
+ * @remarks The rgb tuple values should be numeric values between 0.0 and 1.0 (e.g., `rgb=(1.0, 0.0, 0.0)`).
+ * Values starting with a dot (e.g., `.5`) are forced to be parsed as `0.5` due to javascript's `parseFloat` behavior.
  * @param renpyColor - Renpy `rgb` color tuple (e.g., `rgb=(r, g, b)`)
  * @returns The `Color` provider object
  */
 export function convertRgbColorToColor(renpyColor: string): Color | null {
     try {
-        const colorTuple = renpyColor.replace("rgb", "").replace("=", "").replace(" ", "").replace("(", "[").replace(")", "]");
-        const result = JSON.parse(colorTuple);
+        const colorTuple = renpyColor
+            .replaceAll(" ", "")
+            .replace(/rgb=\(/g, "")
+            .replace(")", "");
+        const result = colorTuple.split(",");
         if (result.length === 3) {
-            return new Color(parseFloat(result[0]), parseFloat(result[1]), parseFloat(result[2]), 1.0);
+            return new Color(parseRenpyFloat(result[0]), parseRenpyFloat(result[1]), parseRenpyFloat(result[2]), 1.0);
         }
         return null;
     } catch (error) {

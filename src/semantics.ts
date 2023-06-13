@@ -1,13 +1,35 @@
-// Semantic Tokens
-"use strict";
-
-import { Position, Range, SemanticTokens, SemanticTokensBuilder, SemanticTokensLegend, TextDocument } from "vscode";
+// Semantic Token Provider
+import { CancellationToken, Position, ProviderResult, Range, SemanticTokens, SemanticTokensBuilder, SemanticTokensLegend, TextDocument, languages } from "vscode";
 import { Navigation, splitParameters, rangeAsString, getCurrentContext, DataType } from "./navigation";
 import { NavigationData, updateNavigationData } from "./navigation-data";
 import { stripWorkspaceFromFile } from "./workspace";
 import { LogLevel, logMessage } from "./logger";
 
-export function getSemanticTokens(document: TextDocument, legend: SemanticTokensLegend): SemanticTokens {
+const tokenTypes = ["class", "parameter", "variable", "keyword"];
+const tokenModifiers = ["declaration", "defaultLibrary"];
+const legend = new SemanticTokensLegend(tokenTypes, tokenModifiers);
+
+export const semanticTokensProvider = languages.registerDocumentSemanticTokensProvider(
+    "renpy",
+    {
+        provideDocumentSemanticTokens(document: TextDocument, token: CancellationToken): ProviderResult<SemanticTokens> {
+            if (token.isCancellationRequested) {
+                return;
+            }
+
+            if (document.languageId !== "renpy") {
+                return;
+            }
+
+            return new Promise((resolve) => {
+                resolve(getSemanticTokens(document));
+            });
+        },
+    },
+    legend
+);
+
+export function getSemanticTokens(document: TextDocument): SemanticTokens {
     const tokensBuilder = new SemanticTokensBuilder(legend);
     const rxKeywordList = /\s*(screen|label|transform|def|class)\s+/;
     const rxParameterList =

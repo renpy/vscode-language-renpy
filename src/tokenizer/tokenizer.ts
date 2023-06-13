@@ -7,7 +7,8 @@ import { RenpyPatterns } from "./token-patterns.g";
 import { Stack } from "../utilities/stack";
 import { Vector } from "../utilities/vector";
 import { TokenPatternCapture, TokenCapturePattern, TokenRepoPattern, TokenRangePattern, TokenMatchPattern } from "./token-pattern-types";
-import { LogCategory, LogLevel, logCatMessage } from "../logger";
+import { LogCategory, LogLevel, logCatMessage, logToast } from "../logger";
+import { escapeRegExpCharacters, withTimeout } from "../utilities/utils";
 
 const cloneScanResult = (obj: ScanResult | undefined): ScanResult | undefined => {
     if (obj === undefined) return undefined;
@@ -42,184 +43,211 @@ interface RangeScanResult {
 type ScanResult = MatchScanResult | RangeScanResult | null;
 type TokenCache = { readonly documentVersion: number; readonly tokens: TokenTree };
 
-const tokenCache = new Map<Uri, TokenCache>();
-const runBenchmark = false;
-let uniquePatternCount = -1;
+const RUN_BENCHMARKS = false;
+const TOKENIZER_TIMEOUT = 5_000;
 
-export function tokenizeDocument(document: TextDocument): TokenTree {
-    setupAndValidatePatterns();
+export class Tokenizer {
+    private static _uniquePatternCount = -1;
+    private static _tokenCache = new Map<Uri, TokenCache>();
 
-    if (runBenchmark) {
-        benchmark(document);
+    public static get UNIQUE_PATTERN_COUNT() {
+        return this._uniquePatternCount;
     }
 
-    const cachedTokens = tokenCache.get(document.uri);
-    if (cachedTokens?.documentVersion === document.version) {
-        return cachedTokens.tokens;
-    }
+    public static async tokenizeDocument(document: TextDocument) {
+        this.setupAndValidatePatterns();
 
-    logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Running tokenizer on document: ${document.fileName}`);
-    const tokenizer = new DocumentTokenizer(document);
-    logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Tokenizer completed!`);
-    tokenCache.set(document.uri, { documentVersion: document.version, tokens: tokenizer.tokens });
-    return tokenizer.tokens;
-}
-
-export function clearTokenCache() {
-    tokenCache.clear();
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function benchmark(document: TextDocument) {
-    // screens.rpy, 10000 loops; 19.69293530988693 avg.
-
-    const loops = 10000;
-    const reportEveryXPercent = 1;
-
-    const onePercent = loops / 100;
-    const everyX = onePercent * reportEveryXPercent;
-
-    logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Running tokenizer benchmark for ${loops} loops...`);
-
-    let avg = 0;
-    for (let i = 0; i < loops; ++i) {
-        const t0 = performance.now();
-        const tokenizer: DocumentTokenizer = new DocumentTokenizer(document);
-        const t1 = performance.now();
-
-        avg += t1 - t0;
-
-        // This is really just here to prevent the unused variable error
-        if (tokenizer.tokens.isEmpty()) {
-            logCatMessage(LogLevel.Error, LogCategory.Tokenizer, "No tokens were found.");
+        if (RUN_BENCHMARKS) {
+            this.benchmark(document);
         }
 
-        // Show timer
-        const msLoop = avg / (i + 1);
-        const sRemaining = msLoop * (loops - i + 1) * 0.001;
-        const h = Math.floor(sRemaining / 3600);
-        const m = Math.floor((sRemaining / 60) % 60);
-        const s = Math.ceil(sRemaining % 60);
-        const timeString = [h ? h + "h" : false, m ? m + "m" : false, s ? s + "s" : false]
-            .filter(Boolean)
-            .join(":")
-            .replace(/\b(\d)(?=[hms])/g, "0$1");
+        const cachedTokens = this._tokenCache.get(document.uri);
+        if (cachedTokens?.documentVersion === document.version) {
+            return cachedTokens.tokens;
+        }
 
-        if (i % everyX === 0) {
-            logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `${i / onePercent}% complete... (avg.: ${msLoop.toFixed(2)}ms, approx. ${timeString} remaining)`);
+        return await this.runTokenizer(document);
+    }
+
+    public static clearTokenCache() {
+        this._tokenCache.clear();
+    }
+
+    private static async runTokenizer(document: TextDocument): TokenTree {
+        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Running tokenizer on document: ${document.fileName}`);
+        const tokenizer = new DocumentTokenizer(document);
+        await Promise.resolve(tokenizer.tokenize());
+
+        // TODO: Need to mark all these functions async for this to work properly
+        /*await withTimeout(, TOKENIZER_TIMEOUT, () => {
+            // If the tokenizer times out, we still want to cache the document so that we don't try to tokenize it again
+            this._tokenCache.set(document.uri, { documentVersion: document.version, tokens: new TokenTree() });
+            logToast(LogLevel.Info, `Tokenizer timed out after ${TOKENIZER_TIMEOUT}ms, while attempting to tokenize the document at: ${document.uri}`);
+        });*/
+
+        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Tokenizer completed!`);
+        this._tokenCache.set(document.uri, { documentVersion: document.version, tokens: tokenizer.tokens });
+        return tokenizer.tokens;
+    }
+
+    private static benchmark(document: TextDocument) {
+        // screens.rpy, 10000 loops; 19.69293530988693 avg.
+
+        const loops = 10000;
+        const reportEveryXPercent = 1;
+
+        const onePercent = loops / 100;
+        const everyX = onePercent * reportEveryXPercent;
+
+        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Running tokenizer benchmark for ${loops} loops...`);
+
+        let avg = 0;
+        for (let i = 0; i < loops; ++i) {
+            const t0 = performance.now();
+            const tokenizer: DocumentTokenizer = new DocumentTokenizer(document);
+            const t1 = performance.now();
+
+            avg += t1 - t0;
+
+            // This is really just here to prevent the unused variable error
+            if (tokenizer.tokens.isEmpty()) {
+                logCatMessage(LogLevel.Error, LogCategory.Tokenizer, "No tokens were found.");
+            }
+
+            // Show timer
+            const msLoop = avg / (i + 1);
+            const sRemaining = msLoop * (loops - i + 1) * 0.001;
+            const h = Math.floor(sRemaining / 3600);
+            const m = Math.floor((sRemaining / 60) % 60);
+            const s = Math.ceil(sRemaining % 60);
+            const timeString = [h ? h + "h" : false, m ? m + "m" : false, s ? s + "s" : false]
+                .filter(Boolean)
+                .join(":")
+                .replace(/\b(\d)(?=[hms])/g, "0$1");
+
+            if (i % everyX === 0) {
+                logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `${i / onePercent}% complete... (avg.: ${msLoop.toFixed(2)}ms, approx. ${timeString} remaining)`);
+            }
+        }
+        avg /= loops;
+
+        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `DocumentTokenizer took ${avg} avg. milliseconds to complete.`);
+    }
+
+    private static setupAndValidatePatterns() {
+        if (this._uniquePatternCount !== -1) {
+            return;
+        }
+
+        this._uniquePatternCount = 0;
+        const stack = new Stack<ExTokenPattern>(32);
+        stack.push(RenpyPatterns.basePatterns as ExTokenRepoPattern);
+
+        const mFlagRe = /(?<!\[)[\^$]/g;
+        const gAnchorRe = /\(\\G\)|\(\?!\\G\)/g;
+        while (!stack.isEmpty()) {
+            const p = stack.pop()!;
+            assert(p !== undefined, "This pattern is undefined! Please make sure that circular includes are added after both patterns are defined.");
+
+            if (p._patternId !== undefined && p._patternId !== -1) {
+                continue; // This pattern was already validated
+            }
+
+            p._patternId = this._uniquePatternCount;
+            ++this._uniquePatternCount;
+
+            if (isRepoPattern(p)) {
+                p._patternType = TokenPatternType.RepoPattern;
+                for (let i = 0; i < p.patterns.length; ++i) {
+                    stack.push(p.patterns[i]);
+                }
+            } else if (isRangePattern(p)) {
+                p._patternType = TokenPatternType.RangePattern;
+                let reBeginSource = p.begin.source;
+
+                if (reBeginSource.match(mFlagRe)) {
+                    assert(p.begin.multiline, "To match this pattern the 'm' flag is required on the begin RegExp!");
+                }
+
+                if (gAnchorRe.test(reBeginSource)) {
+                    assert("Can't use the \\G anchor, please update the regex!");
+                    reBeginSource = reBeginSource.replace(gAnchorRe, "");
+                }
+
+                assert(p.begin.global && p.end.global, "To match this pattern the 'g' flag is required on the begin and end RegExp!");
+                if (p.beginCaptures) {
+                    assert(p.begin.hasIndices, "To match this begin pattern the 'd' flag is required!");
+
+                    Object.entries(p.beginCaptures).forEach(([, v]) => {
+                        if (v.patterns) stack.push(v as ExTokenRepoPattern);
+                    });
+                } else {
+                    assert(!p.begin.hasIndices, "This pattern should not have the 'd' flag set!");
+                }
+                if (p.endCaptures) {
+                    assert(p.end.hasIndices, "To match this end pattern the 'd' flag is required!");
+
+                    Object.entries(p.endCaptures).forEach(([, v]) => {
+                        if (v.patterns) stack.push(v as ExTokenRepoPattern);
+                    });
+                } else {
+                    assert(!p.end.hasIndices, "This pattern should not have the 'd' flag set!");
+                }
+
+                if (p.patterns) {
+                    p._patternsRepo = {
+                        patterns: p.patterns as ExTokenPatternArray,
+                        _patternId: -1,
+                        _patternType: TokenPatternType.RepoPattern,
+                    };
+                    stack.push(p._patternsRepo!);
+                }
+
+                let reEndSource = p.end.source;
+
+                if (mFlagRe.test(reEndSource)) {
+                    assert(p.end.multiline, "To match this pattern the 'm' flag is required on the end RegExp!");
+                }
+
+                p._endNotG = false;
+                if (gAnchorRe.test(reEndSource)) {
+                    if (reEndSource.startsWith("(?!\\G)")) {
+                        p._endNotG = true;
+                    } else {
+                        assert("The end patterns only supports (?!\\G) at the start of the regex. Please update the regex!");
+                        reEndSource = reEndSource.replace(gAnchorRe, "");
+                    }
+                }
+
+                p._hasBackref = /\\\d+/.test(reEndSource);
+                //reEndSource = reEndSource.replaceAll("\\A", "¨0");
+                reEndSource = reEndSource.replaceAll("\\Z", "$(?!\r\n|\r|\n)");
+                reEndSource = reEndSource.replaceAll("\\R", "(?!\r\n|\r|\n)");
+
+                p.begin = new RegExp(reBeginSource, p.begin.flags);
+                p.end = new RegExp(reEndSource, p.end.flags);
+            } else if (isMatchPattern(p)) {
+                p._patternType = TokenPatternType.MatchPattern;
+
+                if (p.match.source.match(mFlagRe)) {
+                    assert(p.match.multiline, "To match this pattern the 'm' flag is required!");
+                }
+
+                assert(p.match.global, "To match this pattern the 'g' flag is required!");
+                if (p.captures) {
+                    assert(p.match.hasIndices, "To match this pattern the 'd' flag is required!");
+
+                    Object.entries(p.captures).forEach(([, v]) => {
+                        if (v.patterns) stack.push(v as ExTokenRepoPattern);
+                    });
+                } else {
+                    assert(!p.match.hasIndices, "This pattern should not have the 'd' flag set!");
+                }
+            } else {
+                assert(false, "Should not get here!");
+            }
         }
     }
-    avg /= loops;
-
-    logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `DocumentTokenizer took ${avg} avg. milliseconds to complete.`);
-}
-
-function setupAndValidatePatterns() {
-    if (uniquePatternCount !== -1) return;
-
-    uniquePatternCount = 0;
-    const stack = new Stack<ExTokenPattern>(32);
-    stack.push(RenpyPatterns.basePatterns as ExTokenRepoPattern);
-
-    const mFlagRe = /(?<!\[)[\^$]/g;
-    const gAnchorRe = /\(\\G\)|\(\?!\\G\)/g;
-    while (!stack.isEmpty()) {
-        const p = stack.pop()!;
-        assert(p !== undefined, "This pattern is undefined! Please make sure that circular includes are added after both patterns are defined.");
-
-        if (p._patternId !== undefined && p._patternId !== -1) continue; // This pattern was already validated
-
-        p._patternId = uniquePatternCount;
-        ++uniquePatternCount;
-
-        if (isRepoPattern(p)) {
-            p._patternType = TokenPatternType.RepoPattern;
-            for (let i = 0; i < p.patterns.length; ++i) stack.push(p.patterns[i]);
-        } else if (isRangePattern(p)) {
-            p._patternType = TokenPatternType.RangePattern;
-            let reBeginSource = p.begin.source;
-
-            if (reBeginSource.match(mFlagRe)) {
-                assert(p.begin.multiline, "To match this pattern the 'm' flag is required on the begin RegExp!");
-            }
-
-            if (gAnchorRe.test(reBeginSource)) {
-                logCatMessage(LogLevel.Warning, LogCategory.Tokenizer, "\\G anchor is not supported and will be ignored!", true);
-                reBeginSource = reBeginSource.replace(gAnchorRe, "");
-            }
-
-            assert(p.begin.global && p.end.global, "To match this pattern the 'g' flag is required on the begin and end RegExp!");
-            if (p.beginCaptures) {
-                assert(p.begin.hasIndices, "To match this begin pattern the 'd' flag is required!");
-
-                Object.entries(p.beginCaptures).forEach(([, v]) => {
-                    if (v.patterns) stack.push(v as ExTokenRepoPattern);
-                });
-            } else {
-                assert(!p.begin.hasIndices, "This pattern should not have the 'd' flag set!");
-            }
-            if (p.endCaptures) {
-                assert(p.end.hasIndices, "To match this end pattern the 'd' flag is required!");
-
-                Object.entries(p.endCaptures).forEach(([, v]) => {
-                    if (v.patterns) stack.push(v as ExTokenRepoPattern);
-                });
-            } else {
-                assert(!p.end.hasIndices, "This pattern should not have the 'd' flag set!");
-            }
-
-            if (p.patterns) {
-                p._patternsRepo = {
-                    patterns: p.patterns as ExTokenPatternArray,
-                    _patternId: -1,
-                    _patternType: TokenPatternType.RepoPattern,
-                };
-                stack.push(p._patternsRepo!);
-            }
-
-            let reEndSource = p.end.source;
-
-            if (mFlagRe.test(reEndSource)) {
-                assert(p.end.multiline, "To match this pattern the 'm' flag is required on the end RegExp!");
-            }
-
-            if (gAnchorRe.test(reEndSource)) {
-                logCatMessage(LogLevel.Warning, LogCategory.Tokenizer, "\\G anchor is not supported and will be ignored!", true);
-                reEndSource = reEndSource.replace(gAnchorRe, "");
-            }
-
-            p._hasBackref = /\\\d+/.test(reEndSource);
-            //reEndSource = reEndSource.replaceAll("\\A", "¨0");
-            reEndSource = reEndSource.replaceAll("\\Z", "$(?!\r\n|\r|\n)");
-            reEndSource = reEndSource.replaceAll("\\R", "(?!\r\n|\r|\n)");
-
-            p.begin = new RegExp(reBeginSource, p.begin.flags);
-            p.end = new RegExp(reEndSource, p.end.flags);
-        } else if (isMatchPattern(p)) {
-            p._patternType = TokenPatternType.MatchPattern;
-
-            if (p.match.source.match(mFlagRe)) {
-                assert(p.match.multiline, "To match this pattern the 'm' flag is required!");
-            }
-
-            assert(p.match.global, "To match this pattern the 'g' flag is required!");
-            if (p.captures) {
-                assert(p.match.hasIndices, "To match this pattern the 'd' flag is required!");
-
-                Object.entries(p.captures).forEach(([, v]) => {
-                    if (v.patterns) stack.push(v as ExTokenRepoPattern);
-                });
-            } else {
-                assert(!p.match.hasIndices, "This pattern should not have the 'd' flag set!");
-            }
-        } else {
-            assert(false, "Should not get here!");
-        }
-    }
-}
-
-export function escapeRegExpCharacters(value: string): string {
-    return value.replace(/[-\\{}*+?|^$.,[\]()#\s]/g, "\\$&");
 }
 
 class DocumentTokenizer {
@@ -229,7 +257,10 @@ class DocumentTokenizer {
 
     constructor(document: TextDocument) {
         this.document = document;
-        const text = document.getText();
+    }
+
+    public tokenize() {
+        const text = this.document.getText();
         this.executePattern(RenpyPatterns.basePatterns as ExTokenRepoPattern, text, new Range(0, text.length), this.tokens.root);
     }
 
@@ -341,12 +372,11 @@ class DocumentTokenizer {
         const re = pattern.match;
         re.lastIndex = sourceStartOffset;
         const match = re.exec(source);
-        if (match) {
-            const result = { pattern, matchBegin: match };
-            return result;
+        if (!match) {
+            return null;
         }
 
-        return null;
+        return { pattern, matchBegin: match };
     }
 
     private scanRangePattern(pattern: ExTokenRangePattern, source: string, sourceStartOffset: number): RangeScanResult | null {
@@ -354,11 +384,11 @@ class DocumentTokenizer {
         reBegin.lastIndex = sourceStartOffset;
         const matchBegin = reBegin.exec(source);
 
-        if (matchBegin) {
-            return { pattern, matchBegin: matchBegin, matchEnd: null, expanded: false, contentMatches: null, source };
+        if (!matchBegin) {
+            return null;
         }
 
-        return null;
+        return { pattern, matchBegin: matchBegin, matchEnd: null, expanded: false, contentMatches: null, source };
     }
 
     private expandRangeScanResult(result: RangeScanResult, cache: Array<ScanResult | undefined>) {

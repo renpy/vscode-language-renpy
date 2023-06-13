@@ -1,6 +1,26 @@
-import { window } from "vscode";
+import { ExtensionContext, StatusBarAlignment, window } from "vscode";
 
 const outputChannel = window.createOutputChannel("Ren'Py Language Extension", "renpy-log");
+const statusBar = window.createStatusBarItem(StatusBarAlignment.Right, 100);
+
+export function intializeLoggingSystems(context: ExtensionContext) {
+    context.subscriptions.push(outputChannel);
+
+    statusBar.name = "Ren'Py Language Extension Status";
+    statusBar.tooltip = "Ren'Py Language Extension Status";
+    context.subscriptions.push(statusBar);
+}
+
+export function updateStatusBar(text: string) {
+    if (text === "") {
+        statusBar.hide();
+        return;
+    }
+
+    logCatMessage(LogLevel.Info, LogCategory.Status, text);
+    statusBar.text = text;
+    statusBar.show();
+}
 
 // eslint-disable-next-line no-shadow
 export const enum LogLevel {

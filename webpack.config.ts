@@ -31,7 +31,9 @@ export const baseConfig: Configuration = {
         // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
         filename: "extension.js",
         path: PATHS.dist,
-        libraryTarget: "commonjs2",
+        library: {
+            type: "commonjs2",
+        },
         devtoolModuleFilenameTemplate: "../[resource-path]", // Removes the webpack:/// prefix from source maps
     },
     module: {

@@ -2,9 +2,8 @@
   /* Visit https://aka.ms/tsconfig.json to read more about this file */
   "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "module": "commonjs",
-    "target": "ES2021",
-    "lib": ["ES2021"],
+    "target": "ESNext",
+    "lib": ["ESNext"],
     "baseUrl": ".", // Base directory to resolve non-absolute module names.
     "rootDir": "src",
     "outDir": "out",
@@ -32,7 +31,8 @@
     "exactOptionalPropertyTypes": true, // Force exact optional types. (Aka. undefined needs to be added to optionals)
 
     /* Module Resolution Options */
-    "moduleResolution": "node", // Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6).
+    "module": "NodeNext",
+    "moduleResolution": "nodenext", // Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6).
     "resolveJsonModule": true, // Allows importing modules with a .json extension.
     "paths": {
       // A series of entries which re-map imports to lookup locations relative to the 'baseUrl'.

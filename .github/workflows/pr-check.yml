@@ -2,6 +2,7 @@ name: PR Check
 
 on:
   pull_request:
+    types: [synchronize, opened, reopened, edited]
     branches:
       - master
       - develop

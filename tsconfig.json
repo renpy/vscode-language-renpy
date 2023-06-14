@@ -1,12 +1,13 @@
 {
   /* Visit https://aka.ms/tsconfig.json to read more about this file */
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
     "module": "commonjs",
     "target": "ES2021",
-    "outDir": "out",
     "lib": ["ES2021"],
-    "sourceMap": true,
+    "baseUrl": ".", // Base directory to resolve non-absolute module names.
     "rootDir": "src",
+    "outDir": "out",
 
     /* Strict Type-Checking Option */
     "strict": true /* enable all strict type-checking options */,
@@ -30,10 +31,11 @@
 
     /* Module Resolution Options */
     "moduleResolution": "node", // Specify module resolution strategy: 'node' (Node.js) or 'classic' (TypeScript pre-1.6).
-    "baseUrl": "./", // Base directory to resolve non-absolute module names.
+    "resolveJsonModule": true, // Allows importing modules with a .json extension.
     "paths": {
       // A series of entries which re-map imports to lookup locations relative to the 'baseUrl'.
       // "app/*": ["src/app/*"]
+      "src/*": ["src/*"]
     },
     // "rootDirs": [], // List of root folders whose combined content represents the structure of the project at runtime.
     "typeRoots": [
@@ -46,9 +48,9 @@
     "esModuleInterop": true, // Enables emit interoperability between CommonJS and ES Modules via creation of namespace objects for all imports. Implies 'allowSyntheticDefaultImports'.
     // "preserveSymlinks": true, // Do not resolve the real path of symlinks.
     // "allowUmdGlobalAccess": true, // Allow accessing UMD globals from modules.
-    "resolveJsonModule": true, // Allows importing modules with a .json extension.
 
     /* Source Map Options */
+    "sourceMap": true,
     // "sourceRoot": "", // Specify the location where debugger should locate TypeScript files instead of source locations.
     // "mapRoot": "", // Specify the location where debugger should locate map files instead of generated locations.
     // "inlineSourceMap": true, // Emit a single file with source maps instead of having a separate file.

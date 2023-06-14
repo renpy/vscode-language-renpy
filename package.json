@@ -36,7 +36,8 @@
   },
   "activationEvents": [
     "onLanguage:renpy",
-    "workspaceContains:**/*.rpy"
+    "workspaceContains:**/*.rpy",
+    "workspaceContains:**/_ren.py"
   ],
   "main": "./dist/extension",
   "browser": "./dist/extension.js",
@@ -46,7 +47,8 @@
         "id": "renpy",
         "aliases": [
           "Ren'Py",
-          "renpy"
+          "renpy",
+          "rpy"
         ],
         "extensions": [
           ".rpy",
@@ -87,6 +89,16 @@
       {
         "scopeName": "source.renpy.python",
         "path": "./syntaxes/renpy.python.tmLanguage.json"
+      },
+      {
+        "scopeName": "renpy.comment.injection",
+        "path": "./syntaxes/injection.json",
+        "injectTo": [
+          "source.python"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.renpy": "renpy"
+        }
       },
       {
         "language": "renpy-log",

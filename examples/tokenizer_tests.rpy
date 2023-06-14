@@ -21,4 +21,13 @@ init python hide early in Namespace:
             self.items.append(item);
             return
 
+label start:
+    "Light Distraction\n{color=ff0000}{size=18}[distraction_percentages[0]]%% Chance{/size}{/color}"
+    
+    menu:    
+        "It's a video game.":
+            jump game
+
+        "It's an interactive book.":
+            jump book
         

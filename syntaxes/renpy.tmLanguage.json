@@ -329,7 +329,6 @@
       }
     },
     "hex_literal": {
-      "comment": "Note: This pattern has no end check. Only use as include pattern!",
       "patterns": [
         {
           "comment": "rgb, rgba, rrggbb, rrggbbaa",
@@ -341,10 +340,10 @@
           "name": "invalid.illegal.unexpected-number-of-hex-values.renpy"
         },
         {
-          "match": "(?i)(?:#[a-f0-9]*)?(.+)",
-          "name": "constant.color.renpy",
+          "match": "(?i)(#[a-f0-9]*)?(.+?)\\b",
           "captures": {
-            "1": { "name": "invalid.illegal.character-not-allowed-here.renpy" }
+            "1": { "name": "constant.color.renpy" },
+            "2": { "name": "invalid.illegal.character-not-allowed-here.renpy" }
           }
         }
       ]
@@ -450,7 +449,6 @@
             "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
             "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
             "4": {
-              "name": "constant.color.renpy",
               "patterns": [{ "include": "#hex_literal" }]
             },
             "5": { "name": "punctuation.definition.tag.end.renpy" }
@@ -611,7 +609,6 @@
             "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
             "3": { "name": "punctuation.separator.key-value.renpy keyword.operator.assignment.renpy" },
             "4": {
-              "name": "constant.color.renpy",
               "patterns": [{ "include": "#hex_literal" }]
             },
             "5": { "name": "punctuation.definition.tag.end.renpy" }

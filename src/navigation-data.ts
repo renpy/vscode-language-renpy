@@ -201,6 +201,8 @@ export class NavigationData {
         if (locations && locations.length > 0) {
             return locations;
         }
+
+        return undefined;
     }
 
     static getNavigationDumpEntry(keyword: string): Navigation | undefined {
@@ -208,6 +210,7 @@ export class NavigationData {
         if (data) {
             return data[0];
         }
+        return undefined;
     }
 
     static getNavigationDumpEntries(keyword: string): Navigation[] | undefined {
@@ -416,6 +419,7 @@ export class NavigationData {
                 }
             }
         }
+        return;
     }
 
     static getClassData(location: Navigation): Navigation {

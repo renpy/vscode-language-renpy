@@ -192,30 +192,32 @@ export function getDefinitionFromFile(filename: string, line: number): Navigatio
     try {
         const data = fs.readFileSync(filepath, "utf-8");
         const lines = data.split("\n");
-        if (line <= lines.length) {
-            let text = lines[line - 1].trim();
-            if (text.endsWith(":")) {
-                text = text.slice(0, -1);
-            } else if (text.endsWith("(")) {
-                text = text + ")";
-            } else if (text.endsWith("[")) {
-                text = text + "]";
-            } else if (text.endsWith("{")) {
-                text = text + "}";
-            }
-
-            let docs = "";
-            docs = getPyDocsAtLine(lines, line - 1);
-
-            let args = "";
-            if (text.indexOf("(") > 0) {
-                args = text.substring(text.indexOf("("));
-                args = args.replace("(self, ", "(");
-                args = args.replace("(self)", "()");
-            }
-
-            return new Navigation("workspace", text, filename, line, docs, args, "", 0);
+        if (line >= lines.length) {
+            return undefined;
         }
+
+        let text = lines[line - 1].trim();
+        if (text.endsWith(":")) {
+            text = text.slice(0, -1);
+        } else if (text.endsWith("(")) {
+            text = text + ")";
+        } else if (text.endsWith("[")) {
+            text = text + "]";
+        } else if (text.endsWith("{")) {
+            text = text + "}";
+        }
+
+        let docs = "";
+        docs = getPyDocsAtLine(lines, line - 1);
+
+        let args = "";
+        if (text.indexOf("(") > 0) {
+            args = text.substring(text.indexOf("("));
+            args = args.replace("(self, ", "(");
+            args = args.replace("(self)", "()");
+        }
+
+        return new Navigation("workspace", text, filename, line, docs, args, "", 0);
     } catch (error) {
         return undefined;
     }

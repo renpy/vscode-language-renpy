@@ -23,10 +23,12 @@
     /* Additional Checks */
     "noUnusedLocals": true, // Report errors on unused locals.
     // "noUnusedParameters": true, // Report errors on unused parameters.
-    //"noImplicitReturns": true, // Report error when not all code paths in function return a value.
     // "noFallthroughCasesInSwitch": true, // Report errors for fallthrough cases in switch statement.
     // "noUncheckedIndexedAccess": true, // Include 'undefined' in index signature results
     // "noPropertyAccessFromIndexSignature": true, // Require undeclared properties from index signatures to use element accesses.
+    "noImplicitReturns": true, // Report error when not all code paths in function return a value.
+    "noImplicitOverride": true, // Ensure overriding members in derived classes are marked with an 'override' modifier.
+    "noImplicitThis": true, // Raise error on 'this' expressions with an implied 'any' type.
     "exactOptionalPropertyTypes": true, // Force exact optional types. (Aka. undefined needs to be added to optionals)
 
     /* Module Resolution Options */

@@ -27,7 +27,7 @@
     "Snippets"
   ],
   "engines": {
-    "vscode": "^1.67.2"
+    "vscode": "^1.79.0"
   },
   "capabilities": {
     "untrustedWorkspaces": {
@@ -35,7 +35,6 @@
     }
   },
   "activationEvents": [
-    "onLanguage:renpy",
     "workspaceContains:**/*.rpy",
     "workspaceContains:**/_ren.py"
   ],

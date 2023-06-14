@@ -1,5 +1,5 @@
 import { ConfigurationTarget, workspace } from "vscode";
-import util = require("util");
+import * as util from "util";
 import { IEquatable, ValueEqualsSet } from "./utilities/hashset";
 import { LogLevel, logMessage } from "./logger";
 

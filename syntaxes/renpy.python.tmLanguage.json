@@ -260,6 +260,7 @@
     },
     "member-access": {
       "name": "meta.member.access.python",
+      "contentName": "variable.name.python",
       "begin": "(\\.)\\s*(?!\\.)",
       "beginCaptures": {
         "1": { "name": "punctuation.separator.period.python" }
@@ -309,6 +310,7 @@
     },
     "odd-function-call": {
       "comment": "A bit obscured function call where there may have been anarbitrary number of other operations to get the function.E.g. \"arr[idx](args)\"",
+      "name": "meta.odd-function-call.python",
       "begin": "(?<=\\]|\\))\\s*(?=\\()",
       "end": "(\\))",
       "endCaptures": {

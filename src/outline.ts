@@ -1,10 +1,20 @@
 // Document Symbol (Outline) Provider
-"use strict";
-
-import { TextDocument, DocumentSymbol, Uri, Range, SymbolKind } from "vscode";
+import { TextDocument, DocumentSymbol, Uri, Range, SymbolKind, languages, CancellationToken, ProviderResult } from "vscode";
 import { Navigation } from "./navigation";
 import { NavigationData } from "./navigation-data";
 import { stripWorkspaceFromFile } from "./workspace";
+
+export const symbolProvider = languages.registerDocumentSymbolProvider("renpy", {
+    provideDocumentSymbols(document: TextDocument, token: CancellationToken): ProviderResult<DocumentSymbol[]> {
+        if (token.isCancellationRequested) {
+            return;
+        }
+
+        return new Promise((resolve) => {
+            resolve(getDocumentSymbols(document));
+        });
+    },
+});
 
 /**
  * Gets an array of Document Symbols for the given TextDocument used to populate the editor's Outline view

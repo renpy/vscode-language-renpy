@@ -1,6 +1,7 @@
 import { ConfigurationTarget, workspace } from "vscode";
-import util = require("util");
+import * as util from "util";
 import { IEquatable, ValueEqualsSet } from "./utilities/hashset";
+import { LogLevel, logMessage } from "./logger";
 
 export class TextMateRule implements IEquatable<TextMateRule> {
     public scope: string | string[];
@@ -63,10 +64,10 @@ export function injectCustomTextmateTokens(rules: ValueEqualsSet<TextMateRule>) 
         tokenColorCustomizations.textMateRules = newRules.toArray();
         tokensConfig.update("tokenColorCustomizations", tokenColorCustomizations, ConfigurationTarget.Workspace).then(
             () => {
-                console.log("Successfully updated the tokenColorCustomizations config");
+                logMessage(LogLevel.Info, "Successfully updated the tokenColorCustomizations config");
             },
             (reason) => {
-                console.error("Failed to update the tokenColorCustomizations config! : " + reason);
+                logMessage(LogLevel.Error, "Failed to update the tokenColorCustomizations config! : " + reason);
             }
         );
     }

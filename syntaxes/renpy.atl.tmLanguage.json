@@ -362,7 +362,7 @@
 
     "atl-fallback": {
       "comment": "TODO: This is a temp fix for missing pattern references",
-      "patterns": [{ "include": "source.renpy" }]
+      "patterns": [{ "include": "source.renpy#base-patterns" }]
     },
 
     "transform": {

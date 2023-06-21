@@ -25,7 +25,7 @@
       ]
     },
     "screen-build-in-properties": {
-      "comment": "https://www.renpy.org/doc/html/atl.html#list-of-transform-properties",
+      "comment": "These are the ATL keywords, will need to fix this later",
       "patterns": [
         {
           "comment": "Special manipulation keywords",
@@ -36,6 +36,18 @@
             "3": { "name": "keyword.clockwise.renpy" },
             "4": { "name": "keyword.counterclockwise.renpy" }
           }
+        },
+        {
+          "comment": "Special manipulation keywords",
+          "match": "\\b(?<!\\.)(key|input|(image)?button|grid|auto|mousearea|side|timer|[vh]?bar|viewport|scrollbars|mousewheel|vpgrid|imagemap)\\b",
+          "captures": {
+            "1": { "name": "keyword.other.renpy" }
+          }
+        },
+        {
+          "comment": "Random props",
+          "name": "entity.name.tag.css.transform.renpy",
+          "match": "\\b(?<!\\.)(?:[xy]padding|area|(un)?hovered|draggable|cols|spacing|side_[xy]align)\\b"
         },
         {
           "comment": "position props (int, absolute, or a float)",
@@ -240,15 +252,16 @@
       ]
     },
     "screen-box": {
-      "contentName": "meta.box.block.renpy",
-      "begin": "^([ \\t]+)?([vh]box)\\b[ \\t]*(?:.*?)(:)",
+      "contentName": "meta.screen.block.renpy",
+      "begin": "^([ \\t]+)?(?:(vbox)|(hbox))\\b[ \\t]*(?:.*?)(:)",
       "beginCaptures": {
         "1": { "name": "punctuation.whitespace.leading.block.renpy" },
-        "2": { "name": "keyword.box.renpy" },
-        "3": { "name": "punctuation.section.block.begin.renpy" }
+        "2": { "name": "keyword.vbox.renpy" },
+        "3": { "name": "keyword.hbox.renpy" },
+        "4": { "name": "punctuation.section.block.begin.renpy" }
       },
       "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-      "patterns": [{ "include": "source.renpy.atl#atl" }]
+      "patterns": [{ "include": "#screen-language" }]
     },
     "screen": {
       "patterns": [
@@ -272,12 +285,13 @@
 
     "screen-fallback": {
       "comment": "TODO: This is a temp fix for missing pattern references",
-      "patterns": [{ "include": "source.renpy" }]
+      "patterns": [{ "include": "source.renpy#base-patterns" }]
     },
 
     "screen-language": {
       "comment": "https://www.renpy.org/doc/html/screens.html#screen-language",
       "patterns": [
+        { "include": "source.renpy#conditionals" },
         { "include": "#screen-frame" },
         { "include": "#screen-window" },
         { "include": "#screen-box" },

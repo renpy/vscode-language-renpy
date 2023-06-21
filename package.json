@@ -2,11 +2,7 @@
   "name": "languague-renpy",
   "displayName": "Ren'Py Language",
   "description": "Adds rich support for the Ren'Py programming language to Visual Studio Code.",
-
-  "version": "2.2.1",
-
-
-
+  "version": "2.3.5",
   "publisher": "LuqueDaniel",
   "license": "MIT",
   "homepage": "https://github.com/LuqueDaniel/vscode-language-renpy",
@@ -31,7 +27,7 @@
     "Snippets"
   ],
   "engines": {
-    "vscode": "^1.67.2"
+    "vscode": "^1.75.0"
   },
   "capabilities": {
     "untrustedWorkspaces": {
@@ -39,8 +35,8 @@
     }
   },
   "activationEvents": [
-    "onLanguage:renpy",
-    "workspaceContains:**/*.rpy"
+    "workspaceContains:**/*.rpy",
+    "workspaceContains:**/_ren.py"
   ],
   "main": "./dist/extension",
   "browser": "./dist/extension.js",
@@ -50,7 +46,8 @@
         "id": "renpy",
         "aliases": [
           "Ren'Py",
-          "renpy"
+          "renpy",
+          "rpy"
         ],
         "extensions": [
           ".rpy",
@@ -64,6 +61,14 @@
           "light": "./renpy.svg",
           "dark": "./renpy.svg"
         }
+      },
+      {
+        "id": "renpy-log",
+        "aliases": [
+          "Ren'Py Log"
+        ],
+        "configuration": "./language-configuration.json",
+        "scopeName": "text.renpy-log"
       }
     ],
     "grammars": [
@@ -83,6 +88,21 @@
       {
         "scopeName": "source.renpy.python",
         "path": "./syntaxes/renpy.python.tmLanguage.json"
+      },
+      {
+        "scopeName": "renpy.comment.injection",
+        "path": "./syntaxes/injection.json",
+        "injectTo": [
+          "source.python"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.renpy": "renpy"
+        }
+      },
+      {
+        "language": "renpy-log",
+        "scopeName": "text.renpy-log",
+        "path": "./syntaxes/renpy.log.tmLanguage.json"
       }
     ],
     "snippets": [
@@ -209,24 +229,24 @@
     "format-check": "prettier --check 'src/**/*.ts' '.github/**/*.yml'"
   },
   "devDependencies": {
-    "@types/mocha": "^9.1.1",
-    "@types/node": "^18.13.0",
-    "@types/vscode": "^1.67.2",
-    "@types/webpack": "^5.28.0",
-    "@typescript-eslint/eslint-plugin": "^5.59.8",
-    "@typescript-eslint/parser": "^5.59.8",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.3.1",
+    "@types/vscode": "1.75",
+    "@types/webpack": "^5.28.1",
+    "@typescript-eslint/eslint-plugin": "^5.59.11",
+    "@typescript-eslint/parser": "^5.59.11",
+    "@vscode/vsce": "^2.19.0",
     "copy-webpack-plugin": "^11.0.0",
     "eslint": "^8.42.0",
     "eslint-plugin-import": "^2.27.5",
-    "fork-ts-checker-webpack-plugin": "^7.2.11",
-    "node-polyfill-webpack-plugin": "^1.1.4",
-    "ts-loader": "^9.3.0",
-    "ts-node": "^10.8.0",
-    "typescript": "^4.8.4",
+    "fork-ts-checker-webpack-plugin": "^8.0.0",
+    "node-polyfill-webpack-plugin": "^2.0.1",
+    "prettier": "^2.8.8",
+    "ts-loader": "^9.4.3",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.1.3",
     "vscode-test": "^1.6.1",
-    "webpack": "^5.76.0",
-    "webpack-cli": "^4.9.2",
-    "prettier": "^2.7.1",
-    "@vscode/vsce": "^2.19.0"
+    "webpack": "^5.86.0",
+    "webpack-cli": "^5.1.4"
   }
 }

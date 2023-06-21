@@ -12,7 +12,7 @@ export interface IEquatable<T> {
  * The current implementation is not very efficient, but it works.
  */
 export class ValueEqualsSet<T extends IEquatable<T>> extends Set<T> {
-    add(value: T) {
+    override add(value: T) {
         if (!this.has(value)) {
             super.add(value);
         }
@@ -26,7 +26,7 @@ export class ValueEqualsSet<T extends IEquatable<T>> extends Set<T> {
         return this;
     }
 
-    has(otherValue: T): boolean {
+    override has(otherValue: T): boolean {
         for (const value of this.values()) {
             if (value.equals(otherValue)) {
                 return true;

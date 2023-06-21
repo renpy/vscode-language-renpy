@@ -1,16 +1,26 @@
-// Definition Provider
-"use strict";
-
-import { Definition, Location, Position, TextDocument, Uri } from "vscode";
+// Provider for Go To Definition
+import { CancellationToken, Definition, Location, Position, ProviderResult, TextDocument, Uri, languages } from "vscode";
 import { getKeywordPrefix } from "./extension";
 import { rangeAsString } from "./navigation";
 import { NavigationData } from "./navigation-data";
 import { getFileWithPath, stripWorkspaceFromFile } from "./workspace";
 
+export const definitionProvider = languages.registerDefinitionProvider("renpy", {
+    provideDefinition(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Definition> {
+        if (token.isCancellationRequested) {
+            return;
+        }
+
+        return new Promise((resolve) => {
+            resolve(getDefinition(document, position));
+        });
+    },
+});
+
 export function getDefinition(document: TextDocument, position: Position): Definition | undefined {
     const range = document.getWordRangeAtPosition(position);
     if (!range) {
-        return;
+        return undefined;
     }
 
     // check if this range is a semantic token

@@ -1,9 +1,17 @@
-// References Provider
-"use strict";
-
-import { TextDocument, Position, ReferenceContext, Location, workspace } from "vscode";
+// Find all References Provider
+import { TextDocument, Position, ReferenceContext, Location, workspace, languages, CancellationToken } from "vscode";
 import { getKeywordPrefix } from "./extension";
 import { NavigationData } from "./navigation-data";
+
+export const referencesProvider = languages.registerReferenceProvider("renpy", {
+    async provideReferences(document: TextDocument, position: Position, context: ReferenceContext, token: CancellationToken) {
+        if (token.isCancellationRequested) {
+            return;
+        }
+
+        return await findAllReferences(document, position, context);
+    },
+});
 
 /**
  * Returns an array of Locations that describe all matches for the keyword at the current position
@@ -16,7 +24,7 @@ export async function findAllReferences(document: TextDocument, position: Positi
     const range = document.getWordRangeAtPosition(position);
     let keyword = document.getText(range);
     if (!keyword) {
-        return;
+        return undefined;
     }
 
     if (range) {
@@ -30,8 +38,8 @@ export async function findAllReferences(document: TextDocument, position: Positi
     const files = await workspace.findFiles("**/*.rpy");
     if (files && files.length > 0) {
         for (const file of files) {
-            document = await workspace.openTextDocument(file);
-            const locations = findReferenceMatches(keyword, document);
+            const textDocument = await workspace.openTextDocument(file);
+            const locations = findReferenceMatches(keyword, textDocument);
             if (locations) {
                 for (const l of locations) {
                     references.push(l);

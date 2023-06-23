@@ -1,4 +1,4 @@
-import { commands, CompletionItem, CompletionItemKind, LogLevel, Position, TextDocument, window, workspace } from "vscode";
+import { commands, CompletionItem, CompletionItemKind, CompletionItemTag, LogLevel, Position, TextDocument, window, workspace } from "vscode";
 import { getDefinitionFromFile } from "./hover";
 import { DataType, getBaseTypeFromDefine, getNamedParameter, getPyDocsFromTextDocumentAtLine, Navigation, splitParameters, stripQuotes } from "./navigation";
 import { cleanUpPath, extractFilenameWithoutExtension, getFileWithPath, getNavigationJsonFilepath, stripWorkspaceFromFile } from "./workspace";
@@ -11,9 +11,19 @@ import { logMessage, logToast } from "./logger";
 
 const filterCharacter = "\u2588";
 
+interface RenpyItem {
+    [key: string]: string | string[];
+}
+
+interface RenpyFunctions {
+    config: RenpyItem;
+    internal: RenpyItem;
+    renpy: RenpyItem;
+}
+
 export class NavigationData {
     static data: any = {};
-    static renpyFunctions: any;
+    static renpyFunctions: RenpyFunctions;
     static autoCompleteKeywords: any;
     static renpyAutoComplete: CompletionItem[];
     static configAutoComplete: CompletionItem[];
@@ -25,32 +35,81 @@ export class NavigationData {
     static isImporting = false;
     static isCompiling = false;
 
+    static makeCompletionItem(name: string, item: string[]): CompletionItem {
+        const storage = item[0];
+        const kind = item[1];
+        const args = item[2];
+        const parentClass = item[3];
+        const accessKind = item[4];
+        const doc = item[5];
+
+        let completionKind = CompletionItemKind.Variable;
+        if (accessKind === "var") {
+            completionKind = CompletionItemKind.Field;
+        } else if (kind === "function" || accessKind === "function") {
+            completionKind = CompletionItemKind.Function;
+        } else if (accessKind === "method") {
+            completionKind = CompletionItemKind.Method;
+        } else if (kind === "class" || accessKind === "class") {
+            completionKind = CompletionItemKind.Class;
+        } else if (accessKind === "exception") {
+            completionKind = CompletionItemKind.Issue;
+        } else if (storage === "basefile") {
+            completionKind = CompletionItemKind.Field;
+        } else if (accessKind === "attribute") {
+            completionKind = CompletionItemKind.Property;
+        } else if (storage === "audio") {
+            completionKind = CompletionItemKind.Method;
+        } else if (accessKind === "ui") {
+            completionKind = CompletionItemKind.Event;
+        } else if (kind === "image") {
+            completionKind = CompletionItemKind.Constant;
+        } else {
+            console.error("Unhandled kind: " + kind);
+        }
+
+        const completionItem = new CompletionItem(name, completionKind);
+        completionItem.documentation = doc;
+        if (storage === "obsolete") {
+            completionItem.tags = [CompletionItemTag.Deprecated];
+        }
+        return completionItem;
+    }
+
     static async init(extensionPath: string) {
         logMessage(LogLevel.Info, `NavigationData init`);
 
-        NavigationData.renpyFunctions = data;
+        NavigationData.renpyFunctions = data as RenpyFunctions;
         NavigationData.autoCompleteKeywords = kwData;
 
         NavigationData.renpyAutoComplete = [];
-        for (const key in NavigationData.renpyFunctions.renpy) {
-            if (key.charAt(0) === key.charAt(0).toUpperCase()) {
-                NavigationData.renpyAutoComplete.push(new CompletionItem(key.substring(6), CompletionItemKind.Class));
-            } else {
-                NavigationData.renpyAutoComplete.push(new CompletionItem(key.substring(6), CompletionItemKind.Method));
+
+        // for key and value in NavigationData.renpyFunctions.renpy (which is an object)
+        for (const [key, value] of Object.entries(NavigationData.renpyFunctions.renpy)) {
+            if (typeof value === "string") {
+                continue;
             }
+            NavigationData.renpyAutoComplete.push(NavigationData.makeCompletionItem(key.substring(6), value));
         }
 
         NavigationData.configAutoComplete = [];
-        for (const key in NavigationData.renpyFunctions.config) {
-            NavigationData.configAutoComplete.push(new CompletionItem(key.substring(7), CompletionItemKind.Property));
+        for (const [key, value] of Object.entries(NavigationData.renpyFunctions.config)) {
+            if (typeof value === "string") {
+                continue;
+            }
+            NavigationData.configAutoComplete.push(NavigationData.makeCompletionItem(key.substring(7), value));
         }
 
         NavigationData.guiAutoComplete = [];
         NavigationData.internalAutoComplete = [];
-        for (const key in NavigationData.renpyFunctions.internal) {
-            NavigationData.internalAutoComplete.push(new CompletionItem(key, CompletionItemKind.Class));
+        for (const [key, value] of Object.entries(NavigationData.renpyFunctions.internal)) {
+            if (typeof value === "string") {
+                continue;
+            }
+
+            NavigationData.internalAutoComplete.push(NavigationData.makeCompletionItem(key, value));
             if (key.startsWith("gui.")) {
-                NavigationData.guiAutoComplete.push(new CompletionItem(key.substring(4), CompletionItemKind.Variable));
+                NavigationData.guiAutoComplete.push(NavigationData.makeCompletionItem(key.substring(4), value));
             }
         }
 

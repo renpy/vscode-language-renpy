@@ -1,4 +1,4 @@
-import { commands, CompletionItem, CompletionItemKind, Position, TextDocument, window, workspace } from "vscode";
+import { commands, CompletionItem, CompletionItemKind, LogLevel, Position, TextDocument, window, workspace } from "vscode";
 import { getDefinitionFromFile } from "./hover";
 import { DataType, getBaseTypeFromDefine, getNamedParameter, getPyDocsFromTextDocumentAtLine, Navigation, splitParameters, stripQuotes } from "./navigation";
 import { cleanUpPath, extractFilenameWithoutExtension, getFileWithPath, getNavigationJsonFilepath, stripWorkspaceFromFile } from "./workspace";
@@ -7,7 +7,7 @@ import { Displayable } from "./displayable";
 import { Character } from "./character";
 import data from "./renpy.json";
 import kwData from "./renpyauto.json";
-import { LogLevel, logMessage, logToast } from "./logger";
+import { logMessage, logToast } from "./logger";
 
 const filterCharacter = "\u2588";
 

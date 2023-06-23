@@ -1,8 +1,8 @@
-import { Position, Range as VSRange } from "vscode";
+import { LogLevel, Position, Range as VSRange } from "vscode";
 import { CharacterTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, LiteralTokenType, MetaTokenType, OperatorTokenType, TokenType, TokenTypeIndex, TypeOfTokenType } from "./renpy-tokens";
 import { TokenPattern, TokenRangePattern, TokenMatchPattern, TokenRepoPattern } from "./token-pattern-types";
 import { Vector } from "../utilities/vector";
-import { LogLevel, logMessage } from "../logger";
+import { logMessage } from "../logger";
 import { EnumToString } from "../utilities/utils";
 
 export class Range {

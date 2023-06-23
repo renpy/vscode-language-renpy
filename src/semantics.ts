@@ -1,9 +1,9 @@
 // Semantic Token Provider
-import { CancellationToken, Position, ProviderResult, Range, SemanticTokens, SemanticTokensBuilder, SemanticTokensLegend, TextDocument, languages } from "vscode";
+import { LogLevel, CancellationToken, Position, ProviderResult, Range, SemanticTokens, SemanticTokensBuilder, SemanticTokensLegend, TextDocument, languages } from "vscode";
 import { Navigation, splitParameters, rangeAsString, getCurrentContext, DataType } from "./navigation";
 import { NavigationData, updateNavigationData } from "./navigation-data";
 import { stripWorkspaceFromFile } from "./workspace";
-import { LogLevel, logMessage } from "./logger";
+import { logMessage } from "./logger";
 
 const tokenTypes = ["class", "parameter", "variable", "keyword"];
 const tokenModifiers = ["declaration", "defaultLibrary"];

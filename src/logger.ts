@@ -1,10 +1,17 @@
-import { ExtensionContext, StatusBarAlignment, window } from "vscode";
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { ExtensionContext, StatusBarAlignment, window, LogLevel, ExtensionMode } from "vscode";
 
-const outputChannel = window.createOutputChannel("Ren'Py Language Extension", "renpy-log");
+const outputChannel = window.createOutputChannel("Ren'Py Language Extension", { log: true });
 const statusBar = window.createStatusBarItem(StatusBarAlignment.Right, 100);
 
+let extensionMode: ExtensionMode = null!;
+
 export function intializeLoggingSystems(context: ExtensionContext) {
+    extensionMode = context.extensionMode;
+
     context.subscriptions.push(outputChannel);
+
+    outputChannel.clear();
 
     statusBar.name = "Ren'Py Language Extension Status";
     statusBar.tooltip = "Ren'Py Language Extension Status";
@@ -23,32 +30,11 @@ export function updateStatusBar(text: string) {
 }
 
 // eslint-disable-next-line no-shadow
-export const enum LogLevel {
-    Debug,
-    Info,
-    Warning,
-    Error,
-}
-
-// eslint-disable-next-line no-shadow
 export const enum LogCategory {
     Default,
     Status,
     Parser,
     Tokenizer,
-}
-
-function getLogLevelPrefix(level: LogLevel): string {
-    switch (level) {
-        case LogLevel.Debug:
-            return "[Debug]";
-        case LogLevel.Info:
-            return "[Info]";
-        case LogLevel.Warning:
-            return "[Warning]";
-        case LogLevel.Error:
-            return "[Error]";
-    }
 }
 
 function getLogCategoryPrefix(category: LogCategory): string {
@@ -64,30 +50,55 @@ function getLogCategoryPrefix(category: LogCategory): string {
     }
 }
 
-export function logMessage(level: LogLevel, message: string, developersOnly = false): void {
-    logCatMessage(level, LogCategory.Default, message, developersOnly);
+export function logMessage(level: LogLevel, message: string): void {
+    logCatMessage(level, LogCategory.Default, message);
 }
 
-export function logCatMessage(level: LogLevel, category: LogCategory, message: string, developersOnly = false): void {
-    const outputMsg = `${getLogLevelPrefix(level)} ${getLogCategoryPrefix(category)} > ${message}`;
+export function logCatMessage(level: LogLevel, category: LogCategory, message: string): void {
+    const outputMsg = `${getLogCategoryPrefix(category)} > ${message}`;
 
     switch (level) {
+        case LogLevel.Trace:
+            outputChannel.trace(outputMsg);
+            break;
         case LogLevel.Debug:
-            console.debug(outputMsg);
+            outputChannel.debug(outputMsg);
             break;
         case LogLevel.Info:
-            console.log(outputMsg);
+            outputChannel.info(outputMsg);
             break;
         case LogLevel.Warning:
-            console.warn(outputMsg);
+            outputChannel.warn(outputMsg);
             break;
         case LogLevel.Error:
-            console.error(outputMsg);
+            outputChannel.error(outputMsg);
             break;
     }
 
-    if (!developersOnly && level >= LogLevel.Info) {
-        outputChannel.appendLine(outputMsg);
+    debugLog(level, outputMsg);
+}
+
+function debugLog(level: LogLevel, message: string) {
+    if (extensionMode !== ExtensionMode.Development) {
+        return;
+    }
+
+    switch (level) {
+        case LogLevel.Trace:
+            console.trace(message);
+            break;
+        case LogLevel.Debug:
+            console.debug(message);
+            break;
+        case LogLevel.Info:
+            console.info(message);
+            break;
+        case LogLevel.Warning:
+            console.warn(message);
+            break;
+        case LogLevel.Error:
+            console.error(message);
+            break;
     }
 }
 

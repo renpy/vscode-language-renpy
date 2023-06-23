@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { assert } from "console";
 import { performance } from "perf_hooks";
-import { TextDocument, Uri, Range as VSRange } from "vscode";
+import { LogLevel, TextDocument, Uri, Range as VSRange } from "vscode";
 import { Token, isRangePattern, isMatchPattern, isRepoPattern, TokenPosition, TokenTree, TreeNode, Range } from "./token-definitions";
 import { RenpyPatterns } from "./token-patterns.g";
 import { Stack } from "../utilities/stack";
 import { Vector } from "../utilities/vector";
 import { TokenPatternCapture, TokenCapturePattern, TokenRepoPattern, TokenRangePattern, TokenMatchPattern } from "./token-pattern-types";
-import { LogCategory, LogLevel, logCatMessage } from "../logger";
+import { LogCategory, logCatMessage } from "../logger";
 import { escapeRegExpCharacters } from "../utilities/utils";
 
 const cloneScanResult = (obj: ScanResult | undefined): ScanResult | undefined => {
@@ -325,10 +325,9 @@ class DocumentTokenizer {
             if (captures[i] === undefined) {
                 const pos = this.positionAt(startPos);
                 logCatMessage(
-                    LogLevel.Warning,
+                    LogLevel.Debug,
                     LogCategory.Tokenizer,
-                    `There is no pattern defined for capture group '${i}', on a pattern that matched '${match[i]}' near L:${pos.line + 1} C:${pos.character + 1}.\nThis should probably be added or be a non-capturing group.`,
-                    true
+                    `There is no pattern defined for capture group '${i}', on a pattern that matched '${match[i]}' near L:${pos.line + 1} C:${pos.character + 1}.\nThis should probably be added or be a non-capturing group.`
                 );
                 continue;
             }
@@ -456,7 +455,7 @@ class DocumentTokenizer {
                     }
 
                     if (failSafeIndex === lastMatchIndex) {
-                        logCatMessage(LogLevel.Error, LogCategory.Tokenizer, "The range expand loop has not advanced since the last cycle. This indicates a programming error. Breaking the loop!", true);
+                        logCatMessage(LogLevel.Error, LogCategory.Tokenizer, "The range expand loop has not advanced since the last cycle. This indicates a programming error. Breaking the loop!");
                         break;
                     }
 
@@ -639,12 +638,12 @@ class DocumentTokenizer {
 
         const coverageResult = this.checkTokenTreeCoverage(rangeNode, new Range(startPos, endPos));
         if (!coverageResult.valid) {
-            logCatMessage(LogLevel.Warning, LogCategory.Tokenizer, `The token tree is not covering the entire match range!`, true);
+            logCatMessage(LogLevel.Debug, LogCategory.Tokenizer, `The token tree is not covering the entire match range!`);
             for (const gap of coverageResult.gaps) {
                 const gapStartPos = this.document.positionAt(gap.start);
                 const gapEndPos = this.document.positionAt(gap.end);
                 const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
-                logCatMessage(LogLevel.Warning, LogCategory.Tokenizer, `Gap from L:${gapStartPos.line + 1} C:${gapStartPos.character + 1} to L:${gapEndPos.line + 1} C:${gapEndPos.character + 1}, Text: '${text}'`, true);
+                logCatMessage(LogLevel.Debug, LogCategory.Tokenizer, `Gap from L:${gapStartPos.line + 1} C:${gapStartPos.character + 1} to L:${gapEndPos.line + 1} C:${gapEndPos.character + 1}, Text: '${text}'`);
             }
         }
 
@@ -669,12 +668,12 @@ class DocumentTokenizer {
 
         const coverageResult = this.checkTokenTreeCoverage(contentNode, new Range(startPos, endPos));
         if (!coverageResult.valid) {
-            logCatMessage(LogLevel.Warning, LogCategory.Tokenizer, `The token tree is not covering the entire match range!`, true);
+            logCatMessage(LogLevel.Debug, LogCategory.Tokenizer, `The token tree is not covering the entire match range!`);
             for (const gap of coverageResult.gaps) {
                 const gapStartPos = this.document.positionAt(gap.start);
                 const gapEndPos = this.document.positionAt(gap.end);
                 const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
-                logCatMessage(LogLevel.Warning, LogCategory.Tokenizer, `Gap from L${gapStartPos.line + 1}:${gapStartPos.character + 1} to L${gapEndPos.line + 1}:${gapEndPos.character + 1}, Text: '${text}'`, true);
+                logCatMessage(LogLevel.Debug, LogCategory.Tokenizer, `Gap from L${gapStartPos.line + 1}:${gapStartPos.character + 1} to L${gapEndPos.line + 1}:${gapEndPos.character + 1}, Text: '${text}'`);
             }
         }
 
@@ -738,7 +737,7 @@ class DocumentTokenizer {
             }
 
             if (failSafeIndex === lastMatchIndex) {
-                logCatMessage(LogLevel.Error, LogCategory.Tokenizer, "The loop has not advanced since the last cycle. This indicates a programming error. Breaking the loop!", true);
+                logCatMessage(LogLevel.Error, LogCategory.Tokenizer, "The loop has not advanced since the last cycle. This indicates a programming error. Breaking the loop!");
                 break;
             }
 

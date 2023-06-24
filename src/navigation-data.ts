@@ -1,4 +1,4 @@
-import { commands, CompletionItem, CompletionItemKind, CompletionItemTag, LogLevel, Position, TextDocument, window, workspace } from "vscode";
+import { commands, CompletionItem, CompletionItemKind, CompletionItemTag, LogLevel, MarkdownString, Position, SnippetString, TextDocument, window, workspace } from "vscode";
 import { getDefinitionFromFile } from "./hover";
 import { DataType, getBaseTypeFromDefine, getNamedParameter, getPyDocsFromTextDocumentAtLine, Navigation, splitParameters, stripQuotes } from "./navigation";
 import { cleanUpPath, extractFilenameWithoutExtension, getFileWithPath, getNavigationJsonFilepath, stripWorkspaceFromFile } from "./workspace";
@@ -39,37 +39,44 @@ export class NavigationData {
         const storage = item[0];
         const kind = item[1];
         const args = item[2];
-        const parentClass = item[3];
+        //const parentClass = item[3];
         const accessKind = item[4];
         const doc = item[5];
 
-        let completionKind = CompletionItemKind.Variable;
+        const completionItem = new CompletionItem(name, undefined);
+        completionItem.documentation = new MarkdownString(doc);
+
         if (accessKind === "var") {
-            completionKind = CompletionItemKind.Field;
-        } else if (kind === "function" || accessKind === "function") {
-            completionKind = CompletionItemKind.Function;
-        } else if (accessKind === "method") {
-            completionKind = CompletionItemKind.Method;
+            completionItem.kind = CompletionItemKind.Field;
         } else if (kind === "class" || accessKind === "class") {
-            completionKind = CompletionItemKind.Class;
+            completionItem.kind = CompletionItemKind.Class;
         } else if (accessKind === "exception") {
-            completionKind = CompletionItemKind.Issue;
+            completionItem.kind = CompletionItemKind.Issue;
         } else if (storage === "basefile") {
-            completionKind = CompletionItemKind.Field;
+            completionItem.kind = CompletionItemKind.Field;
         } else if (accessKind === "attribute") {
-            completionKind = CompletionItemKind.Property;
+            completionItem.kind = CompletionItemKind.Property;
         } else if (storage === "audio") {
-            completionKind = CompletionItemKind.Method;
+            completionItem.kind = CompletionItemKind.Method;
         } else if (accessKind === "ui") {
-            completionKind = CompletionItemKind.Event;
+            completionItem.kind = CompletionItemKind.Event;
         } else if (kind === "image") {
-            completionKind = CompletionItemKind.Constant;
+            completionItem.kind = CompletionItemKind.Constant;
+        } else if (kind === "function" || accessKind === "function") {
+            completionItem.kind = CompletionItemKind.Function;
+        } else if (accessKind === "method") {
+            completionItem.kind = CompletionItemKind.Method;
         } else {
             console.error("Unhandled kind: " + kind);
         }
 
-        const completionItem = new CompletionItem(name, completionKind);
-        completionItem.documentation = doc;
+        // Automatically add parenthesis and trigger hints for functions and methods
+        if (completionItem.kind === CompletionItemKind.Method || completionItem.kind === CompletionItemKind.Function) {
+            completionItem.insertText = new SnippetString(`${name}($1)`);
+            completionItem.command = { command: "editor.action.triggerParameterHints", title: "Parameter Hints" };
+            completionItem.detail = `def ${name}(${args})`;
+        }
+
         if (storage === "obsolete") {
             completionItem.tags = [CompletionItemTag.Deprecated];
         }

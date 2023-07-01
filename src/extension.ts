@@ -20,6 +20,7 @@ import { Tokenizer } from "./tokenizer/tokenizer";
 import { signatureProvider } from "./signature";
 import { LogLevel, intializeLoggingSystems, logMessage, logToast, updateStatusBar } from "./logger";
 import { Configuration } from "./configuration";
+import { RenpyAdapterDescriptorFactory } from "./debugger";
 
 export async function activate(context: ExtensionContext): Promise<void> {
     intializeLoggingSystems(context);
@@ -247,6 +248,9 @@ export async function activate(context: ExtensionContext): Promise<void> {
             logMessage(LogLevel.Error, `Watch audio folder error: ${error}`);
         }
     }
+
+    const factory = new RenpyAdapterDescriptorFactory();
+    context.subscriptions.push(debug.registerDebugAdapterDescriptorFactory("renpy", factory));
 
     logMessage(LogLevel.Info, "Ren'Py extension activated!");
 }

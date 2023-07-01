@@ -139,6 +139,64 @@
         "icon": "$(play)"
       }
     ],
+    "debuggers": [
+      {
+        "type": "renpy",
+        "label": "Ren'Py",
+        "languages": [
+          "renpy"
+        ],
+        "runtime": "node",
+        "configurationAttributes": {
+          "launch": {
+            "required": [
+              "program"
+            ],
+            "properties": {
+              "program": {
+                "type": "string",
+                "description": "Program to run Ren'Py with.",
+                "default": "${config:renpy.renpyExecutableLocation} ${workspaceFolder}"
+              },
+              "command": {
+                "type": "string",
+                "description": "Command to run Ren'Py with.",
+                "default": "run"
+              },
+              "args": {
+                "type": "array",
+                "description": "Args to run Ren'Py with.",
+                "default": []
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "renpy",
+            "request": "launch",
+            "name": "Ren'Py: Launch",
+            "program": "${config:renpy.renpyExecutableLocation} ${workspaceFolder}",
+            "command": "run",
+            "args": []
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Ren'Py",
+            "description": "A new configuration for launching a Ren'Py project",
+            "body": {
+              "type": "renpy",
+              "request": "launch",
+              "name": "Ren'Py",
+              "program": "${config:renpy.renpyExecutableLocation} ${workspaceFolder}",
+              "command": "run",
+              "args": []
+            }
+          }
+        ]
+      }
+    ],
     "configuration": [
       {
         "title": "Ren'Py",
@@ -212,6 +270,11 @@
               "Ignore filename issues"
             ],
             "description": "Enable filename checks. Filenames must begin with a letter or number, and may not begin with '00', as Ren'Py uses such files for its own purposes. If set to Error or Warning, documents will be marked in the editor if the document filename does not meet Ren'Py's specifications. If set to Disabled, filename issues will be ignored."
+          },
+          "renpy.renpyExecutableLocation": {
+            "type": "string",
+            "default": "",
+            "description": "Location of Ren'Py installation. Should be .exe on Windows and .sh on Mac/Linux."
           }
         }
       }
@@ -247,6 +310,7 @@
     "typescript": "^5.1.3",
     "vscode-test": "^1.6.1",
     "webpack": "^5.86.0",
-    "webpack-cli": "^5.1.4"
+    "webpack-cli": "^5.1.4",
+    "@vscode/debugadapter": "^1.57.0"
   }
 }

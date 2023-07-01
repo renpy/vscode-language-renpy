@@ -293,7 +293,7 @@ export function getKeywordPrefix(document: TextDocument, position: Position, ran
     return;
 }
 
-function isValidExecutable(renpyExecutableLocation: string): boolean {
+export function isValidExecutable(renpyExecutableLocation: string): boolean {
     if (!renpyExecutableLocation || renpyExecutableLocation === "") {
         return false;
     }

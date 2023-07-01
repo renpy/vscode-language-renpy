@@ -149,15 +149,8 @@
         "runtime": "node",
         "configurationAttributes": {
           "launch": {
-            "required": [
-              "program"
-            ],
+            "required": [],
             "properties": {
-              "program": {
-                "type": "string",
-                "description": "Program to run Ren'Py with.",
-                "default": "${config:renpy.renpyExecutableLocation} ${workspaceFolder}"
-              },
               "command": {
                 "type": "string",
                 "description": "Command to run Ren'Py with.",
@@ -176,7 +169,6 @@
             "type": "renpy",
             "request": "launch",
             "name": "Ren'Py: Launch",
-            "program": "${config:renpy.renpyExecutableLocation} ${workspaceFolder}",
             "command": "run",
             "args": []
           }
@@ -189,7 +181,6 @@
               "type": "renpy",
               "request": "launch",
               "name": "Ren'Py",
-              "program": "${config:renpy.renpyExecutableLocation} ${workspaceFolder}",
               "command": "run",
               "args": []
             }
@@ -201,15 +192,9 @@
       {
         "type": "renpy",
         "required": [
-          "program",
           "command"
         ],
         "properties": {
-          "program": {
-            "type": "string",
-            "description": "Program to run Ren'Py with.",
-            "default": "${config:renpy.renpyExecutableLocation} ${workspaceFolder}"
-          },
           "command": {
             "type": "string",
             "description": "Command to run Ren'Py with.",

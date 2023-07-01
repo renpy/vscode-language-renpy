@@ -1,5 +1,9 @@
 import * as vscode from "vscode";
 import { DebugSession, TerminatedEvent } from "@vscode/debugadapter";
+import { getWorkspaceFolder } from "./workspace";
+import { Configuration } from "./configuration";
+import { LogLevel, logToast } from "./logger";
+import { isValidExecutable } from "./extension";
 
 function getTerminal(name: string): vscode.Terminal {
     let i: number;
@@ -15,7 +19,14 @@ export class RenpyAdapterDescriptorFactory implements vscode.DebugAdapterDescrip
     createDebugAdapterDescriptor(session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
         const terminal = getTerminal("Ren'py Debug");
         terminal.show();
-        let program = session.configuration.program;
+        let program = Configuration.getRenpyExecutablePath();
+
+        if (!isValidExecutable(program)) {
+            logToast(LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
+            return;
+        }
+
+        program += " " + getWorkspaceFolder();
         if (session.configuration.command) {
             program += " " + session.configuration.command;
         }

@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
+import { getWorkspaceFolder } from "./workspace";
+import { Configuration } from "./configuration";
 
 interface RenpyTaskDefinition extends vscode.TaskDefinition {
-    program: string;
     command: string;
     args?: string[];
 }
@@ -14,9 +15,8 @@ export class RenpyTaskProvider implements vscode.TaskProvider {
     }
 
     public resolveTask(task: vscode.Task): vscode.Task | undefined {
-        const program: string = task.definition.program;
         const command: string = task.definition.command;
-        if (program === "${config:renpy.renpyExecutableLocation} ${workspaceFolder}" && command) {
+        if (command) {
             const definition: RenpyTaskDefinition = <RenpyTaskDefinition>task.definition;
             return this.getTask(definition);
         }
@@ -28,15 +28,15 @@ export class RenpyTaskProvider implements vscode.TaskProvider {
             return this.tasks;
         }
         this.tasks = [];
-        this.tasks.push(this.getTask({ type: "renpy", program: "${config:renpy.renpyExecutableLocation} ${workspaceFolder}", command: "compile" }));
-        this.tasks.push(this.getTask({ type: "renpy", program: "${config:renpy.renpyExecutableLocation} ${workspaceFolder}", command: "dialogue", args: ["None"] }));
-        this.tasks.push(this.getTask({ type: "renpy", program: "${config:renpy.renpyExecutableLocation} ${workspaceFolder}", command: "lint", args: ["lint.txt"] }));
-        this.tasks.push(this.getTask({ type: "renpy", program: "${config:renpy.renpyExecutableLocation} ${workspaceFolder}", command: "rmpersistent" }));
+        this.tasks.push(this.getTask({ type: "renpy", command: "compile" }));
+        this.tasks.push(this.getTask({ type: "renpy", command: "dialogue", args: ["None"] }));
+        this.tasks.push(this.getTask({ type: "renpy", command: "lint", args: ["lint.txt"] }));
+        this.tasks.push(this.getTask({ type: "renpy", command: "rmpersistent" }));
         return this.tasks;
     }
 
     private getTask(definition: RenpyTaskDefinition): vscode.Task {
-        let commandLine = definition.program + " " + definition.command;
+        let commandLine = Configuration.getRenpyExecutablePath() + " " + getWorkspaceFolder() + " " + definition.command;
         if (definition.args) {
             commandLine += " " + definition.args.join(" ");
         }

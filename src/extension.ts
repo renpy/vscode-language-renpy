@@ -4,7 +4,7 @@
 
 import * as cp from "child_process";
 import * as fs from "fs";
-import { ExtensionContext, languages, commands, window, TextDocument, Position, debug, Range, workspace, Uri } from "vscode";
+import { ExtensionContext, languages, commands, window, TextDocument, Position, debug, Range, workspace, Uri, Disposable, tasks } from "vscode";
 import { colorProvider } from "./color";
 import { getStatusBarText, NavigationData } from "./navigation-data";
 import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
@@ -21,6 +21,9 @@ import { signatureProvider } from "./signature";
 import { LogLevel, intializeLoggingSystems, logMessage, logToast, updateStatusBar } from "./logger";
 import { Configuration } from "./configuration";
 import { RenpyAdapterDescriptorFactory } from "./debugger";
+import { RenpyTaskProvider } from "./taskprovider";
+
+let renpyTaskProvider: Disposable | undefined;
 
 export async function activate(context: ExtensionContext): Promise<void> {
     intializeLoggingSystems(context);
@@ -251,6 +254,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     const factory = new RenpyAdapterDescriptorFactory();
     context.subscriptions.push(debug.registerDebugAdapterDescriptorFactory("renpy", factory));
+    renpyTaskProvider = tasks.registerTaskProvider("renpy", new RenpyTaskProvider());
 
     logMessage(LogLevel.Info, "Ren'Py extension activated!");
 }
@@ -258,6 +262,9 @@ export async function activate(context: ExtensionContext): Promise<void> {
 export function deactivate() {
     logMessage(LogLevel.Info, "Ren'Py extension deactivating");
     fs.unwatchFile(getNavigationJsonFilepath());
+    if (renpyTaskProvider) {
+        renpyTaskProvider.dispose();
+    }
 }
 
 export function getKeywordPrefix(document: TextDocument, position: Position, range: Range): string | undefined {

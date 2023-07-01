@@ -197,6 +197,32 @@
         ]
       }
     ],
+    "taskDefinitions": [
+      {
+        "type": "renpy",
+        "required": [
+          "program",
+          "command"
+        ],
+        "properties": {
+          "program": {
+            "type": "string",
+            "description": "Program to run Ren'Py with.",
+            "default": "${config:renpy.renpyExecutableLocation} ${workspaceFolder}"
+          },
+          "command": {
+            "type": "string",
+            "description": "Command to run Ren'Py with.",
+            "default": "run"
+          },
+          "args": {
+            "type": "array",
+            "description": "Args to run Ren'Py with.",
+            "default": []
+          }
+        }
+      }
+    ],
     "configuration": [
       {
         "title": "Ren'Py",

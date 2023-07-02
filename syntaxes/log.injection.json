@@ -1,6 +1,6 @@
 {
-  "name": "Ren'Py Log",
-  "scopeName": "text.renpy-log",
+  "scopeName": "text.log.injection",
+  "injectionSelector": "L:text.log",
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
 
   "patterns": [{ "include": "#debug-msg" }, { "include": "#info-msg" }, { "include": "#warning-msg" }, { "include": "#error-msg" }],
@@ -8,50 +8,50 @@
   "repository": {
     "debug-msg": {
       "name": "markup.changed log.debug.renpy",
-      "begin": "^(\\[)Debug(\\])",
+      "begin": "(\\[)debug(\\])(?= \\[.+?\\] > )",
       "beginCaptures": {
         "1": { "name": "punctuation.definition.log.begin" },
         "2": { "name": "punctuation.definition.log.end" }
       },
-      "end": "(?=^\\[)",
+      "end": "(?=^\\d{4})",
       "patterns": [{ "include": "#msg-content" }]
     },
     "info-msg": {
       "name": "log.info.renpy",
-      "begin": "^(\\[)(Info)(\\])",
+      "begin": "(\\[)(info)(\\])(?= \\[.+?\\] > )",
       "beginCaptures": {
         "1": { "name": "punctuation.definition.log.begin" },
         "2": { "name": "markup.inserted" },
         "3": { "name": "punctuation.definition.log.end" }
       },
-      "end": "(?=^\\[)",
+      "end": "(?=^\\d{4})",
       "patterns": [{ "include": "#msg-content" }]
     },
     "warning-msg": {
       "name": "entity.name.function.warning, strong log.warning.renpy",
-      "begin": "^(\\[)Warning(\\])",
+      "begin": " (\\[)warning(\\])(?= \\[.+?\\] > )",
       "beginCaptures": {
         "1": { "name": "punctuation.definition.tag.begin" },
         "2": { "name": "punctuation.definition.tag.end" }
       },
-      "end": "(?=^\\[)",
+      "end": "(?=^\\d{4})",
       "patterns": [{ "include": "#msg-content" }]
     },
     "error-msg": {
       "name": "invalid.error, strong log.error.renpy",
-      "begin": "^(\\[)Error(\\])",
+      "begin": " (\\[)error(\\])(?= \\[.+?\\] > )",
       "beginCaptures": {
         "1": { "name": "punctuation.definition.tag.begin" },
         "2": { "name": "punctuation.definition.tag.end" }
       },
-      "end": "(?=^\\[)",
+      "end": "(?=^\\d{4})",
       "patterns": [{ "include": "#msg-content" }]
     },
     "msg-content": {
       "patterns": [
         {
           "name": "log.category.renpy",
-          "match": "(?<=^\\[.+?\\] )(\\[)(.+?)(\\])",
+          "match": "(?<=\\[.+?\\] )(\\[)(.+?)(\\])",
           "captures": {
             "1": { "name": "punctuation.definition.tag.begin" },
             "2": { "name": "keyword.other" },

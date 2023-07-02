@@ -62,14 +62,6 @@
           "light": "./renpy.svg",
           "dark": "./renpy.svg"
         }
-      },
-      {
-        "id": "renpy-log",
-        "aliases": [
-          "Ren'Py Log"
-        ],
-        "configuration": "./language-configuration.json",
-        "scopeName": "text.renpy-log"
       }
     ],
     "grammars": [
@@ -101,9 +93,11 @@
         }
       },
       {
-        "language": "renpy-log",
-        "scopeName": "text.renpy-log",
-        "path": "./syntaxes/renpy.log.tmLanguage.json"
+        "scopeName": "text.log.injection",
+        "path": "./syntaxes/log.injection.json",
+        "injectTo": [
+          "text.log"
+        ]
       }
     ],
     "snippets": [

@@ -36,7 +36,7 @@ export function getSignatureHelp(document: TextDocument, position: Position, con
     const currentLine = document.lineAt(position.line).text;
     const currentLinePrefix = currentLine.substring(0, position.character);
     const openParenthesis = currentLinePrefix.lastIndexOf("(");
-    if (openParenthesis) {
+    if (openParenthesis >= 0) {
         const prevPosition = new Position(position.line, openParenthesis - 1);
         const prevRange = document.getWordRangeAtPosition(prevPosition);
         if (!prevRange) {

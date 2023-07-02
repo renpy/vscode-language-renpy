@@ -36,7 +36,8 @@
   },
   "activationEvents": [
     "workspaceContains:**/*.rpy",
-    "workspaceContains:**/_ren.py"
+    "workspaceContains:**/_ren.py",
+    "onDebugResolve:renpy"
   ],
   "main": "./dist/extension",
   "browser": "./dist/extension.js",

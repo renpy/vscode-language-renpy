@@ -4,7 +4,7 @@
 
 import * as cp from "child_process";
 import * as fs from "fs";
-import { ExtensionContext, languages, commands, window, TextDocument, Position, debug, Range, workspace, Uri, Disposable, tasks } from "vscode";
+import { ExtensionContext, languages, commands, window, TextDocument, Position, debug, Range, workspace, Uri, DebugConfiguration, ProviderResult, DebugConfigurationProviderTriggerKind, Disposable, tasks } from "vscode";
 import { colorProvider } from "./color";
 import { getStatusBarText, NavigationData } from "./navigation-data";
 import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
@@ -20,7 +20,7 @@ import { Tokenizer } from "./tokenizer/tokenizer";
 import { signatureProvider } from "./signature";
 import { LogLevel, intializeLoggingSystems, logMessage, logToast, updateStatusBar } from "./logger";
 import { Configuration } from "./configuration";
-import { RenpyAdapterDescriptorFactory } from "./debugger";
+import { RenpyAdapterDescriptorFactory, RenpyConfigurationProvider } from "./debugger";
 import { RenpyTaskProvider } from "./taskprovider";
 
 let renpyTaskProvider: Disposable | undefined;
@@ -254,6 +254,28 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     const factory = new RenpyAdapterDescriptorFactory();
     context.subscriptions.push(debug.registerDebugAdapterDescriptorFactory("renpy", factory));
+    const provider = new RenpyConfigurationProvider();
+    context.subscriptions.push(debug.registerDebugConfigurationProvider("renpy", provider));
+    context.subscriptions.push(
+        debug.registerDebugConfigurationProvider(
+            "renpy",
+            {
+                provideDebugConfigurations(): ProviderResult<DebugConfiguration[]> {
+                    return [
+                        {
+                            type: "renpy",
+                            request: "launch",
+                            name: "Ren'Py: Launch",
+                            command: "run",
+                            args: [],
+                        },
+                    ];
+                },
+            },
+            DebugConfigurationProviderTriggerKind.Dynamic
+        )
+    );
+
     renpyTaskProvider = tasks.registerTaskProvider("renpy", new RenpyTaskProvider());
 
     logMessage(LogLevel.Info, "Ren'Py extension activated!");

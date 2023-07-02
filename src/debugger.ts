@@ -17,6 +17,23 @@ function getTerminal(name: string): vscode.Terminal {
 
 export class RenpyAdapterDescriptorFactory implements vscode.DebugAdapterDescriptorFactory {
     createDebugAdapterDescriptor(session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
+        return new vscode.DebugAdapterInlineImplementation(new RenpyDebugSession(session.configuration.command, session.configuration.args));
+    }
+}
+
+class RenpyDebugSession extends DebugSession {
+    private command = "run";
+    private args?: string[];
+
+    public constructor(command: string, args?: string[]) {
+        super();
+        this.command = command;
+        if (args) {
+            this.args = args;
+        }
+    }
+
+    protected override initializeRequest(): void {
         const terminal = getTerminal("Ren'py Debug");
         terminal.show();
         let program = Configuration.getRenpyExecutablePath();
@@ -27,19 +44,29 @@ export class RenpyAdapterDescriptorFactory implements vscode.DebugAdapterDescrip
         }
 
         program += " " + getWorkspaceFolder();
-        if (session.configuration.command) {
-            program += " " + session.configuration.command;
+        if (this.command) {
+            program += " " + this.command;
         }
-        if (session.configuration.args) {
-            program += " " + session.configuration.args.join(" ");
+        if (this.args) {
+            program += " " + this.args.join(" ");
         }
         terminal.sendText(program);
-        return new vscode.DebugAdapterInlineImplementation(new RenpyDebugSession());
+        this.sendEvent(new TerminatedEvent());
     }
 }
 
-class RenpyDebugSession extends DebugSession {
-    protected override initializeRequest(): void {
-        this.sendEvent(new TerminatedEvent());
+export class RenpyConfigurationProvider implements vscode.DebugConfigurationProvider {
+    resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): vscode.ProviderResult<vscode.DebugConfiguration> {
+        if (!config.type && !config.request && !config.name) {
+            const editor = vscode.window.activeTextEditor;
+            if (editor && editor.document.languageId === "renpy") {
+                config.type = "renpy";
+                config.request = "launch";
+                config.name = "Ren'Py: Launch";
+                config.command = "run";
+                config.args = [];
+            }
+        }
+        return config;
     }
 }

@@ -4,7 +4,7 @@
 
 import * as cp from "child_process";
 import * as fs from "fs";
-import { ExtensionContext, languages, commands, window, TextDocument, Position, debug, Range, workspace, Uri, DebugConfiguration, ProviderResult, DebugConfigurationProviderTriggerKind, Disposable, tasks } from "vscode";
+import { ExtensionContext, languages, commands, window, TextDocument, Position, debug, Range, workspace, Uri, DebugConfiguration, ProviderResult, DebugConfigurationProviderTriggerKind, tasks } from "vscode";
 import { colorProvider } from "./color";
 import { getStatusBarText, NavigationData } from "./navigation-data";
 import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
@@ -22,8 +22,6 @@ import { LogLevel, intializeLoggingSystems, logMessage, logToast, updateStatusBa
 import { Configuration } from "./configuration";
 import { RenpyAdapterDescriptorFactory, RenpyConfigurationProvider } from "./debugger";
 import { RenpyTaskProvider } from "./taskprovider";
-
-let renpyTaskProvider: Disposable | undefined;
 
 export async function activate(context: ExtensionContext): Promise<void> {
     intializeLoggingSystems(context);
@@ -276,7 +274,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
         )
     );
 
-    renpyTaskProvider = tasks.registerTaskProvider("renpy", new RenpyTaskProvider());
+    const taskProvider = new RenpyTaskProvider();
+    context.subscriptions.push(tasks.registerTaskProvider("renpy", taskProvider));
 
     logMessage(LogLevel.Info, "Ren'Py extension activated!");
 }
@@ -284,9 +283,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
 export function deactivate() {
     logMessage(LogLevel.Info, "Ren'Py extension deactivating");
     fs.unwatchFile(getNavigationJsonFilepath());
-    if (renpyTaskProvider) {
-        renpyTaskProvider.dispose();
-    }
 }
 
 export function getKeywordPrefix(document: TextDocument, position: Position, range: Range): string | undefined {

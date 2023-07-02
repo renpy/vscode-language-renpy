@@ -158,8 +158,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
         debug.startDebugging(
             undefined,
             {
-                type: "cmd",
-                name: "Run File",
+                type: "renpy",
+                name: "Run Project",
                 request: "launch",
                 program: rpyPath,
             },

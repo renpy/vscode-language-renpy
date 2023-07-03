@@ -4,7 +4,7 @@
 
 import * as cp from "child_process";
 import * as fs from "fs";
-import { ExtensionContext, languages, commands, window, TextDocument, Position, debug, Range, workspace, Uri, LogLevel } from "vscode";
+import { ExtensionContext, languages, commands, window, TextDocument, Position, debug, Range, workspace, Uri, DebugConfiguration, ProviderResult, DebugConfigurationProviderTriggerKind, tasks, LogLevel } from "vscode";
 import { colorProvider } from "./color";
 import { getStatusBarText, NavigationData } from "./navigation-data";
 import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
@@ -20,6 +20,8 @@ import { Tokenizer } from "./tokenizer/tokenizer";
 import { signatureProvider } from "./signature";
 import { intializeLoggingSystems, logMessage, logToast, updateStatusBar } from "./logger";
 import { Configuration } from "./configuration";
+import { RenpyAdapterDescriptorFactory, RenpyConfigurationProvider } from "./debugger";
+import { RenpyTaskProvider } from "./taskprovider";
 
 export async function activate(context: ExtensionContext): Promise<void> {
     intializeLoggingSystems(context);
@@ -154,8 +156,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
         debug.startDebugging(
             undefined,
             {
-                type: "cmd",
-                name: "Run File",
+                type: "renpy",
+                name: "Run Project",
                 request: "launch",
                 program: rpyPath,
             },
@@ -248,6 +250,33 @@ export async function activate(context: ExtensionContext): Promise<void> {
         }
     }
 
+    const factory = new RenpyAdapterDescriptorFactory();
+    context.subscriptions.push(debug.registerDebugAdapterDescriptorFactory("renpy", factory));
+    const provider = new RenpyConfigurationProvider();
+    context.subscriptions.push(debug.registerDebugConfigurationProvider("renpy", provider));
+    context.subscriptions.push(
+        debug.registerDebugConfigurationProvider(
+            "renpy",
+            {
+                provideDebugConfigurations(): ProviderResult<DebugConfiguration[]> {
+                    return [
+                        {
+                            type: "renpy",
+                            request: "launch",
+                            name: "Ren'Py: Launch",
+                            command: "run",
+                            args: [],
+                        },
+                    ];
+                },
+            },
+            DebugConfigurationProviderTriggerKind.Dynamic
+        )
+    );
+
+    const taskProvider = new RenpyTaskProvider();
+    context.subscriptions.push(tasks.registerTaskProvider("renpy", taskProvider));
+
     logMessage(LogLevel.Info, "Ren'Py extension activated!");
 }
 
@@ -282,7 +311,7 @@ export function getKeywordPrefix(document: TextDocument, position: Position, ran
     return;
 }
 
-function isValidExecutable(renpyExecutableLocation: string): boolean {
+export function isValidExecutable(renpyExecutableLocation: string): boolean {
     if (!renpyExecutableLocation || renpyExecutableLocation === "") {
         return false;
     }

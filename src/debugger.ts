@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { DebugSession, TerminatedEvent } from "@vscode/debugadapter";
 import { getWorkspaceFolder } from "./workspace";
 import { Configuration } from "./configuration";
-import { LogLevel, logToast } from "./logger";
+import { logToast } from "./logger";
 import { isValidExecutable } from "./extension";
 
 function getTerminal(name: string): vscode.Terminal {
@@ -39,7 +39,7 @@ class RenpyDebugSession extends DebugSession {
         let program = Configuration.getRenpyExecutablePath();
 
         if (!isValidExecutable(program)) {
-            logToast(LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
+            logToast(vscode.LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
             return;
         }
 

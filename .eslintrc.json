@@ -21,8 +21,10 @@
     "prefer-regex-literals": "warn",
     "require-await": "warn",
     "camelcase": "error",
+    "no-invalid-regexp": "off",
     "@typescript-eslint/no-var-requires": "warn",
     "no-param-reassign": "warn", // Disable reassign, since this basically means you override the reference from the caller function with a new local version. (It doesn't do what you expect)
-    "@typescript-eslint/no-namespace": "off"
+    "@typescript-eslint/no-namespace": "off",
+    "@typescript-eslint/ban-ts-comment": "off"
   }
 }

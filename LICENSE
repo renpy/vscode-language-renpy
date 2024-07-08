@@ -1,6 +1,7 @@
 The MIT License
 
-Copyright 2018 (c) Daniel Luque <danielluque14@gmail.com>
+Original work Copyright (c) 2018 Daniel Luque <danielluque14@gmail.com>
+Modified work Copyright (c) 2024 Tom Rothamel <pytom@bishoujo.us>
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -21,7 +22,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
---------------------------------------------------------------------
+---
 
 This extension was derived from a Atom package located at
 https://github.com/renpy/language-renpy and distributed under the following
@@ -50,7 +51,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
---------------------------------------------------------------------
+---
 
 This package was derived from a TextMate bundle located at
 https://github.com/textmate/python.tmbundle and distributed under the following

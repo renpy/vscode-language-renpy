@@ -2,13 +2,13 @@
 
 :sparkles: Welcome, and thank you for your interest in contributing! :sparkles:
 
-Please note we have a [code of conduct](https://github.com/LuqueDaniel/vscode-language-renpy/blob/master/CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
+Please note we have a [code of conduct](https://github.com/renpy/vscode-language-renpy/blob/master/CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
 
 ## Reporting bugs or proposing features
 
 Open a new issue for each bug or feature you want to propose.
 
-1. Before reporting a bug :mag: **[check](https://github.com/LuqueDaniel/vscode-language-renpy/issues)** if it has
+1. Before reporting a bug :mag: **[check](https://github.com/renpy/vscode-language-renpy/issues)** if it has
    already been reported.
 2. Specify steps to reproduce.
 

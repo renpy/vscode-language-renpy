@@ -3,13 +3,6 @@
 
 An extension that adds rich support for the [Ren'Py](https://www.renpy.org/) programming language to [Visual Studio Code](https://code.visualstudio.com/).
 
-- [![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/renpy.language-renpy?label=Visual%20Studio%20Marketplace&style=flat-square)](https://marketplace.visualstudio.com/items?itemName=renpy.language-renpy)
-[![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/renpy.language-renpy?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=renpy.language-renpy&ssr=false#review-details)
-![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/renpy.language-renpy?style=flat-square)
-- [![Open VSX Version](https://img.shields.io/open-vsx/v/renpy/language-renpy?label=Open%20VSX&style=flat-square)](https://open-vsx.org/extension/renpy/language-renpy)
-[![Open VSX Rating](https://img.shields.io/open-vsx/rating/renpy/language-renpy?style=flat-square)](https://open-vsx.org/extension/renpy/language-renpy)
-![Open VSX Downloads](https://img.shields.io/open-vsx/dt/renpy/language-renpy?style=flat-square)
-
 Snippets converted from [Ren'Py language support in Atom](https://github.com/renpy/language-renpy)
 
 Feel free to [contribute](https://github.com/renpy/vscode-language-renpy/blob/master/Contributing.md), fork this and send a pull request. :smile:

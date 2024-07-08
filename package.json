@@ -1,17 +1,17 @@
 {
-  "name": "languague-renpy",
+  "name": "language-renpy",
   "displayName": "Ren'Py Language",
   "description": "Adds rich support for the Ren'Py programming language to Visual Studio Code.",
-  "version": "2.2.2",
-  "publisher": "LuqueDaniel",
+  "version": "2.3.6",
+  "publisher": "renpy",
   "license": "MIT",
-  "homepage": "https://github.com/LuqueDaniel/vscode-language-renpy",
+  "homepage": "https://github.com/renpy/vscode-language-renpy",
   "repository": {
     "type": "git",
-    "url": "https://github.com/LuqueDaniel/vscode-language-renpy"
+    "url": "https://github.com/renpy/vscode-language-renpy"
   },
   "bugs": {
-    "url": "https://github.com/LuqueDaniel/vscode-language-renpy/issues"
+    "url": "https://github.com/renpy/vscode-language-renpy/issues"
   },
   "icon": "icon.png",
   "galleryBanner": {
@@ -225,7 +225,7 @@
     "test-compile": "tsc -p ./",
     "test": "npm run test-compile && node ./node_modules/vscode/bin/test",
     "lint": "eslint -c .eslintrc.json --ext .ts ./src/",
-    "vsce-package": "vsce package -o languague-renpy.vsix",
+    "vsce-package": "vsce package -o language-renpy.vsix",
     "format-check": "prettier --check 'src/**/*.ts' '.github/**/*.yml'"
   },
   "devDependencies": {

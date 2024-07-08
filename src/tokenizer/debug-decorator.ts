@@ -5,7 +5,7 @@ import { TokenTree, tokenTypeToStringMap } from "./token-definitions";
 import { Tokenizer } from "./tokenizer";
 import { logMessage, logToast } from "../logger";
 
-let timeout: NodeJS.Timer | undefined = undefined;
+let timeout: NodeJS.Timeout | undefined = undefined;
 
 const keywordDecorationType = window.createTextEditorDecorationType({
     borderWidth: "1px",

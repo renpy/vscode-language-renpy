@@ -884,7 +884,7 @@
       "match": "(?<=^[ \\t]+)(if|elif|else)\\b(.*?)(:)",
       "captures": {
         "1": { "name": "keyword.control.conditional.renpy" },
-        "2": { "patterns": [{ "include": "#simple-expression" }] },
+        "2": { "patterns": [{ "include": "source.renpy.python#expression" }] },
         "3": { "name": "punctuation.section.condition.begin.renpy" }
       }
     },

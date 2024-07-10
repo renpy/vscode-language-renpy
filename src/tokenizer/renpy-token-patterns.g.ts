@@ -95,7 +95,7 @@ export const fallbackCharacters: TokenPattern = {
         {
             debugName: "fallbackCharacters.patterns![8]",
 
-            token: CharacterTokenType.Period, /*punctuation.period.renpy*/
+            token: CharacterTokenType.Dot, /*punctuation.period.renpy*/
             match: /\./g,
         },
         {
@@ -258,7 +258,7 @@ export const parenthesisedPython: TokenPattern = {
 export const identifier: TokenPattern = {
     debugName: "identifier",
 
-    token: EntityTokenType.VariableName, /*variable.name.renpy*/
+    token: EntityTokenType.Identifier, /*variable.name.renpy*/
     match: /\b[\p{XID_Start}_]\p{XID_Continue}*\b/g,
 };
 
@@ -924,7 +924,7 @@ export const define: TokenPattern = {
             debugName: "define.patterns![0]",
 
             // Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)
-            token: EntityTokenType.VariableName, /*variable.other.renpy*/
+            token: EntityTokenType.Identifier, /*variable.other.renpy*/
             match: /(?<!\.)\b([a-zA-Z_]\w*)(?=\s=\s)/g,
         },
         numInt,
@@ -947,7 +947,7 @@ export const defaultStatement: TokenPattern = {
             debugName: "defaultStatement.patterns![0]",
 
             // Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)
-            token: EntityTokenType.VariableName, /*variable.other.renpy*/
+            token: EntityTokenType.Identifier, /*variable.other.renpy*/
             match: /(?<!\.)\b([a-zA-Z_]\w*)(?=\s=\s)/g,
         },
         strings,
@@ -969,7 +969,7 @@ export const oneLinePython: TokenPattern = {
             debugName: "oneLinePython.patterns![0]",
 
             // Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)
-            token: EntityTokenType.VariableName, /*variable.other.renpy*/
+            token: EntityTokenType.Identifier, /*variable.other.renpy*/
             match: /(?<!\.)\b([a-zA-Z_]\w*)(?=\s=\s)/g,
         },
         strings,
@@ -987,7 +987,7 @@ export const sayStatements: TokenPattern = {
             begin: /(?<=^[ \t]+)(?:([a-zA-Z_]\w*)\b|"([a-zA-Z_]\w*)\b")((?:[ \t]+(?:@|\w+))*)?[ \t]*("""|"|'''|'|```|`)/dgm,
             beginCaptures: {
                 1: {
-                    token: EntityTokenType.VariableName, /*renpy.meta.character.$1 variable.other.renpy*/
+                    token: EntityTokenType.Identifier, /*renpy.meta.character.$1 variable.other.renpy*/
                     patterns: [
                         {
                             debugName: "sayStatements.patterns![0].beginCaptures![1].patterns![0]",
@@ -1005,7 +1005,7 @@ export const sayStatements: TokenPattern = {
                             debugName: "sayStatements.patterns![0].beginCaptures![1].patterns![2]",
 
                             // Match special characters
-                            token: EntityTokenType.VariableName, /*variable.other.constant.renpy*/
+                            token: EntityTokenType.Identifier, /*variable.other.constant.renpy*/
                             match: /adv|nvl|narrator|name_only|centered|vcentered/g,
                         },
                     ]
@@ -1501,7 +1501,7 @@ export const labelAccess: TokenPattern = {
     token: MetaTokenType.LabelAccess, /*meta.member.access.label.renpy*/
     begin: /(\.)\s*(?!\.)/dg,
     beginCaptures: {
-        1: { token: CharacterTokenType.Period, /*punctuation.separator.period.renpy*/ },
+        1: { token: CharacterTokenType.Dot, /*punctuation.separator.period.renpy*/ },
     },
     end: /(?<=\S)(?=\W)|(^|(?<=\s))(?=[^\\\w\s])|$/gm,
     patterns: [
@@ -1520,7 +1520,7 @@ export const labelDefName: TokenPattern = {
             match: /(?<=^|[ \t])(\b(?:[a-zA-Z_]\w*)\b)?(\.)?(\b(?:[a-zA-Z_]\w*)\b)/dgm,
             captures: {
                 1: { token: EntityTokenType.FunctionName, /*entity.name.function.label.renpy*/ },
-                2: { token: CharacterTokenType.Period, /*punctuation.separator.period.renpy*/ },
+                2: { token: CharacterTokenType.Dot, /*punctuation.separator.period.renpy*/ },
                 3: { token: EntityTokenType.FunctionName, /*entity.name.function.label.renpy*/ },
             },
         },

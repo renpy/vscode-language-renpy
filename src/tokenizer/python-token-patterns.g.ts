@@ -259,7 +259,7 @@ export const expression: TokenPattern = {
             debugName: "expression.patterns![2]",
 
             // Tokenize identifiers to help linters
-            token: EntityTokenType.VariableName, /*variable.name.python*/
+            token: EntityTokenType.Identifier, /*variable.name.python*/
             match: /\b([a-zA-Z_]\w*)\b/g,
         },
     ]
@@ -269,10 +269,10 @@ export const memberAccess: TokenPattern = {
     debugName: "memberAccess",
 
     token: MetaTokenType.MemberAccess, /*meta.member.access.python*/
-    contentToken: EntityTokenType.VariableName, /*variable.name.python*/
+    contentToken: EntityTokenType.Identifier, /*variable.name.python*/
     begin: /(\.)\s*(?!\.)/dg,
     beginCaptures: {
-        1: { token: CharacterTokenType.Period, /*punctuation.separator.period.python*/ },
+        1: { token: CharacterTokenType.Dot, /*punctuation.separator.period.python*/ },
     },
     end: /(?<=\S)(?=\W)|(^|(?<=\s))(?=[^\\\w\s])|$/gm,
     patterns: [
@@ -674,7 +674,7 @@ export const importStatement: TokenPattern = {
                 {
                     debugName: "importStatement.patterns![0].patterns![0]",
 
-                    token: CharacterTokenType.Period, /*punctuation.separator.period.python*/
+                    token: CharacterTokenType.Dot, /*punctuation.separator.period.python*/
                     match: /\.+/g,
                 },
                 expression,
@@ -776,7 +776,7 @@ export const classKwarg: TokenPattern = {
 
     match: /\b([a-zA-Z_]\w*)\s*(=)(?!=)/dg,
     captures: {
-        1: { token: EntityTokenType.VariableName, /*entity.other.inherited-class.python variable.parameter.class.python*/ },
+        1: { token: EntityTokenType.Identifier, /*entity.other.inherited-class.python variable.parameter.class.python*/ },
         2: { token: OperatorTokenType.Assignment, /*keyword.operator.assignment.python*/ },
     },
 };
@@ -796,7 +796,7 @@ export const memberAccessClass: TokenPattern = {
     token: MetaTokenType.MemberAccess, /*meta.member.access.python*/
     begin: /(\.)\s*(?!\.)/dg,
     beginCaptures: {
-        1: { token: CharacterTokenType.Period, /*punctuation.separator.period.python*/ },
+        1: { token: CharacterTokenType.Dot, /*punctuation.separator.period.python*/ },
     },
     end: /(?<=\S)(?=\W)|$/gm,
     patterns: [
@@ -854,7 +854,7 @@ export const lambda: TokenPattern = {
 
                     match: /([a-zA-Z_]\w*)\s*(?:(,)|(?=:|$))/dgm,
                     captures: {
-                        1: { token: EntityTokenType.VariableName, /*variable.parameter.function.language.python*/ },
+                        1: { token: EntityTokenType.Identifier, /*variable.parameter.function.language.python*/ },
                         2: { token: CharacterTokenType.Comma, /*punctuation.separator.parameters.python*/ },
                     },
                 },
@@ -884,7 +884,7 @@ export const lambdaParameterWithDefault: TokenPattern = {
 
     begin: /\b([a-zA-Z_]\w*)\s*(=)/dg,
     beginCaptures: {
-        1: { token: EntityTokenType.VariableName, /*variable.parameter.function.language.python*/ },
+        1: { token: EntityTokenType.Identifier, /*variable.parameter.function.language.python*/ },
         2: { token: MetaTokenType.Operator, /*keyword.operator.python*/ },
     },
     end: /(,)|(?=:|$)/dgm,
@@ -967,7 +967,7 @@ export const parameters: TokenPattern = {
 
             match: /([a-zA-Z_]\w*)\s*(?:(,)|(?=[)#\n=]))/dg,
             captures: {
-                1: { token: EntityTokenType.VariableName, /*variable.parameter.function.language.python*/ },
+                1: { token: EntityTokenType.Identifier, /*variable.parameter.function.language.python*/ },
                 2: { token: CharacterTokenType.Comma, /*punctuation.separator.parameters.python*/ },
             },
         },
@@ -980,9 +980,9 @@ export const parameterSpecial: TokenPattern = {
 
     match: /\b((self)|(cls))\b\s*(?:(,)|(?=\)))/dg,
     captures: {
-        1: { token: EntityTokenType.VariableName, /*variable.parameter.function.language.python*/ },
-        2: { token: EntityTokenType.VariableName, /*variable.parameter.function.language.special.self.python*/ },
-        3: { token: EntityTokenType.VariableName, /*variable.parameter.function.language.special.cls.python*/ },
+        1: { token: EntityTokenType.Identifier, /*variable.parameter.function.language.python*/ },
+        2: { token: EntityTokenType.Identifier, /*variable.parameter.function.language.special.self.python*/ },
+        3: { token: EntityTokenType.Identifier, /*variable.parameter.function.language.special.cls.python*/ },
         4: { token: CharacterTokenType.Comma, /*punctuation.separator.parameters.python*/ },
     },
 };
@@ -1006,7 +1006,7 @@ export const annotatedParameter: TokenPattern = {
 
     begin: /\b([a-zA-Z_]\w*)\s*(:)/dg,
     beginCaptures: {
-        1: { token: EntityTokenType.VariableName, /*variable.parameter.function.language.python*/ },
+        1: { token: EntityTokenType.Identifier, /*variable.parameter.function.language.python*/ },
         2: { token: CharacterTokenType.Colon, /*punctuation.separator.annotation.python*/ },
     },
     end: /(,)|(?=\))/dg,
@@ -1109,7 +1109,7 @@ export const decoratorName: TokenPattern = {
             token: EntityTokenType.FunctionName, /*entity.name.function.decorator.python*/
             match: /([a-zA-Z_]\w*)|(\.)/dg,
             captures: {
-                2: { token: CharacterTokenType.Period, /*punctuation.separator.period.python*/ },
+                2: { token: CharacterTokenType.Dot, /*punctuation.separator.period.python*/ },
             },
         },
         lineContinuation,
@@ -1202,7 +1202,7 @@ export const functionArguments: TokenPattern = {
 
             match: /\b([a-zA-Z_]\w*)\s*(=)(?!=)/dg,
             captures: {
-                1: { token: EntityTokenType.VariableName, /*variable.parameter.function-call.python*/ },
+                1: { token: EntityTokenType.Identifier, /*variable.parameter.function-call.python*/ },
                 2: { token: OperatorTokenType.Assignment, /*keyword.operator.assignment.python*/ },
             },
         },
@@ -1252,7 +1252,7 @@ export const builtinFunctions: TokenPattern = {
         {
             debugName: "builtinFunctions.patterns![1]",
 
-            token: EntityTokenType.VariableName, /*variable.legacy.builtin.python*/
+            token: EntityTokenType.Identifier, /*variable.legacy.builtin.python*/
             match: /(?<!\.)\b(file|reduce|intern|raw_input|unicode|cmp|basestring|execfile|long|xrange)\b/g,
         },
     ]
@@ -1281,7 +1281,7 @@ export const magicVariableNames: TokenPattern = {
     // magic variables which a class/module may have.
     match: /\b(__(?:all|annotations|bases|builtins|class|closure|code|debug|defaults|dict|doc|file|func|globals|kwdefaults|match_args|members|metaclass|methods|module|mro|mro_entries|name|qualname|post_init|self|signature|slots|subclasses|version|weakref|wrapped|classcell|spec|path|package|future|traceback)__)\b/dg,
     captures: {
-        1: { token: EntityTokenType.VariableName, /*support.variable.magic.python*/ },
+        1: { token: EntityTokenType.Identifier, /*support.variable.magic.python*/ },
     },
 };
 
@@ -1307,8 +1307,8 @@ export const specialVariables: TokenPattern = {
 
     match: /\b(?<!\.)(?:(self)|(cls))\b/dg,
     captures: {
-        1: { token: EntityTokenType.VariableName, /*variable.language.special.self.python*/ },
-        2: { token: EntityTokenType.VariableName, /*variable.language.special.cls.python*/ },
+        1: { token: EntityTokenType.Identifier, /*variable.language.special.self.python*/ },
+        2: { token: EntityTokenType.Identifier, /*variable.language.special.cls.python*/ },
     },
 };
 
@@ -1409,7 +1409,7 @@ export const regexpBaseCommon: TokenPattern = {
         {
             debugName: "regexpBaseCommon.patterns![0]",
 
-            token: CharacterTokenType.Period, /*support.other.match.any.regexp*/
+            token: CharacterTokenType.Dot, /*support.other.match.any.regexp*/
             match: /\./g,
         },
         {

@@ -28,7 +28,7 @@ export const screenDefName: TokenPattern = {
             match: /(?<=^|[ \t])(\b(?:[a-zA-Z_]\w*)\b)?(\.)?(\b(?:[a-zA-Z_]\w*)\b)/dgm,
             captures: {
                 1: { token: EntityTokenType.FunctionName, /*entity.name.function.renpy*/ },
-                2: { token: CharacterTokenType.Period, /*punctuation.separator.period.renpy*/ },
+                2: { token: CharacterTokenType.Dot, /*punctuation.separator.period.renpy*/ },
                 3: { token: EntityTokenType.FunctionName, /*entity.name.function.renpy*/ },
             },
         },

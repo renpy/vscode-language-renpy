@@ -161,7 +161,7 @@ export const atlSimpleExpression: TokenPattern = {
             debugName: "atlSimpleExpression.patterns![21]",
 
             // Tokenize identifiers
-            token: EntityTokenType.VariableName, /*variable.name.python*/
+            token: EntityTokenType.Identifier, /*variable.name.python*/
             match: /\b([a-zA-Z_]\w*)\b/g,
         },
     ]
@@ -437,7 +437,7 @@ export const transform: TokenPattern = {
                 {
                     debugName: "transform.beginCaptures![3].patterns![0]",
 
-                    token: EntityTokenType.VariableName, /*variable.name.transform.renpy*/
+                    token: EntityTokenType.Identifier, /*variable.name.transform.renpy*/
                     match: /\b([a-zA-Z_]\w*)\b/g,
                 },
             ]

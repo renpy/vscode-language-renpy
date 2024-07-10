@@ -128,7 +128,7 @@ export const enum EntityTokenType {
     NamespaceName,
     FunctionName,
     TagName,
-    VariableName,
+    Identifier,
     StyleName,
 
     // Renpy entities
@@ -235,7 +235,7 @@ export const enum CharacterTokenType {
     Whitespace, // Tab or space
     NewLine,
 
-    Period, // .
+    Dot, // .
     Colon, // :
     Semicolon, // ;
     Comma, // ,
@@ -288,6 +288,7 @@ export const enum MetaTokenType {
     CodeBlock,
     PythonLine,
     PythonBlock,
+    PythonExpression,
     Arguments,
 
     EmptyString,

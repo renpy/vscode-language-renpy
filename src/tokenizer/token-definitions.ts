@@ -316,7 +316,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     NamespaceName: { name: "NamespaceName", value: EntityTokenType.NamespaceName },
     FunctionName: { name: "FunctionName", value: EntityTokenType.FunctionName },
     TagName: { name: "TagName", value: EntityTokenType.TagName },
-    VariableName: { name: "VariableName", value: EntityTokenType.VariableName },
+    Identifier: { name: "Identifier", value: EntityTokenType.Identifier },
     StyleName: { name: "StyleName", value: EntityTokenType.StyleName },
 
     ImageName: { name: "ImageName", value: EntityTokenType.ImageName },
@@ -409,7 +409,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     Whitespace: { name: "Whitespace", value: CharacterTokenType.Whitespace },
     NewLine: { name: "NewLine", value: CharacterTokenType.NewLine },
 
-    Period: { name: "Period", value: CharacterTokenType.Period },
+    Dot: { name: "Dot", value: CharacterTokenType.Dot },
     Colon: { name: "Colon", value: CharacterTokenType.Colon },
     Semicolon: { name: "Semicolon", value: CharacterTokenType.Semicolon },
     Comma: { name: "Comma", value: CharacterTokenType.Comma },
@@ -457,6 +457,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     CodeBlock: { name: "CodeBlock", value: MetaTokenType.CodeBlock },
     PythonLine: { name: "PythonLine", value: MetaTokenType.PythonLine },
     PythonBlock: { name: "PythonBlock", value: MetaTokenType.PythonBlock },
+    PythonExpression: { name: "PythonExpression", value: MetaTokenType.PythonExpression },
     Arguments: { name: "Arguments", value: MetaTokenType.Arguments },
 
     EmptyString: { name: "EmptyString", value: MetaTokenType.EmptyString },

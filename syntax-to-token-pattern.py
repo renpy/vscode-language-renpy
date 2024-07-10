@@ -45,7 +45,7 @@ def convert_token_type_split(name: str) -> str:
             return "LiteralTokenType.String"
 
     elif get_part(0) == "variable":
-        return "EntityTokenType.VariableName"
+        return "EntityTokenType.Identifier"
 
     elif get_part(0) == "storage":
         if get_part(1) == "type":
@@ -219,7 +219,7 @@ def convert_token_type_split(name: str) -> str:
             elif get_part(2) == "function":
                 return "EntityTokenType.FunctionName"
             elif get_part(2) == "variable":
-                return "EntityTokenType.VariableName"
+                return "EntityTokenType.Identifier"
             elif get_part(2) == "namespace":
                 return "EntityTokenType.NamespaceName"
             elif get_part(2) == "metaclass":
@@ -230,7 +230,7 @@ def convert_token_type_split(name: str) -> str:
                 return "MetaTokenType.BuiltinType"
         
         elif get_part(1) == "variable":
-            return "EntityTokenType.VariableName"
+            return "EntityTokenType.Identifier"
 
         elif get_part(1) == "function":
             if get_part(2) == "event":
@@ -241,7 +241,7 @@ def convert_token_type_split(name: str) -> str:
         elif get_part(1) == "other":
             if get_part(2) == "match":
                 if get_part(3) == "any":
-                    return "CharacterTokenType.Period"
+                    return "CharacterTokenType.Dot"
                 elif get_part(3) == "begin":
                     return "CharacterTokenType.Caret"
                 elif get_part(3) == "end":

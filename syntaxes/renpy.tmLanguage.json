@@ -1045,6 +1045,30 @@
         { "include": "#zorder" }
       ]
     },
+    "window": {
+      "patterns": [
+        {
+          "name": "meta.show.statement.renpy",
+          "begin": "(?<=^[ \\t]*)(window)",
+          "beginCaptures": {
+            "1": { "name": "keyword.window.renpy" }
+          },
+          "end": "#|$",
+          "patterns": [
+            {
+              "name": "keyword.show.renpy",
+              "match": "(show)"
+            },
+            {
+              "name": "keyword.hide.renpy",
+              "match": "(hide)"
+            },
+            { "include": "#whitespace" },
+            { "include": "#simple-expression" }
+          ]
+        }
+      ]
+    },
     "hide": {
       "patterns": [
         {
@@ -1531,6 +1555,7 @@
         { "include": "source.renpy.atl#transform" },
         { "include": "#scene" },
         { "include": "#camera" },
+        { "include": "#window" },
         { "include": "#show" },
         { "include": "#hide" },
         { "include": "#with-statement" },

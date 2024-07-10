@@ -68,7 +68,7 @@ export function injectCustomTextmateTokens(rules: ValueEqualsSet<TextMateRule>) 
             },
             (reason) => {
                 logMessage(LogLevel.Error, "Failed to update the tokenColorCustomizations config! : " + reason);
-            }
+            },
         );
     }
 }

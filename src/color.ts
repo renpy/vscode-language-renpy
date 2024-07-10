@@ -133,7 +133,7 @@ export async function injectCustomColorStyles(document: TextDocument) {
     // Disabled until filter is added to the tree class
     const documentTokens = await Tokenizer.tokenizeDocument(document);
     // TODO: Should probably make sure this constant is actually part of a tag, but for now this is fine.
-    const colorTags = documentTokens.filter((x) => x.token?.tokenType === LiteralTokenType.Color);
+    const colorTags = documentTokens.filter((x) => x.token?.type === LiteralTokenType.Color);
     const colorRules = new ValueEqualsSet<TextMateRule>();
 
     // Build the new rules for this file

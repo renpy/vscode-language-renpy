@@ -32,6 +32,28 @@ If you want to add new features, please make sure to discuss it in an issue.
 5. Make your changes and submit a pull request with `develop` as your target branch
 6. Happy coding! 🚀
 
+Tips:
+
+If you're working on syntax features, add the following textmate rule to your vscode `settings.json` file:
+
+```json
+"editor.tokenColorCustomizations": {
+   "textMateRules": [
+   {
+      "scope": "debug.invalid.illegal.unmatched.renpy",
+      "settings": {
+         "foreground": "#f00"
+      }
+   },
+}
+```
+
+This will make any unmatched tokens red.
+
+Use ctrl+alt+shift+i to display the vscode build-in token debug information.
+
+https://regexr.com will be your new best friend.
+
 ## Additional Information
 
 ### Extension Versions

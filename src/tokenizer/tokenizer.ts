@@ -307,6 +307,10 @@ class DocumentTokenizer {
      * @param caret The reader head position within the document
      */
     private applyCaptures(captures: TokenPatternCapture, match: RegExpExecArray, source: string, parentNode: TreeNode) {
+        if (match.indices === undefined) {
+            return; // syntax error
+        }
+
         let rootNode = parentNode;
 
         if (captures[0] !== undefined) {
@@ -327,7 +331,7 @@ class DocumentTokenizer {
                 logCatMessage(
                     LogLevel.Debug,
                     LogCategory.Tokenizer,
-                    `There is no pattern defined for capture group '${i}', on a pattern that matched '${match[i]}' near L:${pos.line + 1} C:${pos.character + 1}.\nThis should probably be added or be a non-capturing group.`
+                    `There is no pattern defined for capture group '${i}', on a pattern that matched '${match[i]}' near L:${pos.line + 1} C:${pos.character + 1}.\nThis should probably be added or be a non-capturing group.`,
                 );
                 continue;
             }

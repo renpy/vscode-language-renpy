@@ -1,4 +1,5 @@
-import { LogLevel, Position, Range as VSRange } from "vscode";
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import { LogLevel, Position, TextDocument, Range as VSRange } from "vscode";
 import { CharacterTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, LiteralTokenType, MetaTokenType, OperatorTokenType, TokenType, TokenTypeIndex, TypeOfTokenType } from "./renpy-tokens";
 import { TokenPattern, TokenRangePattern, TokenMatchPattern, TokenRepoPattern } from "./token-pattern-types";
 import { Vector } from "../utilities/vector";
@@ -67,17 +68,23 @@ export class TokenPosition {
         this.character = newValue.character;
         this.charStartOffset = newValue.charStartOffset;
     }
+
+    public toString() {
+        return `L${this.line + 1}:C${this.character + 1}`;
+    }
 }
 
 export class Token {
-    readonly tokenType: TokenType;
+    readonly type: TokenType;
+    readonly metaTokens: Vector<TokenType>;
     readonly startPos: TokenPosition;
     readonly endPos: TokenPosition;
 
     constructor(tokenType: TokenType, startPos: TokenPosition, endPos: TokenPosition) {
-        this.tokenType = tokenType;
+        this.type = tokenType;
         this.startPos = startPos;
         this.endPos = endPos;
+        this.metaTokens = new Vector<TokenType>();
     }
 
     public getVSCodeRange() {
@@ -96,39 +103,67 @@ export class Token {
     }
 
     public isKeyword() {
-        return this.tokenType >= TokenTypeIndex.KeywordStart && this.tokenType < TokenTypeIndex.EntityStart;
+        return this.type >= TokenTypeIndex.KeywordStart && this.type < TokenTypeIndex.EntityStart;
     }
 
     public isEntity() {
-        return this.tokenType >= TokenTypeIndex.EntityStart && this.tokenType < TokenTypeIndex.ConstantStart;
+        return this.type >= TokenTypeIndex.EntityStart && this.type < TokenTypeIndex.ConstantStart;
     }
 
     public isConstant() {
-        return this.tokenType >= TokenTypeIndex.ConstantStart && this.tokenType < TokenTypeIndex.OperatorsStart;
+        return this.type >= TokenTypeIndex.ConstantStart && this.type < TokenTypeIndex.OperatorsStart;
     }
 
     public isOperator() {
-        return this.tokenType >= TokenTypeIndex.OperatorsStart && this.tokenType < TokenTypeIndex.CharactersStart;
+        return this.type >= TokenTypeIndex.OperatorsStart && this.type < TokenTypeIndex.CharactersStart;
     }
 
     public isCharacter() {
-        return this.tokenType >= TokenTypeIndex.CharactersStart && this.tokenType < TokenTypeIndex.EscapedCharacterStart;
+        return this.type >= TokenTypeIndex.CharactersStart && this.type < TokenTypeIndex.EscapedCharacterStart;
     }
 
     public isEscapedCharacter() {
-        return this.tokenType >= TokenTypeIndex.EscapedCharacterStart && this.tokenType < TokenTypeIndex.MetaStart;
+        return this.type >= TokenTypeIndex.EscapedCharacterStart && this.type < TokenTypeIndex.MetaStart;
     }
 
     public isMetaToken() {
-        return this.tokenType >= TokenTypeIndex.MetaStart && this.tokenType < TokenTypeIndex.UnknownCharacterID;
+        return this.type >= TokenTypeIndex.MetaStart && this.type < TokenTypeIndex.UnknownCharacterID;
     }
 
     public isUnknownCharacter() {
-        return this.tokenType === CharacterTokenType.Unknown;
+        return this.type === CharacterTokenType.Unknown;
     }
 
     public isInvalid() {
-        return this.tokenType === MetaTokenType.Invalid;
+        return this.hasMetaToken(MetaTokenType.Invalid);
+    }
+
+    public addMetaToken() {
+        this.metaTokens.pushBack(this.type);
+    }
+
+    public removeMetaToken(metaToken: MetaTokenType) {
+        this.metaTokens.erase(metaToken);
+    }
+
+    public hasMetaToken(metaToken: TokenType) {
+        return this.metaTokens.contains(metaToken);
+    }
+
+    public getValue(document: TextDocument) {
+        return document.getText(this.getVSCodeRange());
+    }
+
+    public toString() {
+        let metaTokenString = "";
+
+        if (!this.metaTokens.isEmpty()) {
+            this.metaTokens.forEach((metaToken) => {
+                metaTokenString += `, ${tokenTypeToString(metaToken)}`;
+            });
+        }
+
+        return `${tokenTypeToString(this.type)}${metaTokenString}: (${this.startPos}) -> (${this.endPos})`;
     }
 }
 
@@ -147,13 +182,16 @@ export function isRepoPattern(p: TokenPattern): p is TokenRepoPattern {
 export class TreeNode {
     public token: Token | null;
     public children: Vector<TreeNode>;
+    public parent: TreeNode | null;
 
     constructor(token: Token | null = null) {
         this.token = token;
         this.children = new Vector<TreeNode>();
+        this.parent = null;
     }
 
     public addChild(child: TreeNode): void {
+        child.parent = this;
         this.children.pushBack(child);
     }
 
@@ -191,6 +229,56 @@ export class TreeNode {
         });
         return count;
     }
+
+    /**
+     * Flatten the node by building a Vector of Token's.
+     * Each child token should be added to the vector, in the order they appear in the source code (aka. the token.startPos).
+     * The current token.type should be added to it's children, using the metaTokens field.
+     * We should ensure the entire range of the current token is covered.
+     * If it's not covered by all children, we should create a new token filling the gaps and assigning the current token type
+     */
+    public flatten(): Vector<Token> {
+        const tokens = new Vector<Token>();
+
+        // Step 2: Recursively flatten each child node and add its tokens to the vector
+        this.children.forEach((child) => {
+            const childTokens = child.flatten();
+            childTokens.forEach((token) => {
+                tokens.pushBack(token);
+            });
+        });
+
+        // Sort the tokens by their start position
+        tokens.sort((a, b) => a.startPos.charStartOffset - b.startPos.charStartOffset);
+
+        if (!this.token) {
+            return tokens;
+        }
+
+        // Step 3: Add the current token's type to its children using the metaTokens field
+        tokens.forEach((token) => {
+            token.metaTokens.pushBack(this.token!.type);
+        });
+
+        // Step 4: Ensure that the entire range of the current token is covered by its children
+        let currentEnd = this.token.startPos;
+        for (const token of tokens) {
+            const start = token.startPos;
+            if (start.charStartOffset > currentEnd.charStartOffset) {
+                // There is a gap between the current end position and the start of the next token range
+                const gapToken = new Token(this.token.type, currentEnd, start);
+                tokens.pushBack(gapToken);
+            }
+            currentEnd = currentEnd.charStartOffset > token.endPos.charStartOffset ? currentEnd : token.endPos;
+        }
+        if (currentEnd.charStartOffset < this.token.endPos.charStartOffset) {
+            // The last token range does not extend to the end of the match
+            const gapToken = new Token(this.token.type, currentEnd, this.token.endPos);
+            tokens.pushBack(gapToken);
+        }
+
+        return tokens;
+    }
 }
 
 export class TokenTree {
@@ -214,6 +302,98 @@ export class TokenTree {
 
     public count(): number {
         return this.root.count();
+    }
+
+    public getIterator(): TokenListIterator {
+        return new TokenListIterator(this.flatten());
+    }
+
+    public flatten(): Vector<Token> {
+        return this.root.flatten();
+    }
+}
+
+/**
+ * Special iterator type, where the iterator can be manipulated while iterating.
+ * This will allow us to advance based on conditions
+ */
+export class TokenListIterator {
+    private readonly _tokens: Vector<Token>;
+    private _index = 0;
+    private _blacklist: Set<TokenType> = new Set<TokenType>();
+
+    constructor(tokens: Vector<Token>) {
+        this._tokens = tokens;
+    }
+
+    /**
+     * Advances the iterator to the next node that has a valid token that is not blacklisted
+     */
+    public next() {
+        if (!this.hasNext()) {
+            throw new Error("next() was called on an iterator that has no more nodes to visit.");
+        }
+
+        // Move to the next node
+        this._index++;
+
+        // We should skip any nodes with blacklisted tokens
+        while (this.isBlacklisted() && this.hasNext()) {
+            this._index++;
+        }
+    }
+
+    public clone() {
+        const newIterator = new TokenListIterator(this._tokens);
+        newIterator._index = this._index;
+        newIterator._blacklist = new Set(this._blacklist);
+        return newIterator;
+    }
+
+    public get token() {
+        return this._tokens.at(this._index);
+    }
+
+    public get tokenType() {
+        return this.token.type;
+    }
+
+    public get metaTokens() {
+        return this.token.metaTokens;
+    }
+
+    /**
+     * Check is the current token is blacklisted
+     */
+    private isBlacklisted() {
+        if (this._blacklist.has(this.tokenType)) {
+            return true;
+        }
+
+        return this.metaTokens.any((token) => {
+            return this._blacklist.has(token);
+        });
+    }
+
+    /**
+     * Add a filter to the iterator. This will prevent the iterator from visiting nodes that match the filter.
+     */
+    public setFilter(blacklist: Set<TokenType>) {
+        this._blacklist = blacklist;
+    }
+
+    /**
+     * Returns the current filter
+     */
+    public getFilter() {
+        return this._blacklist;
+    }
+
+    /**
+     * Returns true if there are more nodes to visit
+     */
+    public hasNext() {
+        return this._index < this._tokens.size - 1;
     }
 }
 
@@ -316,7 +496,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     NamespaceName: { name: "NamespaceName", value: EntityTokenType.NamespaceName },
     FunctionName: { name: "FunctionName", value: EntityTokenType.FunctionName },
     TagName: { name: "TagName", value: EntityTokenType.TagName },
-    VariableName: { name: "VariableName", value: EntityTokenType.VariableName },
+    Identifier: { name: "Identifier", value: EntityTokenType.Identifier },
     StyleName: { name: "StyleName", value: EntityTokenType.StyleName },
 
     ImageName: { name: "ImageName", value: EntityTokenType.ImageName },
@@ -409,7 +589,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     Whitespace: { name: "Whitespace", value: CharacterTokenType.Whitespace },
     NewLine: { name: "NewLine", value: CharacterTokenType.NewLine },
 
-    Period: { name: "Period", value: CharacterTokenType.Period },
+    Dot: { name: "Dot", value: CharacterTokenType.Dot },
     Colon: { name: "Colon", value: CharacterTokenType.Colon },
     Semicolon: { name: "Semicolon", value: CharacterTokenType.Semicolon },
     Comma: { name: "Comma", value: CharacterTokenType.Comma },
@@ -457,6 +637,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     CodeBlock: { name: "CodeBlock", value: MetaTokenType.CodeBlock },
     PythonLine: { name: "PythonLine", value: MetaTokenType.PythonLine },
     PythonBlock: { name: "PythonBlock", value: MetaTokenType.PythonBlock },
+    PythonExpression: { name: "PythonExpression", value: MetaTokenType.PythonExpression },
     Arguments: { name: "Arguments", value: MetaTokenType.Arguments },
 
     EmptyString: { name: "EmptyString", value: MetaTokenType.EmptyString },
@@ -499,6 +680,8 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     ScreenWindow: { name: "ScreenWindow", value: MetaTokenType.ScreenWindow },
     ScreenText: { name: "ScreenText", value: MetaTokenType.ScreenText },
     ScreenBlock: { name: "ScreenBlock", value: MetaTokenType.ScreenBlock },
+    ScreenVboxStatement: { name: "ScreenVboxStatement", value: MetaTokenType.ScreenVboxStatement },
+    ScreenHboxStatement: { name: "ScreenHboxStatement", value: MetaTokenType.ScreenHboxStatement },
 
     StyleStatement: { name: "StyleStatement", value: MetaTokenType.StyleStatement },
     StyleBlock: { name: "StyleBlock", value: MetaTokenType.StyleBlock },

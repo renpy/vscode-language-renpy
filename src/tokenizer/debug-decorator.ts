@@ -161,14 +161,14 @@ export async function registerDebugDecorator(context: ExtensionContext) {
             if (activeEditor && event.document === activeEditor.document) {
                 await triggerUpdateDecorations(true);
             }
-        }))
+        })),
     );
 
     // The active text editor was changed
     context.subscriptions.push(
         (activeEditorChangedEvent = window.onDidChangeActiveTextEditor(async () => {
             await triggerUpdateDecorations();
-        }))
+        })),
     );
 }
 
@@ -242,7 +242,7 @@ async function updateDecorations() {
             range: range,
             hoverMessage: {
                 language: "text",
-                value: `Token: ${tokenTypeToStringMap[token.tokenType]}(id: ${token.tokenType})
+                value: `Token: ${tokenTypeToStringMap[token.type]}(id: ${token.type})
 Start: {Line: ${range.start.line + 1}, Char: ${range.start.character + 1}}
 End: {Line: ${range.end.line + 1}, Char: ${range.end.character + 1}}
 Content: {${content?.replaceAll("\n", "\\n")}}`,
@@ -256,7 +256,7 @@ Content: {${content?.replaceAll("\n", "\\n")}}`,
             logMessage(
                 LogLevel.Error,
                 `Start line number is incorrect!. Got: ${range.start.line + 1}, expected: ${start.line + 1}. On token:
-${(decoration.hoverMessage as MarkdownString).value}`
+${(decoration.hoverMessage as MarkdownString).value}`,
             );
         }
 
@@ -264,7 +264,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`
             logMessage(
                 LogLevel.Error,
                 `End line number is incorrect!. Got: ${range.end.line + 1}, expected: ${end.line + 1}. On token:
-${(decoration.hoverMessage as MarkdownString).value}`
+${(decoration.hoverMessage as MarkdownString).value}`,
             );
         }
 
@@ -273,7 +273,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`
             logMessage(
                 LogLevel.Error,
                 `Start char number is incorrect!. Got: ${range.start.character + 1}, expected: ${start.character + 1}. On token:
-${(decoration.hoverMessage as MarkdownString).value}`
+${(decoration.hoverMessage as MarkdownString).value}`,
             );
         }
 
@@ -281,11 +281,11 @@ ${(decoration.hoverMessage as MarkdownString).value}`
             logMessage(
                 LogLevel.Error,
                 `End char number is incorrect!. Got: ${range.end.character + 1}, expected: ${end.character + 1}. On token:
-${(decoration.hoverMessage as MarkdownString).value}`
+${(decoration.hoverMessage as MarkdownString).value}`,
             );
         }
 
-        switch (token.tokenType) {
+        switch (token.type) {
             case KeywordTokenType.Init: // Python statement keywords
             case KeywordTokenType.Offset:
             case KeywordTokenType.Python:
@@ -395,7 +395,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`
                 break;
 
             // Variables
-            case EntityTokenType.VariableName:
+            case EntityTokenType.Identifier:
             case EntityTokenType.StyleName:
             case EntityTokenType.ImageName:
             case EntityTokenType.TextName:
@@ -430,6 +430,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`
             case MetaTokenType.CodeBlock:
             case MetaTokenType.PythonLine:
             case MetaTokenType.PythonBlock:
+            case MetaTokenType.PythonExpression:
             case MetaTokenType.Arguments:
             case MetaTokenType.EmptyString:
             case MetaTokenType.StringTag:
@@ -593,7 +594,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`
 
             case CharacterTokenType.Whitespace:
             case CharacterTokenType.NewLine:
-            case CharacterTokenType.Period:
+            case CharacterTokenType.Dot:
             case CharacterTokenType.Colon:
             case CharacterTokenType.Semicolon:
             case CharacterTokenType.Comma:
@@ -639,7 +640,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`
                 break;
 
             default:
-                throw new Error(`Unhandled token case: ${tokenTypeToStringMap[token.tokenType]}(id: ${token.tokenType})`);
+                throw new Error(`Unhandled token case: ${tokenTypeToStringMap[token.type]}(id: ${token.type})`);
         }
     });
 

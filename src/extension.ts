@@ -18,13 +18,13 @@ import { referencesProvider } from "./references";
 import { registerDebugDecorator, unregisterDebugDecorator } from "./tokenizer/debug-decorator";
 import { Tokenizer } from "./tokenizer/tokenizer";
 import { signatureProvider } from "./signature";
-import { intializeLoggingSystems, logMessage, logToast, updateStatusBar } from "./logger";
+import { initializeLoggingSystems, logMessage, logToast, updateStatusBar } from "./logger";
 import { Configuration } from "./configuration";
 import { RenpyAdapterDescriptorFactory, RenpyConfigurationProvider } from "./debugger";
-import { RenpyTaskProvider } from "./taskprovider";
+import { RenpyTaskProvider } from "./task-provider";
 
 export async function activate(context: ExtensionContext): Promise<void> {
-    intializeLoggingSystems(context);
+    initializeLoggingSystems(context);
     updateStatusBar("$(sync~spin) Loading Ren'Py extension...");
 
     Configuration.initialize(context);
@@ -64,13 +64,18 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
             if (!NavigationData.isImporting) {
                 updateStatusBar("$(sync~spin) Initializing Ren'Py static data...");
-                const uri = Uri.file(document.fileName);
-                const filename = stripWorkspaceFromFile(uri.path);
-                NavigationData.clearScannedDataForFile(filename);
-                NavigationData.scanDocumentForClasses(filename, document);
-                updateStatusBar(getStatusBarText());
+                try {
+                    const uri = Uri.file(document.fileName);
+                    const filename = stripWorkspaceFromFile(uri.path);
+                    NavigationData.clearScannedDataForFile(filename);
+                    NavigationData.scanDocumentForClasses(filename, document);
+                    updateStatusBar(getStatusBarText());
+                } catch (error) {
+                    updateStatusBar("Failed to load Ren'Py static data...");
+                    logMessage(LogLevel.Error, error as string);
+                }
             }
-        })
+        }),
     );
 
     // custom command - refresh data
@@ -161,7 +166,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
                 request: "launch",
                 program: rpyPath,
             },
-            { noDebug: true }
+            { noDebug: true },
         );
 
         //call renpy
@@ -201,8 +206,13 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     // Detect file system change to the navigation.json file and trigger a refresh
     updateStatusBar("$(sync~spin) Initializing Ren'Py static data...");
-    await NavigationData.init(context.extensionPath);
-    updateStatusBar(getStatusBarText());
+    try {
+        await NavigationData.init(context.extensionPath);
+        updateStatusBar(getStatusBarText());
+    } catch (error) {
+        updateStatusBar("Failed to load Ren'Py static data...");
+        logMessage(LogLevel.Error, error as string);
+    }
 
     try {
         fs.watch(getNavigationJsonFilepath(), async (event, filename) => {
@@ -270,8 +280,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
                     ];
                 },
             },
-            DebugConfigurationProviderTriggerKind.Dynamic
-        )
+            DebugConfigurationProviderTriggerKind.Dynamic,
+        ),
     );
 
     const taskProvider = new RenpyTaskProvider();
@@ -324,9 +334,9 @@ function RunWorkspaceFolder(): boolean {
     if (isValidExecutable(rpyPath)) {
         const renpyPath = cleanUpPath(Uri.file(rpyPath).path);
         const cwd = renpyPath.substring(0, renpyPath.lastIndexOf("/"));
-        const workfolder = getWorkspaceFolder();
-        const args: string[] = [`${workfolder}`, "run"];
-        if (workfolder.endsWith("/game")) {
+        const workFolder = getWorkspaceFolder();
+        const args: string[] = [`${workFolder}`, "run"];
+        if (workFolder.endsWith("/game")) {
             try {
                 updateStatusBar("$(sync~spin) Running Ren'Py...");
                 const result = cp.spawnSync(rpyPath, args, {
@@ -351,7 +361,7 @@ function RunWorkspaceFolder(): boolean {
         }
         return false;
     } else {
-        logMessage(LogLevel.Warning, "config for rennpy does not exist");
+        logMessage(LogLevel.Warning, "config for renpy does not exist");
         return false;
     }
 }

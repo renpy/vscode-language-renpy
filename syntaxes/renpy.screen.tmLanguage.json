@@ -18,7 +18,7 @@
           "match": "(?<=^|[ \\t])(\\b(?:[a-zA-Z_]\\w*)\\b)?(\\.)?(\\b(?:[a-zA-Z_]\\w*)\\b)",
           "captures": {
             "1": { "name": "entity.name.function.renpy" },
-            "2": { "name": "punctuation.separator.period.renpy" },
+            "2": { "name": "punctuation.separator.dot.renpy" },
             "3": { "name": "entity.name.function.renpy" }
           }
         }
@@ -39,7 +39,7 @@
         },
         {
           "comment": "Special manipulation keywords",
-          "match": "\\b(?<!\\.)(key|input|(image)?button|grid|auto|mousearea|side|timer|[vh]?bar|viewport|scrollbars|mousewheel|vpgrid|imagemap)\\b",
+          "match": "\\b(?<!\\.)(key|input|(text|image)?button|grid|auto|mousearea|side|timer|[vh]?bar|action|viewport|scrollbars|mousewheel|vpgrid|imagemap)\\b",
           "captures": {
             "1": { "name": "keyword.other.renpy" }
           }
@@ -158,7 +158,13 @@
         { "include": "source.renpy.python#special-variables" },
         { "include": "source.renpy.python#ellipsis" },
         { "include": "source.renpy.python#punctuation" },
-        { "include": "source.renpy.python#line-continuation" }
+        { "include": "source.renpy.python#line-continuation" },
+        {
+          "comment": "Tokenize identifiers",
+          "name": "variable.name.python",
+          "match": "\\b([[:alpha:]_]\\w*)\\b"
+        },
+        { "include": "source.renpy#whitespace" }
       ]
     },
     "screen-keywords": {
@@ -175,7 +181,7 @@
         },
         {
           "name": "keyword.other.renpy",
-          "match": "\\b(?<!\\.)(?:modal|sensitive|tag|zorder|variant|layer|roll_forward|text)\\b"
+          "match": "\\b(?<!\\.)(?:modal|sensitive|tag|at|use|zorder|variant|layer|roll_forward|text)\\b"
         },
         {
           "name": "keyword.other.renpy",
@@ -187,27 +193,33 @@
         }
       ]
     },
+    "screen-block-tester": {
+      "patterns": [
+        {
+          "contentName": "meta.screen-block.renpy",
+          "begin": "(?<=(^[ \\t]*)(?:frame|window|text|vbox|hbox)\\b.*?)(:)",
+          "beginCaptures": {
+            "2": { "name": "punctuation.section.screen.begin.renpy" }
+          },
+          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
+          "patterns": [{ "include": "#screen-language" }]
+        }
+      ]
+    },
+
     "screen-frame": {
-      "contentName": "meta.screen.frame.renpy",
-      "begin": "^([ \\t]+)?(frame)\\b[ \\t]*(:)",
-      "beginCaptures": {
-        "1": { "name": "punctuation.whitespace.leading.block.renpy" },
-        "2": { "name": "keyword.frame.renpy" },
-        "3": { "name": "punctuation.section.block.begin.renpy" }
-      },
-      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-      "patterns": [{ "include": "#screen-language" }]
+      "name": "meta.screen.frame.statement.renpy",
+      "match": "(?<=^[ \\t]*)(frame)\\b",
+      "captures": {
+        "1": { "name": "keyword.frame.renpy" }
+      }
     },
     "screen-window": {
-      "contentName": "meta.screen.window.renpy",
-      "begin": "^([ \\t]+)?(window)\\b[ \\t]*(:)",
-      "beginCaptures": {
-        "1": { "name": "punctuation.whitespace.leading.block.renpy" },
-        "2": { "name": "keyword.window.renpy" },
-        "3": { "name": "punctuation.section.block.begin.renpy" }
-      },
-      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-      "patterns": [{ "include": "#screen-language" }]
+      "name": "meta.screen.window.statement.renpy",
+      "match": "(?<=^[ \\t]*)(window)\\b",
+      "captures": {
+        "1": { "name": "keyword.window.renpy" }
+      }
     },
     "screen-text": {
       "contentName": "meta.screen.text.renpy",
@@ -252,16 +264,22 @@
       ]
     },
     "screen-box": {
-      "contentName": "meta.screen.block.renpy",
-      "begin": "^([ \\t]+)?(?:(vbox)|(hbox))\\b[ \\t]*(?:.*?)(:)",
-      "beginCaptures": {
-        "1": { "name": "punctuation.whitespace.leading.block.renpy" },
-        "2": { "name": "keyword.vbox.renpy" },
-        "3": { "name": "keyword.hbox.renpy" },
-        "4": { "name": "punctuation.section.block.begin.renpy" }
-      },
-      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-      "patterns": [{ "include": "#screen-language" }]
+      "patterns": [
+        {
+          "name": "meta.screen.vbox.statement.renpy",
+          "match": "(?<=^[ \\t]*)(vbox)\\b",
+          "captures": {
+            "1": { "name": "keyword.vbox.renpy" }
+          }
+        },
+        {
+          "name": "meta.screen.hbox.statement.renpy",
+          "match": "(?<=^[ \\t]*)(hbox)\\b",
+          "captures": {
+            "1": { "name": "keyword.hbox.renpy" }
+          }
+        }
+      ]
     },
     "screen": {
       "patterns": [
@@ -292,6 +310,7 @@
       "comment": "https://www.renpy.org/doc/html/screens.html#screen-language",
       "patterns": [
         { "include": "source.renpy#conditionals" },
+        { "include": "#screen-block-tester" },
         { "include": "#screen-frame" },
         { "include": "#screen-window" },
         { "include": "#screen-box" },

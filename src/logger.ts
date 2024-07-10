@@ -6,7 +6,7 @@ const statusBar = window.createStatusBarItem(StatusBarAlignment.Right, 100);
 
 let extensionMode: ExtensionMode = null!;
 
-export function intializeLoggingSystems(context: ExtensionContext) {
+export function initializeLoggingSystems(context: ExtensionContext) {
     extensionMode = context.extensionMode;
 
     context.subscriptions.push(outputChannel);

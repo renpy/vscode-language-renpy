@@ -11,10 +11,9 @@
         { "include": "source.renpy#conditionals" },
         { "include": "#atl-keywords" },
         { "include": "#atl-warper" },
-        { "include": "#atl-blocks" },
+        { "include": "#atl-statements" },
         { "include": "#atl-simple-expression" },
         { "include": "#atl-event" },
-        { "include": "#atl-on" },
         { "include": "#atl-function" },
         { "include": "#atl-fallback" }
       ]
@@ -218,37 +217,6 @@
         }
       ]
     },
-    "atl-blocks": {
-      "patterns": [
-        {
-          "comment": "See https://www.renpy.org/doc/html/atl.html",
-          "contentName": "meta.atl.block.renpy",
-          "begin": "^([ \\t]+)?(?:(block)|(parallel)|(contains))\\b[ \\t]*(:)",
-          "beginCaptures": {
-            "1": { "name": "punctuation.whitespace.leading.block.renpy" },
-            "2": { "name": "keyword.block.renpy" },
-            "3": { "name": "keyword.parallel.renpy" },
-            "4": { "name": "keyword.contains.renpy" },
-            "5": { "name": "punctuation.section.block.begin.renpy" }
-          },
-          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [{ "include": "#atl" }]
-        },
-        {
-          "comment": "https://www.renpy.org/doc/html/atl.html#choice-statement",
-          "contentName": "meta.atl.choice.block.renpy",
-          "begin": "^([ \\t]+)?(choice)\\b[ \\t]*(.+)?(:)",
-          "beginCaptures": {
-            "1": { "name": "punctuation.whitespace.leading.block.renpy" },
-            "2": { "name": "keyword.choice.renpy" },
-            "3": { "patterns": [{ "include": "#atl-simple-expression" }] },
-            "4": { "name": "punctuation.section.block.begin.renpy" }
-          },
-          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [{ "include": "#atl" }]
-        }
-      ]
-    },
     "atl-build-in-events": {
       "comment": "Pre-defined events (https://www.renpy.org/doc/html/atl.html#external-events)",
       "name": "support.function.event.renpy",
@@ -285,25 +253,26 @@
     },
     "atl-on": {
       "comment": "https://www.renpy.org/doc/html/atl.html#on-statement",
-      "contentName": "meta.atl.on.renpy",
-      "begin": "^([ \\t]+)?(on)\\b[ \\t]*(.+)?(:)",
+      
+      "name": "meta.atl.on.statement.renpy",
+      "contentName": "meta.atl.on.parameters.renpy",
+      "begin": "(?<=^[ \\t]*)(on)\\b[ \\t]*",
       "beginCaptures": {
-        "1": { "name": "punctuation.whitespace.leading.block.renpy" },
-        "2": { "name": "keyword.on.renpy" },
-        "3": {
-          "patterns": [
-            { "include": "#atl-event-name" },
-            {
-              "match": "[ \\t]*,[ \\t]*",
-              "name": "punctuation.separator.parameters.renpy"
-            },
-            { "include": "source.renpy#comments" }
-          ]
-        },
-        "4": { "name": "punctuation.section.block.begin.renpy" }
+        "1": { "name": "keyword.on.renpy" }
       },
-      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-      "patterns": [{ "include": "#atl" }]
+      "end": "(?=#|:)|$",
+
+      "patterns": [
+        { "include": "#atl-event-name" },
+        {
+          "match": "[ \\t]*,[ \\t]*",
+          "name": "punctuation.separator.parameters.renpy"
+        },
+        { 
+          "comment": "TODO: Is this really needed here? I think we need fallback patterns instead",
+          "include": "source.renpy#comments" 
+        }
+      ]
     },
     "atl-function": {
       "comment": "https://www.renpy.org/doc/html/atl.html#function-statement",
@@ -365,24 +334,78 @@
       "patterns": [{ "include": "source.renpy#base-patterns" }]
     },
 
-    "transform": {
-      "contentName": "meta.transform.block.renpy",
-      "begin": "^([ \\t]+)?(transform)\\b[ \\t]*(.*)?(:)",
+    "atl-choice": {
+      "comment": "https://www.renpy.org/doc/html/atl.html#choice-statement",
+      "name": "meta.atl.choice.statement.renpy",
+      "contentName": "meta.atl.choice.parameters.renpy",
+      "begin": "(?<=^[ \\t]*)(choice)\\b[ \\t]*",
       "beginCaptures": {
-        "1": { "name": "punctuation.whitespace.leading.renpy" },
-        "2": { "name": "keyword.transform.renpy" },
-        "3": {
-          "patterns": [
-            {
-              "name": "variable.name.transform.renpy",
-              "match": "\\b([[:alpha:]_]\\w*)\\b"
-            }
-          ]
-        },
-        "4": { "name": "punctuation.section.atl.begin.renpy" }
+        "1": { "name": "keyword.choice.renpy" }
       },
-      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-      "patterns": [{ "include": "#atl" }]
+      "end": "(?=#|:)|$",
+
+      "patterns": [
+        { "include": "#atl-simple-expression" }
+      ]
+    },
+    
+    "atl-statements":{
+      "patterns": [
+        {
+          "name": "meta.atl.block.statement.renpy",
+          "match": "(?<=^[ \\t]*)(block)\\b[ \\t]*",
+          "captures": {
+            "1": { "name": "keyword.block.renpy" }
+          }
+        },
+        {
+          "name": "meta.atl.parallel.statement.renpy",
+          "match": "(?<=^[ \\t]*)(parallel)\\b[ \\t]*",
+          "captures": {
+            "1": { "name": "keyword.parallel.renpy" }
+          }
+        },
+        {
+          "name": "meta.atl.contains.statement.renpy",
+          "match": "(?<=^[ \\t]*)(contains)\\b[ \\t]*",
+          "captures": {
+            "1": { "name": "keyword.contains.renpy" }
+          }
+        },
+        { "include": "#atl-choice" },
+        { "include": "#atl-on" }
+      ]
+    },
+
+    "atl-block-tester": {
+      "patterns": [
+        {
+          "contentName": "meta.atl-block.renpy",
+          "begin": "(?<=(^[ \\t]*)(?:camera|image|show|scene|transform|on|block|parallel|contains|choice)\\b.*?)(:)",
+          "beginCaptures": {
+            "2": { "name": "punctuation.section.atl.begin.renpy" }
+          },
+          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
+          "patterns": [{ "include": "source.renpy.atl" }]
+        }
+      ]
+    },
+
+    "transform": {
+      "name": "meta.transform.statement.renpy",
+      "contentName": "meta.transform.parameters.renpy",
+      "begin": "(?<=^[ \\t]*)(transform)\\b[ \\t]*",
+      "beginCaptures": {
+        "1": { "name": "keyword.transform.renpy" }
+      },
+      "end": "(?=#|:)|$",
+
+      "patterns": [
+        {
+          "name": "variable.name.transform.renpy",
+          "match": "\\b([[:alpha:]_]\\w*)\\b"
+        }
+      ]
     }
   }
 }

@@ -22,7 +22,7 @@ export const completionProvider = languages.registerCompletionItemProvider(
     " ",
     "@",
     "-",
-    "("
+    "(",
 );
 
 /**

@@ -326,6 +326,7 @@
 
             call .subroutine(2) from test #lol
 
+            call screen start #lol
             call expression "sub" + "routine" pass (count=3) #lol
             call expression "sub" + "routine" pass (count=3) from _class test #lol
 
@@ -547,11 +548,11 @@
         show bg washington
         with None
 
-        show eileen happy at left
+        show eileen happy at left #test
         show lucy mad at right
         with dissolve
 
-        show eileen happy at left with dissolve
+        show eileen happy with dissolve at left 
         show lucy mad at right with dissolve
 
         with None
@@ -624,6 +625,8 @@
             "Go right.":
                 pass
             "Fly above." if drank_tea:
+                pass
+            "Dig below." if len(my_var) >= 2:
                 pass
 
         default menuset = set()
@@ -1566,6 +1569,19 @@
                 @renpy.atl_warper
                 def linear(t):
                     return t
+            
+            init python:
+                @dataclass
+                class LatLonPair:
+                    lon: float,
+                    lat: float
+
+                @dataclass
+                class SimpleWeatherInfo:
+                    id: int,
+                    main: str,
+                    description: str,
+                    icon: str
 
         label start:
             show eileen happy at a, b, c

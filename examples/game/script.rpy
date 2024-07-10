@@ -44,7 +44,7 @@ label start:
 
     # These display lines of dialogue.
 
-    e "You've created a new Ren'Py game."
+    character.e "You've created a new Ren'Py game."
 
     # call a label 
 

@@ -706,9 +706,8 @@
         {
           "comment": "Renpy python block",
           "contentName": "meta.embedded.block.python",
-          "begin": "^([ \\t]+)?(?:(init)(?:[ \\t]+(-)?(\\d+))?[ \\t]+)?(python)[ \\t]*(.*)?(:)",
+          "begin": "(?<=(^[ \\t]*))(?:(init)(?:[ \\t]+(-)?(\\d+))?[ \\t]+)?(python)[ \\t]*(.*)?(:)",
           "beginCaptures": {
-            "1": { "name": "punctuation.whitespace.embedded.leading.renpy" },
             "2": { "name": "keyword.init.renpy" },
             "3": { "name": "keyword.operator.arithmetic.minus.renpy" },
             "4": { "name": "constant.numeric.integer.renpy" },
@@ -763,7 +762,7 @@
 
     "define": {
       "comment": "Match begin and end of python one line statements",
-      "begin": "(?<=^[ \\t]*)(define)(?=[ \\t])",
+      "begin": "(?<=^[ \\t]*)(define)\\b",
       "beginCaptures": {
         "1": { "name": "keyword.define.renpy" }
       },
@@ -782,7 +781,7 @@
     },
     "default-statement": {
       "comment": "Match begin and end of python one line statements",
-      "begin": "(?<=^[ \\t]*)(default)(?=[ \\t])",
+      "begin": "(?<=^[ \\t]*)(default)\\b",
       "beginCaptures": {
         "1": { "name": "keyword.default.renpy" }
       },
@@ -800,7 +799,7 @@
     },
     "one-line-python": {
       "comment": "Match begin and end of python one line statements",
-      "begin": "(?<=^[ \\t]*)(\\$)(?=[ \\t])",
+      "begin": "(?<=^[ \\t]*)(\\$)(?=[ \\t]|$)",
       "beginCaptures": {
         "1": { "name": "keyword.dollar.sign.renpy" }
       },
@@ -1453,15 +1452,20 @@
       "patterns": [
         {
           "name": "meta.play.audio.statement.renpy",
-          "begin": "(?<=^[ \\t]*)(play)\\b[ \\t]+\\b([a-zA-Z_0-9]*)\\b[ \\t]*",
+          "begin": "(?<=^[ \\t]*)(play)\\b[ \\t]+\\b([a-zA-Z_0-9]*)\\b",
           "beginCaptures": {
             "1": { "name": "keyword.play.renpy" },
             "2": {
               "patterns": [{ "include": "#audio-channel" }]
             }
           },
-          "end": "(?=[ \\t]*#)|$",
-          "patterns": [{ "include": "#strings" }, { "include": "#audio-params" }, { "include": "source.renpy.python#expression" }]
+          "end": "(?=#)|$",
+          "patterns": [
+            { "include": "#strings" }, 
+            { "include": "#audio-params" }, 
+            { "include": "source.renpy.python#expression" },
+            { "include": "#whitespace" }
+          ]
         }
       ]
     },
@@ -1469,15 +1473,20 @@
       "patterns": [
         {
           "name": "meta.queue.audio.statement.renpy",
-          "begin": "(?<=^[ \\t]*)(queue)\\b[ \\t]+\\b([a-zA-Z_0-9]*)\\b[ \\t]*",
+          "begin": "(?<=^[ \\t]*)(queue)\\b[ \\t]+\\b([a-zA-Z_0-9]*)\\b",
           "beginCaptures": {
             "1": { "name": "keyword.queue.renpy" },
             "2": {
               "patterns": [{ "include": "#audio-channel" }]
             }
           },
-          "end": "(?=[ \\t]*#)|$",
-          "patterns": [{ "include": "#strings" }, { "include": "#audio-params" }, { "include": "source.renpy.python#expression" }]
+          "end": "(?=#)|$",
+          "patterns": [
+            { "include": "#strings" }, 
+            { "include": "#audio-params" }, 
+            { "include": "source.renpy.python#expression" },
+            { "include": "#whitespace" }
+          ]
         }
       ]
     },
@@ -1485,20 +1494,21 @@
       "patterns": [
         {
           "name": "meta.stop.audio.statement.renpy",
-          "begin": "(?<=^[ \\t]*)(stop)\\b[ \\t]+\\b([a-zA-Z_0-9]*)\\b[ \\t]*",
+          "begin": "(?<=^[ \\t]*)(stop)\\b[ \\t]+\\b([a-zA-Z_0-9]*)\\b",
           "beginCaptures": {
             "1": { "name": "keyword.stop.renpy" },
             "2": {
               "patterns": [{ "include": "#audio-channel" }]
             }
           },
-          "end": "(?=[ \\t]*#)|$",
+          "end": "(?=#)|$",
           "patterns": [
             {
               "name": "keyword.fadeout.renpy",
               "match": "\\b(?<!\\.)(?:fadeout)\\b"
             },
-            { "include": "source.renpy.python#number" }
+            { "include": "source.renpy.python#number" },
+            { "include": "#whitespace" }
           ]
         }
       ]

@@ -27,5 +27,183 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
 
-  "eslint.validate": ["javascript", "typescript"]
+  "eslint.validate": [
+    "javascript",
+    "typescript"
+  ],
+  "editor.tokenColorCustomizations": {
+    "[*Light*]": {
+      "textMateRules": [
+        {
+          "scope": "ref.matchtext",
+          "settings": {
+            "foreground": "#000"
+          }
+        }
+      ]
+    },
+    "[*Dark*]": {
+      "textMateRules": [
+        {
+          "scope": "ref.matchtext",
+          "settings": {
+            "foreground": "#fff"
+          }
+        }
+      ]
+    },
+    "textMateRules": [
+      {
+        "scope": "renpy.meta.plain",
+        "settings": {
+          "fontStyle": ""
+        }
+      },
+      {
+        "scope": "renpy.meta.i",
+        "settings": {
+          "fontStyle": "italic"
+        }
+      },
+      {
+        "scope": "renpy.meta.b",
+        "settings": {
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "scope": [
+          "renpy.meta.u",
+          "renpy.meta.a"
+        ],
+        "settings": {
+          "fontStyle": "underline"
+        }
+      },
+      {
+        "scope": "renpy.meta.s",
+        "settings": {
+          "fontStyle": "strikethrough"
+        }
+      },
+      {
+        "scope": "renpy.meta.i renpy.meta.b",
+        "settings": {
+          "fontStyle": "italic bold"
+        }
+      },
+      {
+        "scope": "renpy.meta.i renpy.meta.u",
+        "settings": {
+          "fontStyle": "italic underline"
+        }
+      },
+      {
+        "scope": "renpy.meta.i renpy.meta.s",
+        "settings": {
+          "fontStyle": "italic strikethrough"
+        }
+      },
+      {
+        "scope": "renpy.meta.b renpy.meta.u",
+        "settings": {
+          "fontStyle": "bold underline"
+        }
+      },
+      {
+        "scope": "renpy.meta.b renpy.meta.s",
+        "settings": {
+          "fontStyle": "bold strikethrough"
+        }
+      },
+      {
+        "scope": "renpy.meta.u renpy.meta.s",
+        "settings": {
+          "fontStyle": "underline strikethrough"
+        }
+      },
+      {
+        "scope": "renpy.meta.i renpy.meta.b renpy.meta.u",
+        "settings": {
+          "fontStyle": "italic bold underline"
+        }
+      },
+      {
+        "scope": "renpy.meta.i renpy.meta.b renpy.meta.s",
+        "settings": {
+          "fontStyle": "italic bold strikethrough"
+        }
+      },
+      {
+        "scope": "renpy.meta.i renpy.meta.u renpy.meta.s",
+        "settings": {
+          "fontStyle": "italic underline strikethrough"
+        }
+      },
+      {
+        "scope": "renpy.meta.b renpy.meta.u renpy.meta.s",
+        "settings": {
+          "fontStyle": "bold underline strikethrough"
+        }
+      },
+      {
+        "scope": "renpy.meta.i renpy.meta.b renpy.meta.u  renpy.meta.s",
+        "settings": {
+          "fontStyle": "italic bold underline strikethrough"
+        }
+      },
+      {
+        "scope": "renpy.meta.color.text",
+        "settings": {
+          "foreground": "#ffffff"
+        }
+      },
+      {
+        "scope": "renpy.meta.color.#0000ffff",
+        "settings": {
+          "foreground": "#0000ffff"
+        }
+      },
+      {
+        "scope": "renpy.meta.color.#00ff00",
+        "settings": {
+          "foreground": "#00ff00"
+        }
+      },
+      {
+        "scope": "renpy.meta.color.#f00",
+        "settings": {
+          "foreground": "#f00"
+        }
+      },
+      {
+        "scope": "text.notes.info",
+        "settings": {
+          "foreground": "#17a2b8",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "scope": "text.notes.success",
+        "settings": {
+          "foreground": "#28a745",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "scope": "text.notes.warning",
+        "settings": {
+          "foreground": "#ffc107",
+          "fontStyle": "bold"
+        }
+      },
+      {
+        "scope": "text.notes.danger",
+        "settings": {
+          "foreground": "#dc3545",
+          "fontStyle": "bold"
+        }
+      }
+    ]
+  }
 }

@@ -298,15 +298,16 @@
     "format-check": "prettier --check 'src/**/*.ts' '.github/**/*.yml'"
   },
   "devDependencies": {
-    "eslint": "^8.42.0",
     "@types/mocha": "^10.0.7",
     "@types/node": "^20.14.10",
-    "@types/vscode": "1.91",
+    "@types/vscode": "1.75",
     "@types/webpack": "^5.28.5",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
     "@typescript-eslint/parser": "^7.15.0",
+    "@vscode/debugadapter": "^1.66.0",
     "@vscode/vsce": "^2.29.0",
     "copy-webpack-plugin": "^12.0.2",
+    "eslint": "^8.42.0",
     "eslint-plugin-import": "^2.29.1",
     "fork-ts-checker-webpack-plugin": "^9.0.2",
     "node-polyfill-webpack-plugin": "^4.0.0",
@@ -316,7 +317,6 @@
     "typescript": "^5.5.3",
     "vscode-test": "^1.6.1",
     "webpack": "^5.92.1",
-    "webpack-cli": "^5.1.4",
-    "@vscode/debugadapter": "^1.66.0"
+    "webpack-cli": "^5.1.4"
   }
 }

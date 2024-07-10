@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { commands, CompletionItem, CompletionItemKind, CompletionItemTag, LogLevel, MarkdownString, Position, SnippetString, TextDocument, window, workspace } from "vscode";
 import { getDefinitionFromFile } from "./hover";
 import { DataType, getBaseTypeFromDefine, getNamedParameter, getPyDocsFromTextDocumentAtLine, Navigation, splitParameters, stripQuotes } from "./navigation";

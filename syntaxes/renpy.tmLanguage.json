@@ -150,7 +150,7 @@
       }
     },
 
-    "parenthesised-python": {
+    "parenthesized-python": {
       "patterns": [
         {
           "begin": "\\(",
@@ -217,7 +217,7 @@
         { "include": "source.renpy.python#member-access" },
         { "include": "source.renpy.python#function-call" },
         { "include": "#identifier" },
-        { "include": "#parenthesised-python" },
+        { "include": "#parenthesized-python" },
         { "include": "#whitespace" }
       ]
     },
@@ -742,7 +742,22 @@
         },
         { "include": "#define" },
         { "include": "#default-statement" },
-        { "include": "#one-line-python" }
+        { "include": "#one-line-python" },
+        { "include": "#python-block-tester" }
+      ]
+    },
+    "python-block-tester": {
+      "patterns": [
+        {
+          "comment": "Check for assignments that support python expressions",
+          "contentName": "meta.embedded.expression.python",
+          "begin": "(?<=(^[ \\t]*)(?:image)\\b.*?)(=)",
+          "beginCaptures": {
+            "2": { "name": "keyword.operator.assignment.renpy" }
+          },
+          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
+          "patterns": [{ "include": "source.renpy.python" }]
+        }
       ]
     },
 
@@ -977,19 +992,6 @@
       "patterns": [
         {
           "name": "meta.image.statement.renpy",
-          "contentName": "meta.atl-block.renpy",
-          "begin": "^([ \\t]+)?(image)\\b[ \\t]*([a-zA-Z_0-9 ]*)(:)",
-          "beginCaptures": {
-            "1": { "name": "punctuation.whitespace.leading.renpy" },
-            "2": { "name": "keyword.image.renpy" },
-            "3": { "name": "entity.name.type.image.renpy" },
-            "4": { "name": "punctuation.section.atl.begin.renpy" }
-          },
-          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [{ "include": "source.renpy.atl" }]
-        },
-        {
-          "name": "meta.image.statement.renpy",
           "begin": "(?<=^[ \\t]*)(image)\\b[ \\t]*",
           "beginCaptures": {
             "1": { "name": "keyword.image.renpy" }
@@ -1011,24 +1013,11 @@
       "patterns": [
         {
           "name": "meta.show.statement.renpy",
-          "contentName": "meta.atl-block.renpy",
-          "begin": "^([ \\t]+)?(show)\\b[ \\t]*([a-zA-Z_0-9 ]*)(:)",
-          "beginCaptures": {
-            "1": { "name": "punctuation.whitespace.leading.renpy" },
-            "2": { "name": "keyword.show.renpy" },
-            "3": { "name": "entity.name.type.image.renpy" },
-            "4": { "name": "punctuation.section.atl.begin.renpy" }
-          },
-          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [{ "include": "source.renpy.atl" }]
-        },
-        {
-          "name": "meta.show.statement.renpy",
           "begin": "(?<=^[ \\t]*)(show)\\b[ \\t]*",
           "beginCaptures": {
             "1": { "name": "keyword.show.renpy" }
           },
-          "end": "(?=\\b(at|as|behind|onlayer|expression|with|zorder)\\b|#)|$",
+          "end": "(?=\\b(at|as|behind|onlayer|expression|with|zorder)\\b|#|:)|$",
           "patterns": [
             { "include": "#strings" },
             {
@@ -1095,24 +1084,11 @@
       "patterns": [
         {
           "name": "meta.scene.statement.renpy",
-          "contentName": "meta.atl-block.renpy",
-          "begin": "^([ \\t]+)?(scene)\\b[ \\t]*([a-zA-Z_0-9 ]*)(:)",
-          "beginCaptures": {
-            "1": { "name": "punctuation.whitespace.leading.renpy" },
-            "2": { "name": "keyword.scene.renpy" },
-            "3": { "name": "entity.name.type.image.renpy" },
-            "4": { "name": "punctuation.section.atl.begin.renpy" }
-          },
-          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [{ "include": "source.renpy.atl" }]
-        },
-        {
-          "name": "meta.scene.statement.renpy",
           "begin": "(?<=^[ \\t]*)(scene)\\b[ \\t]*",
           "beginCaptures": {
             "1": { "name": "keyword.scene.renpy" }
           },
-          "end": "(?=\\b(at|as|behind|onlayer|expression|with|zorder)\\b|#)|$",
+          "end": "(?=\\b(at|as|behind|onlayer|expression|with|zorder)\\b|#|:)|$",
           "patterns": [
             { "include": "#strings" },
             {
@@ -1131,24 +1107,11 @@
       "patterns": [
         {
           "name": "meta.camera.statement.renpy",
-          "contentName": "meta.atl-block.renpy",
-          "begin": "^([ \\t]+)?(camera)\\b[ \\t]*(:)",
-          "beginCaptures": {
-            "1": { "name": "punctuation.whitespace.leading.renpy" },
-            "2": { "name": "keyword.camera.renpy" },
-            "3": { "name": "entity.name.type.image.renpy" },
-            "4": { "name": "punctuation.section.atl.begin.renpy" }
-          },
-          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [{ "include": "source.renpy.atl" }]
-        },
-        {
-          "name": "meta.camera.statement.renpy",
           "begin": "(?<=^[ \\t]*)(camera)\\b[ \\t]*",
           "beginCaptures": {
             "1": { "name": "keyword.camera.renpy" }
           },
-          "end": "(?=\\b(at|with)\\b|#)|$",
+          "end": "(?=\\b(at|with)\\b|#|:)|$",
           "patterns": [
             {
               "match": "\\b(?:[a-zA-Z_0-9]+)\\b[ \\t]*",
@@ -1160,7 +1123,7 @@
         { "include": "#with-statement" }
       ]
     },
-
+    
     "style-property": {
       "patterns": [
         {
@@ -1553,6 +1516,7 @@
         { "include": "#pause" },
         { "include": "#style" },
         { "include": "source.renpy.atl#transform" },
+        { "include": "source.renpy.atl#atl-block-tester" },
         { "include": "#scene" },
         { "include": "#camera" },
         { "include": "#window" },

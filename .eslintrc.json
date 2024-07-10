@@ -25,6 +25,7 @@
     "@typescript-eslint/no-var-requires": "warn",
     "no-param-reassign": "warn", // Disable reassign, since this basically means you override the reference from the caller function with a new local version. (It doesn't do what you expect)
     "@typescript-eslint/no-namespace": "off",
-    "@typescript-eslint/ban-ts-comment": "off"
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-unused-vars": "off"
   }
 }

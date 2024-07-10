@@ -242,7 +242,7 @@ async function updateDecorations() {
             range: range,
             hoverMessage: {
                 language: "text",
-                value: `Token: ${tokenTypeToStringMap[token.tokenType]}(id: ${token.tokenType})
+                value: `Token: ${tokenTypeToStringMap[token.type]}(id: ${token.type})
 Start: {Line: ${range.start.line + 1}, Char: ${range.start.character + 1}}
 End: {Line: ${range.end.line + 1}, Char: ${range.end.character + 1}}
 Content: {${content?.replaceAll("\n", "\\n")}}`,
@@ -285,7 +285,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`
             );
         }
 
-        switch (token.tokenType) {
+        switch (token.type) {
             case KeywordTokenType.Init: // Python statement keywords
             case KeywordTokenType.Offset:
             case KeywordTokenType.Python:
@@ -639,7 +639,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`
                 break;
 
             default:
-                throw new Error(`Unhandled token case: ${tokenTypeToStringMap[token.tokenType]}(id: ${token.tokenType})`);
+                throw new Error(`Unhandled token case: ${tokenTypeToStringMap[token.type]}(id: ${token.type})`);
         }
     });
 

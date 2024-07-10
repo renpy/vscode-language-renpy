@@ -70,12 +70,12 @@ export class TokenPosition {
 }
 
 export class Token {
-    readonly tokenType: TokenType;
+    readonly type: TokenType;
     readonly startPos: TokenPosition;
     readonly endPos: TokenPosition;
 
     constructor(tokenType: TokenType, startPos: TokenPosition, endPos: TokenPosition) {
-        this.tokenType = tokenType;
+        this.type = tokenType;
         this.startPos = startPos;
         this.endPos = endPos;
     }
@@ -96,39 +96,39 @@ export class Token {
     }
 
     public isKeyword() {
-        return this.tokenType >= TokenTypeIndex.KeywordStart && this.tokenType < TokenTypeIndex.EntityStart;
+        return this.type >= TokenTypeIndex.KeywordStart && this.type < TokenTypeIndex.EntityStart;
     }
 
     public isEntity() {
-        return this.tokenType >= TokenTypeIndex.EntityStart && this.tokenType < TokenTypeIndex.ConstantStart;
+        return this.type >= TokenTypeIndex.EntityStart && this.type < TokenTypeIndex.ConstantStart;
     }
 
     public isConstant() {
-        return this.tokenType >= TokenTypeIndex.ConstantStart && this.tokenType < TokenTypeIndex.OperatorsStart;
+        return this.type >= TokenTypeIndex.ConstantStart && this.type < TokenTypeIndex.OperatorsStart;
     }
 
     public isOperator() {
-        return this.tokenType >= TokenTypeIndex.OperatorsStart && this.tokenType < TokenTypeIndex.CharactersStart;
+        return this.type >= TokenTypeIndex.OperatorsStart && this.type < TokenTypeIndex.CharactersStart;
     }
 
     public isCharacter() {
-        return this.tokenType >= TokenTypeIndex.CharactersStart && this.tokenType < TokenTypeIndex.EscapedCharacterStart;
+        return this.type >= TokenTypeIndex.CharactersStart && this.type < TokenTypeIndex.EscapedCharacterStart;
     }
 
     public isEscapedCharacter() {
-        return this.tokenType >= TokenTypeIndex.EscapedCharacterStart && this.tokenType < TokenTypeIndex.MetaStart;
+        return this.type >= TokenTypeIndex.EscapedCharacterStart && this.type < TokenTypeIndex.MetaStart;
     }
 
     public isMetaToken() {
-        return this.tokenType >= TokenTypeIndex.MetaStart && this.tokenType < TokenTypeIndex.UnknownCharacterID;
+        return this.type >= TokenTypeIndex.MetaStart && this.type < TokenTypeIndex.UnknownCharacterID;
     }
 
     public isUnknownCharacter() {
-        return this.tokenType === CharacterTokenType.Unknown;
+        return this.type === CharacterTokenType.Unknown;
     }
 
     public isInvalid() {
-        return this.tokenType === MetaTokenType.Invalid;
+        return this.type === MetaTokenType.Invalid;
     }
 }
 

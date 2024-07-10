@@ -1045,6 +1045,28 @@
         { "include": "#zorder" }
       ]
     },
+    "hide": {
+      "patterns": [
+        {
+          "name": "meta.hide.statement.renpy",
+          "begin": "(?<=^[ \\t]*)(hide)\\b[ \\t]*",
+          "beginCaptures": {
+            "1": { "name": "keyword.hide.renpy" }
+          },
+          "end": "(?=\\b(behind|expression|with|zorder)\\b|#)|$",
+          "patterns": [
+            { "include": "#strings" },
+            {
+              "match": "\\b(?:[a-zA-Z_0-9]+)\\b[ \\t]*",
+              "name": "entity.name.type.image.renpy"
+            }
+          ]
+        },
+        { "include": "#with-statement" },
+        { "include": "#behind" },
+        { "include": "#zorder" }
+      ]
+    },
     "scene": {
       "patterns": [
         {
@@ -1510,6 +1532,7 @@
         { "include": "#scene" },
         { "include": "#camera" },
         { "include": "#show" },
+        { "include": "#hide" },
         { "include": "#with-statement" },
         { "include": "#use-old" },
         { "include": "source.renpy.screen#screen" },

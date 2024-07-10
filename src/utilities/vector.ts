@@ -133,7 +133,6 @@ export class Vector<T> implements Iterable<T> {
         ++this.itemCount;
         ++this.headPtr;
     }
-    
 
     /**
      * Remove the first occurrence of the item from the vector, if it exists
@@ -210,8 +209,6 @@ export class Vector<T> implements Iterable<T> {
         }
         return result;
     }
-
-
 
     /**
      * Swap the item at the specified index with the item at the back of the vector

@@ -26,7 +26,7 @@ export const semanticTokensProvider = languages.registerDocumentSemanticTokensPr
             });
         },
     },
-    legend
+    legend,
 );
 
 export function getSemanticTokens(document: TextDocument): SemanticTokens {

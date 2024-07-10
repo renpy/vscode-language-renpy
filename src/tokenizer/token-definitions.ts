@@ -229,7 +229,7 @@ export class TreeNode {
         });
         return count;
     }
-    
+
     /**
      * Flatten the node by building a Vector of Token's.
      * Each child token should be added to the vector, in the order they appear in the source code (aka. the token.startPos).

@@ -664,7 +664,7 @@ export class NavigationData {
             0, //location
             array[5], //documentation
             array[2], //args
-            array[4] //type
+            array[4], //type
         );
     }
 

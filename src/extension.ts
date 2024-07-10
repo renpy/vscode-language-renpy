@@ -75,7 +75,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
                     logMessage(LogLevel.Error, error as string);
                 }
             }
-        })
+        }),
     );
 
     // custom command - refresh data
@@ -166,7 +166,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
                 request: "launch",
                 program: rpyPath,
             },
-            { noDebug: true }
+            { noDebug: true },
         );
 
         //call renpy
@@ -280,8 +280,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
                     ];
                 },
             },
-            DebugConfigurationProviderTriggerKind.Dynamic
-        )
+            DebugConfigurationProviderTriggerKind.Dynamic,
+        ),
     );
 
     const taskProvider = new RenpyTaskProvider();

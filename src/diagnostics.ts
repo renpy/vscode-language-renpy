@@ -129,7 +129,7 @@ export function refreshDiagnostics(doc: TextDocument, diagnosticCollection: Diag
                     const diagnostic = new Diagnostic(
                         range,
                         `Inconsistent spacing detected (${indention} given, expected a multiple of ${firstIndentation}). Indentation must consist only of spaces in Ren'Py scripts. Each indentation level must consist of the same number of spaces. (4 spaces is strongly recommended.)`,
-                        severity
+                        severity,
                     );
                     diagnostics.push(diagnostic);
                 }
@@ -175,7 +175,7 @@ export function subscribeToDocumentChanges(context: ExtensionContext, diagnostic
             if (editor) {
                 refreshDiagnostics(editor.document, diagnostics);
             }
-        })
+        }),
     );
 
     context.subscriptions.push(workspace.onDidChangeTextDocument((e) => refreshDiagnostics(e.document, diagnostics)));

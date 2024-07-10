@@ -19,7 +19,7 @@ export const signatureProvider = languages.registerSignatureHelpProvider(
     },
     "(",
     ",",
-    "="
+    "=",
 );
 
 /**

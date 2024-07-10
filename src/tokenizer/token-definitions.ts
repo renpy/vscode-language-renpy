@@ -680,6 +680,8 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     ScreenWindow: { name: "ScreenWindow", value: MetaTokenType.ScreenWindow },
     ScreenText: { name: "ScreenText", value: MetaTokenType.ScreenText },
     ScreenBlock: { name: "ScreenBlock", value: MetaTokenType.ScreenBlock },
+    ScreenVboxStatement: { name: "ScreenVboxStatement", value: MetaTokenType.ScreenVboxStatement },
+    ScreenHboxStatement: { name: "ScreenHboxStatement", value: MetaTokenType.ScreenHboxStatement },
 
     StyleStatement: { name: "StyleStatement", value: MetaTokenType.StyleStatement },
     StyleBlock: { name: "StyleBlock", value: MetaTokenType.StyleBlock },

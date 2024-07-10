@@ -331,6 +331,8 @@ export const enum MetaTokenType {
     ScreenWindow,
     ScreenText,
     ScreenBlock,
+    ScreenVboxStatement,
+    ScreenHboxStatement,
 
     StyleStatement,
     StyleBlock,

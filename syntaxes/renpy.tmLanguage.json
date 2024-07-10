@@ -62,7 +62,7 @@
         },
 
         {
-          "name": "punctuation.period.renpy",
+          "name": "punctuation.dot.renpy",
           "match": "\\."
         },
         {
@@ -749,7 +749,7 @@
       "patterns": [
         {
           "comment": "Check for assignments that support python expressions",
-          "contentName": "meta.embedded.expression.python",
+          "contentName": "meta.python.expression.renpy",
           "begin": "(?<=(^[ \\t]*)(?:image)\\b.*?)(=)",
           "beginCaptures": {
             "2": { "name": "keyword.operator.assignment.renpy" }
@@ -1258,7 +1258,7 @@
       "begin": "(\\.)\\s*(?!\\.)",
       "end": "(?<=\\S)(?=\\W)|(^|(?<=\\s))(?=[^\\\\\\w\\s])|$",
       "beginCaptures": {
-        "1": { "name": "punctuation.separator.period.renpy" }
+        "1": { "name": "punctuation.separator.dot.renpy" }
       },
       "patterns": [{ "include": "#label-call" }, { "include": "#label-name" }]
     },
@@ -1271,7 +1271,7 @@
           "match": "(?<=^|[ \\t])(\\b(?:[a-zA-Z_]\\w*)\\b)?(\\.)?(\\b(?:[a-zA-Z_]\\w*)\\b)",
           "captures": {
             "1": { "name": "entity.name.function.label.renpy" },
-            "2": { "name": "punctuation.separator.period.renpy" },
+            "2": { "name": "punctuation.separator.dot.renpy" },
             "3": { "name": "entity.name.function.label.renpy" }
           }
         }

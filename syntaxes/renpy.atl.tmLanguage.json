@@ -352,11 +352,24 @@
     "atl-statements":{
       "patterns": [
         {
-          "comment": "Statements without parameters",
-          "name": "meta.atl.$2.statement.renpy",
-          "match": "(?<=^[ \\t]*)(block|parallel|contains)\\b[ \\t]*",
+          "name": "meta.atl.block.statement.renpy",
+          "match": "(?<=^[ \\t]*)(block)\\b[ \\t]*",
           "captures": {
-            "1": { "name": "keyword.$2.renpy" }
+            "1": { "name": "keyword.block.renpy" }
+          }
+        },
+        {
+          "name": "meta.atl.parallel.statement.renpy",
+          "match": "(?<=^[ \\t]*)(parallel)\\b[ \\t]*",
+          "captures": {
+            "1": { "name": "keyword.parallel.renpy" }
+          }
+        },
+        {
+          "name": "meta.atl.contains.statement.renpy",
+          "match": "(?<=^[ \\t]*)(contains)\\b[ \\t]*",
+          "captures": {
+            "1": { "name": "keyword.contains.renpy" }
           }
         },
         { "include": "#atl-choice" },

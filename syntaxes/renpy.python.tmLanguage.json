@@ -263,7 +263,7 @@
       "contentName": "variable.name.python",
       "begin": "(\\.)\\s*(?!\\.)",
       "beginCaptures": {
-        "1": { "name": "punctuation.separator.period.python" }
+        "1": { "name": "punctuation.separator.dot.python" }
       },
       "end": "(?<=\\S)(?=\\W)|(^|(?<=\\s))(?=[^\\\\\\w\\s])|$",
       "patterns": [{ "include": "#function-call" }, { "include": "#member-access-base" }, { "include": "#member-access-attribute" }]
@@ -571,7 +571,7 @@
           },
           "patterns": [
             {
-              "name": "punctuation.separator.period.python",
+              "name": "punctuation.separator.dot.python",
               "match": "\\.+"
             },
             { "include": "#expression" }
@@ -672,7 +672,7 @@
       "begin": "(\\.)\\s*(?!\\.)",
       "end": "(?<=\\S)(?=\\W)|$",
       "beginCaptures": {
-        "1": { "name": "punctuation.separator.period.python" }
+        "1": { "name": "punctuation.separator.dot.python" }
       },
       "patterns": [{ "include": "#call-wrapper-inheritance" }, { "include": "#member-access-base" }, { "include": "#inheritance-identifier" }]
     },
@@ -926,7 +926,7 @@
           "name": "entity.name.function.decorator.python",
           "match": "([[:alpha:]_]\\w*)|(\\.)",
           "captures": {
-            "2": { "name": "punctuation.separator.period.python" }
+            "2": { "name": "punctuation.separator.dot.python" }
           }
         },
         { "include": "#line-continuation" },
@@ -1905,13 +1905,13 @@
     },
     "regexp-single-one-line": {
       "name": "string.regexp.quoted.single.python",
-      "begin": "\\b(([uU]r)|([bB]r)|(r[bB]?))(\\')",
+      "begin": "\\b(?:([uU]r)|([bB]r)|(r[bB]?))(\\')",
       "end": "(\\')|(?<!\\\\)(\\n)",
       "beginCaptures": {
-        "2": { "name": "invalid.deprecated.prefix.python" },
+        "1": { "name": "invalid.deprecated.prefix.python" },
+        "2": { "name": "storage.type.string.python" },
         "3": { "name": "storage.type.string.python" },
-        "4": { "name": "storage.type.string.python" },
-        "5": { "name": "punctuation.definition.string.begin.python" }
+        "4": { "name": "punctuation.definition.string.begin.python" }
       },
       "endCaptures": {
         "1": { "name": "punctuation.definition.string.end.python" },
@@ -1921,13 +1921,13 @@
     },
     "regexp-single-three-line": {
       "name": "string.regexp.quoted.multi.python",
-      "begin": "\\b(([uU]r)|([bB]r)|(r[bB]?))(\\'\\'\\')",
+      "begin": "\\b(?:([uU]r)|([bB]r)|(r[bB]?))(\\'\\'\\')",
       "end": "(\\'\\'\\')",
       "beginCaptures": {
-        "2": { "name": "invalid.deprecated.prefix.python" },
+        "1": { "name": "invalid.deprecated.prefix.python" },
+        "2": { "name": "storage.type.string.python" },
         "3": { "name": "storage.type.string.python" },
-        "4": { "name": "storage.type.string.python" },
-        "5": { "name": "punctuation.definition.string.begin.python" }
+        "4": { "name": "punctuation.definition.string.begin.python" }
       },
       "endCaptures": {
         "1": { "name": "punctuation.definition.string.end.python" },
@@ -1937,13 +1937,13 @@
     },
     "regexp-double-one-line": {
       "name": "string.regexp.quoted.single.python",
-      "begin": "\\b(([uU]r)|([bB]r)|(r[bB]?))(\")",
+      "begin": "\\b(?:([uU]r)|([bB]r)|(r[bB]?))(\")",
       "end": "(\")|(?<!\\\\)(\\n)",
       "beginCaptures": {
-        "2": { "name": "invalid.deprecated.prefix.python" },
+        "1": { "name": "invalid.deprecated.prefix.python" },
+        "2": { "name": "storage.type.string.python" },
         "3": { "name": "storage.type.string.python" },
-        "4": { "name": "storage.type.string.python" },
-        "5": { "name": "punctuation.definition.string.begin.python" }
+        "4": { "name": "punctuation.definition.string.begin.python" }
       },
       "endCaptures": {
         "1": { "name": "punctuation.definition.string.end.python" },
@@ -1953,13 +1953,13 @@
     },
     "regexp-double-three-line": {
       "name": "string.regexp.quoted.multi.python",
-      "begin": "\\b(([uU]r)|([bB]r)|(r[bB]?))(\"\"\")",
+      "begin": "\\b(?:([uU]r)|([bB]r)|(r[bB]?))(\"\"\")",
       "end": "(\"\"\")",
       "beginCaptures": {
-        "2": { "name": "invalid.deprecated.prefix.python" },
+        "1": { "name": "invalid.deprecated.prefix.python" },
+        "2": { "name": "storage.type.string.python" },
         "3": { "name": "storage.type.string.python" },
-        "4": { "name": "storage.type.string.python" },
-        "5": { "name": "punctuation.definition.string.begin.python" }
+        "4": { "name": "punctuation.definition.string.begin.python" }
       },
       "endCaptures": {
         "1": { "name": "punctuation.definition.string.end.python" },
@@ -1969,12 +1969,12 @@
     },
     "string-raw-quoted-single-line": {
       "name": "string.quoted.raw.single.python",
-      "begin": "\\b(([uU]R)|(R))((['\"]))",
+      "begin": "\\b(?:([uU]R)|(R))(['\"])",
       "end": "(\\4)|((?<!\\\\)\\n)",
       "beginCaptures": {
-        "2": { "name": "invalid.deprecated.prefix.python" },
-        "3": { "name": "storage.type.string.python" },
-        "4": { "name": "punctuation.definition.string.begin.python" }
+        "1": { "name": "invalid.deprecated.prefix.python" },
+        "2": { "name": "storage.type.string.python" },
+        "3": { "name": "punctuation.definition.string.begin.python" }
       },
       "endCaptures": {
         "1": { "name": "punctuation.definition.string.end.python" },
@@ -1984,7 +1984,7 @@
     },
     "string-bin-quoted-single-line": {
       "name": "string.quoted.binary.single.python",
-      "begin": "(\\b[bB])((['\"]))",
+      "begin": "(\\b[bB])(['\"])",
       "end": "(\\2)|((?<!\\\\)\\n)",
       "beginCaptures": {
         "1": { "name": "storage.type.string.python" },
@@ -1998,7 +1998,7 @@
     },
     "string-raw-bin-quoted-single-line": {
       "name": "string.quoted.raw.binary.single.python",
-      "begin": "(\\b(?:R[bB]|[bB]R))((['\"]))",
+      "begin": "(\\b(?:R[bB]|[bB]R))(['\"])",
       "end": "(\\2)|((?<!\\\\)\\n)",
       "beginCaptures": {
         "1": { "name": "storage.type.string.python" },
@@ -2012,7 +2012,7 @@
     },
     "string-quoted-single-line": {
       "name": "string.quoted.single.python",
-      "begin": "(?:\\b([rR])(?=[uU]))?([uU])?((['\"]))",
+      "begin": "(?:\\b([rR])(?=[uU]))?([uU])?(['\"])",
       "end": "(\\3)|((?<!\\\\)\\n)",
       "beginCaptures": {
         "1": { "name": "invalid.illegal.prefix.python" },
@@ -2051,12 +2051,12 @@
     },
     "string-raw-quoted-multi-line": {
       "name": "string.quoted.raw.multi.python",
-      "begin": "\\b(([uU]R)|(R))('''|\"\"\")",
+      "begin": "\\b(?:([uU]R)|(R))('''|\"\"\")",
       "end": "(\\4)",
       "beginCaptures": {
-        "2": { "name": "invalid.deprecated.prefix.python" },
-        "3": { "name": "storage.type.string.python" },
-        "4": { "name": "punctuation.definition.string.begin.python" }
+        "1": { "name": "invalid.deprecated.prefix.python" },
+        "2": { "name": "storage.type.string.python" },
+        "3": { "name": "punctuation.definition.string.begin.python" }
       },
       "endCaptures": {
         "1": { "name": "punctuation.definition.string.end.python" },

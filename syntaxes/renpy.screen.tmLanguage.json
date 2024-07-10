@@ -18,7 +18,7 @@
           "match": "(?<=^|[ \\t])(\\b(?:[a-zA-Z_]\\w*)\\b)?(\\.)?(\\b(?:[a-zA-Z_]\\w*)\\b)",
           "captures": {
             "1": { "name": "entity.name.function.renpy" },
-            "2": { "name": "punctuation.separator.period.renpy" },
+            "2": { "name": "punctuation.separator.dot.renpy" },
             "3": { "name": "entity.name.function.renpy" }
           }
         }
@@ -266,10 +266,17 @@
     "screen-box": {
       "patterns": [
         {
-          "name": "meta.screen.$1.statement.renpy",
-          "match": "(?<=^[ \\t]*)(vbox|hbox)\\b",
+          "name": "meta.screen.vbox.statement.renpy",
+          "match": "(?<=^[ \\t]*)(vbox)\\b",
           "captures": {
-            "1": { "name": "keyword.$1.renpy" }
+            "1": { "name": "keyword.vbox.renpy" }
+          }
+        },
+        {
+          "name": "meta.screen.hbox.statement.renpy",
+          "match": "(?<=^[ \\t]*)(hbox)\\b",
+          "captures": {
+            "1": { "name": "keyword.hbox.renpy" }
           }
         }
       ]

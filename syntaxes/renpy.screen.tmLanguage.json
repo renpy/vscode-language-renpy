@@ -158,7 +158,13 @@
         { "include": "source.renpy.python#special-variables" },
         { "include": "source.renpy.python#ellipsis" },
         { "include": "source.renpy.python#punctuation" },
-        { "include": "source.renpy.python#line-continuation" }
+        { "include": "source.renpy.python#line-continuation" },
+        {
+          "comment": "Tokenize identifiers",
+          "name": "variable.name.python",
+          "match": "\\b([[:alpha:]_]\\w*)\\b"
+        },
+        { "include": "source.renpy#whitespace" }
       ]
     },
     "screen-keywords": {

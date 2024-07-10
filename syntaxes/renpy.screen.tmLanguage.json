@@ -39,7 +39,7 @@
         },
         {
           "comment": "Special manipulation keywords",
-          "match": "\\b(?<!\\.)(key|input|(image)?button|grid|auto|mousearea|side|timer|[vh]?bar|viewport|scrollbars|mousewheel|vpgrid|imagemap)\\b",
+          "match": "\\b(?<!\\.)(key|input|(text|image)?button|grid|auto|mousearea|side|timer|[vh]?bar|action|viewport|scrollbars|mousewheel|vpgrid|imagemap)\\b",
           "captures": {
             "1": { "name": "keyword.other.renpy" }
           }
@@ -175,7 +175,7 @@
         },
         {
           "name": "keyword.other.renpy",
-          "match": "\\b(?<!\\.)(?:modal|sensitive|tag|zorder|variant|layer|roll_forward|text)\\b"
+          "match": "\\b(?<!\\.)(?:modal|sensitive|tag|at|use|zorder|variant|layer|roll_forward|text)\\b"
         },
         {
           "name": "keyword.other.renpy",
@@ -252,7 +252,7 @@
       ]
     },
     "screen-box": {
-      "contentName": "meta.screen.block.renpy",
+      "contentName": "meta.box.block.renpy",
       "begin": "^([ \\t]+)?(?:(vbox)|(hbox))\\b[ \\t]*(?:.*?)(:)",
       "beginCaptures": {
         "1": { "name": "punctuation.whitespace.leading.block.renpy" },

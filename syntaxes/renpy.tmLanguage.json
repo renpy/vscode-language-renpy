@@ -891,69 +891,87 @@
 
     "at-statement": {
       "name": "meta.at.statement.renpy",
-      "match": "\\b(?!\\.)(at)\\b(.+)?",
-      "captures": {
-        "1": { "name": "keyword.control.flow.at.renpy" },
-        "2": {
-          "name": "meta.at.parameters.renpy",
-          "patterns": [{ "include": "#simple-expression" }]
-        }
-      }
+      "contentName": "meta.at.parameters.renpy",
+      "begin": "\\b(?!\\.)(at)\\b",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.flow.at.renpy" }
+      },
+      "end": "(?=\\b(at|as|behind|onlayer|expression|with|zorder)\\b|#|=|:)|$",
+      
+      "patterns": [
+        { "include": "#whitespace" },
+        { "include": "#simple-expression" }
+      ]
     },
     "as-statement": {
       "name": "meta.as.statement.renpy",
-      "match": "\\b(?!\\.)(as)\\b[ \\t]*(.+)?",
-      "captures": {
-        "1": { "name": "keyword.control.flow.as.renpy" },
-        "2": {
-          "name": "meta.as.parameters.renpy",
-          "patterns": [{ "include": "#simple-expression" }]
-        }
-      }
+      "contentName": "meta.as.parameters.renpy",
+      "begin": "\\b(?!\\.)(as)\\b",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.flow.as.renpy" }
+      },
+      "end": "(?=\\b(at|as|behind|onlayer|expression|with|zorder)\\b|#|=|:)|$",
+      
+      "patterns": [
+        { "include": "#whitespace" },
+        { "include": "#simple-expression" }
+      ]
     },
     "with-statement": {
       "name": "meta.with.statement.renpy",
-      "match": "\\b(?!\\.)(with)\\b(.+)?",
-      "captures": {
-        "1": { "name": "keyword.control.flow.with.renpy" },
-        "2": {
-          "name": "meta.with.parameters.renpy",
-          "patterns": [{ "include": "#simple-expression" }]
-        }
-      }
+      "contentName": "meta.with.parameters.renpy",
+      "begin": "\\b(?!\\.)(with)\\b",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.flow.with.renpy" }
+      },
+      "end": "(?=\\b(at|as|behind|onlayer|expression|with|zorder)\\b|#|=|:)|$",
+      
+      "patterns": [
+        { "include": "#whitespace" },
+        { "include": "#simple-expression" }
+      ]
     },
     "behind": {
       "name": "meta.behind.statement.renpy",
-      "match": "\\b(?!\\.)(behind)\\b(.+)?",
-      "captures": {
-        "1": { "name": "keyword.control.flow.behind.renpy" },
-        "2": {
-          "name": "meta.behind.parameters.renpy",
-          "patterns": [{ "include": "#simple-expression" }]
-        }
-      }
+      "contentName": "meta.behind.parameters.renpy",
+      "begin": "\\b(?!\\.)(behind)\\b",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.flow.behind.renpy" }
+      },
+      "end": "(?=\\b(at|as|behind|onlayer|expression|with|zorder)\\b|#|=|:)|$",
+
+      "patterns": [
+        { "include": "#whitespace" },
+        { "include": "#simple-expression" }
+      ]
     },
     "onlayer": {
       "name": "meta.onlayer.statement.renpy",
-      "match": "\\b(?!\\.)(onlayer)\\b(.+)?",
-      "captures": {
-        "1": { "name": "keyword.control.flow.onlayer.renpy" },
-        "2": {
-          "name": "meta.onlayer.parameters.renpy",
-          "patterns": [{ "include": "#simple-expression" }]
-        }
-      }
+      "contentName": "meta.onlayer.parameters.renpy",
+      "begin": "\\b(?!\\.)(onlayer)\\b",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.flow.onlayer.renpy" }
+      },
+      "end": "(?=\\b(at|as|behind|onlayer|expression|with|zorder)\\b|#|=|:)|$",
+      
+      "patterns": [
+        { "include": "#whitespace" },
+        { "include": "#simple-expression" }
+      ]
     },
     "zorder": {
       "name": "meta.zorder.statement.renpy",
-      "match": "\\b(?!\\.)(zorder)\\b(.+)?",
-      "captures": {
-        "1": { "name": "keyword.control.flow.zorder.renpy" },
-        "2": {
-          "name": "meta.zorder.parameters.renpy",
-          "patterns": [{ "include": "#simple-expression" }]
-        }
-      }
+      "contentName": "meta.zorder.parameters.renpy",
+      "begin": "\\b(?!\\.)(zorder)\\b",
+      "beginCaptures": {
+        "1": { "name": "keyword.control.flow.zorder.renpy" }
+      },
+      "end": "(?=\\b(at|as|behind|onlayer|expression|with|zorder)\\b|#|=|:)|$",
+      
+      "patterns": [
+        { "include": "#whitespace" },
+        { "include": "#simple-expression" }
+      ]
     },
     "image": {
       "patterns": [
@@ -1057,8 +1075,6 @@
             }
           ]
         },
-        { "include": "#at-statement" },
-        { "include": "#as-statement" },
         { "include": "#with-statement" },
         { "include": "#behind" },
         { "include": "#onlayer" },

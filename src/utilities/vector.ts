@@ -95,7 +95,9 @@ export class Vector<T> implements Iterable<T> {
     }
 
     public at(index: number): T {
-        if (index < 0 || index >= this.itemCount) throw new RangeError("Index out of range");
+        if (index < 0 || index >= this.itemCount) {
+            throw new RangeError("Index out of range");
+        }
         // Convert to T since we only added the null type to create a storage buffer
         return this.buffer[index] as T;
     }
@@ -114,8 +116,24 @@ export class Vector<T> implements Iterable<T> {
      * @param index The index to insert the item at
      */
     public insert(item: T, index: number) {
-        throw new Error("Not yet implemented");
+        if (index < 0 || index >= this.itemCount) {
+            throw new RangeError("Index out of range");
+        }
+
+        if (this.size === this.capacity) {
+            this._grow();
+        }
+
+        // Move all items after the index to the right
+        for (let i = this.itemCount; i > index; --i) {
+            this.buffer[i] = this.buffer[i - 1];
+        }
+
+        this.buffer[index] = item;
+        ++this.itemCount;
+        ++this.headPtr;
     }
+    
 
     /**
      * Remove the first occurrence of the item from the vector, if it exists
@@ -140,7 +158,9 @@ export class Vector<T> implements Iterable<T> {
      * @throws RangeError if the index is out of range
      */
     public eraseAt(index: number) {
-        if (index < 0 || index >= this.itemCount) throw new RangeError("Index out of range");
+        if (index < 0 || index >= this.itemCount) {
+            throw new RangeError("Index out of range");
+        }
 
         // Move all items after the index to the left
         for (let i = index; i < this.itemCount - 1; ++i) {
@@ -156,8 +176,12 @@ export class Vector<T> implements Iterable<T> {
      * @throws RangeError if either index is out of range
      */
     public swapElements(elementIndexA: number, elementIndexB: number) {
-        if (elementIndexA < 0 || elementIndexA >= this.itemCount) throw new RangeError("ElementIndexA out of range");
-        if (elementIndexB < 0 || elementIndexB >= this.itemCount) throw new RangeError("ElementIndexB out of range");
+        if (elementIndexA < 0 || elementIndexA >= this.itemCount) {
+            throw new RangeError("ElementIndexA out of range");
+        }
+        if (elementIndexB < 0 || elementIndexB >= this.itemCount) {
+            throw new RangeError("ElementIndexB out of range");
+        }
 
         const temp = this.buffer[elementIndexB];
         this.buffer[elementIndexB] = this.buffer[elementIndexA];
@@ -170,13 +194,34 @@ export class Vector<T> implements Iterable<T> {
         }
     }
 
+    public any(callback: (item: T) => boolean) {
+        for (let i = 0; i < this.itemCount; ++i) {
+            if (callback(this.buffer[i] as T)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public map<U>(callback: (item: T) => U) {
+        const result = new Vector<U>(this.itemCount);
+        for (let i = 0; i < this.itemCount; ++i) {
+            result.pushBack(callback(this.buffer[i] as T));
+        }
+        return result;
+    }
+
+
+
     /**
      * Swap the item at the specified index with the item at the back of the vector
      * @param index The index of the item to swap to the back
      * @throws RangeError if the index is out of range
      */
     public swapToBack(index: number) {
-        if (index < 0 || index >= this.itemCount) throw new RangeError("Index out of range");
+        if (index < 0 || index >= this.itemCount) {
+            throw new RangeError("Index out of range");
+        }
 
         const temp = this.back();
         this.buffer[this.headPtr] = this.buffer[index];
@@ -190,7 +235,9 @@ export class Vector<T> implements Iterable<T> {
      */
     public indexOf(item: T, fromIndex?: number) {
         const index = this.buffer.indexOf(item, fromIndex);
-        if (index >= this.itemCount) return -1;
+        if (index >= this.itemCount) {
+            return -1;
+        }
 
         return index;
     }
@@ -229,6 +276,13 @@ export class Vector<T> implements Iterable<T> {
     }
 
     /**
+     * Calls to string on each item in the vector and joins the results
+     */
+    public toString() {
+        return `[${this.toArray().toString()}]`;
+    }
+
+    /**
      * Remove all items from the vector
      * @param shrink If true it will also shrink the internal memory buffer to zero
      */
@@ -242,7 +296,9 @@ export class Vector<T> implements Iterable<T> {
         this.headRef = null;
         this.tailRef = null;
 
-        if (shrink) this.shrink();
+        if (shrink) {
+            this.shrink();
+        }
     }
 
     /**

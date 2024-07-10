@@ -27,5 +27,13 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
 
-  "eslint.validate": ["javascript", "typescript"]
+  "eslint.validate": [
+    "javascript",
+    "typescript"
+  ],
+  "cSpell.words": [
+    "Ren'Py",
+    "rpyc",
+    "Uncompiled"
+  ]
 }

@@ -18,13 +18,13 @@ import { referencesProvider } from "./references";
 import { registerDebugDecorator, unregisterDebugDecorator } from "./tokenizer/debug-decorator";
 import { Tokenizer } from "./tokenizer/tokenizer";
 import { signatureProvider } from "./signature";
-import { intializeLoggingSystems, logMessage, logToast, updateStatusBar } from "./logger";
+import { initializeLoggingSystems, logMessage, logToast, updateStatusBar } from "./logger";
 import { Configuration } from "./configuration";
 import { RenpyAdapterDescriptorFactory, RenpyConfigurationProvider } from "./debugger";
-import { RenpyTaskProvider } from "./taskprovider";
+import { RenpyTaskProvider } from "./task-provider";
 
 export async function activate(context: ExtensionContext): Promise<void> {
-    intializeLoggingSystems(context);
+    initializeLoggingSystems(context);
     updateStatusBar("$(sync~spin) Loading Ren'Py extension...");
 
     Configuration.initialize(context);
@@ -334,9 +334,9 @@ function RunWorkspaceFolder(): boolean {
     if (isValidExecutable(rpyPath)) {
         const renpyPath = cleanUpPath(Uri.file(rpyPath).path);
         const cwd = renpyPath.substring(0, renpyPath.lastIndexOf("/"));
-        const workfolder = getWorkspaceFolder();
-        const args: string[] = [`${workfolder}`, "run"];
-        if (workfolder.endsWith("/game")) {
+        const workFolder = getWorkspaceFolder();
+        const args: string[] = [`${workFolder}`, "run"];
+        if (workFolder.endsWith("/game")) {
             try {
                 updateStatusBar("$(sync~spin) Running Ren'Py...");
                 const result = cp.spawnSync(rpyPath, args, {
@@ -361,7 +361,7 @@ function RunWorkspaceFolder(): boolean {
         }
         return false;
     } else {
-        logMessage(LogLevel.Warning, "config for rennpy does not exist");
+        logMessage(LogLevel.Warning, "config for renpy does not exist");
         return false;
     }
 }

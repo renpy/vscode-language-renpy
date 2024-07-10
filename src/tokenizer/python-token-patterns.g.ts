@@ -339,7 +339,7 @@ export const oddFunctionCall: TokenPattern = {
     debugName: "oddFunctionCall",
 
     // A bit obscured function call where there may have been anarbitrary number of other operations to get the function.E.g. "arr[idx](args)"
-    token: MetaTokenType.OddFunctionCall, /*meta.odd-function-call.python*/
+    token: MetaTokenType.FunctionCall, /*meta.odd-function-call.python*/
     begin: /(?<=\]|\))\s*(?=\()/g,
     end: /(\))/dg,
     endCaptures: {

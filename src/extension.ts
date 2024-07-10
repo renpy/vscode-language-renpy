@@ -64,11 +64,16 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
             if (!NavigationData.isImporting) {
                 updateStatusBar("$(sync~spin) Initializing Ren'Py static data...");
-                const uri = Uri.file(document.fileName);
-                const filename = stripWorkspaceFromFile(uri.path);
-                NavigationData.clearScannedDataForFile(filename);
-                NavigationData.scanDocumentForClasses(filename, document);
-                updateStatusBar(getStatusBarText());
+                try {
+                    const uri = Uri.file(document.fileName);
+                    const filename = stripWorkspaceFromFile(uri.path);
+                    NavigationData.clearScannedDataForFile(filename);
+                    NavigationData.scanDocumentForClasses(filename, document);
+                    updateStatusBar(getStatusBarText());
+                } catch (error) {
+                    updateStatusBar("Failed to load Ren'Py static data...");
+                    logMessage(LogLevel.Error, error as string);
+                }
             }
         })
     );
@@ -201,8 +206,13 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     // Detect file system change to the navigation.json file and trigger a refresh
     updateStatusBar("$(sync~spin) Initializing Ren'Py static data...");
-    await NavigationData.init(context.extensionPath);
-    updateStatusBar(getStatusBarText());
+    try {
+        await NavigationData.init(context.extensionPath);
+        updateStatusBar(getStatusBarText());
+    } catch (error) {
+        updateStatusBar("Failed to load Ren'Py static data...");
+        logMessage(LogLevel.Error, error as string);
+    }
 
     try {
         fs.watch(getNavigationJsonFilepath(), async (event, filename) => {

@@ -761,44 +761,51 @@
     },
 
     "define": {
-      "comment": "Match begin and end of python one line statements",
       "begin": "(?<=^[ \\t]*)(define)\\b",
       "beginCaptures": {
         "1": { "name": "keyword.define.renpy" }
       },
       "end": "$",
       "patterns": [
-        {
-          "comment": "Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)",
-          "match": "(?<!\\.)\\b([a-zA-Z_]\\w*)(?=\\s=\\s)",
-          "name": "variable.other.renpy"
-        },
         { "include": "#num-int" },
         { "include": "#strings" },
         { "include": "source.renpy.python#expression" },
+        {
+          "contentName": "meta.python.expression.renpy",
+          "begin": "(\\+=)|(\\|=)|(=)",
+          "beginCaptures": {
+            "1": { "name": "keyword.operator.plus.assign.renpy" },
+            "2": { "name": "keyword.operator.bitwise.or.assign.renpy" },
+            "3": { "name": "keyword.operator.assignment.renpy" }
+          },
+          "end": "$",
+          "patterns": [{ "include": "source.renpy.python#expression" }, { "include": "#whitespace" }]
+        },
         { "include": "#fallback-characters" }
       ]
     },
     "default-statement": {
-      "comment": "Match begin and end of python one line statements",
       "begin": "(?<=^[ \\t]*)(default)\\b",
       "beginCaptures": {
         "1": { "name": "keyword.default.renpy" }
       },
       "end": "$",
       "patterns": [
-        {
-          "comment": "Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)",
-          "match": "(?<!\\.)\\b([a-zA-Z_]\\w*)(?=\\s=\\s)",
-          "name": "variable.other.renpy"
-        },
         { "include": "#strings" },
         { "include": "source.renpy.python#expression" },
+        {
+          "contentName": "meta.python.expression.renpy",
+          "begin": "=",
+          "beginCaptures": {
+            "0": { "name": "keyword.operator.assignment.renpy" }
+          },
+          "end": "$",
+          "patterns": [{ "include": "source.renpy.python#expression" }, { "include": "#whitespace" }]
+        },
         { "include": "#whitespace" }
       ]
     },
     "one-line-python": {
-      "comment": "Match begin and end of python one line statements",
       "begin": "(?<=^[ \\t]*)(\\$)(?=[ \\t]|$)",
       "beginCaptures": {
         "1": { "name": "keyword.dollar.sign.renpy" }

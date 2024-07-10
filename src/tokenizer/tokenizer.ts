@@ -307,6 +307,10 @@ class DocumentTokenizer {
      * @param caret The reader head position within the document
      */
     private applyCaptures(captures: TokenPatternCapture, match: RegExpExecArray, source: string, parentNode: TreeNode) {
+        if (match.indices === undefined) {
+            return; // syntax error
+        }
+        
         let rootNode = parentNode;
 
         if (captures[0] !== undefined) {

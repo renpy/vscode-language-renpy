@@ -12,9 +12,9 @@
         { "include": "#atl-keywords" },
         { "include": "#atl-warper" },
         { "include": "#atl-blocks" },
+        { "include": "#atl-on" },
         { "include": "#atl-simple-expression" },
         { "include": "#atl-event" },
-        { "include": "#atl-on" },
         { "include": "#atl-function" },
         { "include": "#atl-fallback" }
       ]

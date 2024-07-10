@@ -976,7 +976,7 @@
           "beginCaptures": {
             "1": { "name": "keyword.image.renpy" }
           },
-          "end": "(?=\\b(at)\\b|#|=)|$",
+          "end": "(?=\\b(at|with)\\b|#|=|:)|$",
           "patterns": [
             { "include": "#strings" },
             {

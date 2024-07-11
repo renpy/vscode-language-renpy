@@ -1,9 +1,9 @@
 {
-  "information_for_contributors": ["Please remeber to regenerate the ts token patterns using the 'syntax-to-token-pattern.py' python script"],
+  "information_for_contributors": [ "Please remember to regenerate the ts token patterns using the 'syntax-to-token-pattern.py' python script" ],
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
   "name": "Ren'Py Screen",
   "scopeName": "source.renpy.screen",
-  "patterns": [{ "include": "#screen-language" }],
+  "patterns": [ { "include": "#screen-language" } ],
   "repository": {
     "builtin-screens": {
       "name": "support.function.builtin.screen.renpy",
@@ -177,7 +177,7 @@
             "1": { "name": "keyword.sensitive.renpy" }
           },
           "end": "$",
-          "patterns": [{ "include": "#screen-simple-expression" }]
+          "patterns": [ { "include": "#screen-simple-expression" } ]
         },
         {
           "name": "keyword.other.renpy",
@@ -202,7 +202,7 @@
             "2": { "name": "punctuation.section.screen.begin.renpy" }
           },
           "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [{ "include": "#screen-language" }]
+          "patterns": [ { "include": "#screen-language" } ]
         }
       ]
     },
@@ -243,7 +243,7 @@
             "4": { "name": "punctuation.section.atl.begin.renpy" }
           },
           "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [{ "include": "source.renpy.atl" }]
+          "patterns": [ { "include": "source.renpy.atl" } ]
         },
         {
           "name": "meta.screen.text.renpy",
@@ -291,19 +291,19 @@
             "1": { "name": "punctuation.whitespace.leading.block.renpy" },
             "2": { "name": "storage.type.function.renpy" },
             "3": {
-              "patterns": [{ "include": "#screen-def-name" }, { "include": "source.renpy.python#parameters" }, { "include": "source.renpy#invalid-token" }]
+              "patterns": [ { "include": "#screen-def-name" }, { "include": "source.renpy.python#parameters" }, { "include": "source.renpy#invalid-token" } ]
             },
             "4": { "name": "punctuation.section.block.begin.renpy" }
           },
           "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [{ "include": "#screen-language" }]
+          "patterns": [ { "include": "#screen-language" } ]
         }
       ]
     },
 
     "screen-fallback": {
       "comment": "TODO: This is a temp fix for missing pattern references",
-      "patterns": [{ "include": "source.renpy#base-patterns" }]
+      "patterns": [ { "include": "source.renpy#base-patterns" } ]
     },
 
     "screen-language": {

@@ -3,7 +3,7 @@
   "injectionSelector": "L:text.log",
   "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
 
-  "patterns": [{ "include": "#debug-msg" }, { "include": "#info-msg" }, { "include": "#warning-msg" }, { "include": "#error-msg" }],
+  "patterns": [ { "include": "#debug-msg" }, { "include": "#info-msg" }, { "include": "#warning-msg" }, { "include": "#error-msg" } ],
 
   "repository": {
     "debug-msg": {
@@ -14,7 +14,7 @@
         "2": { "name": "punctuation.definition.log.end" }
       },
       "end": "(?=^\\d{4})",
-      "patterns": [{ "include": "#msg-content" }]
+      "patterns": [ { "include": "#msg-content" } ]
     },
     "info-msg": {
       "name": "log.info.renpy",
@@ -25,7 +25,7 @@
         "3": { "name": "punctuation.definition.log.end" }
       },
       "end": "(?=^\\d{4})",
-      "patterns": [{ "include": "#msg-content" }]
+      "patterns": [ { "include": "#msg-content" } ]
     },
     "warning-msg": {
       "name": "entity.name.function.warning, strong log.warning.renpy",
@@ -35,7 +35,7 @@
         "2": { "name": "punctuation.definition.tag.end" }
       },
       "end": "(?=^\\d{4})",
-      "patterns": [{ "include": "#msg-content" }]
+      "patterns": [ { "include": "#msg-content" } ]
     },
     "error-msg": {
       "name": "invalid.error, strong log.error.renpy",
@@ -45,7 +45,7 @@
         "2": { "name": "punctuation.definition.tag.end" }
       },
       "end": "(?=^\\d{4})",
-      "patterns": [{ "include": "#msg-content" }]
+      "patterns": [ { "include": "#msg-content" } ]
     },
     "msg-content": {
       "patterns": [

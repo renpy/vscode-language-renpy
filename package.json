@@ -144,7 +144,7 @@
         "runtime": "node",
         "configurationAttributes": {
           "launch": {
-            "required": [],
+            "required": [ ],
             "properties": {
               "command": {
                 "type": "string",
@@ -154,7 +154,7 @@
               "args": {
                 "type": "array",
                 "description": "Args to run Ren'Py with.",
-                "default": []
+                "default": [ ]
               }
             }
           }
@@ -165,7 +165,7 @@
             "request": "launch",
             "name": "Ren'Py: Launch",
             "command": "run",
-            "args": []
+            "args": [ ]
           }
         ],
         "configurationSnippets": [
@@ -177,7 +177,7 @@
               "request": "launch",
               "name": "Ren'Py",
               "command": "run",
-              "args": []
+              "args": [ ]
             }
           }
         ]
@@ -198,7 +198,7 @@
           "args": {
             "type": "array",
             "description": "Args to run Ren'Py with.",
-            "default": []
+            "default": [ ]
           }
         }
       }

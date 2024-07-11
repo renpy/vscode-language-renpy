@@ -32,7 +32,7 @@
         }
       },
       {
-        "scope": ["renpy.meta.u", "renpy.meta.a"],
+        "scope": [ "renpy.meta.u", "renpy.meta.a" ],
         "settings": {
           "fontStyle": "underline"
         }

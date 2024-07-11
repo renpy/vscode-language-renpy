@@ -32,10 +32,10 @@
   "version": "https://github.com/MagicStack/MagicPython/commit/7d0f2b22a5ad8fccbd7341bc7b7a715169283044",
   "name": "Ren'Py Python",
   "scopeName": "source.renpy.python",
-  "patterns": [{ "include": "#python" }],
+  "patterns": [ { "include": "#python" } ],
   "repository": {
     "python": {
-      "patterns": [{ "include": "#statement" }, { "include": "#expression" }]
+      "patterns": [ { "include": "#statement" }, { "include": "#expression" } ]
     },
     "impossible": {
       "comment": "This is a special rule that should be used where no match is desired. It is not a good idea to match something like '1{0}' because in some cases that can result in infinite loops in token generation. So the rule instead matches and impossible expression to allow a match to fail and move to the next token.",
@@ -106,7 +106,7 @@
       "begin": "^(?=\\s*[rR]?(\\'\\'\\'|\\\"\\\"\\\"|\\'|\\\"))",
       "comment": "the string either terminates correctly or by the beginning of a new line (this is for single line docstrings that aren't terminated) AND it's not followed by another docstring",
       "end": "((?<=\\1)|^)(?!\\s*[rR]?(\\'\\'\\'|\\\"\\\"\\\"|\\'|\\\"))",
-      "patterns": [{ "include": "#docstring" }]
+      "patterns": [ { "include": "#docstring" } ]
     },
     "docstring": {
       "patterns": [
@@ -120,7 +120,7 @@
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.python" }
           },
-          "patterns": [{ "include": "#docstring-prompt" }, { "include": "#codetags" }, { "include": "#docstring-guts-unicode" }]
+          "patterns": [ { "include": "#docstring-prompt" }, { "include": "#codetags" }, { "include": "#docstring-guts-unicode" } ]
         },
         {
           "name": "string.quoted.docstring.raw.multi.python",
@@ -133,7 +133,7 @@
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.python" }
           },
-          "patterns": [{ "include": "#string-consume-escape" }, { "include": "#docstring-prompt" }, { "include": "#codetags" }]
+          "patterns": [ { "include": "#string-consume-escape" }, { "include": "#docstring-prompt" }, { "include": "#codetags" } ]
         },
         {
           "name": "string.quoted.docstring.single.python",
@@ -146,7 +146,7 @@
             "1": { "name": "punctuation.definition.string.end.python" },
             "2": { "name": "invalid.illegal.newline.python" }
           },
-          "patterns": [{ "include": "#codetags" }, { "include": "#docstring-guts-unicode" }]
+          "patterns": [ { "include": "#codetags" }, { "include": "#docstring-guts-unicode" } ]
         },
         {
           "name": "string.quoted.docstring.raw.single.python",
@@ -160,12 +160,12 @@
             "1": { "name": "punctuation.definition.string.end.python" },
             "2": { "name": "invalid.illegal.newline.python" }
           },
-          "patterns": [{ "include": "#string-consume-escape" }, { "include": "#codetags" }]
+          "patterns": [ { "include": "#string-consume-escape" }, { "include": "#codetags" } ]
         }
       ]
     },
     "docstring-guts-unicode": {
-      "patterns": [{ "include": "#escape-sequence-unicode" }, { "include": "#escape-sequence" }, { "include": "#string-line-continuation" }]
+      "patterns": [ { "include": "#escape-sequence-unicode" }, { "include": "#escape-sequence" }, { "include": "#string-line-continuation" } ]
     },
     "docstring-prompt": {
       "match": "(?:\\s*((?:>>>|\\.\\.\\.)\\s)(?=\\s*\\S))",
@@ -244,7 +244,7 @@
     },
     "expression-base": {
       "comment": "valid Python expressions with comments and line continuation",
-      "patterns": [{ "include": "#comments" }, { "include": "#expression-bare" }, { "include": "#line-continuation" }]
+      "patterns": [ { "include": "#comments" }, { "include": "#expression-bare" }, { "include": "#line-continuation" } ]
     },
     "expression": {
       "comment": "All valid Python expressions",
@@ -266,10 +266,10 @@
         "1": { "name": "punctuation.separator.dot.python" }
       },
       "end": "(?<=\\S)(?=\\W)|(^|(?<=\\s))(?=[^\\\\\\w\\s])|$",
-      "patterns": [{ "include": "#function-call" }, { "include": "#member-access-base" }, { "include": "#member-access-attribute" }]
+      "patterns": [ { "include": "#function-call" }, { "include": "#member-access-base" }, { "include": "#member-access-attribute" } ]
     },
     "member-access-base": {
-      "patterns": [{ "include": "#magic-names" }, { "include": "#illegal-names" }, { "include": "#illegal-object-name" }, { "include": "#special-names" }, { "include": "#line-continuation" }, { "include": "#item-access" }]
+      "patterns": [ { "include": "#magic-names" }, { "include": "#illegal-names" }, { "include": "#illegal-object-name" }, { "include": "#special-names" }, { "include": "#line-continuation" }, { "include": "#item-access" } ]
     },
     "member-access-attribute": {
       "comment": "Highlight attribute access in otherwise non-specialized cases.",
@@ -306,7 +306,7 @@
       "endCaptures": {
         "0": { "name": "punctuation.definition.list.end.python" }
       },
-      "patterns": [{ "include": "#expression" }]
+      "patterns": [ { "include": "#expression" } ]
     },
     "odd-function-call": {
       "comment": "A bit obscured function call where there may have been an arbitrary number of other operations to get the function.E.g. \"arr[idx](args)\"",
@@ -316,7 +316,7 @@
       "endCaptures": {
         "1": { "name": "punctuation.definition.arguments.end.python" }
       },
-      "patterns": [{ "include": "#function-arguments" }]
+      "patterns": [ { "include": "#function-arguments" } ]
     },
     "round-braces": {
       "begin": "\\(",
@@ -327,7 +327,7 @@
       "endCaptures": {
         "0": { "name": "punctuation.parenthesis.end.python" }
       },
-      "patterns": [{ "include": "#expression" }]
+      "patterns": [ { "include": "#expression" } ]
     },
     "line-continuation": {
       "patterns": [
@@ -344,7 +344,7 @@
           "beginCaptures": {
             "1": { "name": "punctuation.separator.continuation.line.python" }
           },
-          "patterns": [{ "include": "#regexp" }, { "include": "#string" }]
+          "patterns": [ { "include": "#regexp" }, { "include": "#string" } ]
         }
       ]
     },
@@ -443,7 +443,7 @@
       }
     },
     "regexp": {
-      "patterns": [{ "include": "#regexp-single-three-line" }, { "include": "#regexp-double-three-line" }, { "include": "#regexp-single-one-line" }, { "include": "#regexp-double-one-line" }]
+      "patterns": [ { "include": "#regexp-single-three-line" }, { "include": "#regexp-double-three-line" }, { "include": "#regexp-single-one-line" }, { "include": "#regexp-double-one-line" } ]
     },
     "string": {
       "patterns": [
@@ -464,23 +464,23 @@
       ]
     },
     "string-unicode-guts": {
-      "patterns": [{ "include": "source.renpy#strings-interior" }, { "include": "#escape-sequence-unicode" }, { "include": "#string-entity" }, { "include": "#string-brace-formatting" }]
+      "patterns": [ { "include": "source.renpy#strings-interior" }, { "include": "#escape-sequence-unicode" }, { "include": "#string-entity" }, { "include": "#string-brace-formatting" } ]
     },
     "string-consume-escape": { "match": "\\\\['\"\\n\\\\]" },
     "string-raw-guts": {
-      "patterns": [{ "include": "#string-consume-escape" }, { "include": "#string-formatting" }, { "include": "#string-brace-formatting" }]
+      "patterns": [ { "include": "#string-consume-escape" }, { "include": "#string-formatting" }, { "include": "#string-brace-formatting" } ]
     },
     "string-raw-bin-guts": {
-      "patterns": [{ "include": "#string-consume-escape" }, { "include": "#string-formatting" }]
+      "patterns": [ { "include": "#string-consume-escape" }, { "include": "#string-formatting" } ]
     },
     "string-entity": {
-      "patterns": [{ "include": "#escape-sequence" }, { "include": "#string-line-continuation" }, { "include": "#string-formatting" }]
+      "patterns": [ { "include": "#escape-sequence" }, { "include": "#string-line-continuation" }, { "include": "#string-formatting" } ]
     },
     "fstring-guts": {
-      "patterns": [{ "include": "#escape-sequence-unicode" }, { "include": "#escape-sequence" }, { "include": "#string-line-continuation" }, { "include": "#fstring-formatting" }]
+      "patterns": [ { "include": "#escape-sequence-unicode" }, { "include": "#escape-sequence" }, { "include": "#string-line-continuation" }, { "include": "#fstring-formatting" } ]
     },
     "fstring-raw-guts": {
-      "patterns": [{ "include": "#string-consume-escape" }, { "include": "#fstring-formatting" }]
+      "patterns": [ { "include": "#string-consume-escape" }, { "include": "#fstring-formatting" } ]
     },
     "fstring-illegal-single-brace": {
       "comment": "it is illegal to have a multiline brace inside a single-line string",
@@ -492,10 +492,10 @@
       "endCaptures": {
         "1": { "name": "constant.character.format.placeholder.other.python" }
       },
-      "patterns": [{ "include": "#fstring-terminator-single" }, { "include": "#f-expression" }]
+      "patterns": [ { "include": "#fstring-terminator-single" }, { "include": "#f-expression" } ]
     },
     "fstring-illegal-multi-brace": {
-      "patterns": [{ "include": "#impossible" }]
+      "patterns": [ { "include": "#impossible" } ]
     },
     "f-expression": {
       "comment": "All valid Python expressions, except comments and line continuation",
@@ -554,7 +554,7 @@
       ]
     },
     "fstring-formatting": {
-      "patterns": [{ "include": "#fstring-formatting-braces" }, { "include": "#fstring-formatting-singe-brace" }]
+      "patterns": [ { "include": "#fstring-formatting-braces" }, { "include": "#fstring-formatting-singe-brace" } ]
     },
     "fstring-formatting-singe-brace": {
       "name": "invalid.illegal.brace.python",
@@ -605,7 +605,7 @@
           "endCaptures": {
             "1": { "name": "punctuation.section.class.begin.python" }
           },
-          "patterns": [{ "include": "#class-name" }, { "include": "#class-inheritance" }]
+          "patterns": [ { "include": "#class-name" }, { "include": "#class-inheritance" } ]
         }
       ]
     },
@@ -674,7 +674,7 @@
       "beginCaptures": {
         "1": { "name": "punctuation.separator.dot.python" }
       },
-      "patterns": [{ "include": "#call-wrapper-inheritance" }, { "include": "#member-access-base" }, { "include": "#inheritance-identifier" }]
+      "patterns": [ { "include": "#call-wrapper-inheritance" }, { "include": "#member-access-base" }, { "include": "#inheritance-identifier" } ]
     },
     "lambda": {
       "patterns": [
@@ -747,7 +747,7 @@
       "endCaptures": {
         "1": { "name": "punctuation.separator.parameters.python" }
       },
-      "patterns": [{ "include": "#expression" }]
+      "patterns": [ { "include": "#expression" } ]
     },
     "generator": {
       "comment": "Match \"for ... in\" construct used in generators and for loops to correctly identify the \"in\" as a control flow keyword.",
@@ -759,7 +759,7 @@
       "endCaptures": {
         "0": { "name": "keyword.control.flow.python" }
       },
-      "patterns": [{ "include": "#expression" }]
+      "patterns": [ { "include": "#expression" } ]
     },
     "function-declaration": {
       "name": "meta.function.python",
@@ -772,7 +772,7 @@
       "endCaptures": {
         "1": { "name": "punctuation.section.function.begin.python" }
       },
-      "patterns": [{ "include": "#function-def-name" }, { "include": "#parameters" }, { "include": "#line-continuation" }, { "include": "#return-annotation" }]
+      "patterns": [ { "include": "#function-def-name" }, { "include": "#parameters" }, { "include": "#line-continuation" }, { "include": "#return-annotation" } ]
     },
     "function-def-name": {
       "patterns": [
@@ -837,7 +837,7 @@
       "endCaptures": {
         "1": { "name": "punctuation.separator.parameters.python" }
       },
-      "patterns": [{ "include": "#expression" }]
+      "patterns": [ { "include": "#expression" } ]
     },
     "annotated-parameter": {
       "begin": "\\b([[:alpha:]_]\\w*)\\s*(:)",
@@ -863,7 +863,7 @@
       "beginCaptures": {
         "1": { "name": "punctuation.separator.annotation.result.python" }
       },
-      "patterns": [{ "include": "#expression" }]
+      "patterns": [ { "include": "#expression" } ]
     },
     "item-access": {
       "patterns": [
@@ -874,7 +874,7 @@
           "endCaptures": {
             "1": { "name": "punctuation.definition.arguments.end.python" }
           },
-          "patterns": [{ "include": "#item-name" }, { "include": "#item-index" }, { "include": "#expression" }]
+          "patterns": [ { "include": "#item-name" }, { "include": "#item-index" }, { "include": "#expression" } ]
         }
       ]
     },
@@ -916,7 +916,7 @@
         "1": { "name": "punctuation.definition.arguments.end.python" },
         "2": { "name": "invalid.illegal.decorator.python" }
       },
-      "patterns": [{ "include": "#decorator-name" }, { "include": "#function-arguments" }]
+      "patterns": [ { "include": "#decorator-name" }, { "include": "#function-arguments" } ]
     },
     "decorator-name": {
       "patterns": [
@@ -947,10 +947,10 @@
       "endCaptures": {
         "1": { "name": "punctuation.definition.arguments.end.python" }
       },
-      "patterns": [{ "include": "#inheritance-name" }, { "include": "#function-arguments" }]
+      "patterns": [ { "include": "#inheritance-name" }, { "include": "#function-arguments" } ]
     },
     "inheritance-name": {
-      "patterns": [{ "include": "#lambda-incomplete" }, { "include": "#builtin-possible-callables" }, { "include": "#inheritance-identifier" }]
+      "patterns": [ { "include": "#lambda-incomplete" }, { "include": "#builtin-possible-callables" }, { "include": "#inheritance-identifier" } ]
     },
     "function-call": {
       "name": "meta.function-call.python",
@@ -960,7 +960,7 @@
       "endCaptures": {
         "1": { "name": "punctuation.definition.arguments.end.python" }
       },
-      "patterns": [{ "include": "#special-variables" }, { "include": "#function-name" }, { "include": "#function-arguments" }]
+      "patterns": [ { "include": "#special-variables" }, { "include": "#function-name" }, { "include": "#function-arguments" } ]
     },
     "function-name": {
       "patterns": [
@@ -1014,10 +1014,10 @@
       ]
     },
     "builtin-callables": {
-      "patterns": [{ "include": "#illegal-names" }, { "include": "#illegal-object-name" }, { "include": "#builtin-exceptions" }, { "include": "#builtin-functions" }, { "include": "#builtin-types" }]
+      "patterns": [ { "include": "#illegal-names" }, { "include": "#illegal-object-name" }, { "include": "#builtin-exceptions" }, { "include": "#builtin-functions" }, { "include": "#builtin-types" } ]
     },
     "builtin-possible-callables": {
-      "patterns": [{ "include": "#builtin-callables" }, { "include": "#magic-names" }]
+      "patterns": [ { "include": "#builtin-callables" }, { "include": "#magic-names" } ]
     },
     "builtin-exceptions": {
       "name": "support.type.exception.python",
@@ -1054,7 +1054,7 @@
       }
     },
     "magic-names": {
-      "patterns": [{ "include": "#magic-function-names" }, { "include": "#magic-variable-names" }]
+      "patterns": [ { "include": "#magic-function-names" }, { "include": "#magic-variable-names" } ]
     },
     "illegal-names": {
       "match": "\\b(?:(and|assert|async|await|break|class|continue|def|del|elif|else|except|finally|for|from|global|if|in|is|(?<=\\.)lambda|lambda(?=\\s*[\\.=])|nonlocal|not|or|pass|raise|return|try|while|with|yield)|(as|import))\\b",
@@ -1078,7 +1078,7 @@
       "name": "invalid.deprecated.backtick.python",
       "begin": "\\`",
       "end": "(?:\\`|(?<!\\\\)(\\n))",
-      "patterns": [{ "include": "#expression" }]
+      "patterns": [ { "include": "#expression" } ]
     },
     "illegal-operator": {
       "patterns": [
@@ -1107,7 +1107,7 @@
       "match": "->"
     },
     "regexp-base-expression": {
-      "patterns": [{ "include": "#regexp-quantifier" }, { "include": "#regexp-base-common" }]
+      "patterns": [ { "include": "#regexp-quantifier" }, { "include": "#regexp-base-common" } ]
     },
     "fregexp-base-expression": {
       "patterns": [
@@ -1206,7 +1206,7 @@
       "match": "\\\\(.|\\n)"
     },
     "regexp-escape-sequence": {
-      "patterns": [{ "include": "#regexp-escape-special" }, { "include": "#regexp-escape-character" }, { "include": "#regexp-escape-unicode" }, { "include": "#regexp-backreference-number" }, { "include": "#regexp-escape-catchall" }]
+      "patterns": [ { "include": "#regexp-escape-special" }, { "include": "#regexp-escape-character" }, { "include": "#regexp-escape-unicode" }, { "include": "#regexp-backreference-number" }, { "include": "#regexp-escape-catchall" } ]
     },
     "regexp-charecter-set-escapes": {
       "patterns": [
@@ -1237,7 +1237,7 @@
         "1": { "name": "punctuation.definition.comment.python" }
       },
       "end": "($)",
-      "patterns": [{ "include": "#codetags" }]
+      "patterns": [ { "include": "#codetags" } ]
     },
     "comments-string-single-three": {
       "name": "comment.line.number-sign.python",
@@ -1246,7 +1246,7 @@
         "1": { "name": "punctuation.definition.comment.python" }
       },
       "end": "($|(?='''))",
-      "patterns": [{ "include": "#codetags" }]
+      "patterns": [ { "include": "#codetags" } ]
     },
     "comments-string-double-three": {
       "name": "comment.line.number-sign.python",
@@ -1255,7 +1255,7 @@
         "1": { "name": "punctuation.definition.comment.python" }
       },
       "end": "($|(?=\"\"\"))",
-      "patterns": [{ "include": "#codetags" }]
+      "patterns": [ { "include": "#codetags" } ]
     },
     "single-one-regexp-expression": {
       "patterns": [
@@ -1314,7 +1314,7 @@
         "1": { "name": "support.other.parenthesis.regexp punctuation.parenthesis.end.named.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-one-regexp-expression" }]
+      "patterns": [ { "include": "#single-one-regexp-expression" } ]
     },
     "single-one-regexp-comments": {
       "name": "comment.regexp",
@@ -1327,7 +1327,7 @@
         "1": { "name": "punctuation.comment.end.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#codetags" }]
+      "patterns": [ { "include": "#codetags" } ]
     },
     "single-one-regexp-lookahead": {
       "begin": "(\\()\\?=",
@@ -1340,7 +1340,7 @@
         "1": { "name": "keyword.operator.lookahead.regexp punctuation.parenthesis.end.lookahead.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-one-regexp-expression" }]
+      "patterns": [ { "include": "#single-one-regexp-expression" } ]
     },
     "single-one-regexp-lookahead-negative": {
       "begin": "(\\()\\?!",
@@ -1353,7 +1353,7 @@
         "1": { "name": "keyword.operator.lookahead.negative.regexp punctuation.parenthesis.end.lookahead.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-one-regexp-expression" }]
+      "patterns": [ { "include": "#single-one-regexp-expression" } ]
     },
     "single-one-regexp-lookbehind": {
       "begin": "(\\()\\?<=",
@@ -1366,7 +1366,7 @@
         "1": { "name": "keyword.operator.lookbehind.regexp punctuation.parenthesis.end.lookbehind.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-one-regexp-expression" }]
+      "patterns": [ { "include": "#single-one-regexp-expression" } ]
     },
     "single-one-regexp-lookbehind-negative": {
       "begin": "(\\()\\?<!",
@@ -1379,7 +1379,7 @@
         "1": { "name": "keyword.operator.lookbehind.negative.regexp punctuation.parenthesis.end.lookbehind.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-one-regexp-expression" }]
+      "patterns": [ { "include": "#single-one-regexp-expression" } ]
     },
     "single-one-regexp-conditional": {
       "begin": "(\\()\\?\\((\\w+(?:\\s+[[:alnum:]]+)?|\\d+)\\)",
@@ -1392,7 +1392,7 @@
         "1": { "name": "keyword.operator.conditional.negative.regexp punctuation.parenthesis.end.conditional.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-one-regexp-expression" }]
+      "patterns": [ { "include": "#single-one-regexp-expression" } ]
     },
     "single-one-regexp-parentheses-non-capturing": {
       "begin": "\\(\\?:",
@@ -1404,7 +1404,7 @@
         "1": { "name": "support.other.parenthesis.regexp punctuation.parenthesis.end.non-capturing.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-one-regexp-expression" }]
+      "patterns": [ { "include": "#single-one-regexp-expression" } ]
     },
     "single-one-regexp-parentheses": {
       "begin": "\\(",
@@ -1416,7 +1416,7 @@
         "1": { "name": "support.other.parenthesis.regexp punctuation.parenthesis.end.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-one-regexp-expression" }]
+      "patterns": [ { "include": "#single-one-regexp-expression" } ]
     },
     "single-three-regexp-expression": {
       "patterns": [
@@ -1476,7 +1476,7 @@
         "1": { "name": "support.other.parenthesis.regexp punctuation.parenthesis.end.named.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" }]
+      "patterns": [ { "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" } ]
     },
     "single-three-regexp-comments": {
       "name": "comment.regexp",
@@ -1489,7 +1489,7 @@
         "1": { "name": "punctuation.comment.end.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#codetags" }]
+      "patterns": [ { "include": "#codetags" } ]
     },
     "single-three-regexp-lookahead": {
       "begin": "(\\()\\?=",
@@ -1502,7 +1502,7 @@
         "1": { "name": "keyword.operator.lookahead.regexp punctuation.parenthesis.end.lookahead.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" }]
+      "patterns": [ { "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" } ]
     },
     "single-three-regexp-lookahead-negative": {
       "begin": "(\\()\\?!",
@@ -1515,7 +1515,7 @@
         "1": { "name": "keyword.operator.lookahead.negative.regexp punctuation.parenthesis.end.lookahead.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" }]
+      "patterns": [ { "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" } ]
     },
     "single-three-regexp-lookbehind": {
       "begin": "(\\()\\?<=",
@@ -1528,7 +1528,7 @@
         "1": { "name": "keyword.operator.lookbehind.regexp punctuation.parenthesis.end.lookbehind.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" }]
+      "patterns": [ { "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" } ]
     },
     "single-three-regexp-lookbehind-negative": {
       "begin": "(\\()\\?<!",
@@ -1541,7 +1541,7 @@
         "1": { "name": "keyword.operator.lookbehind.negative.regexp punctuation.parenthesis.end.lookbehind.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" }]
+      "patterns": [ { "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" } ]
     },
     "single-three-regexp-conditional": {
       "begin": "(\\()\\?\\((\\w+(?:\\s+[[:alnum:]]+)?|\\d+)\\)",
@@ -1554,7 +1554,7 @@
         "1": { "name": "keyword.operator.conditional.negative.regexp punctuation.parenthesis.end.conditional.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" }]
+      "patterns": [ { "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" } ]
     },
     "single-three-regexp-parentheses-non-capturing": {
       "begin": "\\(\\?:",
@@ -1566,7 +1566,7 @@
         "1": { "name": "support.other.parenthesis.regexp punctuation.parenthesis.end.non-capturing.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" }]
+      "patterns": [ { "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" } ]
     },
     "single-three-regexp-parentheses": {
       "begin": "\\(",
@@ -1578,7 +1578,7 @@
         "1": { "name": "support.other.parenthesis.regexp punctuation.parenthesis.end.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" }]
+      "patterns": [ { "include": "#single-three-regexp-expression" }, { "include": "#comments-string-single-three" } ]
     },
     "double-one-regexp-expression": {
       "patterns": [
@@ -1637,7 +1637,7 @@
         "1": { "name": "support.other.parenthesis.regexp punctuation.parenthesis.end.named.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-one-regexp-expression" }]
+      "patterns": [ { "include": "#double-one-regexp-expression" } ]
     },
     "double-one-regexp-comments": {
       "name": "comment.regexp",
@@ -1650,7 +1650,7 @@
         "1": { "name": "punctuation.comment.end.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#codetags" }]
+      "patterns": [ { "include": "#codetags" } ]
     },
     "double-one-regexp-lookahead": {
       "begin": "(\\()\\?=",
@@ -1663,7 +1663,7 @@
         "1": { "name": "keyword.operator.lookahead.regexp punctuation.parenthesis.end.lookahead.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-one-regexp-expression" }]
+      "patterns": [ { "include": "#double-one-regexp-expression" } ]
     },
     "double-one-regexp-lookahead-negative": {
       "begin": "(\\()\\?!",
@@ -1676,7 +1676,7 @@
         "1": { "name": "keyword.operator.lookahead.negative.regexp punctuation.parenthesis.end.lookahead.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-one-regexp-expression" }]
+      "patterns": [ { "include": "#double-one-regexp-expression" } ]
     },
     "double-one-regexp-lookbehind": {
       "begin": "(\\()\\?<=",
@@ -1689,7 +1689,7 @@
         "1": { "name": "keyword.operator.lookbehind.regexp punctuation.parenthesis.end.lookbehind.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-one-regexp-expression" }]
+      "patterns": [ { "include": "#double-one-regexp-expression" } ]
     },
     "double-one-regexp-lookbehind-negative": {
       "begin": "(\\()\\?<!",
@@ -1702,7 +1702,7 @@
         "1": { "name": "keyword.operator.lookbehind.negative.regexp punctuation.parenthesis.end.lookbehind.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-one-regexp-expression" }]
+      "patterns": [ { "include": "#double-one-regexp-expression" } ]
     },
     "double-one-regexp-conditional": {
       "begin": "(\\()\\?\\((\\w+(?:\\s+[[:alnum:]]+)?|\\d+)\\)",
@@ -1715,7 +1715,7 @@
         "1": { "name": "keyword.operator.conditional.negative.regexp punctuation.parenthesis.end.conditional.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-one-regexp-expression" }]
+      "patterns": [ { "include": "#double-one-regexp-expression" } ]
     },
     "double-one-regexp-parentheses-non-capturing": {
       "begin": "\\(\\?:",
@@ -1727,7 +1727,7 @@
         "1": { "name": "support.other.parenthesis.regexp punctuation.parenthesis.end.non-capturing.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-one-regexp-expression" }]
+      "patterns": [ { "include": "#double-one-regexp-expression" } ]
     },
     "double-one-regexp-parentheses": {
       "begin": "\\(",
@@ -1739,7 +1739,7 @@
         "1": { "name": "support.other.parenthesis.regexp punctuation.parenthesis.end.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-one-regexp-expression" }]
+      "patterns": [ { "include": "#double-one-regexp-expression" } ]
     },
     "double-three-regexp-expression": {
       "patterns": [
@@ -1799,7 +1799,7 @@
         "1": { "name": "support.other.parenthesis.regexp punctuation.parenthesis.end.named.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" }]
+      "patterns": [ { "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" } ]
     },
     "double-three-regexp-comments": {
       "name": "comment.regexp",
@@ -1812,7 +1812,7 @@
         "1": { "name": "punctuation.comment.end.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#codetags" }]
+      "patterns": [ { "include": "#codetags" } ]
     },
     "double-three-regexp-lookahead": {
       "begin": "(\\()\\?=",
@@ -1825,7 +1825,7 @@
         "1": { "name": "keyword.operator.lookahead.regexp punctuation.parenthesis.end.lookahead.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" }]
+      "patterns": [ { "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" } ]
     },
     "double-three-regexp-lookahead-negative": {
       "begin": "(\\()\\?!",
@@ -1838,7 +1838,7 @@
         "1": { "name": "keyword.operator.lookahead.negative.regexp punctuation.parenthesis.end.lookahead.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" }]
+      "patterns": [ { "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" } ]
     },
     "double-three-regexp-lookbehind": {
       "begin": "(\\()\\?<=",
@@ -1851,7 +1851,7 @@
         "1": { "name": "keyword.operator.lookbehind.regexp punctuation.parenthesis.end.lookbehind.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" }]
+      "patterns": [ { "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" } ]
     },
     "double-three-regexp-lookbehind-negative": {
       "begin": "(\\()\\?<!",
@@ -1864,7 +1864,7 @@
         "1": { "name": "keyword.operator.lookbehind.negative.regexp punctuation.parenthesis.end.lookbehind.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" }]
+      "patterns": [ { "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" } ]
     },
     "double-three-regexp-conditional": {
       "begin": "(\\()\\?\\((\\w+(?:\\s+[[:alnum:]]+)?|\\d+)\\)",
@@ -1877,7 +1877,7 @@
         "1": { "name": "keyword.operator.conditional.negative.regexp punctuation.parenthesis.end.conditional.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" }]
+      "patterns": [ { "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" } ]
     },
     "double-three-regexp-parentheses-non-capturing": {
       "begin": "\\(\\?:",
@@ -1889,7 +1889,7 @@
         "1": { "name": "support.other.parenthesis.regexp punctuation.parenthesis.end.non-capturing.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" }]
+      "patterns": [ { "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" } ]
     },
     "double-three-regexp-parentheses": {
       "begin": "\\(",
@@ -1901,7 +1901,7 @@
         "1": { "name": "support.other.parenthesis.regexp punctuation.parenthesis.end.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" }]
+      "patterns": [ { "include": "#double-three-regexp-expression" }, { "include": "#comments-string-double-three" } ]
     },
     "regexp-single-one-line": {
       "name": "string.regexp.quoted.single.python",
@@ -1917,7 +1917,7 @@
         "1": { "name": "punctuation.definition.string.end.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-one-regexp-expression" }]
+      "patterns": [ { "include": "#single-one-regexp-expression" } ]
     },
     "regexp-single-three-line": {
       "name": "string.regexp.quoted.multi.python",
@@ -1933,7 +1933,7 @@
         "1": { "name": "punctuation.definition.string.end.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#single-three-regexp-expression" }]
+      "patterns": [ { "include": "#single-three-regexp-expression" } ]
     },
     "regexp-double-one-line": {
       "name": "string.regexp.quoted.single.python",
@@ -1949,7 +1949,7 @@
         "1": { "name": "punctuation.definition.string.end.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-one-regexp-expression" }]
+      "patterns": [ { "include": "#double-one-regexp-expression" } ]
     },
     "regexp-double-three-line": {
       "name": "string.regexp.quoted.multi.python",
@@ -1965,7 +1965,7 @@
         "1": { "name": "punctuation.definition.string.end.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#double-three-regexp-expression" }]
+      "patterns": [ { "include": "#double-three-regexp-expression" } ]
     },
     "string-raw-quoted-single-line": {
       "name": "string.quoted.raw.single.python",
@@ -1980,7 +1980,7 @@
         "1": { "name": "punctuation.definition.string.end.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#string-single-bad-brace1-formatting-raw" }, { "include": "#string-single-bad-brace2-formatting-raw" }, { "include": "#string-raw-guts" }]
+      "patterns": [ { "include": "#string-single-bad-brace1-formatting-raw" }, { "include": "#string-single-bad-brace2-formatting-raw" }, { "include": "#string-raw-guts" } ]
     },
     "string-bin-quoted-single-line": {
       "name": "string.quoted.binary.single.python",
@@ -1994,7 +1994,7 @@
         "1": { "name": "punctuation.definition.string.end.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#string-entity" }]
+      "patterns": [ { "include": "#string-entity" } ]
     },
     "string-raw-bin-quoted-single-line": {
       "name": "string.quoted.raw.binary.single.python",
@@ -2008,7 +2008,7 @@
         "1": { "name": "punctuation.definition.string.end.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#string-raw-bin-guts" }]
+      "patterns": [ { "include": "#string-raw-bin-guts" } ]
     },
     "string-quoted-single-line": {
       "name": "string.quoted.single.python",
@@ -2023,31 +2023,31 @@
         "1": { "name": "punctuation.definition.string.end.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#string-single-bad-brace1-formatting-unicode" }, { "include": "#string-single-bad-brace2-formatting-unicode" }, { "include": "#string-unicode-guts" }]
+      "patterns": [ { "include": "#string-single-bad-brace1-formatting-unicode" }, { "include": "#string-single-bad-brace2-formatting-unicode" }, { "include": "#string-unicode-guts" } ]
     },
     "string-single-bad-brace1-formatting-unicode": {
       "comment": "template using {% ... %}",
       "begin": "(?=\\{%(.*?(?!(['\"])|((?<!\\\\)\\n)))%\\})",
       "end": "(?=(['\"])|((?<!\\\\)\\n))",
-      "patterns": [{ "include": "#escape-sequence-unicode" }, { "include": "#escape-sequence" }, { "include": "#string-line-continuation" }]
+      "patterns": [ { "include": "#escape-sequence-unicode" }, { "include": "#escape-sequence" }, { "include": "#string-line-continuation" } ]
     },
     "string-single-bad-brace1-formatting-raw": {
       "comment": "template using {% ... %}",
       "begin": "(?=\\{%(.*?(?!(['\"])|((?<!\\\\)\\n)))%\\})",
       "end": "(?=(['\"])|((?<!\\\\)\\n))",
-      "patterns": [{ "include": "#string-consume-escape" }]
+      "patterns": [ { "include": "#string-consume-escape" } ]
     },
     "string-single-bad-brace2-formatting-unicode": {
       "comment": "odd format or format-like syntax",
       "begin": "(?!\\{\\{)(?=\\{(\\w*?(?!(['\"])|((?<!\\\\)\\n))[^!:\\.\\[}\\w]).*?(?!(['\"])|((?<!\\\\)\\n))\\})",
       "end": "(?=(['\"])|((?<!\\\\)\\n))",
-      "patterns": [{ "include": "#escape-sequence-unicode" }, { "include": "#string-entity" }]
+      "patterns": [ { "include": "#escape-sequence-unicode" }, { "include": "#string-entity" } ]
     },
     "string-single-bad-brace2-formatting-raw": {
       "comment": "odd format or format-like syntax",
       "begin": "(?!\\{\\{)(?=\\{(\\w*?(?!(['\"])|((?<!\\\\)\\n))[^!:\\.\\[}\\w]).*?(?!(['\"])|((?<!\\\\)\\n))\\})",
       "end": "(?=(['\"])|((?<!\\\\)\\n))",
-      "patterns": [{ "include": "#string-consume-escape" }, { "include": "#string-formatting" }]
+      "patterns": [ { "include": "#string-consume-escape" }, { "include": "#string-formatting" } ]
     },
     "string-raw-quoted-multi-line": {
       "name": "string.quoted.raw.multi.python",
@@ -2062,7 +2062,7 @@
         "1": { "name": "punctuation.definition.string.end.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#string-multi-bad-brace1-formatting-raw" }, { "include": "#string-multi-bad-brace2-formatting-raw" }, { "include": "#string-raw-guts" }]
+      "patterns": [ { "include": "#string-multi-bad-brace1-formatting-raw" }, { "include": "#string-multi-bad-brace2-formatting-raw" }, { "include": "#string-raw-guts" } ]
     },
     "string-bin-quoted-multi-line": {
       "name": "string.quoted.binary.multi.python",
@@ -2076,7 +2076,7 @@
         "1": { "name": "punctuation.definition.string.end.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#string-entity" }]
+      "patterns": [ { "include": "#string-entity" } ]
     },
     "string-raw-bin-quoted-multi-line": {
       "name": "string.quoted.raw.binary.multi.python",
@@ -2090,7 +2090,7 @@
         "1": { "name": "punctuation.definition.string.end.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#string-raw-bin-guts" }]
+      "patterns": [ { "include": "#string-raw-bin-guts" } ]
     },
     "string-quoted-multi-line": {
       "name": "string.quoted.multi.python",
@@ -2105,31 +2105,31 @@
         "1": { "name": "punctuation.definition.string.end.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#string-multi-bad-brace1-formatting-unicode" }, { "include": "#string-multi-bad-brace2-formatting-unicode" }, { "include": "#string-unicode-guts" }]
+      "patterns": [ { "include": "#string-multi-bad-brace1-formatting-unicode" }, { "include": "#string-multi-bad-brace2-formatting-unicode" }, { "include": "#string-unicode-guts" } ]
     },
     "string-multi-bad-brace1-formatting-unicode": {
       "comment": "template using {% ... %}",
       "begin": "(?=\\{%(.*?(?!'''|\"\"\"))%\\})",
       "end": "(?='''|\"\"\")",
-      "patterns": [{ "include": "#escape-sequence-unicode" }, { "include": "#escape-sequence" }, { "include": "#string-line-continuation" }]
+      "patterns": [ { "include": "#escape-sequence-unicode" }, { "include": "#escape-sequence" }, { "include": "#string-line-continuation" } ]
     },
     "string-multi-bad-brace1-formatting-raw": {
       "comment": "template using {% ... %}",
       "begin": "(?=\\{%(.*?(?!'''|\"\"\"))%\\})",
       "end": "(?='''|\"\"\")",
-      "patterns": [{ "include": "#string-consume-escape" }]
+      "patterns": [ { "include": "#string-consume-escape" } ]
     },
     "string-multi-bad-brace2-formatting-unicode": {
       "comment": "odd format or format-like syntax",
       "begin": "(?!\\{\\{)(?=\\{(\\w*?(?!'''|\"\"\")[^!:\\.\\[}\\w]).*?(?!'''|\"\"\")\\})",
       "end": "(?='''|\"\"\")",
-      "patterns": [{ "include": "#escape-sequence-unicode" }, { "include": "#string-entity" }]
+      "patterns": [ { "include": "#escape-sequence-unicode" }, { "include": "#string-entity" } ]
     },
     "string-multi-bad-brace2-formatting-raw": {
       "comment": "odd format or format-like syntax",
       "begin": "(?!\\{\\{)(?=\\{(\\w*?(?!'''|\"\"\")[^!:\\.\\[}\\w]).*?(?!'''|\"\"\")\\})",
       "end": "(?='''|\"\"\")",
-      "patterns": [{ "include": "#string-consume-escape" }, { "include": "#string-formatting" }]
+      "patterns": [ { "include": "#string-consume-escape" }, { "include": "#string-formatting" } ]
     },
     "fstring-fnorm-quoted-single-line": {
       "name": "meta.fstring.python",
@@ -2144,7 +2144,7 @@
         "1": { "name": "punctuation.definition.string.end.python string.interpolated.python string.quoted.single.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#fstring-guts" }, { "include": "#fstring-illegal-single-brace" }, { "include": "#fstring-single-brace" }, { "include": "#fstring-single-core" }]
+      "patterns": [ { "include": "#fstring-guts" }, { "include": "#fstring-illegal-single-brace" }, { "include": "#fstring-single-brace" }, { "include": "#fstring-single-core" } ]
     },
     "fstring-normf-quoted-single-line": {
       "name": "meta.fstring.python",
@@ -2159,7 +2159,7 @@
         "1": { "name": "punctuation.definition.string.end.python string.interpolated.python string.quoted.single.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#fstring-guts" }, { "include": "#fstring-illegal-single-brace" }, { "include": "#fstring-single-brace" }, { "include": "#fstring-single-core" }]
+      "patterns": [ { "include": "#fstring-guts" }, { "include": "#fstring-illegal-single-brace" }, { "include": "#fstring-single-brace" }, { "include": "#fstring-single-core" } ]
     },
     "fstring-raw-quoted-single-line": {
       "name": "meta.fstring.python",
@@ -2173,7 +2173,7 @@
         "1": { "name": "punctuation.definition.string.end.python string.interpolated.python string.quoted.raw.single.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#fstring-raw-guts" }, { "include": "#fstring-illegal-single-brace" }, { "include": "#fstring-single-brace" }, { "include": "#fstring-raw-single-core" }]
+      "patterns": [ { "include": "#fstring-raw-guts" }, { "include": "#fstring-illegal-single-brace" }, { "include": "#fstring-single-brace" }, { "include": "#fstring-raw-single-core" } ]
     },
     "fstring-single-core": {
       "name": "string.interpolated.python string.quoted.single.python",
@@ -2193,7 +2193,7 @@
       "endCaptures": {
         "1": { "name": "constant.character.format.placeholder.other.python" }
       },
-      "patterns": [{ "include": "#fstring-terminator-single" }, { "include": "#f-expression" }]
+      "patterns": [ { "include": "#fstring-terminator-single" }, { "include": "#f-expression" } ]
     },
     "fstring-terminator-single": {
       "patterns": [
@@ -2272,7 +2272,7 @@
         "1": { "name": "punctuation.definition.string.end.python string.interpolated.python string.quoted.multi.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#fstring-guts" }, { "include": "#fstring-illegal-multi-brace" }, { "include": "#fstring-multi-brace" }, { "include": "#fstring-multi-core" }]
+      "patterns": [ { "include": "#fstring-guts" }, { "include": "#fstring-illegal-multi-brace" }, { "include": "#fstring-multi-brace" }, { "include": "#fstring-multi-core" } ]
     },
     "fstring-normf-quoted-multi-line": {
       "name": "meta.fstring.python",
@@ -2287,7 +2287,7 @@
         "1": { "name": "punctuation.definition.string.end.python string.interpolated.python string.quoted.multi.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#fstring-guts" }, { "include": "#fstring-illegal-multi-brace" }, { "include": "#fstring-multi-brace" }, { "include": "#fstring-multi-core" }]
+      "patterns": [ { "include": "#fstring-guts" }, { "include": "#fstring-illegal-multi-brace" }, { "include": "#fstring-multi-brace" }, { "include": "#fstring-multi-core" } ]
     },
     "fstring-raw-quoted-multi-line": {
       "name": "meta.fstring.python",
@@ -2301,7 +2301,7 @@
         "1": { "name": "punctuation.definition.string.end.python string.interpolated.python string.quoted.raw.multi.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [{ "include": "#fstring-raw-guts" }, { "include": "#fstring-illegal-multi-brace" }, { "include": "#fstring-multi-brace" }, { "include": "#fstring-raw-multi-core" }]
+      "patterns": [ { "include": "#fstring-raw-guts" }, { "include": "#fstring-illegal-multi-brace" }, { "include": "#fstring-multi-brace" }, { "include": "#fstring-raw-multi-core" } ]
     },
     "fstring-multi-core": {
       "name": "string.interpolated.python string.quoted.multi.python",
@@ -2321,7 +2321,7 @@
       "endCaptures": {
         "1": { "name": "constant.character.format.placeholder.other.python" }
       },
-      "patterns": [{ "include": "#fstring-terminator-multi" }, { "include": "#f-expression" }]
+      "patterns": [ { "include": "#fstring-terminator-multi" }, { "include": "#f-expression" } ]
     },
     "fstring-terminator-multi": {
       "patterns": [

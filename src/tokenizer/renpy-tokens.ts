@@ -244,6 +244,7 @@ export const enum CharacterTokenType {
     DollarSymbol, // $
     AtSymbol, // @
     EqualsSymbol, // =
+    ExclamationMark, // !
 
     Quote, // '
     DoubleQuote, // "
@@ -317,6 +318,7 @@ export const enum MetaTokenType {
     CameraStatement,
     SceneStatement,
     ShowStatement,
+    HideStatement,
 
     CallStatement,
     JumpStatement,
@@ -328,13 +330,16 @@ export const enum MetaTokenType {
     ScreenStatement,
     ScreenSensitive,
     ScreenFrame,
+    ScreenFrameStatement,
     ScreenWindow,
+    ScreenWindowStatement,
     ScreenText,
     ScreenBlock,
     ScreenVboxStatement,
     ScreenHboxStatement,
 
     StyleStatement,
+    StyleParameters,
     StyleBlock,
 
     NarratorSayStatement,
@@ -359,7 +364,15 @@ export const enum MetaTokenType {
     ATLEvent,
     ATLFunction,
     ATLWarper,
-    ATLOn,
+    ATLOnStatement,
+    ATLOnParameters,
+    ATLChoiceStatement,
+    ATLChoiceParameters,
+    ATLBlockStatement,
+    ATLParallelStatement,
+    ATLContainsStatement,
+    TransformStatement,
+    TransformParameters,
 
     MemberAccess,
     ItemAccess,
@@ -376,6 +389,7 @@ export const enum MetaTokenType {
     FunctionCallGeneric,
 
     Fstring,
+    InterpolateFlags,
 
     // Temporary tokens for python parsing
     ControlFlowKeyword,

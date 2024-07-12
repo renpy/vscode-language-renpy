@@ -461,10 +461,15 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case MetaTokenType.ScreenStatement:
             case MetaTokenType.ScreenSensitive:
             case MetaTokenType.ScreenFrame:
+            case MetaTokenType.ScreenFrameStatement:
             case MetaTokenType.ScreenWindow:
+            case MetaTokenType.ScreenWindowStatement:
             case MetaTokenType.ScreenText:
             case MetaTokenType.ScreenBlock:
+            case MetaTokenType.ScreenVboxStatement:
+            case MetaTokenType.ScreenHboxStatement:
             case MetaTokenType.StyleStatement:
+            case MetaTokenType.StyleParameters:
             case MetaTokenType.StyleBlock:
             case MetaTokenType.NarratorSayStatement:
             case MetaTokenType.SayStatement:
@@ -486,7 +491,15 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case MetaTokenType.ATLEvent:
             case MetaTokenType.ATLFunction:
             case MetaTokenType.ATLWarper:
-            case MetaTokenType.ATLOn:
+            case MetaTokenType.ATLOnStatement:
+            case MetaTokenType.ATLOnParameters:
+            case MetaTokenType.ATLChoiceStatement:
+            case MetaTokenType.ATLChoiceParameters:
+            case MetaTokenType.ATLBlockStatement:
+            case MetaTokenType.ATLParallelStatement:
+            case MetaTokenType.ATLContainsStatement:
+            case MetaTokenType.TransformStatement:
+            case MetaTokenType.TransformParameters:
             case MetaTokenType.MemberAccess:
             case MetaTokenType.ItemAccess:
             case MetaTokenType.IndexedName:
@@ -501,6 +514,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case MetaTokenType.FunctionCall:
             case MetaTokenType.FunctionCallGeneric:
             case MetaTokenType.Fstring:
+            case MetaTokenType.InterpolateFlags:
             case MetaTokenType.ControlFlowKeyword:
             case MetaTokenType.LogicalOperatorKeyword:
             case MetaTokenType.Operator:
@@ -603,6 +617,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case CharacterTokenType.DollarSymbol:
             case CharacterTokenType.AtSymbol:
             case CharacterTokenType.EqualsSymbol:
+            case CharacterTokenType.ExclamationMark:
             case CharacterTokenType.Quote:
             case CharacterTokenType.DoubleQuote:
             case CharacterTokenType.BackQuote:

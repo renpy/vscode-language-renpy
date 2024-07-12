@@ -598,6 +598,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     DollarSymbol: { name: "DollarSymbol", value: CharacterTokenType.DollarSymbol },
     AtSymbol: { name: "AtSymbol", value: CharacterTokenType.AtSymbol },
     EqualsSymbol: { name: "EqualsSymbol", value: CharacterTokenType.EqualsSymbol },
+    ExclamationMark: { name: "ExclamationMark", value: CharacterTokenType.ExclamationMark },
 
     Quote: { name: "Quote", value: CharacterTokenType.Quote },
     DoubleQuote: { name: "DoubleQuote", value: CharacterTokenType.DoubleQuote },
@@ -666,6 +667,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     CameraStatement: { name: "CameraStatement", value: MetaTokenType.CameraStatement },
     SceneStatement: { name: "SceneStatement", value: MetaTokenType.SceneStatement },
     ShowStatement: { name: "ShowStatement", value: MetaTokenType.ShowStatement },
+    HideStatement: { name: "HideStatement", value: MetaTokenType.HideStatement },
 
     JumpStatement: { name: "JumpStatement", value: MetaTokenType.JumpStatement },
     CallStatement: { name: "CallStatement", value: MetaTokenType.CallStatement },
@@ -677,13 +679,16 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     ScreenStatement: { name: "ScreenStatement", value: MetaTokenType.ScreenStatement },
     ScreenSensitive: { name: "ScreenSensitive", value: MetaTokenType.ScreenSensitive },
     ScreenFrame: { name: "ScreenFrame", value: MetaTokenType.ScreenFrame },
+    ScreenFrameStatement: { name: "ScreenFrameStatement", value: MetaTokenType.ScreenFrameStatement },
     ScreenWindow: { name: "ScreenWindow", value: MetaTokenType.ScreenWindow },
+    ScreenWindowStatement: { name: "ScreenWindowStatement", value: MetaTokenType.ScreenWindowStatement },
     ScreenText: { name: "ScreenText", value: MetaTokenType.ScreenText },
     ScreenBlock: { name: "ScreenBlock", value: MetaTokenType.ScreenBlock },
     ScreenVboxStatement: { name: "ScreenVboxStatement", value: MetaTokenType.ScreenVboxStatement },
     ScreenHboxStatement: { name: "ScreenHboxStatement", value: MetaTokenType.ScreenHboxStatement },
 
     StyleStatement: { name: "StyleStatement", value: MetaTokenType.StyleStatement },
+    StyleParameters: { name: "StyleParameters", value: MetaTokenType.StyleParameters },
     StyleBlock: { name: "StyleBlock", value: MetaTokenType.StyleBlock },
 
     NarratorSayStatement: { name: "NarratorSayStatement", value: MetaTokenType.NarratorSayStatement },
@@ -708,7 +713,15 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     ATLEvent: { name: "ATLEvent", value: MetaTokenType.ATLEvent },
     ATLFunction: { name: "ATLFunction", value: MetaTokenType.ATLFunction },
     ATLWarper: { name: "ATLWarper", value: MetaTokenType.ATLWarper },
-    ATLOn: { name: "ATLOn", value: MetaTokenType.ATLOn },
+    ATLOnStatement: { name: "ATLOnStatement", value: MetaTokenType.ATLOnStatement },
+    ATLOnParameters: { name: "ATLOnParameters", value: MetaTokenType.ATLOnParameters },
+    ATLChoiceStatement: { name: "ATLChoiceStatement", value: MetaTokenType.ATLChoiceStatement },
+    ATLChoiceParameters: { name: "ATLChoiceParameters", value: MetaTokenType.ATLChoiceParameters },
+    ATLBlockStatement: { name: "ATLBlockStatement", value: MetaTokenType.ATLBlockStatement },
+    ATLParallelStatement: { name: "ATLParallelStatement", value: MetaTokenType.ATLParallelStatement },
+    ATLContainsStatement: { name: "ATLContainsStatement", value: MetaTokenType.ATLContainsStatement },
+    TransformStatement: { name: "TransformStatement", value: MetaTokenType.TransformStatement },
+    TransformParameters: { name: "TransformParameters", value: MetaTokenType.TransformParameters },
 
     MemberAccess: { name: "MemberAccess", value: MetaTokenType.MemberAccess },
     ItemAccess: { name: "ItemAccess", value: MetaTokenType.ItemAccess },
@@ -723,7 +736,10 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     FunctionDecorator: { name: "FunctionDecorator", value: MetaTokenType.FunctionDecorator },
     FunctionCall: { name: "FunctionCall", value: MetaTokenType.FunctionCall },
     FunctionCallGeneric: { name: "FunctionCallGeneric", value: MetaTokenType.FunctionCallGeneric },
+
     Fstring: { name: "Fstring", value: MetaTokenType.Fstring },
+    InterpolateFlags: { name: "InterpolateFlags", value: MetaTokenType.InterpolateFlags },
+
     ControlFlowKeyword: { name: "ControlFlowKeyword", value: MetaTokenType.ControlFlowKeyword },
     LogicalOperatorKeyword: { name: "LogicalOperatorKeyword", value: MetaTokenType.LogicalOperatorKeyword },
     Operator: { name: "Operator", value: MetaTokenType.Operator },

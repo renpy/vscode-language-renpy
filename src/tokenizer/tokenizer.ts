@@ -452,13 +452,12 @@ class DocumentTokenizer {
             // Check if any child pattern has content that would extend the currently determined end match
             if (p._patternsRepo) {
                 const sourceRange = new Range(matchBegin.index + matchBegin[0].length, matchEnd.index);
-                const lastMatchedChar = matchEnd.index + matchEnd[0].length;
 
                 // Scan the content for any matches that would extend beyond the current end match
                 const tempCache = cloneCache(cache);
                 //const tempCache = new Array<ScanResult | undefined>(uniquePatternCount).fill(undefined);
 
-                const lastCharIndex = sourceRange.end;
+                let lastCharIndex = sourceRange.end;
                 let lastMatchIndex = sourceRange.start;
                 while (lastMatchIndex < lastCharIndex) {
                     const bestMatch = this.scanPattern(p._patternsRepo, result.source, lastMatchIndex, tempCache);
@@ -491,7 +490,7 @@ class DocumentTokenizer {
                     contentMatches.push(bestMatch);
 
                     // If the child match last char doesn't extend the current range, we can also ignore it
-                    if (lastMatchIndex <= lastMatchedChar) {
+                    if (lastMatchIndex <= lastCharIndex) {
                         continue;
                     }
 
@@ -503,6 +502,9 @@ class DocumentTokenizer {
                     if (!matchEnd) {
                         break;
                     }
+
+                    // Else update the new source range end
+                    lastCharIndex = matchEnd.index;
                 }
             }
         }

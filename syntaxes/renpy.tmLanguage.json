@@ -821,14 +821,9 @@
       },
       "end": "$",
       "patterns": [
-        {
-          "comment": "Type the first name as a variable (Probably not needed, but python doesn't seem to catch it)",
-          "match": "(?<!\\.)\\b([a-zA-Z_]\\w*)(?=\\s=\\s)",
-          "name": "variable.other.renpy"
-        },
         { "include": "#strings" },
         { "include": "source.renpy.python#expression" },
-        { "include": "#whitespace" }
+        { "include": "#fallback-patterns" }
       ]
     },
 

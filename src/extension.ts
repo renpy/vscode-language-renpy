@@ -4,7 +4,7 @@
 
 import * as cp from "child_process";
 import * as fs from "fs";
-import { ExtensionContext, languages, commands, window, TextDocument, Position, debug, Range, workspace, Uri, DebugConfiguration, ProviderResult, DebugConfigurationProviderTriggerKind, tasks, LogLevel } from "vscode";
+import { ExtensionContext, languages, commands, window, TextDocument, Position, debug, Range, workspace, Uri, DebugConfiguration, ProviderResult, DebugConfigurationProviderTriggerKind, tasks, LogLevel, ExtensionMode } from "vscode";
 import { colorProvider } from "./color";
 import { getStatusBarText, NavigationData } from "./navigation-data";
 import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
@@ -23,7 +23,14 @@ import { Configuration } from "./configuration";
 import { RenpyAdapterDescriptorFactory, RenpyConfigurationProvider } from "./debugger";
 import { RenpyTaskProvider } from "./task-provider";
 
+let extensionMode: ExtensionMode = null!;
+
+export function isShippingBuild(): boolean {
+    return extensionMode !== ExtensionMode.Development;
+}
+
 export async function activate(context: ExtensionContext): Promise<void> {
+    extensionMode = context.extensionMode;
     initializeLoggingSystems(context);
     updateStatusBar("$(sync~spin) Loading Ren'Py extension...");
 

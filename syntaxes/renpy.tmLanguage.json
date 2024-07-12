@@ -1118,14 +1118,6 @@
       ]
     },
 
-
-    "use-old": {
-      "match": "^\\s*(use)\\s+([a-zA-Z_][a-zA-Z_0-9]*)",
-      "captures": {
-        "1": { "name": "keyword.python.renpy" },
-        "2": { "name": "entity.name.class.python.renpy.screen.renpy" }
-      }
-    },
     "builtin-labels": {
       "name": "support.function.builtin.renpy",
       "match": "(?<!\\.)\\b(?:start|quit|after_load|splashscreen|before_main_menu|main_menu|after_warp|hide_windows)\\b"
@@ -1427,7 +1419,6 @@
         { "include": "#show" },
         { "include": "#hide" },
         { "include": "#with-statement" },
-        { "include": "#use-old" },
         { "include": "source.renpy.screen#screen" },
         { "include": "source.renpy.style#style" },
         { "include": "#return-statements" },

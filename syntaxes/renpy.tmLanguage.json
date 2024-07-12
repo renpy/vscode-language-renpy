@@ -785,7 +785,10 @@
             "3": { "name": "keyword.operator.assignment.renpy" }
           },
           "end": "$",
-          "patterns": [ { "include": "source.renpy.python#expression" }, { "include": "#whitespace" } ]
+          "patterns": [
+            { "include": "source.renpy.python#expression" },
+            { "include": "#whitespace" }
+          ]
         },
         { "include": "#fallback-characters" }
       ]
@@ -911,7 +914,12 @@
       "match": "(?<=^[ \\t]+)(if|elif|else)\\b(.*?)(:)",
       "captures": {
         "1": { "name": "keyword.control.conditional.renpy" },
-        "2": { "patterns": [ { "include": "source.renpy.python#expression" } ] },
+        "2": {
+          "patterns": [
+            { "include": "source.renpy.python#expression" },
+            { "include": "#fallback-patterns" }
+          ]
+        },
         "3": { "name": "punctuation.section.condition.begin.renpy" }
       }
     },

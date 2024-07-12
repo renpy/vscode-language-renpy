@@ -306,7 +306,10 @@
       "endCaptures": {
         "0": { "name": "punctuation.definition.list.end.python" }
       },
-      "patterns": [ { "include": "#expression" } ]
+      "patterns": [
+        { "include": "#expression" },
+        { "include": "#whitespace" }
+      ]
     },
     "odd-function-call": {
       "comment": "A bit obscured function call where there may have been an arbitrary number of other operations to get the function.E.g. \"arr[idx](args)\"",
@@ -327,7 +330,10 @@
       "endCaptures": {
         "0": { "name": "punctuation.parenthesis.end.python" }
       },
-      "patterns": [ { "include": "#expression" } ]
+      "patterns": [
+        { "include": "#expression" },
+        { "include": "#whitespace" }
+      ]
     },
     "line-continuation": {
       "patterns": [
@@ -374,6 +380,10 @@
           "match": ","
         }
       ]
+    },
+    "whitespace": {
+      "match": "[ \\t]+",
+      "name": "punctuation.whitespace.python"
     },
     "literal": {
       "patterns": [

@@ -166,22 +166,22 @@
         {
           "begin": "\\[",
           "beginCaptures": {
-            "1": { "name": "punctuation.square-bracket.begin.python.renpy" }
+            "0": { "name": "punctuation.square-bracket.begin.python.renpy" }
           },
           "end": "\\]",
           "endCaptures": {
-            "1": { "name": "punctuation.square-bracket.end.python.renpy" }
+            "0": { "name": "punctuation.square-bracket.end.python.renpy" }
           },
           "patterns": [ { "include": "source.renpy.python#expression" } ]
         },
         {
           "begin": "\\{",
           "beginCaptures": {
-            "1": { "name": "punctuation.bracket.begin.python.renpy" }
+            "0": { "name": "punctuation.bracket.begin.python.renpy" }
           },
           "end": "\\}",
           "endCaptures": {
-            "1": { "name": "punctuation.bracket.end.python.renpy" }
+            "0": { "name": "punctuation.bracket.end.python.renpy" }
           },
           "patterns": [ { "include": "source.renpy.python#expression" } ]
         }

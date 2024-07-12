@@ -5,23 +5,23 @@
     #region Quick start
         # see https://www.renpy.org/doc/html/quickstart.html
 
-        define s = Character('Sylvie', color="#dcdcaa")
-        define s = Character('Sylvie', color="#4ec9b0")
-        define s = Character('Sylvie', color="#c586c0")
-        define s = Character('Sylvie', color="#9cdcfe")
-        define s = Character('Sylvie', color="#4fc1ff")
-        define s = Character('Sylvie', color="#ce9178")
-        define s = Character('Sylvie', color="#d16969")
-        define s = Character('Sylvie', color="#d7ba7d")
-        define s = Character('Sylvie', color="#569cd6")
-        define s = Character('Sylvie', color="#c8c8c8")
-        define s = Character('Sylvie', color="#d4d4d4")
         define s = Character('Sylvie', color="#000080")
-        define s = Character('Sylvie', color="#6a9955")
-        define s = Character('Sylvie', color="#b5cea8")
-        define s = Character('Sylvie', color="#646695")
-        define s = Character('Sylvie', color="#f44747")
-        define s = Character('Sylvie', color="#808080")
+        define s = Character('Sylvie', color="#4ec9b0") # Scopes: support.class, support.type, entity.name.type, entity.name.namespace
+        define s = Character('Sylvie', color="#4fc1ff") # Scopes: variable.other.constant, variable.other.enummember
+        define s = Character('Sylvie', color="#569cd6") # Scopes: keyword, storage, storage.type, constant.language, entity.name.tag, meta.preprocessor, entity.name.function.preprocessor
+        define s = Character('Sylvie', color="#6a9955") # Scopes: comment, string.quoted.docstring
+        define s = Character('Sylvie', color="#646695") # Scopes: constant.regexp
+        define s = Character('Sylvie', color="#808080") # Scopes: punctuation.definition.tag
+        define s = Character('Sylvie', color="#9cdcfe") # Scopes: support.type.property-name, entity.other.attribute-name, meta.structure.dictionary.key.python
+        define s = Character('Sylvie', color="#b5cea8") # Scopes: constant.numeric
+        define s = Character('Sylvie', color="#c8c8c8")
+        define s = Character('Sylvie', color="#c586c0") # Scopes: keyword.control
+        define s = Character('Sylvie', color="#ce9178") # Scopes: string
+        define s = Character('Sylvie', color="#d16969") # Scopes: string.regexp
+        define s = Character('Sylvie', color="#d4d4d4") # Scopes: default, keyword.operator
+        define s = Character('Sylvie', color="#d7ba7d") # Scopes: entity.name.tag.css
+        define s = Character('Sylvie', color="#dcdcaa") # Scopes: entity.name.function, support.function
+        define s = Character('Sylvie', color="#f44747") # Scopes: invalid
 
         default name1="foo"
         default name2="bar"
@@ -1583,6 +1583,19 @@
                 @renpy.atl_warper
                 def linear(t):
                     return t
+
+            init python:
+                @dataclass
+                class LatLonPair:
+                    lon: float,
+                    lat: float
+
+                @dataclass
+                class SimpleWeatherInfo:
+                    id: int,
+                    main: str,
+                    description: str,
+                    icon: str
 
             init python:
                 @dataclass

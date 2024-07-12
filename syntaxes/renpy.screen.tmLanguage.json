@@ -39,7 +39,7 @@
         },
         {
           "comment": "Special manipulation keywords",
-          "match": "\\b(?<!\\.)(key|input|(text|image)?button|grid|auto|mousearea|side|timer|[vh]?bar|action|viewport|scrollbars|mousewheel|vpgrid|imagemap)\\b",
+          "match": "\\b(?<!\\.)(key|input|(?:text|image)?button|grid|auto|mousearea|side|timer|[vh]?bar|action|viewport|scrollbars|mousewheel|vpgrid|imagemap)\\b",
           "captures": {
             "1": { "name": "keyword.other.renpy" }
           }
@@ -197,12 +197,14 @@
       "patterns": [
         {
           "contentName": "meta.screen-block.renpy",
-          "begin": "(?<=(^[ \\t]*)(?:frame|window|text|vbox|hbox)\\b.*?)(:)",
+          "begin": "(?<=(^[ \\t]*)(?:screen|frame|window|text|vbox|hbox)\\b.*?)(:)",
           "beginCaptures": {
             "2": { "name": "punctuation.section.screen.begin.renpy" }
           },
           "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [ { "include": "#screen-language" } ]
+          "patterns": [
+            { "include": "#screen-language" }
+          ]
         }
       ]
     },
@@ -281,22 +283,23 @@
         }
       ]
     },
+
     "screen": {
       "patterns": [
         {
           "comment": "See https://www.renpy.org/doc/html/screens.html",
           "contentName": "meta.screen.block.renpy",
-          "begin": "^([ \\t]+)?(screen)\\b[ \\t]*(.*?)(:)",
+          "begin": "(?<=^[ \\t]*)(screen)\\b",
           "beginCaptures": {
-            "1": { "name": "punctuation.whitespace.leading.block.renpy" },
-            "2": { "name": "storage.type.function.renpy" },
-            "3": {
-              "patterns": [ { "include": "#screen-def-name" }, { "include": "source.renpy.python#parameters" }, { "include": "source.renpy#invalid-token" } ]
-            },
-            "4": { "name": "punctuation.section.block.begin.renpy" }
+            "1": { "name": "storage.type.screen.renpy" }
           },
-          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [ { "include": "#screen-language" } ]
+          "end": "$|^",
+          "patterns": [
+            { "include": "#screen-def-name" },
+            { "include": "source.renpy.python#parameters" },
+            { "include": "#screen-block-tester" },
+            { "include": "source.renpy#fallback-patterns" }
+          ]
         }
       ]
     },
@@ -310,7 +313,6 @@
       "comment": "https://www.renpy.org/doc/html/screens.html#screen-language",
       "patterns": [
         { "include": "source.renpy#conditionals" },
-        { "include": "#screen-block-tester" },
         { "include": "#screen-frame" },
         { "include": "#screen-window" },
         { "include": "#screen-box" },

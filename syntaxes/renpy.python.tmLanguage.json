@@ -64,13 +64,7 @@
     },
     "comments": {
       "patterns": [
-        {
-          "name": "comment.line.number-sign.renpy",
-          "match": "^[ \\t]*(#[ \\t]*(?:end)?region)\\b.*$",
-          "captures": {
-            "1": { "name": "punctuation.definition.tag.region" }
-          }
-        },
+        { "include": "source.renpy#region-comment" },
         {
           "name": "comment.line.number-sign.python",
           "contentName": "meta.typehint.comment.python",
@@ -99,7 +93,7 @@
             }
           ]
         },
-        { "include": "#comments-base" }
+        { "include": "source.renpy#comments-base" }
       ]
     },
     "docstring-statement": {
@@ -120,7 +114,7 @@
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.python" }
           },
-          "patterns": [ { "include": "#docstring-prompt" }, { "include": "#codetags" }, { "include": "#docstring-guts-unicode" } ]
+          "patterns": [ { "include": "#docstring-prompt" }, { "include": "source.renpy#codetags" }, { "include": "#docstring-guts-unicode" } ]
         },
         {
           "name": "string.quoted.docstring.raw.multi.python",
@@ -133,7 +127,7 @@
           "endCaptures": {
             "1": { "name": "punctuation.definition.string.end.python" }
           },
-          "patterns": [ { "include": "#string-consume-escape" }, { "include": "#docstring-prompt" }, { "include": "#codetags" } ]
+          "patterns": [ { "include": "#string-consume-escape" }, { "include": "#docstring-prompt" }, { "include": "source.renpy#codetags" } ]
         },
         {
           "name": "string.quoted.docstring.single.python",
@@ -146,7 +140,7 @@
             "1": { "name": "punctuation.definition.string.end.python" },
             "2": { "name": "invalid.illegal.newline.python" }
           },
-          "patterns": [ { "include": "#codetags" }, { "include": "#docstring-guts-unicode" } ]
+          "patterns": [ { "include": "source.renpy#codetags" }, { "include": "#docstring-guts-unicode" } ]
         },
         {
           "name": "string.quoted.docstring.raw.single.python",
@@ -160,7 +154,7 @@
             "1": { "name": "punctuation.definition.string.end.python" },
             "2": { "name": "invalid.illegal.newline.python" }
           },
-          "patterns": [ { "include": "#string-consume-escape" }, { "include": "#codetags" } ]
+          "patterns": [ { "include": "#string-consume-escape" }, { "include": "source.renpy#codetags" } ]
         }
       ]
     },
@@ -212,6 +206,14 @@
         }
       ]
     },
+    "new-line": {
+      "match": "\\r\\n|\\r|\\n",
+      "name": "punctuation.new-line.renpy"
+    },
+    "whitespace": {
+      "match": "[ \\t]+",
+      "name": "punctuation.whitespace.python"
+    },
     "expression-bare": {
       "comment": "valid Python expressions w/o comments and line continuation",
       "patterns": [
@@ -239,7 +241,9 @@
         { "include": "#special-variables" },
         { "include": "#ellipsis" },
         { "include": "#punctuation" },
-        { "include": "#line-continuation" }
+        { "include": "#line-continuation" },
+        { "include": "#whitespace" },
+        { "include": "#new-line" }
       ]
     },
     "expression-base": {
@@ -597,7 +601,7 @@
       "patterns": [
         {
           "name": "meta.class.python",
-          "begin": "\\s*(class)\\s+(?=[[:alpha:]_]\\w*\\s*(:|\\())",
+          "begin": "\\s*(class)\\s+(?=[[:alpha:]_]\\w*\\s*(?::|\\())",
           "end": "(:)",
           "beginCaptures": {
             "1": { "name": "storage.type.class.python" }
@@ -906,7 +910,7 @@
     },
     "decorator": {
       "name": "meta.function.decorator.python",
-      "begin": "^\\s*((@))\\s*(?=[[:alpha:]_]\\w*)",
+      "begin": "(?<=^[ \\t]*)(@)\\s*(?=[[:alpha:]_]\\w*)",
       "end": "(\\))(?:(.*?)(?=\\s*(?:\\#|$)))|(?=\\n|\\#)",
       "beginCaptures": {
         "1": { "name": "entity.name.function.decorator.python" },
@@ -924,9 +928,9 @@
         { "include": "#illegal-object-name" },
         {
           "name": "entity.name.function.decorator.python",
-          "match": "([[:alpha:]_]\\w*)|(\\.)",
+          "match": "(?:[[:alpha:]_]\\w*)|(\\.)",
           "captures": {
-            "2": { "name": "punctuation.separator.dot.python" }
+            "1": { "name": "punctuation.separator.dot.python" }
           }
         },
         { "include": "#line-continuation" },
@@ -1224,21 +1228,6 @@
         { "include": "#regexp-escape-catchall" }
       ]
     },
-    "codetags": {
-      "match": "(?:\\b(NOTE|XXX|HACK|FIXME|BUG|TODO)\\b)",
-      "captures": {
-        "1": { "name": "keyword.codetag.notation.python" }
-      }
-    },
-    "comments-base": {
-      "name": "comment.line.number-sign.python",
-      "begin": "(\\#)",
-      "beginCaptures": {
-        "1": { "name": "punctuation.definition.comment.python" }
-      },
-      "end": "($)",
-      "patterns": [ { "include": "#codetags" } ]
-    },
     "comments-string-single-three": {
       "name": "comment.line.number-sign.python",
       "begin": "(\\#)",
@@ -1246,7 +1235,7 @@
         "1": { "name": "punctuation.definition.comment.python" }
       },
       "end": "($|(?='''))",
-      "patterns": [ { "include": "#codetags" } ]
+      "patterns": [ { "include": "source.renpy#codetags" } ]
     },
     "comments-string-double-three": {
       "name": "comment.line.number-sign.python",
@@ -1255,7 +1244,7 @@
         "1": { "name": "punctuation.definition.comment.python" }
       },
       "end": "($|(?=\"\"\"))",
-      "patterns": [ { "include": "#codetags" } ]
+      "patterns": [ { "include": "source.renpy#codetags" } ]
     },
     "single-one-regexp-expression": {
       "patterns": [
@@ -1327,7 +1316,7 @@
         "1": { "name": "punctuation.comment.end.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [ { "include": "#codetags" } ]
+      "patterns": [ { "include": "source.renpy#codetags" } ]
     },
     "single-one-regexp-lookahead": {
       "begin": "(\\()\\?=",
@@ -1489,7 +1478,7 @@
         "1": { "name": "punctuation.comment.end.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [ { "include": "#codetags" } ]
+      "patterns": [ { "include": "source.renpy#codetags" } ]
     },
     "single-three-regexp-lookahead": {
       "begin": "(\\()\\?=",
@@ -1650,7 +1639,7 @@
         "1": { "name": "punctuation.comment.end.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [ { "include": "#codetags" } ]
+      "patterns": [ { "include": "source.renpy#codetags" } ]
     },
     "double-one-regexp-lookahead": {
       "begin": "(\\()\\?=",
@@ -1812,7 +1801,7 @@
         "1": { "name": "punctuation.comment.end.regexp" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [ { "include": "#codetags" } ]
+      "patterns": [ { "include": "source.renpy#codetags" } ]
     },
     "double-three-regexp-lookahead": {
       "begin": "(\\()\\?=",
@@ -2011,7 +2000,7 @@
       "patterns": [ { "include": "#string-raw-bin-guts" } ]
     },
     "string-quoted-single-line": {
-      "name": "string.quoted.single.python",
+      "name": "string.quoted.single.test.python",
       "begin": "(?:\\b([rR])(?=[uU]))?([uU])?(['\"])",
       "end": "(\\3)|((?<!\\\\)\\n)",
       "beginCaptures": {
@@ -2023,30 +2012,31 @@
         "1": { "name": "punctuation.definition.string.end.python" },
         "2": { "name": "invalid.illegal.newline.python" }
       },
-      "patterns": [ { "include": "#string-single-bad-brace1-formatting-unicode" }, { "include": "#string-single-bad-brace2-formatting-unicode" }, { "include": "#string-unicode-guts" } ]
+      "patterns": [
+        { "include": "#string-single-bad-brace1-formatting-unicode" },
+        { "include": "#string-unicode-guts" }
+      ]
     },
     "string-single-bad-brace1-formatting-unicode": {
       "comment": "template using {% ... %}",
-      "begin": "(?=\\{%(.*?(?!(['\"])|((?<!\\\\)\\n)))%\\})",
-      "end": "(?=(['\"])|((?<!\\\\)\\n))",
-      "patterns": [ { "include": "#escape-sequence-unicode" }, { "include": "#escape-sequence" }, { "include": "#string-line-continuation" } ]
+      "begin": "(?=\\{%(?:.*?(?!['\"]|(?:(?<!\\\\)\\n)))%\\})",
+      "end": "(?=['\"]|(?:(?<!\\\\)\\n))",
+      "patterns": [
+        { "include": "#escape-sequence-unicode" },
+        { "include": "#escape-sequence" },
+        { "include": "#string-line-continuation" }
+      ]
     },
     "string-single-bad-brace1-formatting-raw": {
       "comment": "template using {% ... %}",
-      "begin": "(?=\\{%(.*?(?!(['\"])|((?<!\\\\)\\n)))%\\})",
-      "end": "(?=(['\"])|((?<!\\\\)\\n))",
+      "begin": "(?=\\{%(?:.*?(?!['\"]|(?:(?<!\\\\)\\n)))%\\})",
+      "end": "(?=['\"]|(?:(?<!\\\\)\\n))",
       "patterns": [ { "include": "#string-consume-escape" } ]
-    },
-    "string-single-bad-brace2-formatting-unicode": {
-      "comment": "odd format or format-like syntax",
-      "begin": "(?!\\{\\{)(?=\\{(\\w*?(?!(['\"])|((?<!\\\\)\\n))[^!:\\.\\[}\\w]).*?(?!(['\"])|((?<!\\\\)\\n))\\})",
-      "end": "(?=(['\"])|((?<!\\\\)\\n))",
-      "patterns": [ { "include": "#escape-sequence-unicode" }, { "include": "#string-entity" } ]
     },
     "string-single-bad-brace2-formatting-raw": {
       "comment": "odd format or format-like syntax",
-      "begin": "(?!\\{\\{)(?=\\{(\\w*?(?!(['\"])|((?<!\\\\)\\n))[^!:\\.\\[}\\w]).*?(?!(['\"])|((?<!\\\\)\\n))\\})",
-      "end": "(?=(['\"])|((?<!\\\\)\\n))",
+      "begin": "(?!\\{\\{)(?=\\{(?:\\w*?(?!['\"]|(?:(?<!\\\\)\\n))[^!:\\.\\[}\\w]).*?(?!['\"]|(?:(?<!\\\\)\\n))\\})",
+      "end": "(?=['\"]|(?:(?<!\\\\)\\n))",
       "patterns": [ { "include": "#string-consume-escape" }, { "include": "#string-formatting" } ]
     },
     "string-raw-quoted-multi-line": {

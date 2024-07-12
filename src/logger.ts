@@ -1,14 +1,11 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { ExtensionContext, StatusBarAlignment, window, LogLevel, ExtensionMode } from "vscode";
+import { ExtensionContext, StatusBarAlignment, window, LogLevel } from "vscode";
+import { isShippingBuild } from "./extension";
 
 const outputChannel = window.createOutputChannel("Ren'Py Language Extension", { log: true });
 const statusBar = window.createStatusBarItem(StatusBarAlignment.Right, 100);
 
-let extensionMode: ExtensionMode = null!;
-
 export function initializeLoggingSystems(context: ExtensionContext) {
-    extensionMode = context.extensionMode;
-
     context.subscriptions.push(outputChannel);
 
     outputChannel.clear();
@@ -79,7 +76,7 @@ export function logCatMessage(level: LogLevel, category: LogCategory, message: s
 }
 
 function debugLog(level: LogLevel, message: string) {
-    if (extensionMode !== ExtensionMode.Development) {
+    if (isShippingBuild()) {
         return;
     }
 

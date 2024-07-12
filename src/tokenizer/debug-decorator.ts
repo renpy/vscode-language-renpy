@@ -446,8 +446,12 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case MetaTokenType.CameraStatement:
             case MetaTokenType.SceneStatement:
             case MetaTokenType.ShowStatement:
+            case MetaTokenType.HideStatement:
             case MetaTokenType.ImageStatement:
             case MetaTokenType.CallStatement:
+            case MetaTokenType.CallArguments:
+            case MetaTokenType.FromClause:
+            case MetaTokenType.FromArguments:
             case MetaTokenType.JumpStatement:
             case MetaTokenType.PlayAudioStatement:
             case MetaTokenType.QueueAudioStatement:
@@ -482,6 +486,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case MetaTokenType.OnlayerParameters:
             case MetaTokenType.WithParameters:
             case MetaTokenType.ZorderParameters:
+            case MetaTokenType.PauseStatement:
             case MetaTokenType.PauseParameters:
             case MetaTokenType.ATLBlock:
             case MetaTokenType.ATLChoiceBlock:

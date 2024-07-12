@@ -9,6 +9,7 @@ import { Vector } from "../utilities/vector";
 import { TokenPatternCapture, TokenCapturePattern, TokenRepoPattern, TokenRangePattern, TokenMatchPattern } from "./token-pattern-types";
 import { LogCategory, logCatMessage } from "../logger";
 import { escapeRegExpCharacters } from "../utilities/utils";
+import { isShippingBuild } from "../extension";
 
 const cloneScanResult = (obj: ScanResult | undefined): ScanResult | undefined => {
     if (obj === undefined) return undefined;
@@ -250,8 +251,15 @@ export class Tokenizer {
     }
 }
 
+// eslint-disable-next-line no-shadow
+const enum CaptureSource {
+    MatchCaptures = 0,
+    BeginCaptures = 1,
+    EndCaptures = 2,
+}
+
 class DocumentTokenizer {
-    private readonly backrefReplaceRe = /\\(\d+)/g;
+    private readonly backrefTestRe = /\\(\d+)/g;
     public readonly tokens: TokenTree = new TokenTree();
     private readonly document: TextDocument;
 
@@ -302,12 +310,15 @@ class DocumentTokenizer {
 
     /**
      * Apply the capture patterns to the match
-     * @param captures The captures to apply
+     * @param pattern The source pattern
+     * @param captureSource The capture source to use from the pattern
      * @param match The match to apply the captures on
      * @param caret The reader head position within the document
      */
-    private applyCaptures(captures: TokenPatternCapture, match: RegExpExecArray, source: string, parentNode: TreeNode) {
-        if (match.indices === undefined) {
+    private applyCaptures(pattern: ExTokenPattern, captureSource: CaptureSource, match: RegExpExecArray, source: string, parentNode: TreeNode) {
+        const captures = captureSource === CaptureSource.MatchCaptures ? pattern.captures : captureSource === CaptureSource.BeginCaptures ? pattern.beginCaptures : pattern.endCaptures;
+
+        if (captures === undefined || match.indices === undefined) {
             return; // syntax error
         }
 
@@ -328,11 +339,24 @@ class DocumentTokenizer {
 
             if (captures[i] === undefined) {
                 const pos = this.positionAt(startPos);
-                logCatMessage(
-                    LogLevel.Debug,
-                    LogCategory.Tokenizer,
-                    `There is no pattern defined for capture group '${i}', on a pattern that matched '${match[i]}' near L:${pos.line + 1} C:${pos.character + 1}.\nThis should probably be added or be a non-capturing group.`,
-                );
+
+                if (!isShippingBuild()) {
+                    // If this is a 'begin' capture it's also possible to have it matched on the end pattern. Let's make sure we don't report false positives.
+                    if (captureSource === CaptureSource.BeginCaptures && pattern.end !== undefined) {
+                        // test the end pattern for backreferences to this capture index
+                        const captureRe = new RegExp(`\\\\${i}`, "g");
+                        if (captureRe.test(pattern.end.source)) {
+                            continue;
+                        }
+                    }
+
+                    logCatMessage(
+                        LogLevel.Debug,
+                        LogCategory.Tokenizer,
+                        `There is no pattern defined for capture group '${i}', on a pattern that matched '${match[i]}' near L:${pos.line + 1} C:${pos.character + 1}.\nThis should probably be added or be a non-capturing group.`,
+                    );
+                }
+
                 continue;
             }
 
@@ -404,8 +428,8 @@ class DocumentTokenizer {
         if (p._hasBackref) {
             let reEndSource = p.end.source;
 
-            this.backrefReplaceRe.lastIndex = 0;
-            reEndSource = reEndSource.replace(this.backrefReplaceRe, (_, g1) => {
+            this.backrefTestRe.lastIndex = 0;
+            reEndSource = reEndSource.replace(this.backrefTestRe, (_, g1) => {
                 const backref = matchBegin.at(parseInt(g1, 10));
                 if (backref !== undefined) {
                     return escapeRegExpCharacters(backref);
@@ -428,13 +452,12 @@ class DocumentTokenizer {
             // Check if any child pattern has content that would extend the currently determined end match
             if (p._patternsRepo) {
                 const sourceRange = new Range(matchBegin.index + matchBegin[0].length, matchEnd.index);
-                const lastMatchedChar = matchEnd.index + matchEnd[0].length;
 
                 // Scan the content for any matches that would extend beyond the current end match
                 const tempCache = cloneCache(cache);
                 //const tempCache = new Array<ScanResult | undefined>(uniquePatternCount).fill(undefined);
 
-                const lastCharIndex = sourceRange.end;
+                let lastCharIndex = sourceRange.end;
                 let lastMatchIndex = sourceRange.start;
                 while (lastMatchIndex < lastCharIndex) {
                     const bestMatch = this.scanPattern(p._patternsRepo, result.source, lastMatchIndex, tempCache);
@@ -467,7 +490,7 @@ class DocumentTokenizer {
                     contentMatches.push(bestMatch);
 
                     // If the child match last char doesn't extend the current range, we can also ignore it
-                    if (lastMatchIndex <= lastMatchedChar) {
+                    if (lastMatchIndex <= lastCharIndex) {
                         continue;
                     }
 
@@ -479,6 +502,9 @@ class DocumentTokenizer {
                     if (!matchEnd) {
                         break;
                     }
+
+                    // Else update the new source range end
+                    lastCharIndex = matchEnd.index;
                 }
             }
         }
@@ -607,9 +633,7 @@ class DocumentTokenizer {
             rangeNode.token = new Token(p.token, this.positionAt(startPos), this.positionAt(endPos));
         }
         // Begin captures are only applied to beginMatch[0] content
-        if (p.beginCaptures) {
-            this.applyCaptures(p.beginCaptures, matchBegin, source, rangeNode);
-        }
+        this.applyCaptures(p, CaptureSource.BeginCaptures, matchBegin, source, rangeNode);
 
         // Add an additional node for the content of the range pattern, since the content can be wrapped by an additional token
         const contentNode = new TreeNode();
@@ -634,9 +658,7 @@ class DocumentTokenizer {
         }
 
         // End captures are only applied to endMatch[0] content
-        if (p.endCaptures) {
-            this.applyCaptures(p.endCaptures, matchEnd!, source, rangeNode);
-        }
+        this.applyCaptures(p, CaptureSource.EndCaptures, matchEnd!, source, rangeNode);
 
         //assert(!rangeNode.isEmpty(), "A RangePattern must produce a valid token tree!");
 
@@ -666,9 +688,7 @@ class DocumentTokenizer {
             contentNode.token = new Token(p.token, this.positionAt(startPos), this.positionAt(endPos));
         }
 
-        if (p.captures) {
-            this.applyCaptures(p.captures, match, source, contentNode);
-        }
+        this.applyCaptures(p, CaptureSource.MatchCaptures, match, source, contentNode);
 
         const coverageResult = this.checkTokenTreeCoverage(contentNode, new Range(startPos, endPos));
         if (!coverageResult.valid) {

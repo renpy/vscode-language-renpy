@@ -46,7 +46,7 @@
         {
           "match": "\\b(?<!\\.)(is)\\b[ \\t]*(\\w*)",
           "captures": {
-            "1": { "name": "keyword.is.renpy keyword.operator.logical.is.renpy" },
+            "1": { "name": "keyword.operator.logical.python" },
             "2": { "name": "entity.name.type.style.parent.renpy" }
           }
         },

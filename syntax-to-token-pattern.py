@@ -157,8 +157,12 @@ def convert_token_type_split(name: str) -> str:
             
             elif get_part(2) == "comment":
                 return "CharacterTokenType.Hashtag"
+            
             elif get_part(2) == "decorator":
                 return "CharacterTokenType.AtSymbol"
+            
+            elif get_part(2) == "interpolate":
+                return "CharacterTokenType.ExclamationMark"
         
         elif get_part(1) == "parenthesis":
             if get_part(2) == "begin":
@@ -263,16 +267,25 @@ def convert_token_type_split(name: str) -> str:
                     return "MetaTokenType.ArithmeticOperator"
                 else:
                     return "OperatorTokenType." + titleCase(get_part(3))
+                
             elif get_part(2) == "logical":
+                    if get_part(3) != "python" and get_part(3) != "renpy":
+                        return "OperatorTokenType." + titleCase(get_part(3))
+                    
                     return "MetaTokenType.LogicalOperatorKeyword"
+            
             elif get_part(2) == "bitwise":
                     return "MetaTokenType.BitwiseOperatorKeyword"
+            
             elif get_part(2) == "comparison":
                     return "MetaTokenType.ComparisonOperatorKeyword"
+            
             elif get_part(2) == "python":
                     return "MetaTokenType.Operator"
+            
             elif get_part(2) == "unpacking":
                 return "OperatorTokenType." + titleCase(get_part(2))
+            
             else:
                 return "OperatorTokenType." + titleCase(get_parts(slice(2, -1)))
         
@@ -285,8 +298,10 @@ def convert_token_type_split(name: str) -> str:
                     return "MetaTokenType.ControlFlowKeyword"
                 else:
                     return "KeywordTokenType." + titleCase(get_part(3))
+                
             elif get_part(2) == "import":
                 return "KeywordTokenType.Import"
+            
             elif get_part(2) == "conditional":
                 return "KeywordTokenType.If"
         
@@ -353,9 +368,9 @@ def get_token_type(state: GeneratorState, name: str) -> str:
 
     return token.replace("Atl", "ATL") # Upper case ATL
 
-def get_match_str(match: str, hasCaptures: bool) -> str:
+def get_match_str(match: str, captures: dict[str, Any] | None) -> tuple[str, bool]:
     match = match.replace("/", "\\/") # Escape forward slashes
-
+    
     iFlagSet = False
     if "(?i)" in match:
         iFlagSet = True
@@ -365,10 +380,14 @@ def get_match_str(match: str, hasCaptures: bool) -> str:
     match = match.replace("[:alnum:]", "a-zA-Z0-9")
     match = match.replace("[:upper:]", "A-Z")
 
+    hasBackrefs: bool = re.search("(\\\\[1-9]\\d?)", match) != None 
+
     iFlag: str = "i" if iFlagSet else ""
     mFlag: str = "m" if re.search("(?<!\\[)[\\^$]", match) != None else ""
-    dFlag: str = "d" if hasCaptures else ""
-    return f"/{match}/{dFlag}g{iFlag}{mFlag}"
+    dFlag: str = "d" if captures != None and len(captures) > 0 else ""
+    uFlag: str = "u" if re.search("\\\\p", match) != None else ""
+
+    return (f"/{match}/{dFlag}g{iFlag}{mFlag}{uFlag}", hasBackrefs)
 
 def transform_captures(state: GeneratorState, indent: int, captures: dict[str, Any], access_str: str) -> str:
     typescript_entry = "{\n"
@@ -408,8 +427,8 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
 
     # Add match
     if "match" in value:
-        match = get_match_str(value["match"], "captures" in value)
-        typescript_entry += f"{get_indent(indent)}match: {match},\n"
+        match_info = get_match_str(value["match"], value["captures"] if "captures" in value else None)
+        typescript_entry += f"{get_indent(indent)}match: {match_info[0]},\n"
 
     # Iterate through the captures in the value
     if "captures" in value:
@@ -417,8 +436,8 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
         typescript_entry += transform_captures(state, indent, value["captures"], f"{access_str}.captures!")
 
     if "begin" in value:
-        match = get_match_str(value["begin"], "beginCaptures" in value)
-        typescript_entry += f"{get_indent(indent)}begin: {match},\n"
+        match_info = get_match_str(value["begin"], value["beginCaptures"] if "beginCaptures" in value else None)
+        typescript_entry += f"{get_indent(indent)}begin: {match_info[0]},\n"
 
     # Iterate through the beginCaptures in the value
     if "beginCaptures" in value:
@@ -426,8 +445,12 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
         typescript_entry += transform_captures(state, indent, value["beginCaptures"], f"{access_str}.beginCaptures!")
 
     if "end" in value:
-        match = get_match_str(value["end"], "endCaptures" in value)
-        typescript_entry += f"{get_indent(indent)}end: {match},\n"
+        match_info = get_match_str(value["end"], value["endCaptures"] if "endCaptures" in value else None)
+
+        if match_info[1]:
+            typescript_entry += f"{get_indent(indent)}// @ts-ignore: Back references in end patterns are replaced by begin matches at runtime\n"
+
+        typescript_entry += f"{get_indent(indent)}end: {match_info[0]},\n"
 
     # Iterate through the endCaptures in the value
     if "endCaptures" in value:
@@ -556,7 +579,6 @@ def generate_file(state: GeneratorState, source_file: str, output_file: str):
     # Write the typescript entries to a file
     with open(output_file, "w") as file:
         eslint_comments: list[str] = [
-            "// @ts-nocheck: Generated file",
             "/* eslint-disable no-useless-escape */",
             "/* eslint-disable no-useless-backreference */",
             "/* eslint-disable @typescript-eslint/no-non-null-assertion */",
@@ -589,18 +611,19 @@ def generate_token_patterns():
     renpy_state = GeneratorState()
     atl_state = GeneratorState()
     screen_state = GeneratorState()
+    style_state = GeneratorState()
     python_state = GeneratorState()
 
     generate_file(renpy_state, "./syntaxes/renpy.tmLanguage.json", "./src/tokenizer/renpy-token-patterns.g.ts")
     generate_file(atl_state, "./syntaxes/renpy.atl.tmLanguage.json", "./src/tokenizer/atl-token-patterns.g.ts")
     generate_file(screen_state, "./syntaxes/renpy.screen.tmLanguage.json", "./src/tokenizer/screen-token-patterns.g.ts")
+    generate_file(style_state, "./syntaxes/renpy.style.tmLanguage.json", "./src/tokenizer/style-token-patterns.g.ts")
     generate_file(python_state, "./syntaxes/renpy.python.tmLanguage.json", "./src/tokenizer/python-token-patterns.g.ts")
 
     # Write the typescript entries to a file
     output_file = "./src/tokenizer/token-patterns.g.ts"
     with open(output_file, "w") as file:
-        contents = "// @ts-nocheck: Generated file\n"
-        contents += "/* eslint-disable @typescript-eslint/no-non-null-assertion */\n\n"
+        contents = "/* eslint-disable @typescript-eslint/no-non-null-assertion */\n\n"
         contents += "// THIS FILE HAS BEEN GENERATED BY THE `syntax-to-token-pattern.py` GENERATOR\n"
         contents += "// DO NOT EDIT THIS FILE DIRECTLY! INSTEAD RUN THE PYTHON SCRIPT.\n"
         contents += "// ANY MANUAL EDITS MADE TO THIS FILE WILL BE OVERWRITTEN. YOU HAVE BEEN WARNED.\n"
@@ -608,7 +631,7 @@ def generate_token_patterns():
         contents += "\n"
 
         # Add all source import from all states, but only the unique ones
-        source_imports = set(renpy_state.source_imports + atl_state.source_imports + screen_state.source_imports + python_state.source_imports)
+        source_imports = set(renpy_state.source_imports + atl_state.source_imports + screen_state.source_imports + style_state.source_imports + python_state.source_imports)
         
         for source_import in source_imports:
             contents += f"import * as {titleCase(source_import)}Patterns from \"./{source_import}-token-patterns.g\";\n"
@@ -625,6 +648,7 @@ def generate_token_patterns():
         contents += add_entries(renpy_state.external_pattern_include_entries, "RenpyPatterns")
         contents += add_entries(atl_state.external_pattern_include_entries, "AtlPatterns")
         contents += add_entries(screen_state.external_pattern_include_entries, "ScreenPatterns")
+        contents += add_entries(style_state.external_pattern_include_entries, "StylePatterns")
         contents += add_entries(python_state.external_pattern_include_entries, "PythonPatterns")
 
         exports: list[str] = []

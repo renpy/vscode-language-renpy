@@ -83,7 +83,7 @@ STYLE_PROPERTY = "activate_sound" | "adjust_spacing" | "aft_bar" | "aft_gutter" 
     | "thumb" | "thumb_offset" | "thumb_shadow" | "time_policy" | "top_bar" | "top_gutter" | "top_margin" | "top_padding" | "underline" | "unscrollable" | "vertical" | "xalign"
     | "xanchor" | "xcenter" | "xfill" | "xfit" | "xmargin" | "xmaximum" | "xminimum" | "xoffset" | "xpadding" | "xpos" | "xsize" | "xspacing"
     | "xysize" | "yalign" | "yanchor" | "ycenter" | "yfill" | "yfit" | "ymargin" | "ymaximum" | "yminimum" | "yoffset" | "ypadding" | "ypos" | "ysize" | "yspacing";
-STYLE_PROPERTY_NAME = STYLE_PROPERTY_PREFIX?, STYLE_PROPERTY;
+STYLE_PROPERTY_NAME = "properties" | (STYLE_PROPERTY_PREFIX?, STYLE_PROPERTY);
 
 PYTHON_EXPRESSION = ? any valid Python expression ?;
 PYTHON_STRING = ? python string ?;

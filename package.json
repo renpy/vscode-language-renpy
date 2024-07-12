@@ -75,6 +75,10 @@
         "path": "./syntaxes/renpy.screen.tmLanguage.json"
       },
       {
+        "scopeName": "source.renpy.style",
+        "path": "./syntaxes/renpy.style.tmLanguage.json"
+      },
+      {
         "scopeName": "source.renpy.atl",
         "path": "./syntaxes/renpy.atl.tmLanguage.json"
       },

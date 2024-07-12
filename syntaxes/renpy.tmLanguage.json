@@ -756,18 +756,14 @@
       ]
     },
     "python-block-tester": {
-      "patterns": [
-        {
-          "comment": "Check for assignments that support python expressions",
-          "contentName": "meta.python.expression.renpy",
-          "begin": "(?<=(^[ \\t]*)(?:image)\\b.*?)(=)",
-          "beginCaptures": {
-            "2": { "name": "keyword.operator.assignment.renpy" }
-          },
-          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [ { "include": "source.renpy.python" } ]
-        }
-      ]
+      "comment": "Check for assignments that support python expressions",
+      "contentName": "meta.python.expression.renpy",
+      "begin": "(?<=(^[ \\t]*)(?:image)\\b.*?)(=)",
+      "beginCaptures": {
+        "2": { "name": "keyword.operator.assignment.renpy" }
+      },
+      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
+      "patterns": [ { "include": "source.renpy.python" } ]
     },
 
     "define": {
@@ -1122,104 +1118,6 @@
       ]
     },
 
-    "style-property": {
-      "patterns": [
-        {
-          "name": "support.constant.property-key.renpy entity.name.tag.css.style.renpy",
-          "match": "\\b(?<!\\.)((?:selected_)?(?:hover_|idle_|insensitive_|activate_)?(?:activate_sound|adjust_spacing|aft_bar|aft_gutter|align|alt|altruby_style|anchor|antialias|area|background|bar_invert|bar_resizing|bar_vertical|base_bar|black_color|bold|bottom_bar|bottom_gutter|bottom_margin|bottom_padding|box_first_spacing|box_layout|box_reverse|box_spacing|box_wrap|box_wrap_spacing|caret|child|clipping|color|debug|drop_shadow|drop_shadow_color|enable_hover|first_indent|first_spacing|fit_first|focus_mask|focus_rect|font|fore_bar|fore_gutter|foreground|hinting|hover_sound|hyperlink_functions|italic|justify|kerning|key_events|keyboard_focus|language|layout|left_bar|left_gutter|left_margin|left_padding|line_leading|line_overlap_split|line_spacing|margin|maximum|min_width|minimum|minwidth|mipmap|modal|mouse|newline_indent|offset|order_reverse|outline_scaling|outlines|padding|pos|rest_indent|right_bar|right_gutter|right_margin|right_padding|ruby_style|size|size_group|slow_abortable|slow_cps|slow_cps_multiplier|slow_speed|sound|spacing|strikethrough|subpixel|subtitle_width|text_align|text_y_fudge|textalign|thumb|thumb_offset|thumb_shadow|time_policy|top_bar|top_gutter|top_margin|top_padding|underline|unscrollable|vertical|xalign|xanchor|xcenter|xfill|xfit|xmargin|xmaximum|xminimum|xoffset|xpadding|xpos|xsize|xspacing|xysize|yalign|yanchor|ycenter|yfill|yfit|ymargin|ymaximum|yminimum|yoffset|ypadding|ypos|ysize|yspacing))\\b"
-        },
-        {
-          "comment": "Any other tokens are invalid",
-          "match": ".+",
-          "name": "invalid.illegal.style-property.name.renpy"
-        }
-      ]
-    },
-
-    "style-clause": {
-      "patterns": [
-        {
-          "match": "\\b(?<!\\.)(is)\\b[ \\t]*(\\w*)",
-          "captures": {
-            "1": { "name": "keyword.operator.is.renpy" },
-            "2": { "name": "entity.name.type.style.parent.renpy" }
-          }
-        },
-        {
-          "match": "\\b(?<!\\.)clear\\b",
-          "name": "keyword.clear.renpy"
-        },
-        {
-          "match": "\\b(?<!\\.)(take)\\b[ \\t]*(\\w*)",
-          "captures": {
-            "1": { "name": "keyword.take.renpy" },
-            "2": { "patterns": [ { "include": "#name" } ] }
-          }
-        },
-        {
-          "match": "\\b(?<!\\.)(del)\\b[ \\t]*(\\w*)",
-          "captures": {
-            "1": { "name": "keyword.del.renpy" },
-            "2": { "patterns": [ { "include": "#style-property" } ] }
-          }
-        },
-        {
-          "begin": "\\b(?<!\\.)(variant)\\b",
-          "end": "(?!\\G)",
-          "beginCaptures": {
-            "1": { "name": "keyword.variant.renpy" }
-          },
-          "patterns": [ { "include": "#simple-expression" } ]
-        },
-        {
-          "begin": "\\b(?<!\\.)((?:selected_)?(?:hover_|idle_|insensitive_|activate_)?(?:activate_sound|adjust_spacing|aft_bar|aft_gutter|align|alt|altruby_style|anchor|antialias|area|background|bar_invert|bar_resizing|bar_vertical|base_bar|black_color|bold|bottom_bar|bottom_gutter|bottom_margin|bottom_padding|box_first_spacing|box_layout|box_reverse|box_spacing|box_wrap|box_wrap_spacing|caret|child|clipping|color|debug|drop_shadow|drop_shadow_color|enable_hover|first_indent|first_spacing|fit_first|focus_mask|focus_rect|font|fore_bar|fore_gutter|foreground|hinting|hover_sound|hyperlink_functions|italic|justify|kerning|key_events|keyboard_focus|language|layout|left_bar|left_gutter|left_margin|left_padding|line_leading|line_overlap_split|line_spacing|margin|maximum|min_width|minimum|minwidth|mipmap|modal|mouse|newline_indent|offset|order_reverse|outline_scaling|outlines|padding|pos|rest_indent|right_bar|right_gutter|right_margin|right_padding|ruby_style|size|size_group|slow_abortable|slow_cps|slow_cps_multiplier|slow_speed|sound|spacing|strikethrough|subpixel|subtitle_width|text_align|text_y_fudge|textalign|thumb|thumb_offset|thumb_shadow|time_policy|top_bar|top_gutter|top_margin|top_padding|underline|unscrollable|vertical|xalign|xanchor|xcenter|xfill|xfit|xmargin|xmaximum|xminimum|xoffset|xpadding|xpos|xsize|xspacing|xysize|yalign|yanchor|ycenter|yfill|yfit|ymargin|ymaximum|yminimum|yoffset|ypadding|ypos|ysize|yspacing))\\b",
-          "end": "(?!\\G)",
-          "beginCaptures": {
-            "1": { "name": "support.constant.property-key.renpy entity.name.tag.css.style.renpy" }
-          },
-          "patterns": [ { "include": "#simple-expression" } ]
-        },
-        { "include": "#fallback-patterns" }
-      ]
-    },
-
-    "style": {
-      "patterns": [
-        {
-          "name": "meta.style.statement.renpy",
-          "contentName": "meta.style-block.renpy",
-          "begin": "^([ \\t]+)?(style)\\b[ \\t]*(\\w*)(.*)(:)",
-          "beginCaptures": {
-            "1": { "name": "punctuation.whitespace.leading.renpy" },
-            "2": { "name": "storage.type.style.renpy" },
-            "3": { "name": "entity.name.type.style.renpy" },
-            "4": { "patterns": [ { "include": "#style-clause" } ] },
-            "5": { "name": "punctuation.section.style.begin.renpy" }
-          },
-          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [ { "include": "#style-clause" } ]
-        },
-        {
-          "comment": "`style` is not considered an illegal identifier, so we need to make sure it's not followed by a `.`",
-          "name": "meta.style.statement.renpy",
-          "begin": "(?<=^[ \\t]*)(style)\\b(?!\\.)[ \\t]*(\\w*)",
-          "beginCaptures": {
-            "1": { "name": "storage.type.style.renpy" },
-            "2": { "name": "entity.name.type.style.renpy" }
-          },
-          "end": "$",
-          "patterns": [ { "include": "#style-clause" } ]
-        }
-      ]
-    },
-
-    "use-old": {
-      "match": "^\\s*(use)\\s+([a-zA-Z_][a-zA-Z_0-9]*)",
-      "captures": {
-        "1": { "name": "keyword.python.renpy" },
-        "2": { "name": "entity.name.class.python.renpy.screen.renpy" }
-      }
-    },
     "builtin-labels": {
       "name": "support.function.builtin.renpy",
       "match": "(?<!\\.)\\b(?:start|quit|after_load|splashscreen|before_main_menu|main_menu|after_warp|hide_windows)\\b"
@@ -1513,7 +1411,6 @@
         { "include": "#image" },
         { "include": "#audio" },
         { "include": "#pause" },
-        { "include": "#style" },
         { "include": "source.renpy.atl#transform" },
         { "include": "source.renpy.atl#atl-block-tester" },
         { "include": "#scene" },
@@ -1522,8 +1419,8 @@
         { "include": "#show" },
         { "include": "#hide" },
         { "include": "#with-statement" },
-        { "include": "#use-old" },
         { "include": "source.renpy.screen#screen" },
+        { "include": "source.renpy.style#style" },
         { "include": "#return-statements" },
         { "include": "#jump" },
         { "include": "#call" }

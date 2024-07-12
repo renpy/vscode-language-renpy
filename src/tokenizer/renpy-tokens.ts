@@ -321,6 +321,9 @@ export const enum MetaTokenType {
     HideStatement,
 
     CallStatement,
+    CallArguments,
+    FromClause,
+    FromArguments,
     JumpStatement,
 
     PlayAudioStatement,
@@ -354,6 +357,7 @@ export const enum MetaTokenType {
     OnlayerParameters,
     WithParameters,
     ZorderParameters,
+    PauseStatement,
     PauseParameters,
 
     ATLBlock,

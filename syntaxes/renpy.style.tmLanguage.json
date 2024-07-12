@@ -44,22 +44,34 @@
     "style-clause": {
       "patterns": [
         {
-          "match": "\\b(?<!\\.)(is)\\b[ \\t]*(\\w*)",
-          "captures": {
-            "1": { "name": "keyword.operator.logical.python" },
-            "2": { "name": "entity.name.type.style.parent.renpy" }
-          }
+          "comment": "is statement",
+          "begin": "\\b(?<!\\.)(is)\\b",
+          "beginCaptures": {
+            "1": { "name": "keyword.operator.logical.python" }
+          },
+          "end": "(?<=[^ \\t])(?!\\G)|$",
+          "patterns": [
+            {
+              "name": "entity.name.type.style.base.renpy",
+              "match": "\\b[\\p{XID_Start}_]\\p{XID_Continue}*\\b"
+            },
+            { "include": "source.renpy#fallback-patterns" }
+          ]
         },
         {
           "match": "\\b(?<!\\.)clear\\b",
           "name": "keyword.clear.renpy"
         },
         {
-          "match": "\\b(?<!\\.)(take)\\b[ \\t]*(\\w*)",
-          "captures": {
-            "1": { "name": "keyword.take.renpy" },
-            "2": { "patterns": [ { "include": "source.renpy#name" } ] }
-          }
+          "begin": "\\b(?<!\\.)(take)\\b",
+          "beginCaptures": {
+            "1": { "name": "keyword.take.renpy" }
+          },
+          "end": "(?<=[^ \\t])(?!\\G)|$",
+          "patterns": [
+            { "include": "source.renpy#name" },
+            { "include": "source.renpy#fallback-patterns" }
+          ]
         },
         {
           "match": "\\b(?<!\\.)(del)\\b[ \\t]*(\\w*)",

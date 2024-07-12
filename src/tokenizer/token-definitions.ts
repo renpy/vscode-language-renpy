@@ -669,8 +669,11 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     ShowStatement: { name: "ShowStatement", value: MetaTokenType.ShowStatement },
     HideStatement: { name: "HideStatement", value: MetaTokenType.HideStatement },
 
-    JumpStatement: { name: "JumpStatement", value: MetaTokenType.JumpStatement },
     CallStatement: { name: "CallStatement", value: MetaTokenType.CallStatement },
+    CallArguments: { name: "CallArguments", value: MetaTokenType.CallArguments },
+    FromClause: { name: "FromClause", value: MetaTokenType.FromClause },
+    FromArguments: { name: "FromArguments", value: MetaTokenType.FromArguments },
+    JumpStatement: { name: "JumpStatement", value: MetaTokenType.JumpStatement },
 
     PlayAudioStatement: { name: "PlayAudioStatement", value: MetaTokenType.PlayAudioStatement },
     QueueAudioStatement: { name: "QueueAudioStatement", value: MetaTokenType.QueueAudioStatement },
@@ -703,6 +706,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     OnlayerParameters: { name: "OnlayerParameters", value: MetaTokenType.OnlayerParameters },
     WithParameters: { name: "WithParameters", value: MetaTokenType.WithParameters },
     ZorderParameters: { name: "ZorderParameters", value: MetaTokenType.ZorderParameters },
+    PauseStatement: { name: "PauseStatement", value: MetaTokenType.PauseStatement },
     PauseParameters: { name: "PauseParameters", value: MetaTokenType.PauseParameters },
 
     ATLBlock: { name: "ATLBlock", value: MetaTokenType.ATLBlock },

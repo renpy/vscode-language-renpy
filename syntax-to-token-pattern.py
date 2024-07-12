@@ -57,6 +57,8 @@ def convert_token_type_split(name: str) -> str:
                 return "KeywordTokenType.Class"
             elif get_part(2) == "style":
                 return "KeywordTokenType.Style"
+            elif get_part(2) == "screen":
+                return "KeywordTokenType.Screen"
             elif get_part(2) == "imaginary":
                 return "MetaTokenType.ImaginaryNumberStorageType"
             elif get_part(2) == "number":

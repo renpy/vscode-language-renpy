@@ -154,7 +154,7 @@
       "patterns": [
         { "include": "#atl-simple-expression" },
         {
-          "begin": "\\b(with)\\b[ \\t]*",
+          "begin": "\\b(with)\\b",
           "beginCaptures": {
             "1": { "name": "keyword.with.renpy" }
           },
@@ -168,21 +168,21 @@
       "patterns": [
         {
           "comment": "https://www.renpy.org/doc/html/atl.html#animation-statement",
-          "match": "^[ \\t]*(animation)\\b",
+          "match": "(?<=^[ \\t]*)(animation)\\b",
           "captures": {
             "1": { "name": "keyword.animation.renpy" }
           }
         },
         {
           "comment": "https://www.renpy.org/doc/html/atl.html#pass-statement",
-          "match": "^[ \\t]*(pass)\\b",
+          "match": "(?<=^[ \\t]*)(pass)\\b",
           "captures": {
             "1": { "name": "keyword.control.flow.pass.renpy" }
           }
         },
         {
           "comment": "https://www.renpy.org/doc/html/atl.html#repeat-statement and https://www.renpy.org/doc/html/atl.html#time-statement",
-          "begin": "^[ \\t]*(?:(repeat)|(time)|(pause))\\b[ \\t]*",
+          "begin": "(?<=^[ \\t]*)(?:(repeat)|(time)|(pause))\\b",
           "beginCaptures": {
             "1": { "name": "keyword.control.flow.repeat.renpy" },
             "2": { "name": "keyword.control.flow.time.renpy" },
@@ -194,7 +194,7 @@
         {
           "comment": "https://www.renpy.org/doc/html/atl.html#expression-statement",
           "contentName": "meta.atl.with.renpy",
-          "begin": "^[ \\t]*(with)\\b[ \\t]*",
+          "begin": "(?<=^[ \\t]*)(with)\\b",
           "beginCaptures": {
             "1": { "name": "keyword.with.renpy" }
           },
@@ -204,7 +204,7 @@
         {
           "comment": "https://www.renpy.org/doc/html/atl.html#contains-statement",
           "contentName": "meta.atl.contains.renpy",
-          "begin": "^[ \\t]*(contains)\\b[ \\t]*",
+          "begin": "(?<=^[ \\t]*)(contains)\\b",
           "beginCaptures": {
             "1": { "name": "keyword.control.flow.contains.renpy" }
           },

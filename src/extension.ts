@@ -49,7 +49,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
     // diagnostics (errors and warnings)
     const diagnostics = languages.createDiagnosticCollection("renpy");
     context.subscriptions.push(diagnostics);
-    subscribeToDocumentChanges(context, diagnostics);
 
     // A TextDocument was saved
     context.subscriptions.push(
@@ -134,14 +133,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
         }
     });
     context.subscriptions.push(migrateOldFilesCommand);
-
-    // custom command - refresh diagnostics
-    const refreshDiagnosticsCommand = commands.registerCommand("renpy.refreshDiagnostics", () => {
-        if (window.activeTextEditor) {
-            refreshDiagnostics(window.activeTextEditor.document, diagnostics);
-        }
-    });
-    context.subscriptions.push(refreshDiagnosticsCommand);
 
     // custom command - toggle token debug view
     let isShowingTokenDebugView = false;

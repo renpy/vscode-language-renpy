@@ -1,6 +1,10 @@
 import { TokenType } from "./renpy-tokens";
 
-export interface TokenCapturePattern {
+interface TokenPatternDebugInfo {
+    readonly debugName?: string;
+}
+
+export interface TokenCapturePattern extends TokenPatternDebugInfo {
     readonly token?: TokenType;
     readonly patterns?: TokenPatternArray;
 }
@@ -52,10 +56,6 @@ export interface TokenMatchPattern {
     beginCaptures?: never;
     end?: never;
     endCaptures?: never;
-}
-
-interface TokenPatternDebugInfo {
-    readonly debugName?: string;
 }
 
 export declare type TokenPattern = (TokenRangePattern | TokenMatchPattern | TokenRepoPattern) & TokenPatternDebugInfo;

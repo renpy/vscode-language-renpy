@@ -1,17 +1,35 @@
-export class Stack<T> {
-    private buffer: Array<T | null> = [];
+import { Vector } from "./vector";
 
-    private headPtr = -1;
-    private itemCount = 0;
-
-    private headRef: T | null = null;
+export class Stack<T> implements Iterable<T> {
+    private buffer: Vector<T | null>;
 
     /**
      * Construct a new empty stack
      * @param capacity The amount of items this stack should be able to hold
      */
     constructor(capacity = 0) {
-        if (capacity > 0) this.buffer = new Array<T | null>(capacity).fill(null);
+        this.buffer = new Vector<T | null>(capacity);
+    }
+
+    /**
+     * Create a copy of the current Stack so we can later restart from there.
+     */
+    public clone(): Stack<T> {
+        const newStack = new Stack<T>(this.capacity);
+        newStack.buffer = this.buffer.clone();
+        return newStack;
+    }
+
+    [Symbol.iterator](): Iterator<T> {
+        let index = 0;
+        return {
+            next: () => {
+                if (index >= this.size) {
+                    return { done: true, value: null };
+                }
+                return { done: false, value: this.buffer.at(index++) as T };
+            },
+        };
     }
 
     /**
@@ -19,13 +37,7 @@ export class Stack<T> {
      * @param item The item to add
      */
     public push(item: T) {
-        if (this.size() === this.capacity()) this._grow();
-
-        ++this.itemCount;
-        ++this.headPtr;
-
-        this.buffer[this.headPtr] = item;
-        this.headRef = this.buffer[this.headPtr];
+        this.buffer.pushBack(item);
     }
 
     /**
@@ -33,21 +45,11 @@ export class Stack<T> {
      * @returns The item at the top
      */
     public pop() {
-        if (this.headPtr === -1) throw new RangeError("Stack was already empty. Can't pop another item.");
-
-        const result = this.buffer[this.headPtr];
-
-        this.buffer[this.headPtr] = null;
-        --this.itemCount;
-        --this.headPtr;
-
-        if (this.isEmpty()) {
-            this.headRef = null;
-        } else {
-            this.headRef = this.buffer[this.headPtr];
+        if (this.buffer.isEmpty()) {
+            throw new RangeError("Stack was already empty. Can't pop another item.");
         }
 
-        return result;
+        return this.buffer.popBack();
     }
 
     /**
@@ -55,23 +57,23 @@ export class Stack<T> {
      * @returns The item at the top
      */
     public peek() {
-        return this.headRef;
+        return this.buffer.back();
     }
 
     /**
      * Get the amount of items that the stack is able to hold at this time
      * @returns The amount items that could fit in the internal memory buffer
      */
-    public capacity() {
-        return this.buffer.length;
+    get capacity() {
+        return this.buffer.capacity;
     }
 
     /**
      * Get the amount of items that are on the stack
      * @returns The number of items
      */
-    public size() {
-        return this.itemCount;
+    get size() {
+        return this.buffer.size;
     }
 
     /**
@@ -79,7 +81,7 @@ export class Stack<T> {
      * @returns True if the stack currently contains no items
      */
     public isEmpty() {
-        return this.itemCount === 0;
+        return this.buffer.isEmpty();
     }
 
     /**
@@ -87,30 +89,6 @@ export class Stack<T> {
      * @param shrink If true it will also shrink the internal memory buffer to zero
      */
     public clear(shrink = false) {
-        for (let i = 0; i < this.itemCount; ++i) {
-            this.buffer[i] = null;
-        }
-
-        this.itemCount = 0;
-        this.headPtr = -1;
-        this.headRef = null;
-
-        if (shrink) this.shrink();
-    }
-
-    /**
-     * Shrink the internal memory buffer to match the size of the stack
-     */
-    public shrink() {
-        this.buffer.length = this.size();
-    }
-
-    /**
-     * Grow the buffer to double the current capacity
-     */
-    private _grow() {
-        const currentCapacity = Math.max(this.capacity(), 1);
-
-        this.buffer = this.buffer.concat(new Array<T | null>(currentCapacity).fill(null));
+        this.buffer.clear(shrink);
     }
 }

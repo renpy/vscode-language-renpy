@@ -1,17 +1,17 @@
 {
-  "name": "languague-renpy",
-  "displayName": "Ren'Py Language",
+  "name": "language-renpy",
+  "displayName": "Ren'Py Language (8.3+)",
   "description": "Adds rich support for the Ren'Py programming language to Visual Studio Code.",
-  "version": "2.1.2",
-  "publisher": "LuqueDaniel",
+  "version": "2.3.10",
+  "publisher": "renpy",
   "license": "MIT",
-  "homepage": "https://github.com/LuqueDaniel/vscode-language-renpy",
+  "homepage": "https://github.com/renpy/vscode-language-renpy",
   "repository": {
     "type": "git",
-    "url": "https://github.com/LuqueDaniel/vscode-language-renpy"
+    "url": "https://github.com/renpy/vscode-language-renpy"
   },
   "bugs": {
-    "url": "https://github.com/LuqueDaniel/vscode-language-renpy/issues"
+    "url": "https://github.com/renpy/vscode-language-renpy/issues"
   },
   "icon": "icon.png",
   "galleryBanner": {
@@ -27,7 +27,7 @@
     "Snippets"
   ],
   "engines": {
-    "vscode": "^1.67.2"
+    "vscode": "^1.75.0"
   },
   "capabilities": {
     "untrustedWorkspaces": {
@@ -35,7 +35,9 @@
     }
   },
   "activationEvents": [
-    "workspaceContains:**/*.rpy"
+    "workspaceContains:**/*.rpy",
+    "workspaceContains:**/_ren.py",
+    "onDebugResolve:renpy"
   ],
   "main": "./dist/extension",
   "browser": "./dist/extension.js",
@@ -45,7 +47,8 @@
         "id": "renpy",
         "aliases": [
           "Ren'Py",
-          "renpy"
+          "renpy",
+          "rpy"
         ],
         "extensions": [
           ".rpy",
@@ -68,8 +71,37 @@
         "path": "./syntaxes/renpy.tmLanguage.json"
       },
       {
+        "scopeName": "source.renpy.screen",
+        "path": "./syntaxes/renpy.screen.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.renpy.style",
+        "path": "./syntaxes/renpy.style.tmLanguage.json"
+      },
+      {
+        "scopeName": "source.renpy.atl",
+        "path": "./syntaxes/renpy.atl.tmLanguage.json"
+      },
+      {
         "scopeName": "source.renpy.python",
         "path": "./syntaxes/renpy.python.tmLanguage.json"
+      },
+      {
+        "scopeName": "renpy.comment.injection",
+        "path": "./syntaxes/injection.json",
+        "injectTo": [
+          "source.python"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.renpy": "renpy"
+        }
+      },
+      {
+        "scopeName": "text.log.injection",
+        "path": "./syntaxes/log.injection.json",
+        "injectTo": [
+          "text.log"
+        ]
       }
     ],
     "snippets": [
@@ -94,6 +126,85 @@
       {
         "command": "renpy.toggleTokenDebugView",
         "title": "Renpy: Toggle token debug visualization"
+      },
+      {
+        "command": "renpy.migrateOldFiles",
+        "title": "Renpy: Cleanup unused compiled Ren'Py source files"
+      },
+      {
+        "command": "renpy.runCommand",
+        "title": "Renpy: Run Project",
+        "category": "Run",
+        "icon": "$(play)"
+      }
+    ],
+    "debuggers": [
+      {
+        "type": "renpy",
+        "label": "Ren'Py",
+        "languages": [
+          "renpy"
+        ],
+        "runtime": "node",
+        "configurationAttributes": {
+          "launch": {
+            "required": [ ],
+            "properties": {
+              "command": {
+                "type": "string",
+                "description": "Command to run Ren'Py with.",
+                "default": "run"
+              },
+              "args": {
+                "type": "array",
+                "description": "Args to run Ren'Py with.",
+                "default": [ ]
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "renpy",
+            "request": "launch",
+            "name": "Ren'Py: Launch",
+            "command": "run",
+            "args": [ ]
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "Ren'Py",
+            "description": "A new configuration for launching a Ren'Py project",
+            "body": {
+              "type": "renpy",
+              "request": "launch",
+              "name": "Ren'Py",
+              "command": "run",
+              "args": [ ]
+            }
+          }
+        ]
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "renpy",
+        "required": [
+          "command"
+        ],
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "Command to run Ren'Py with.",
+            "default": "run"
+          },
+          "args": {
+            "type": "array",
+            "description": "Args to run Ren'Py with.",
+            "default": [ ]
+          }
+        }
       }
     ],
     "configuration": [
@@ -182,6 +293,11 @@
               "Ignore filename issues"
             ],
             "description": "Enable filename checks. Filenames must begin with a letter or number, and may not begin with '00', as Ren'Py uses such files for its own purposes. If set to Error or Warning, documents will be marked in the editor if the document filename does not meet Ren'Py's specifications. If set to Disabled, filename issues will be ignored."
+          },
+          "renpy.renpyExecutableLocation": {
+            "type": "string",
+            "default": "",
+            "description": "Location of Ren'Py installation. Should be .exe on Windows and .sh on Mac/Linux."
           }
         }
       }
@@ -189,34 +305,35 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
-    "package": "node_modules/.bin/webpack --mode production --devtool hidden-source-map",
-    "watch": "node_modules/.bin/webpack --mode development --watch",
-    "watch-release": "node_modules/.bin/webpack --mode production --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "watch": "webpack --mode development --watch",
+    "watch-release": "webpack --mode production --watch",
     "test-compile": "tsc -p ./",
     "test": "npm run test-compile && node ./node_modules/vscode/bin/test",
     "lint": "eslint -c .eslintrc.json --ext .ts ./src/",
-    "vsce-package": "vsce package -o languague-renpy.vsix",
+    "vsce-package": "vsce package -o language-renpy.vsix",
     "format-check": "prettier --check 'src/**/*.ts' '.github/**/*.yml'"
   },
   "devDependencies": {
-    "@types/mocha": "^9.1.1",
-    "@types/node": "^18.7.13",
-    "@types/vscode": "^1.67.2",
-    "@types/webpack": "^5.28.0",
-    "@typescript-eslint/eslint-plugin": "^5.32.0",
-    "@typescript-eslint/parser": "^5.35.1",
-    "copy-webpack-plugin": "^11.0.0",
-    "eslint": "^8.23.0",
-    "eslint-plugin-import": "^2.26.0",
-    "fork-ts-checker-webpack-plugin": "^7.2.11",
-    "node-polyfill-webpack-plugin": "^1.1.4",
-    "ts-loader": "^9.3.0",
-    "ts-node": "^10.8.0",
-    "typescript": "^4.7.2",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^20.14.10",
+    "@types/vscode": "1.75",
+    "@types/webpack": "^5.28.5",
+    "@typescript-eslint/eslint-plugin": "^7.15.0",
+    "@typescript-eslint/parser": "^7.15.0",
+    "@vscode/debugadapter": "^1.66.0",
+    "@vscode/vsce": "^2.29.0",
+    "copy-webpack-plugin": "^12.0.2",
+    "eslint": "^8.42.0",
+    "eslint-plugin-import": "^2.29.1",
+    "fork-ts-checker-webpack-plugin": "^9.0.2",
+    "node-polyfill-webpack-plugin": "^4.0.0",
+    "prettier": "^3.3.2",
+    "ts-loader": "^9.5.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.3",
     "vscode-test": "^1.6.1",
-    "webpack": "^5.72.1",
-    "webpack-cli": "^4.9.2",
-    "vsce": "^2.9.2",
-    "prettier": "^2.7.1"
+    "webpack": "^5.92.1",
+    "webpack-cli": "^5.1.4"
   }
 }

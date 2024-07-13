@@ -2,13 +2,13 @@
 
 :sparkles: Welcome, and thank you for your interest in contributing! :sparkles:
 
-Please note we have a [code of conduct](https://github.com/LuqueDaniel/vscode-language-renpy/blob/master/CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
+Please note we have a [code of conduct](https://github.com/renpy/vscode-language-renpy/blob/master/CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
 
 ## Reporting bugs or proposing features
 
 Open a new issue for each bug or feature you want to propose.
 
-1. Before reporting a bug :mag: **[check](https://github.com/LuqueDaniel/vscode-language-renpy/issues)** if it has
+1. Before reporting a bug :mag: **[check](https://github.com/renpy/vscode-language-renpy/issues)** if it has
    already been reported.
 2. Specify steps to reproduce.
 
@@ -29,8 +29,30 @@ If you want to add new features, please make sure to discuss it in an issue.
 </details>
 
 4. Install the recommended extensions (A popup should appear). This will make sure you get the best developer experience in our workflow and it will format the code as intended.
-5. Make your changes and submit a pull request
+5. Make your changes and submit a pull request with `develop` as your target branch
 6. Happy coding! 🚀
+
+Tips:
+
+If you're working on syntax features, add the following textmate rule to your vscode `settings.json` file:
+
+```json
+"editor.tokenColorCustomizations": {
+   "textMateRules": [
+   {
+      "scope": "debug.invalid.illegal.unmatched.renpy",
+      "settings": {
+         "foreground": "#f00"
+      }
+   },
+}
+```
+
+This will make any unmatched tokens red.
+
+Use ctrl+alt+shift+i to display the vscode build-in token debug information.
+
+https://regexr.com will be your new best friend.
 
 ## Additional Information
 

@@ -1,0 +1,28 @@
+script atl_transform : "transform" `qualname` ( " (" `parameters` ")" )? ":" 
+                     : `atl_block`
+
+script atl_image : "image" `image_name` ":" : `atl_block`
+
+script atl_scene : `stmt_scene` ":" : `atl_block` atl_show : `stmt_show` ":" : `atl_block`
+
+atl atl_properties : ( `property` `simple_expression` ( "knot" `simple_expression` )* : | "clockwise" : | "counterclockwise" : | "circles" simple_expression : | simple_expression )*
+
+atl atl_interp : ( `warper` `simple_expression` | "warp" `simple_expression` `simple_expression` )? `atl_properties` : | ( `warper` `simple_expression` | "warp" `simple_expression` `simple_expression` )? ":" : `atl_properties`
+
+atl atl_time : "time" `simple_expression`
+
+atl atl_expression : `simple_expression` ("with" `simple_expression`)?
+
+atl atl_repeat : "repeat" (`simple_expression`)?
+
+atl atl_block_stmt : "block" ":" : `atl_block`
+
+atl atl_choice : "choice" (`simple_expression`)? ":" : `atl_block`
+
+atl atl_parallel : "parallel" ":" : `atl_block`
+
+atl atl_on : "on" `name` [ "," `name` ] * ":" : `atl_block`
+
+atl atl_contains : "contains" (`expression`)?
+
+atl atl_function : "function" `expression`

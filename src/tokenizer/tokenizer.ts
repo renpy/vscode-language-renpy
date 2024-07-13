@@ -1,348 +1,544 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { assert } from "console";
 import { performance } from "perf_hooks";
-import { TextDocument, Uri } from "vscode";
-import { Token, isRangePattern, isMatchPattern, isRepoPattern, TokenPosition } from "./token-definitions";
-import { basePatterns } from "./token-patterns";
+import { LogLevel, TextDocument, Uri, Range as VSRange } from "vscode";
+import { Token, isRangePattern, isMatchPattern, isRepoPattern, TokenPosition, TokenTree, TreeNode, Range } from "./token-definitions";
+import { RenpyPatterns } from "./token-patterns.g";
 import { Stack } from "../utilities/stack";
 import { Vector } from "../utilities/vector";
-import { CharacterTokenType } from "./renpy-tokens";
 import { TokenPatternCapture, TokenCapturePattern, TokenRepoPattern, TokenRangePattern, TokenMatchPattern } from "./token-pattern-types";
+import { LogCategory, logCatMessage } from "../logger";
+import { escapeRegExpCharacters } from "../utilities/utils";
+import { isShippingBuild } from "../extension";
 
-type ScanResult = { pattern: ExTokenPattern; matchBegin: RegExpExecArray; matchEnd?: RegExpExecArray } | null;
-type TokenCache = { readonly documentVersion: number; readonly tokens: Token[] };
+const cloneScanResult = (obj: ScanResult | undefined): ScanResult | undefined => {
+    if (obj === undefined) return undefined;
+    if (obj === null) return null;
+    return { ...obj };
+};
 
-const tokenCache = new Map<Uri, TokenCache>();
-const runBenchmark = false;
-let uniquePatternCount = -1;
+const cloneCache = (obj: Array<ScanResult | undefined>): Array<ScanResult | undefined> => {
+    const clone = new Array<ScanResult | undefined>(obj.length);
+    for (let i = 0; i < obj.length; ++i) {
+        clone[i] = cloneScanResult(obj[i]);
+    }
+    return clone;
+};
 
-export function tokenizeDocument(document: TextDocument): Token[] {
-    setupAndValidatePatterns();
+interface MatchScanResult {
+    pattern: ExTokenPattern;
+    matchBegin: RegExpExecArray;
+    matchEnd?: never;
+    expanded?: never;
+    contentMatches?: never;
+    source?: never;
+}
+interface RangeScanResult {
+    pattern: ExTokenPattern;
+    matchBegin: RegExpExecArray;
+    matchEnd: RegExpExecArray | null;
+    expanded: boolean;
+    contentMatches: Stack<ScanResult> | null;
+    source: string;
+}
+type ScanResult = MatchScanResult | RangeScanResult | null;
+type TokenCache = { readonly documentVersion: number; readonly tokens: TokenTree };
 
-    if (runBenchmark) benchmark(document);
+const RUN_BENCHMARKS = false;
+//const TOKENIZER_TIMEOUT = 5_000;
 
-    const cachedTokens = tokenCache.get(document.uri);
-    if (cachedTokens?.documentVersion === document.version) {
-        return cachedTokens.tokens;
+export class Tokenizer {
+    private static _uniquePatternCount = -1;
+    private static _tokenCache = new Map<Uri, TokenCache>();
+
+    public static get UNIQUE_PATTERN_COUNT() {
+        return this._uniquePatternCount;
     }
 
-    console.log(`Running tokenizer on document: ${document.fileName}`);
-    const tokenizer = new DocumentTokenizer(document);
-    console.log(`Tokenizer completed!`);
-    const tokens = tokenizer.tokens.toArray();
-    tokenCache.set(document.uri, { documentVersion: document.version, tokens: tokens });
-    return tokens;
-}
+    public static async tokenizeDocument(document: TextDocument) {
+        this.setupAndValidatePatterns();
 
-export function clearTokenCache() {
-    tokenCache.clear();
-}
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function benchmark(document: TextDocument) {
-    // screens.rpy, 10000 loops; 19.69293530988693 avg.
-
-    const loops = 10000;
-    const reportEveryXPercent = 1;
-
-    const onePercent = loops / 100;
-    const everyX = onePercent * reportEveryXPercent;
-
-    console.log(`Running tokenizer benchmark for ${loops} loops...`);
-
-    let avg = 0;
-    for (let i = 0; i < loops; ++i) {
-        const t0 = performance.now();
-        const tokenizer: DocumentTokenizer = new DocumentTokenizer(document);
-        const t1 = performance.now();
-
-        avg += t1 - t0;
-
-        // This is really just here to prevent the unused variable error
-        if (tokenizer.tokens.isEmpty()) {
-            console.error("No tokens were found.");
+        if (RUN_BENCHMARKS) {
+            this.benchmark(document);
         }
 
-        // Show timer
-        const msLoop = avg / (i + 1);
-        const sRemaining = msLoop * (loops - i + 1) * 0.001;
-        const h = Math.floor(sRemaining / 3600);
-        const m = Math.floor((sRemaining / 60) % 60);
-        const s = Math.ceil(sRemaining % 60);
-        const timeString = [h ? h + "h" : false, m ? m + "m" : false, s ? s + "s" : false]
-            .filter(Boolean)
-            .join(":")
-            .replace(/\b(\d)(?=[hms])/g, "0$1");
+        const cachedTokens = this._tokenCache.get(document.uri);
+        if (cachedTokens?.documentVersion === document.version) {
+            return cachedTokens.tokens;
+        }
 
-        if (i % everyX === 0) console.log(`${i / onePercent}% complete... (avg.: ${msLoop.toFixed(2)}ms, approx. ${timeString} remaining)`);
+        return await this.runTokenizer(document);
     }
-    avg /= loops;
 
-    console.log(`DocumentTokenizer took ${avg} avg. milliseconds to complete.`);
-}
+    public static clearTokenCache() {
+        this._tokenCache.clear();
+    }
 
-function setupAndValidatePatterns() {
-    if (uniquePatternCount !== -1) return;
+    private static async runTokenizer(document: TextDocument) {
+        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Running tokenizer on document: ${document.fileName}`);
+        const tokenizer = new DocumentTokenizer(document);
+        await Promise.resolve(tokenizer.tokenize());
 
-    uniquePatternCount = 0;
-    const stack = new Stack<ExTokenPattern>(32);
-    stack.push(basePatterns as ExTokenRepoPattern);
+        // TODO: Need to mark all these functions async for this to work properly
+        /*await withTimeout(, TOKENIZER_TIMEOUT, () => {
+            // If the tokenizer times out, we still want to cache the document so that we don't try to tokenize it again
+            this._tokenCache.set(document.uri, { documentVersion: document.version, tokens: new TokenTree() });
+            logToast(LogLevel.Info, `Tokenizer timed out after ${TOKENIZER_TIMEOUT}ms, while attempting to tokenize the document at: ${document.uri}`);
+        });*/
 
-    const mFlagRe = /(?<!\[)[\^$]/g;
-    while (!stack.isEmpty()) {
-        const p = stack.pop()!;
-        assert(p !== undefined, "This pattern is undefined! Please make sure that circular includes are added after both patterns are defined.");
+        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Tokenizer completed!`);
+        this._tokenCache.set(document.uri, { documentVersion: document.version, tokens: tokenizer.tokens });
+        return tokenizer.tokens;
+    }
 
-        if (p._patternId !== undefined && p._patternId !== -1) continue; // This pattern was already validated
+    private static benchmark(document: TextDocument) {
+        // screens.rpy, 10000 loops; 19.69293530988693 avg.
 
-        p._patternId = uniquePatternCount;
-        ++uniquePatternCount;
+        const loops = 10000;
+        const reportEveryXPercent = 1;
 
-        if (isRepoPattern(p)) {
-            p._patternType = TokenPatternType.RepoPattern;
-            for (let i = 0; i < p.patterns.length; ++i) stack.push(p.patterns[i]);
-        } else if (isRangePattern(p)) {
-            p._patternType = TokenPatternType.RangePattern;
-            if (p.begin.source.match(mFlagRe)) {
-                assert(p.begin.multiline, "To match this pattern the 'm' flag is required on the begin RegExp!");
+        const onePercent = loops / 100;
+        const everyX = onePercent * reportEveryXPercent;
+
+        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Running tokenizer benchmark for ${loops} loops...`);
+
+        let avg = 0;
+        for (let i = 0; i < loops; ++i) {
+            const t0 = performance.now();
+            const tokenizer: DocumentTokenizer = new DocumentTokenizer(document);
+            const t1 = performance.now();
+
+            avg += t1 - t0;
+
+            // This is really just here to prevent the unused variable error
+            if (tokenizer.tokens.isEmpty()) {
+                logCatMessage(LogLevel.Error, LogCategory.Tokenizer, "No tokens were found.");
             }
 
-            assert(p.begin.global && p.end.global, "To match this pattern the 'g' flag is required on the begin and end RegExp!");
-            if (p.beginCaptures) {
-                assert(p.begin.hasIndices, "To match this begin pattern the 'd' flag is required!");
+            // Show timer
+            const msLoop = avg / (i + 1);
+            const sRemaining = msLoop * (loops - i + 1) * 0.001;
+            const h = Math.floor(sRemaining / 3600);
+            const m = Math.floor((sRemaining / 60) % 60);
+            const s = Math.ceil(sRemaining % 60);
+            const timeString = [h ? h + "h" : false, m ? m + "m" : false, s ? s + "s" : false]
+                .filter(Boolean)
+                .join(":")
+                .replace(/\b(\d)(?=[hms])/g, "0$1");
 
-                Object.entries(p.beginCaptures).forEach(([, v]) => {
-                    if (v.patterns) stack.push(v as ExTokenRepoPattern);
-                });
+            if (i % everyX === 0) {
+                logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `${i / onePercent}% complete... (avg.: ${msLoop.toFixed(2)}ms, approx. ${timeString} remaining)`);
+            }
+        }
+        avg /= loops;
+
+        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `DocumentTokenizer took ${avg} avg. milliseconds to complete.`);
+    }
+
+    private static setupAndValidatePatterns() {
+        if (this._uniquePatternCount !== -1) {
+            return;
+        }
+
+        this._uniquePatternCount = 0;
+        const stack = new Stack<ExTokenPattern>(32);
+        stack.push(RenpyPatterns.basePatterns as ExTokenRepoPattern);
+
+        const mFlagRe = /(?<!\[)[\^$]/g;
+        const gAnchorRe = /\(\\G\)|\(\?!\\G\)/g;
+        while (!stack.isEmpty()) {
+            const p = stack.pop()!;
+            assert(p !== undefined, "This pattern is undefined! Please make sure that circular includes are added after both patterns are defined.");
+
+            if (p._patternId !== undefined && p._patternId !== -1) {
+                continue; // This pattern was already validated
+            }
+
+            p._patternId = this._uniquePatternCount;
+            ++this._uniquePatternCount;
+
+            if (isRepoPattern(p)) {
+                p._patternType = TokenPatternType.RepoPattern;
+                for (let i = 0; i < p.patterns.length; ++i) {
+                    stack.push(p.patterns[i]);
+                }
+            } else if (isRangePattern(p)) {
+                p._patternType = TokenPatternType.RangePattern;
+                let reBeginSource = p.begin.source;
+
+                if (reBeginSource.match(mFlagRe)) {
+                    assert(p.begin.multiline, "To match this pattern the 'm' flag is required on the begin RegExp!");
+                }
+
+                if (gAnchorRe.test(reBeginSource)) {
+                    assert("Can't use the \\G anchor, please update the regex!");
+                    reBeginSource = reBeginSource.replace(gAnchorRe, "");
+                }
+
+                assert(p.begin.global && p.end.global, "To match this pattern the 'g' flag is required on the begin and end RegExp!");
+                if (p.beginCaptures) {
+                    assert(p.begin.hasIndices, "To match this begin pattern the 'd' flag is required!");
+
+                    Object.entries(p.beginCaptures).forEach(([, v]) => {
+                        if (v.patterns) stack.push(v as ExTokenRepoPattern);
+                    });
+                } else {
+                    assert(!p.begin.hasIndices, "This pattern should not have the 'd' flag set!");
+                }
+                if (p.endCaptures) {
+                    assert(p.end.hasIndices, "To match this end pattern the 'd' flag is required!");
+
+                    Object.entries(p.endCaptures).forEach(([, v]) => {
+                        if (v.patterns) stack.push(v as ExTokenRepoPattern);
+                    });
+                } else {
+                    assert(!p.end.hasIndices, "This pattern should not have the 'd' flag set!");
+                }
+
+                if (p.patterns) {
+                    p._patternsRepo = {
+                        patterns: p.patterns as ExTokenPatternArray,
+                        _patternId: -1,
+                        _patternType: TokenPatternType.RepoPattern,
+                    };
+                    stack.push(p._patternsRepo!);
+                }
+
+                let reEndSource = p.end.source;
+
+                if (mFlagRe.test(reEndSource)) {
+                    assert(p.end.multiline, "To match this pattern the 'm' flag is required on the end RegExp!");
+                }
+
+                p._endNotG = false;
+                if (gAnchorRe.test(reEndSource)) {
+                    if (reEndSource.startsWith("(?!\\G)")) {
+                        p._endNotG = true;
+                    } else {
+                        assert("The end patterns only supports (?!\\G) at the start of the regex. Please update the regex!");
+                        reEndSource = reEndSource.replace(gAnchorRe, "");
+                    }
+                }
+
+                p._hasBackref = /\\\d+/.test(reEndSource);
+                //reEndSource = reEndSource.replaceAll("\\A", "¨0");
+                reEndSource = reEndSource.replaceAll("\\Z", "$(?!\r\n|\r|\n)");
+                reEndSource = reEndSource.replaceAll("\\R", "(?!\r\n|\r|\n)");
+
+                p.begin = new RegExp(reBeginSource, p.begin.flags);
+                p.end = new RegExp(reEndSource, p.end.flags);
+            } else if (isMatchPattern(p)) {
+                p._patternType = TokenPatternType.MatchPattern;
+
+                if (p.match.source.match(mFlagRe)) {
+                    assert(p.match.multiline, "To match this pattern the 'm' flag is required!");
+                }
+
+                assert(p.match.global, "To match this pattern the 'g' flag is required!");
+                if (p.captures) {
+                    assert(p.match.hasIndices, "To match this pattern the 'd' flag is required!");
+
+                    Object.entries(p.captures).forEach(([, v]) => {
+                        if (v.patterns) stack.push(v as ExTokenRepoPattern);
+                    });
+                } else {
+                    assert(!p.match.hasIndices, "This pattern should not have the 'd' flag set!");
+                }
             } else {
-                assert(!p.begin.hasIndices, "This pattern should not have the 'd' flag set!");
+                assert(false, "Should not get here!");
             }
-            if (p.endCaptures) {
-                assert(p.end.hasIndices, "To match this end pattern the 'd' flag is required!");
-
-                Object.entries(p.endCaptures).forEach(([, v]) => {
-                    if (v.patterns) stack.push(v as ExTokenRepoPattern);
-                });
-            } else {
-                assert(!p.end.hasIndices, "This pattern should not have the 'd' flag set!");
-            }
-
-            if (p.patterns) {
-                p._patternsRepo = {
-                    patterns: p.patterns as ExTokenPatternArray,
-                    _patternId: -1,
-                    _patternType: TokenPatternType.RepoPattern,
-                };
-                stack.push(p._patternsRepo!);
-            }
-
-            let reEndSource = p.end.source;
-
-            if (reEndSource.match(mFlagRe)) {
-                assert(p.end.multiline, "To match this pattern the 'm' flag is required on the end RegExp!");
-            }
-
-            p._hasBackref = /\\\d+/.test(reEndSource);
-            //reEndSource = reEndSource.replaceAll("\\A", "¨0");
-            reEndSource = reEndSource.replaceAll("\\Z", "$(?!\r\n|\r|\n)"); // This assumes (CR)LF without trailing new line right?...
-            reEndSource = reEndSource.replaceAll("\\R", "(?!\r\n|\r|\n)");
-            p.end = new RegExp(reEndSource, p.end.flags);
-        } else if (isMatchPattern(p)) {
-            p._patternType = TokenPatternType.MatchPattern;
-
-            if (p.match.source.match(mFlagRe)) {
-                assert(p.match.multiline, "To match this pattern the 'm' flag is required!");
-            }
-
-            assert(p.match.global, "To match this pattern the 'g' flag is required!");
-            if (p.captures) {
-                assert(p.match.hasIndices, "To match this pattern the 'd' flag is required!");
-
-                Object.entries(p.captures).forEach(([, v]) => {
-                    if (v.patterns) stack.push(v as ExTokenRepoPattern);
-                });
-            } else {
-                assert(!p.match.hasIndices, "This pattern should not have the 'd' flag set!");
-            }
-        } else {
-            assert(false, "Should not get here!");
         }
     }
 }
 
-export function escapeRegExpCharacters(value: string): string {
-    return value.replace(/[-\\{}*+?|^$.,[\]()#\s]/g, "\\$&");
+// eslint-disable-next-line no-shadow
+const enum CaptureSource {
+    MatchCaptures = 0,
+    BeginCaptures = 1,
+    EndCaptures = 2,
 }
 
 class DocumentTokenizer {
-    private readonly backrefReplaceRe = /\\(\d+)/g;
-    public readonly tokens: Vector<Token> = new Vector<Token>(16384);
+    private readonly backrefTestRe = /\\(\d+)/g;
+    public readonly tokens: TokenTree = new TokenTree();
+    private readonly document: TextDocument;
 
     constructor(document: TextDocument) {
-        const text = document.getText();
-        const carret = new TokenPosition(0, 0, 0);
-        this.executePattern(basePatterns as ExTokenRepoPattern, text, carret);
+        this.document = document;
+    }
+
+    public tokenize() {
+        const text = this.document.getText();
+        this.executePattern(RenpyPatterns.basePatterns as ExTokenRepoPattern, text, new Range(0, text.length), this.tokens.root);
+    }
+
+    private checkTokenTreeCoverage(root: TreeNode, matchRange: Range): { valid: boolean; gaps: Range[] } {
+        // Collect all token ranges
+        const tokenRanges = new Vector<Range>(root.count());
+        if (root.token) {
+            tokenRanges.pushBack(root.token.getRange());
+        }
+        root.forEach((node) => {
+            if (node.token) {
+                tokenRanges.pushBack(node.token.getRange());
+            }
+        });
+
+        // Sort the token ranges by their start position
+        tokenRanges.sort((a, b) => a.start - b.start);
+
+        // Check if the combined ranges of all tokens overlap the entire character range of the match
+        let currentEnd = matchRange.start;
+        const gaps: Range[] = [];
+        for (const range of tokenRanges) {
+            if (!matchRange.contains(range.start)) {
+                // The start of the next token range is outside the match range
+                return { valid: false, gaps };
+            }
+            if (range.start > currentEnd) {
+                // There is a gap between the current end position and the start of the next token range
+                gaps.push(new Range(currentEnd, range.start));
+            }
+            currentEnd = Math.max(currentEnd, range.end);
+        }
+        if (currentEnd < matchRange.end) {
+            // The last token range does not extend to the end of the match
+            gaps.push(new Range(currentEnd, matchRange.end));
+        }
+        return { valid: gaps.length === 0, gaps };
     }
 
     /**
      * Apply the capture patterns to the match
-     * @param captures The captures to apply
+     * @param pattern The source pattern
+     * @param captureSource The capture source to use from the pattern
      * @param match The match to apply the captures on
      * @param caret The reader head position within the document
      */
-    private applyCaptures(captures: TokenPatternCapture, match: RegExpExecArray, caret: TokenPosition) {
-        // TODO: Match 0 is like a second iteration on the previously matched text.
-        // What needs to happen is that all matches from the first iteration are merged with the matches from the second iteration.
-        const originalCaret = caret.clone();
+    private applyCaptures(pattern: ExTokenPattern, captureSource: CaptureSource, match: RegExpExecArray, source: string, parentNode: TreeNode) {
+        const captures = captureSource === CaptureSource.MatchCaptures ? pattern.captures : captureSource === CaptureSource.BeginCaptures ? pattern.beginCaptures : pattern.endCaptures;
 
-        let lastMatchEnd = match.index;
+        if (captures === undefined || match.indices === undefined) {
+            return; // syntax error
+        }
+
+        let rootNode = parentNode;
+
+        if (captures[0] !== undefined) {
+            // If capture 0 is used, treat it as a wrapper token.
+            rootNode = new TreeNode();
+            parentNode.addChild(rootNode);
+        }
+
         for (let i = 1; i < match.indices!.length; i++) {
-            if (match.indices![i] === undefined) continue; // If the object at i is undefined, the capture is empty
+            if (match.indices![i] === undefined) {
+                continue; // If the object at i is undefined, the capture is empty
+            }
+
+            const [startPos, endPos] = match.indices![i];
 
             if (captures[i] === undefined) {
-                console.warn(`There is no pattern defined for capture group '${i}', on a pattern that matched '${match[i]}' near L:${caret.line + 1} C:${caret.character + 1}.\nThis should probably be added or be a non-capturing group.`);
+                const pos = this.positionAt(startPos);
+
+                if (!isShippingBuild()) {
+                    // If this is a 'begin' capture it's also possible to have it matched on the end pattern. Let's make sure we don't report false positives.
+                    if (captureSource === CaptureSource.BeginCaptures && pattern.end !== undefined) {
+                        // test the end pattern for backreferences to this capture index
+                        const captureRe = new RegExp(`\\\\${i}`, "g");
+                        if (captureRe.test(pattern.end.source)) {
+                            continue;
+                        }
+                    }
+
+                    logCatMessage(
+                        LogLevel.Debug,
+                        LogCategory.Tokenizer,
+                        `There is no pattern defined for capture group '${i}', on a pattern that matched '${match[i]}' near L:${pos.line + 1} C:${pos.character + 1}.\nThis should probably be added or be a non-capturing group.`,
+                    );
+                }
+
                 continue;
             }
 
             const p = captures[i];
-            const content = match[i];
-
-            // Update the position carets
-            const [startPos, endPos] = match.indices![i];
-
-            // Check for missing characters in a match
-            const matchOffset = startPos - lastMatchEnd;
-            if (matchOffset !== 0) {
-                // TODO: Fix match 0 pattern capture to include the missing tokens
-                /*console.warn(
-                    `A capture was misaligned (expected: ${startPos}, got: ${lastMatchEnd}) on a pattern that matched '${content}' near L:${caret.line + 1} C:${
-                        caret.character + 1
-                    }.\nYou should probably update the pattern to capture everything.\nApplying a fix...`
-                );*/
-                caret.advance(matchOffset);
-            }
-            lastMatchEnd = endPos;
-
-            const startCaret = caret.clone();
-            const endCaret = caret.clone();
-            endCaret.advance(content.length); // Move caret to end of the current match
-
+            const captureNode = new TreeNode();
             if (p.token) {
-                if (p.token === CharacterTokenType.NewLine) endCaret.nextLine();
-                this.tokens.pushBack(new Token(p.token, startCaret, endCaret));
+                captureNode.token = new Token(p.token, this.positionAt(startPos), this.positionAt(endPos));
             }
 
             if (p.patterns) {
-                const captureCaret = startCaret.clone();
-                this.executePattern(p as ExTokenRepoPattern, content, captureCaret);
-
-                assert(captureCaret.charStartOffset === endCaret.charStartOffset, "The token read position was misaligned by the capture context!");
-
-                if (captureCaret.line !== endCaret.line) {
-                    // Note: Moving the endCaret will also move the token, since this is a reference object
-                    endCaret.setValue(captureCaret);
-                }
+                this.executePattern(p as ExTokenRepoPattern, source, new Range(startPos, endPos), captureNode);
             }
 
-            caret.setValue(endCaret);
+            if (!captureNode.isEmpty()) {
+                rootNode.addChild(captureNode);
+            }
         }
-        // TODO: This also gets misaligned if the whole match is a token and contains additional captures
-        // TODO: The system should be updated to build a token list/tree. When that's done we can simply compare and merge the tokens instead of this hack.
-        // Special case for captures[0] which is the entire match
+
         if (captures[0] !== undefined) {
             const p = captures[0];
             const content = match[0];
 
-            const startCaret = originalCaret.clone();
-            const endCaret = originalCaret.clone();
-            endCaret.advance(content.length); // Move caret to end of the current match
+            const startPos = match.index;
+            const endPos = startPos + content.length;
 
             if (p.token) {
-                if (p.token === CharacterTokenType.NewLine) endCaret.nextLine();
-                this.tokens.pushBack(new Token(p.token, startCaret, endCaret));
+                rootNode.token = new Token(p.token, this.positionAt(startPos), this.positionAt(endPos));
             }
 
             if (p.patterns) {
-                const captureCaret = startCaret.clone();
-                this.executePattern(p as ExTokenRepoPattern, content, captureCaret);
+                const captureNode = new TreeNode();
+                rootNode.addChild(captureNode);
 
-                assert(captureCaret.charStartOffset === endCaret.charStartOffset, "The token read position was misaligned by the capture context!");
+                this.executePattern(p as ExTokenRepoPattern, source, new Range(startPos, endPos), captureNode);
+            }
+        }
+    }
 
-                if (captureCaret.line !== endCaret.line) {
-                    // Note: Moving the endCaret will also move the token, since this is a reference object
-                    endCaret.setValue(captureCaret);
+    private scanMatchPattern(pattern: ExTokenMatchPattern, source: string, sourceStartOffset: number): MatchScanResult | null {
+        const re = pattern.match;
+        re.lastIndex = sourceStartOffset;
+        const match = re.exec(source);
+        if (!match) {
+            return null;
+        }
+
+        return { pattern, matchBegin: match };
+    }
+
+    private scanRangePattern(pattern: ExTokenRangePattern, source: string, sourceStartOffset: number): RangeScanResult | null {
+        const reBegin = pattern.begin;
+        reBegin.lastIndex = sourceStartOffset;
+        const matchBegin = reBegin.exec(source);
+
+        if (!matchBegin) {
+            return null;
+        }
+
+        return { pattern, matchBegin: matchBegin, matchEnd: null, expanded: false, contentMatches: null, source };
+    }
+
+    private expandRangeScanResult(result: RangeScanResult, cache: Array<ScanResult | undefined>) {
+        const p = result.pattern as ExTokenRangePattern;
+        const matchBegin = result.matchBegin;
+
+        let reEnd = p.end;
+
+        // Replace all back references in end source
+        if (p._hasBackref) {
+            let reEndSource = p.end.source;
+
+            this.backrefTestRe.lastIndex = 0;
+            reEndSource = reEndSource.replace(this.backrefTestRe, (_, g1) => {
+                const backref = matchBegin.at(parseInt(g1, 10));
+                if (backref !== undefined) {
+                    return escapeRegExpCharacters(backref);
+                }
+                return "";
+            });
+
+            reEnd = new RegExp(reEndSource, p.end.flags);
+        }
+
+        // Start end pattern after the last matched character in the begin pattern
+        reEnd.lastIndex = matchBegin.index + matchBegin[0].length;
+        if (p._endNotG) {
+            ++reEnd.lastIndex;
+        }
+        let matchEnd = reEnd.exec(result.source);
+        const contentMatches = new Stack<ScanResult>();
+
+        if (matchEnd) {
+            // Check if any child pattern has content that would extend the currently determined end match
+            if (p._patternsRepo) {
+                const sourceRange = new Range(matchBegin.index + matchBegin[0].length, matchEnd.index);
+
+                // Scan the content for any matches that would extend beyond the current end match
+                const tempCache = cloneCache(cache);
+                //const tempCache = new Array<ScanResult | undefined>(uniquePatternCount).fill(undefined);
+
+                let lastCharIndex = sourceRange.end;
+                let lastMatchIndex = sourceRange.start;
+                while (lastMatchIndex < lastCharIndex) {
+                    const bestMatch = this.scanPattern(p._patternsRepo, result.source, lastMatchIndex, tempCache);
+
+                    if (!bestMatch || bestMatch.matchBegin.index >= lastCharIndex) {
+                        break; // No valid match was found in the remaining text. Break the loop
+                    }
+
+                    const failSafeIndex = lastMatchIndex; // Debug index to break in case of an infinite loop
+
+                    // Update the last match index to the end of the child match, so the next scan starts after it
+                    const childMatchBegin = bestMatch.matchBegin;
+                    if (bestMatch.pattern._patternType === TokenPatternType.RangePattern) {
+                        if (bestMatch?.pattern._patternType === TokenPatternType.RangePattern && !bestMatch.expanded) {
+                            this.expandRangeScanResult(bestMatch as RangeScanResult, cache);
+                        }
+
+                        const childMatchEnd = bestMatch.matchEnd!;
+                        lastMatchIndex = childMatchEnd.index + childMatchEnd[0].length;
+                    } else {
+                        lastMatchIndex = childMatchBegin.index + childMatchBegin[0].length;
+                    }
+
+                    if (failSafeIndex === lastMatchIndex) {
+                        logCatMessage(LogLevel.Error, LogCategory.Tokenizer, "The range expand loop has not advanced since the last cycle. This indicates a programming error. Breaking the loop!");
+                        break;
+                    }
+
+                    // To speed up the search, we can add any tokens that are within the content range
+                    contentMatches.push(bestMatch);
+
+                    // If the child match last char doesn't extend the current range, we can also ignore it
+                    if (lastMatchIndex <= lastCharIndex) {
+                        continue;
+                    }
+
+                    // The child match is outside the range, so we should find a new end match
+                    reEnd.lastIndex = lastMatchIndex;
+                    matchEnd = reEnd.exec(result.source);
+
+                    // If no end match could be found, assume the whole pattern is invalid
+                    if (!matchEnd) {
+                        break;
+                    }
+
+                    // Else update the new source range end
+                    lastCharIndex = matchEnd.index;
                 }
             }
-
-            // TODO: For now assume that having the 0 capture, means all characters have tokens assigned
-            caret.setValue(endCaret);
-        }
-    }
-
-    private scanMatchPattern(pattern: ExTokenMatchPattern, text: string, matchOffsetStart: number, cache: Array<ScanResult | undefined>): ScanResult {
-        const re = pattern.match;
-        re.lastIndex = matchOffsetStart;
-        const match = re.exec(text);
-        if (match) {
-            const result = { pattern: pattern, matchBegin: match };
-            cache[pattern._patternId] = result;
-            return result;
         }
 
-        cache[pattern._patternId] = null;
-        return null;
-    }
-
-    private scanRangePattern(next: ExTokenRangePattern, text: string, matchOffsetStart: number, cache: Array<ScanResult | undefined>): ScanResult {
-        const reBegin = next.begin;
-        reBegin.lastIndex = matchOffsetStart;
-        const matchBegin = reBegin.exec(text);
-
-        if (matchBegin) {
-            let reEnd = next.end;
-
-            // Replace all back references in end source
-            if (next._hasBackref) {
-                let reEndSource = next.end.source;
-
-                this.backrefReplaceRe.lastIndex = 0;
-                reEndSource = reEndSource.replace(this.backrefReplaceRe, (_, g1) => {
-                    const content = matchBegin.at(parseInt(g1, 10));
-                    if (content !== undefined) return escapeRegExpCharacters(content);
-                    return "";
-                });
-
-                reEnd = new RegExp(reEndSource, next.end.flags);
-            }
-
-            // Start end pattern after the last matched character in the begin pattern
-            reEnd.lastIndex = matchBegin.index + matchBegin[0].length;
-            const matchEnd = reEnd.exec(text);
-
-            if (matchEnd) {
-                const result = { pattern: next, matchBegin: matchBegin, matchEnd: matchEnd };
-                cache[next._patternId] = result;
-                return result;
-            }
+        if (!matchEnd) {
+            // If no end match could be found, we'll need to expand the range to the end of the source
+            const reLastChar = /$(?!\r\n|\r|\n)/g;
+            reLastChar.lastIndex = Math.max(0, result.source.length - 1);
+            matchEnd = reLastChar.exec(result.source);
         }
 
-        cache[next._patternId] = null;
-        return null;
+        result.matchEnd = matchEnd;
+        result.contentMatches = contentMatches;
+        result.expanded = true;
     }
 
     /**
      * Scans the text for the best matching pattern.
      * @param p The pattern to use for matches
-     * @param text The text to match on
-     * @param matchOffsetStart The character offset in 'text' to start the match at.
+     * @param source The text to match on
+     * @param sourceStartOffset The character offset in 'text' to start the match at.
      */
-    public scanPattern(p: ExTokenRepoPattern, text: string, matchOffsetStart: number, cache: Array<ScanResult | undefined>): ScanResult {
-        if (p.patterns.length === 0) return null;
+    public scanPattern(p: ExTokenRepoPattern, source: string, sourceStartOffset: number, cache: Array<ScanResult | undefined>): ScanResult {
+        if (p.patterns.length === 0) {
+            return null;
+        }
 
         const cachedP = cache[p._patternId];
         if (cachedP !== undefined) {
             // If the cached value is null, no match was found in the entire text
-            if (cachedP === null || cachedP.matchBegin.index >= matchOffsetStart) {
+            if (cachedP === null || cachedP.matchBegin.index >= sourceStartOffset) {
+                if (cachedP?.pattern._patternType === TokenPatternType.RangePattern && !cachedP.expanded) {
+                    this.expandRangeScanResult(cachedP as RangeScanResult, cache);
+                }
                 return cachedP;
             }
         }
@@ -362,31 +558,39 @@ class DocumentTokenizer {
             const cachedResult = cache[next._patternId];
             if (cachedResult !== undefined) {
                 // If the cached value is null, no match was found in the entire text
-                if (cachedResult === null) continue;
-                if (cachedResult.matchBegin.index >= matchOffsetStart) {
+                if (cachedResult === null) {
+                    continue;
+                }
+
+                if (cachedResult.matchBegin.index >= sourceStartOffset) {
                     scanResult = cachedResult;
                 }
             }
 
+            // The result wasn't cached or was invalidated, so we need to scan for the next match
             if (scanResult === null) {
                 switch (next._patternType) {
                     case TokenPatternType.MatchPattern:
-                        scanResult = this.scanMatchPattern(next, text, matchOffsetStart, cache);
+                        scanResult = this.scanMatchPattern(next, source, sourceStartOffset);
                         break;
                     case TokenPatternType.RangePattern:
-                        scanResult = this.scanRangePattern(next, text, matchOffsetStart, cache);
+                        scanResult = this.scanRangePattern(next, source, sourceStartOffset);
                         break;
                     case TokenPatternType.RepoPattern:
-                        scanResult = this.scanPattern(next, text, matchOffsetStart, cache);
-                        cache[next._patternId] = scanResult;
+                        scanResult = this.scanPattern(next, source, sourceStartOffset, cache);
                         break;
                     default:
                         assert(false, "Invalid TokenPatternType found! If this triggers, setupAndValidatePatterns() didn't assign the PatternStateProperties properly.");
                         break;
                 }
+
+                // Cache the result
+                cache[next._patternId] = scanResult;
             }
 
-            if (!scanResult) continue;
+            if (!scanResult) {
+                continue;
+            }
 
             const matchRating = scanResult.matchBegin.index;
             if (matchRating >= bestMatchRating) {
@@ -398,194 +602,176 @@ class DocumentTokenizer {
             bestResult = scanResult;
 
             // If true, this match is valid at the first possible location. No need to check further.
-            if (bestMatchRating === matchOffsetStart) {
+            if (bestMatchRating === sourceStartOffset) {
                 break;
             }
         }
+
         cache[p._patternId] = bestResult;
+
         return bestResult;
+    }
+
+    private executeRangePattern(bestMatch: ScanResult, source: string, parentNode: TreeNode) {
+        if (!bestMatch) {
+            return;
+        }
+        assert(bestMatch.expanded, "A range pattern should always be expanded on execute.");
+
+        const p = bestMatch.pattern as ExTokenRangePattern;
+        const matchBegin = bestMatch.matchBegin;
+        const matchEnd = bestMatch.matchEnd;
+
+        const startPos = matchBegin.index;
+        const endPos = matchEnd!.index + matchEnd![0].length;
+        const contentStart = matchBegin.index + matchBegin[0].length;
+        const contentEnd = matchEnd!.index;
+
+        // p.token matches the whole range including the begin and end match content
+        const rangeNode = new TreeNode();
+        if (p.token) {
+            rangeNode.token = new Token(p.token, this.positionAt(startPos), this.positionAt(endPos));
+        }
+        // Begin captures are only applied to beginMatch[0] content
+        this.applyCaptures(p, CaptureSource.BeginCaptures, matchBegin, source, rangeNode);
+
+        // Add an additional node for the content of the range pattern, since the content can be wrapped by an additional token
+        const contentNode = new TreeNode();
+
+        // p.contentToken matches the range 'between'; after the end of beginMatch and before the start of endMatch
+        if (p.contentToken) {
+            contentNode.token = new Token(p.contentToken, this.positionAt(contentStart), this.positionAt(contentEnd));
+        }
+
+        // Patterns are only applied on 'content' (see p.contentToken above)
+        if (p._patternsRepo) {
+            while (!bestMatch.contentMatches!.isEmpty()) {
+                const contentScanResult = bestMatch.contentMatches!.pop()!;
+                this.applyScanResult(contentScanResult, source, contentNode);
+            }
+
+            //this.executePattern(p._patternsRepo, source, new Range(contentStart, matchEnd!.index), contentNode);
+        }
+
+        if (!contentNode.isEmpty()) {
+            rangeNode.addChild(contentNode);
+        }
+
+        // End captures are only applied to endMatch[0] content
+        this.applyCaptures(p, CaptureSource.EndCaptures, matchEnd!, source, rangeNode);
+
+        //assert(!rangeNode.isEmpty(), "A RangePattern must produce a valid token tree!");
+
+        const coverageResult = this.checkTokenTreeCoverage(rangeNode, new Range(startPos, endPos));
+        if (!coverageResult.valid) {
+            logCatMessage(LogLevel.Debug, LogCategory.Tokenizer, `The token tree is not covering the entire match range!`);
+            for (const gap of coverageResult.gaps) {
+                const gapStartPos = this.document.positionAt(gap.start);
+                const gapEndPos = this.document.positionAt(gap.end);
+                const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
+                logCatMessage(LogLevel.Debug, LogCategory.Tokenizer, `Gap from L:${gapStartPos.line + 1} C:${gapStartPos.character + 1} to L:${gapEndPos.line + 1} C:${gapEndPos.character + 1}, Text: '${text}'`);
+            }
+        }
+
+        parentNode.addChild(rangeNode);
+    }
+
+    private executeMatchPattern(bestMatch: MatchScanResult, source: string, parentNode: TreeNode) {
+        const p = bestMatch.pattern as ExTokenMatchPattern;
+        const match = bestMatch.matchBegin;
+
+        const contentNode = new TreeNode();
+        const startPos = match.index;
+        const endPos = startPos + match[0].length;
+
+        if (p.token) {
+            contentNode.token = new Token(p.token, this.positionAt(startPos), this.positionAt(endPos));
+        }
+
+        this.applyCaptures(p, CaptureSource.MatchCaptures, match, source, contentNode);
+
+        const coverageResult = this.checkTokenTreeCoverage(contentNode, new Range(startPos, endPos));
+        if (!coverageResult.valid) {
+            logCatMessage(LogLevel.Debug, LogCategory.Tokenizer, `The token tree is not covering the entire match range!`);
+            for (const gap of coverageResult.gaps) {
+                const gapStartPos = this.document.positionAt(gap.start);
+                const gapEndPos = this.document.positionAt(gap.end);
+                const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
+                logCatMessage(LogLevel.Debug, LogCategory.Tokenizer, `Gap from L${gapStartPos.line + 1}:${gapStartPos.character + 1} to L${gapEndPos.line + 1}:${gapEndPos.character + 1}, Text: '${text}'`);
+            }
+        }
+
+        assert(p.token || p.captures, "A MatchPattern must have either a token or captures!");
+        assert(!contentNode.isEmpty(), "A MatchPattern must produce a valid token tree!");
+
+        parentNode.addChild(contentNode);
+    }
+
+    private applyScanResult(bestMatch: ScanResult, source: string, parentNode: TreeNode) {
+        const p = bestMatch!.pattern;
+        switch (p._patternType) {
+            case TokenPatternType.RangePattern:
+                this.executeRangePattern(bestMatch as RangeScanResult, source, parentNode);
+                break;
+            case TokenPatternType.MatchPattern:
+                this.executeMatchPattern(bestMatch as MatchScanResult, source, parentNode);
+                break;
+            default:
+                assert(false, "Should not get here!");
+                break;
+        }
     }
 
     /**
      * Executes the pattern on 'text', adding tokens to the token list.
      * @param pattern The repo pattern to use for matches.
-     * @param text The text to match on.
+     * @param source The text to match on.
      * @param caret The location of the reader head
      * @returns True if the pattern was matched
      * @todo Timeout after it was running too long
      */
-    public executePattern(pattern: ExTokenRepoPattern, text: string, caret: TokenPosition) {
-        const cache = new Array<ScanResult | undefined>(uniquePatternCount).fill(undefined);
-        const initialCharOffset = caret.charStartOffset;
-        const lastCharIndex = text.length;
+    public executePattern(pattern: ExTokenRepoPattern, source: string, sourceRange: Range, parentNode: TreeNode) {
+        if (source.length === 0) {
+            return;
+        }
 
-        for (let lastMatchIndex = 0; lastMatchIndex < lastCharIndex; ) {
-            const bestMatch = this.scanPattern(pattern, text, lastMatchIndex, cache);
+        const cache = new Array<ScanResult | undefined>(Tokenizer.UNIQUE_PATTERN_COUNT).fill(undefined);
+        const lastCharIndex = sourceRange.end;
 
-            if (bestMatch === null) {
-                // No match was found in the remaining text. Break the loop
-                caret.advance(lastCharIndex - lastMatchIndex);
-                lastMatchIndex = lastCharIndex;
-                continue;
+        let lastMatchIndex = sourceRange.start;
+        while (lastMatchIndex < lastCharIndex) {
+            const bestMatch = this.scanPattern(pattern, source, lastMatchIndex, cache);
+
+            if (!bestMatch || bestMatch.matchBegin.index >= lastCharIndex) {
+                break; // No valid match was found in the remaining text. Break the loop
             }
+
             const failSafeIndex = lastMatchIndex; // Debug index to break in case of an infinite loop
 
-            const p = bestMatch.pattern;
-            switch (p._patternType) {
-                case TokenPatternType.RangePattern:
-                    {
-                        const matchBegin = bestMatch.matchBegin;
-                        const matchEnd = bestMatch.matchEnd!;
-                        lastMatchIndex = matchEnd.index + matchEnd[0].length;
-                        const contentLength = matchEnd.index - (matchBegin.index + matchBegin[0].length);
+            if (bestMatch.pattern._patternType === TokenPatternType.RangePattern) {
+                if (bestMatch?.pattern._patternType === TokenPatternType.RangePattern && !bestMatch.expanded) {
+                    this.expandRangeScanResult(bestMatch as RangeScanResult, cache);
+                }
 
-                        // Check for missing characters in a match
-                        const matchOffset = initialCharOffset + matchBegin.index - caret.charStartOffset;
-                        if (matchOffset !== 0) {
-                            /*console.warn(
-                                `A range begin match was misaligned (expected: ${textDocumentOffset + matchBegin.index}, got: ${caret.charStartOffset}) on pattern '${p.begin.source}' that matched '${matchBegin[0]}' near L:${caret.line + 1} C:${
-                                    caret.character + 1
-                                }.\nYou probably didn't catch all characters in the match or the match before this one.\nApplying a fix...`
-                            );*/
-                            caret.advance(matchOffset);
-                        }
-
-                        const startCaret = caret.clone();
-
-                        const contentStartCaret = startCaret.clone();
-                        contentStartCaret.advance(matchBegin[0].length); // Move caret to end of beginMatch
-
-                        const contentEndCaret = contentStartCaret.clone();
-                        contentEndCaret.advance(contentLength); // Move caret to end of content
-
-                        const endCaret = contentEndCaret.clone();
-                        endCaret.advance(matchEnd[0].length); // Move caret to end of match
-
-                        // p.token matches the whole range including the begin and end match content
-                        if (p.token) {
-                            this.tokens.pushBack(new Token(p.token, startCaret, endCaret));
-                        }
-                        // Begin captures are only applied to beginMatch[0] content
-                        if (p.beginCaptures) {
-                            const captureCaret = startCaret.clone();
-                            this.applyCaptures(p.beginCaptures, matchBegin, captureCaret);
-
-                            assert(
-                                captureCaret.charStartOffset === contentStartCaret.charStartOffset,
-                                "The token read position was misaligned by the capture context! This means {p.beginCaptures} is not processing white spaces and new lines (individually!)."
-                            );
-
-                            if (captureCaret.line !== endCaret.line) {
-                                // Line was moved, all characters should reset to 0 and move by content length
-                                contentStartCaret.setValue(captureCaret);
-
-                                contentEndCaret.setValue(contentStartCaret);
-                                contentEndCaret.advance(contentLength); // Move caret to end of content
-
-                                // Note: Moving the endCaret will also move the token, since this is a reference object
-                                endCaret.setValue(contentEndCaret);
-                                endCaret.advance(matchEnd[0].length); // Move caret to end of match
-                            }
-                        }
-
-                        // p.contentToken matches the range 'between'; after the end of beginMatch and before the start of endMatch
-                        if (p.contentToken) {
-                            this.tokens.pushBack(new Token(p.contentToken, contentStartCaret, contentEndCaret));
-                        }
-
-                        // Patterns are only applied on 'content' (see p.contentToken above)
-                        if (p._patternsRepo) {
-                            const captureCaret = contentStartCaret.clone();
-                            const content = text.substring(matchBegin.index + matchBegin[0].length, matchEnd.index);
-                            this.executePattern(p._patternsRepo, content, captureCaret);
-
-                            assert(
-                                captureCaret.charStartOffset === contentEndCaret.charStartOffset,
-                                "The token read position was misaligned by the capture context! This means {p.patterns} is not processing white spaces and new lines (individually!)."
-                            );
-
-                            if (captureCaret.line !== endCaret.line) {
-                                // Line was moved, all characters should reset to 0 and move by content length
-                                contentEndCaret.setValue(captureCaret);
-
-                                // Note: Moving the endCaret will also move the token, since this is a reference object
-                                endCaret.setValue(contentEndCaret);
-                                endCaret.advance(matchEnd[0].length); // Move caret to end of match
-                            }
-                        }
-
-                        // End captures are only applied to endMatch[0] content
-                        if (p.endCaptures) {
-                            const captureCaret = contentEndCaret.clone();
-                            this.applyCaptures(p.endCaptures, matchEnd, captureCaret);
-
-                            assert(
-                                captureCaret.charStartOffset === endCaret.charStartOffset,
-                                "The token read position was misaligned by the capture context! This means {p.endCaptures} is not processing white spaces and new lines (individually!)."
-                            );
-
-                            if (captureCaret.line !== endCaret.line) {
-                                // Line was moved, all characters should reset to 0 and move by content length
-                                // Note: Moving the endCaret will also move the token, since this is a reference object
-                                endCaret.setValue(captureCaret);
-                            }
-                        }
-
-                        caret.setValue(endCaret);
-                    }
-                    break;
-                case TokenPatternType.MatchPattern:
-                    {
-                        const match = bestMatch.matchBegin;
-                        lastMatchIndex = match.index + match[0].length;
-
-                        // Check for missing characters in a match
-                        const matchOffset = initialCharOffset + match.index - caret.charStartOffset;
-                        if (matchOffset !== 0) {
-                            /*console.warn(
-                                `A match was misaligned (expected: ${textDocumentOffset + match.index}, got: ${caret.charStartOffset}) on pattern '${p.match.source}' that matched '${match[0]}' near L:${caret.line + 1} C:${
-                                    caret.character + 1
-                                }.\nYou probably didn't catch all characters in the match or the match before this one.\nApplying a fix...`
-                            );*/
-                            caret.advance(matchOffset);
-                        }
-
-                        const startCaret = caret.clone();
-
-                        const endCaret = startCaret.clone();
-                        endCaret.advance(match[0].length); // Move carret to end of match
-
-                        if (p.token) {
-                            if (p.token === CharacterTokenType.NewLine) endCaret.nextLine();
-
-                            this.tokens.pushBack(new Token(p.token, startCaret, endCaret));
-                        }
-
-                        if (p.captures) {
-                            const captureCaret = startCaret.clone();
-                            this.applyCaptures(p.captures, match, captureCaret);
-
-                            assert(captureCaret.charStartOffset === endCaret.charStartOffset, "The token read position was misaligned by the capture context!");
-
-                            // Note: Moving the endCaret will also move the token, since this is a reference object
-                            if (captureCaret.line !== endCaret.line) {
-                                endCaret.setValue(captureCaret);
-                            }
-                        }
-
-                        caret.setValue(endCaret);
-                    }
-                    break;
-                default:
-                    assert(false, "Should not get here!");
-                    break;
+                const matchEnd = bestMatch.matchEnd!;
+                lastMatchIndex = matchEnd.index + matchEnd[0].length;
+            } else {
+                const matchBegin = bestMatch.matchBegin;
+                lastMatchIndex = matchBegin.index + matchBegin[0].length;
             }
 
             if (failSafeIndex === lastMatchIndex) {
-                console.error("The loop has not advanced since the last cycle. This indicates a programming error. Breaking the loop!");
+                logCatMessage(LogLevel.Error, LogCategory.Tokenizer, "The loop has not advanced since the last cycle. This indicates a programming error. Breaking the loop!");
                 break;
             }
+
+            this.applyScanResult(bestMatch, source, parentNode);
         }
+    }
+
+    public positionAt(offset: number): TokenPosition {
+        const pos = this.document.positionAt(offset);
+        return new TokenPosition(pos.line, pos.character, offset);
     }
 }
 
@@ -621,6 +807,7 @@ interface ExTokenRepoPattern extends TokenRepoPattern, PatternStateProperties {
 interface ExTokenRangePattern extends TokenRangePattern, PatternStateProperties {
     _patternType: TokenPatternType.RangePattern;
     _hasBackref: boolean;
+    _endNotG: boolean;
     _patternsRepo?: ExTokenRepoPattern;
 
     readonly beginCaptures?: ExTokenPatternCapture;

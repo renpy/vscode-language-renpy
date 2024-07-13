@@ -44,9 +44,9 @@ label start:
 
     # These display lines of dialogue.
 
-    e "You've created a new Ren'Py game."
+    character.e "You've created a new Ren'Py game."
 
-    # call a label 
+    # call a label
 
     call sidebar_label
 
@@ -96,7 +96,7 @@ screen hello_title():
 # sample python code
 init:
     "Renpy code block"
-    
+
 python:
     renpy.pause(delay)
 

@@ -3,16 +3,9 @@
 
 An extension that adds rich support for the [Ren'Py](https://www.renpy.org/) programming language to [Visual Studio Code](https://code.visualstudio.com/).
 
-- [![Visual Studio Marketplace Version](https://img.shields.io/visual-studio-marketplace/v/luquedaniel.languague-renpy?label=Visual%20Studio%20Marketplace&style=flat-square)](https://marketplace.visualstudio.com/items?itemName=LuqueDaniel.languague-renpy)
-[![Visual Studio Marketplace Rating](https://img.shields.io/visual-studio-marketplace/r/luquedaniel.languague-renpy?style=flat-square)](https://marketplace.visualstudio.com/items?itemName=LuqueDaniel.languague-renpy&ssr=false#review-details)
-![Visual Studio Marketplace Installs](https://img.shields.io/visual-studio-marketplace/i/luquedaniel.languague-renpy?style=flat-square)
-- [![Open VSX Version](https://img.shields.io/open-vsx/v/LuqueDaniel/languague-renpy?label=Open%20VSX&style=flat-square)](https://open-vsx.org/extension/LuqueDaniel/languague-renpy)
-[![Open VSX Rating](https://img.shields.io/open-vsx/rating/LuqueDaniel/languague-renpy?style=flat-square)](https://open-vsx.org/extension/LuqueDaniel/languague-renpy)
-![Open VSX Downloads](https://img.shields.io/open-vsx/dt/LuqueDaniel/languague-renpy?style=flat-square)
-
 Snippets converted from [Ren'Py language support in Atom](https://github.com/renpy/language-renpy)
 
-Feel free to [contribute](https://github.com/LuqueDaniel/vscode-language-renpy/blob/master/Contributing.md), fork this and send a pull request. :smile:
+Feel free to [contribute](https://github.com/renpy/vscode-language-renpy/blob/master/Contributing.md), fork this and send a pull request. :smile:
 
 ## Features
 
@@ -61,12 +54,6 @@ Feel free to [contribute](https://github.com/LuqueDaniel/vscode-language-renpy/b
 ### Document Symbols
 
 > Document Symbols are displayed in the Outline window in the sidebar.
-
-## Integrate VSCode as code editor in Ren'Py (Ren'Py 7.4 and older)
-
-Note: In Ren'py 7.5/8.0 VSCode is already included by default in the list of text editors
-
-You can copy the [`Visual Studio Code.edit.py`](https://raw.githubusercontent.com/LuqueDaniel/vscode-language-renpy/master/Visual%20Studio%20Code.edit.py) file that is available at the root of this repository to the root of your project directory. This will add VSCode (or VSCodium) to the list of text editors in Ren'Py.
 
 ## Thanks To
 

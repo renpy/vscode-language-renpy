@@ -326,6 +326,7 @@
 
             call .subroutine(2) from test #lol
 
+            call screen start #lol
             call expression "sub" + "routine" pass (count=3) #lol
             call expression "sub" + "routine" pass (count=3) from _class test #lol
 
@@ -547,11 +548,11 @@
         show bg washington
         with None
 
-        show eileen happy at left
+        show eileen happy at left #test
         show lucy mad at right
         with dissolve
 
-        show eileen happy at left with dissolve
+        show eileen happy with dissolve at left 
         show lucy mad at right with dissolve
 
         with None
@@ -624,6 +625,8 @@
             "Go right.":
                 pass
             "Fly above." if drank_tea:
+                pass
+            "Dig below." if len(my_var) >= 2:
                 pass
 
         default menuset = set()
@@ -837,7 +840,7 @@
         queue sound "woof.mp3" volume 0.75
         queue sound "woof.mp3" volume 1.0
 
-        define audio.woof = "woof.mp23
+        define audio.woof = "woof.mp3"
 
         # ...
 
@@ -1199,6 +1202,14 @@
         translate piglatin python:
             style.default.font = "stonecutter.ttf"
 
+            old "These two lines will be combined together to form a long line.\n\nThis line will be separate."
+            new _p("""
+                These two lines will be combined together
+                to form a long line. Bork bork bork.
+
+                This line will be separate. Bork bork bork.
+                """)
+
         frame:
             style_prefix "pref"
             has vbox
@@ -1214,13 +1225,7 @@
             This line will be separate.
             """)
 
-        old "These two lines will be combined together to form a long line.\n\nThis line will be separate."
-        new _p("""
-            These two lines will be combined together
-            to form a long line. Bork bork bork.
-
-            This line will be separate. Bork bork bork.
-            """)
+        
 
     #endregion Translation
 
@@ -1564,6 +1569,19 @@
                 @renpy.atl_warper
                 def linear(t):
                     return t
+            
+            init python:
+                @dataclass
+                class LatLonPair:
+                    lon: float,
+                    lat: float
+
+                @dataclass
+                class SimpleWeatherInfo:
+                    id: int,
+                    main: str,
+                    description: str,
+                    icon: str
 
         label start:
             show eileen happy at a, b, c
@@ -1853,7 +1871,7 @@
         image big hello world = Text("Hello World", style="big")
 
         screen hello_world:
-            text "Hello, World" style "big"
+            text "Hello, World" style "big" at 0# Comment
 
         style my_text is text:
             size 40
@@ -1872,6 +1890,21 @@
         style label_text:
             variant "touch"
             take big_red
+
+        style history_text:
+            xpos gui.history_text_xpos
+            ypos gui.history_text_ypos
+            xanchor gui.history_text_xalign
+            xsize gui.history_text_width
+            min_width gui.history_text_width
+            text_align gui.history_text_xalign
+            layout ("subtitle" if gui.history_text_xalign else "tex")
+
+        style history_label:
+            xfill True
+
+        style history_label_text:
+            xalign 0.5
 
         init python:
             style.button['Foo'].background = "#f00"
@@ -3540,9 +3573,9 @@
     #region Customizing the Keymap
         # see https://www.renpy.org/doc/html/keymap.html
         
-        init:
-            $ config.keymap['dismiss'].append('t')
-            $ config.keymap['dismiss'].remove('K_SPACE')
+        init python:
+            config.keymap['dismiss'].append('t')
+            config.keymap['dismiss'].remove('K_SPACE')
 
             config.keymap = dict(
 
@@ -3663,59 +3696,59 @@
 
             )
 
-        config.pad_bindings = {
-            "pad_leftshoulder_press" : [ "rollback", ],
-            "pad_lefttrigger_pos" : [ "rollback", ],
-            "pad_back_press" : [ "rollback", ],
+            config.pad_bindings = {
+                "pad_leftshoulder_press" : [ "rollback", ],
+                "pad_lefttrigger_pos" : [ "rollback", ],
+                "pad_back_press" : [ "rollback", ],
 
-            "repeat_pad_leftshoulder_press" : [ "rollback", ],
-            "repeat_pad_lefttrigger_pos" : [ "rollback", ],
-            "repeat_pad_back_press" : [ "rollback", ],
+                "repeat_pad_leftshoulder_press" : [ "rollback", ],
+                "repeat_pad_lefttrigger_pos" : [ "rollback", ],
+                "repeat_pad_back_press" : [ "rollback", ],
 
-            "pad_guide_press" : [ "game_menu", ],
-            "pad_start_press" : [ "game_menu", ],
+                "pad_guide_press" : [ "game_menu", ],
+                "pad_start_press" : [ "game_menu", ],
 
-            "pad_y_press" : [ "hide_windows", ],
+                "pad_y_press" : [ "hide_windows", ],
 
-            "pad_rightshoulder_press" : [ "rollforward", ],
-            "repeat_pad_rightshoulder_press" : [ "rollforward", ],
+                "pad_rightshoulder_press" : [ "rollforward", ],
+                "repeat_pad_rightshoulder_press" : [ "rollforward", ],
 
-            "pad_righttrigger_pos" : [ "dismiss", "button_select", "bar_activate", "bar_deactivate" ],
-            "pad_a_press" : [ "dismiss", "button_select", "bar_activate", "bar_deactivate"],
-            "pad_b_press" : [ "button_alternate" ],
+                "pad_righttrigger_pos" : [ "dismiss", "button_select", "bar_activate", "bar_deactivate" ],
+                "pad_a_press" : [ "dismiss", "button_select", "bar_activate", "bar_deactivate"],
+                "pad_b_press" : [ "button_alternate" ],
 
-            "pad_dpleft_press" : [ "focus_left", "bar_left", "viewport_leftarrow" ],
-            "pad_leftx_neg" : [ "focus_left", "bar_left", "viewport_leftarrow" ],
-            "pad_rightx_neg" : [ "focus_left", "bar_left", "viewport_leftarrow" ],
+                "pad_dpleft_press" : [ "focus_left", "bar_left", "viewport_leftarrow" ],
+                "pad_leftx_neg" : [ "focus_left", "bar_left", "viewport_leftarrow" ],
+                "pad_rightx_neg" : [ "focus_left", "bar_left", "viewport_leftarrow" ],
 
-            "pad_dpright_press" : [ "focus_right", "bar_right", "viewport_rightarrow" ],
-            "pad_leftx_pos" : [ "focus_right", "bar_right", "viewport_rightarrow" ],
-            "pad_rightx_pos" : [ "focus_right", "bar_right", "viewport_rightarrow" ],
+                "pad_dpright_press" : [ "focus_right", "bar_right", "viewport_rightarrow" ],
+                "pad_leftx_pos" : [ "focus_right", "bar_right", "viewport_rightarrow" ],
+                "pad_rightx_pos" : [ "focus_right", "bar_right", "viewport_rightarrow" ],
 
-            "pad_dpup_press" : [ "focus_up", "bar_up", "viewport_uparrow" ],
-            "pad_lefty_neg" : [ "focus_up", "bar_up", "viewport_uparrow" ],
-            "pad_righty_neg" : [ "focus_up", "bar_up", "viewport_uparrow" ],
+                "pad_dpup_press" : [ "focus_up", "bar_up", "viewport_uparrow" ],
+                "pad_lefty_neg" : [ "focus_up", "bar_up", "viewport_uparrow" ],
+                "pad_righty_neg" : [ "focus_up", "bar_up", "viewport_uparrow" ],
 
-            "pad_dpdown_press" : [ "focus_down", "bar_down", "viewport_downarrow" ],
-            "pad_lefty_pos" : [ "focus_down", "bar_down", "viewport_downarrow" ],
-            "pad_righty_pos" : [ "focus_down", "bar_down", "viewport_downarrow" ],
+                "pad_dpdown_press" : [ "focus_down", "bar_down", "viewport_downarrow" ],
+                "pad_lefty_pos" : [ "focus_down", "bar_down", "viewport_downarrow" ],
+                "pad_righty_pos" : [ "focus_down", "bar_down", "viewport_downarrow" ],
 
-            "repeat_pad_dpleft_press" : [ "focus_left", "bar_left", "viewport_leftarrow" ],
-            "repeat_pad_leftx_neg" : [ "focus_left", "bar_left", "viewport_leftarrow" ],
-            "repeat_pad_rightx_neg" : [ "focus_left", "bar_left", "viewport_leftarrow" ],
+                "repeat_pad_dpleft_press" : [ "focus_left", "bar_left", "viewport_leftarrow" ],
+                "repeat_pad_leftx_neg" : [ "focus_left", "bar_left", "viewport_leftarrow" ],
+                "repeat_pad_rightx_neg" : [ "focus_left", "bar_left", "viewport_leftarrow" ],
 
-            "repeat_pad_dpright_press" : [ "focus_right", "bar_right", "viewport_rightarrow" ],
-            "repeat_pad_leftx_pos" : [ "focus_right", "bar_right", "viewport_rightarrow" ],
-            "repeat_pad_rightx_pos" : [ "focus_right", "bar_right", "viewport_rightarrow" ],
+                "repeat_pad_dpright_press" : [ "focus_right", "bar_right", "viewport_rightarrow" ],
+                "repeat_pad_leftx_pos" : [ "focus_right", "bar_right", "viewport_rightarrow" ],
+                "repeat_pad_rightx_pos" : [ "focus_right", "bar_right", "viewport_rightarrow" ],
 
-            "repeat_pad_dpup_press" : [ "focus_up", "bar_up", "viewport_uparrow" ],
-            "repeat_pad_lefty_neg" : [ "focus_up", "bar_up", "viewport_uparrow" ],
-            "repeat_pad_righty_neg" : [ "focus_up", "bar_up", "viewport_uparrow" ],
+                "repeat_pad_dpup_press" : [ "focus_up", "bar_up", "viewport_uparrow" ],
+                "repeat_pad_lefty_neg" : [ "focus_up", "bar_up", "viewport_uparrow" ],
+                "repeat_pad_righty_neg" : [ "focus_up", "bar_up", "viewport_uparrow" ],
 
-            "repeat_pad_dpdown_press" : [ "focus_down", "bar_down", "viewport_downarrow" ],
-            "repeat_pad_lefty_pos" : [ "focus_down", "bar_down", "viewport_downarrow" ],
-            "repeat_pad_righty_pos" : [ "focus_down", "bar_down", "viewport_downarrow" ],
-        }
+                "repeat_pad_dpdown_press" : [ "focus_down", "bar_down", "viewport_downarrow" ],
+                "repeat_pad_lefty_pos" : [ "focus_down", "bar_down", "viewport_downarrow" ],
+                "repeat_pad_righty_pos" : [ "focus_down", "bar_down", "viewport_downarrow" ],
+            }
 
     #endregion Customizing the Keymap
 
@@ -3793,6 +3826,25 @@
 #endregion Python and Ren'Py
 
 #region other
+    screen extract_dialogue:
+
+        frame:
+            style_group "l"
+            style "l_root"
+
+            window:
+
+                has vbox
+
+                label _("Extract Dialogue: [project.current.display_name!q]"):
+                    test
+
+                add HALF_SPACER
+
+                frame:
+                    style "l_indent"
+                    xfill True
+
     # Return Statement
     label main_menu:
         return "no_unlock"

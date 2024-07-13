@@ -3,7 +3,6 @@ Renpy Features List
 - Support launching the project through VSCode
 
 - Bugs to fix:
-  * Fix error on restart
   * Show color editor in tags (also check https://www.renpy.org/doc/html/color_class.html)
   * % can be escaped in strings
   * if line contains unclosed ( [ or { line is continued (see https://www.renpy.org/doc/html/language_basics.html#logical-lines)

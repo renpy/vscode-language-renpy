@@ -1,6 +1,5 @@
-"use strict";
-
-import { commands, CompletionItem, CompletionItemKind, Position, TextDocument, window, workspace } from "vscode";
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { commands, CompletionItem, CompletionItemKind, CompletionItemTag, LogLevel, MarkdownString, Position, SnippetString, TextDocument, window, workspace } from "vscode";
 import { getDefinitionFromFile } from "./hover";
 import { DataType, getBaseTypeFromDefine, getNamedParameter, getPyDocsFromTextDocumentAtLine, Navigation, splitParameters, stripQuotes } from "./navigation";
 import { cleanUpPath, extractFilenameWithoutExtension, getFileWithPath, getNavigationJsonFilepath, stripWorkspaceFromFile } from "./workspace";
@@ -9,11 +8,23 @@ import { Displayable } from "./displayable";
 import { Character } from "./character";
 import data from "./renpy.json";
 import kwData from "./renpyauto.json";
+import { logMessage, logToast } from "./logger";
+
 const filterCharacter = "\u2588";
+
+interface RenpyItem {
+    [key: string]: string | string[];
+}
+
+interface RenpyFunctions {
+    config: RenpyItem;
+    internal: RenpyItem;
+    renpy: RenpyItem;
+}
 
 export class NavigationData {
     static data: any = {};
-    static renpyFunctions: any;
+    static renpyFunctions: RenpyFunctions;
     static autoCompleteKeywords: any;
     static renpyAutoComplete: CompletionItem[];
     static configAutoComplete: CompletionItem[];
@@ -25,32 +36,88 @@ export class NavigationData {
     static isImporting = false;
     static isCompiling = false;
 
-    static async init(extensionPath: string) {
-        console.log(`NavigationData init`);
+    static makeCompletionItem(name: string, item: string[]): CompletionItem {
+        const storage = item[0];
+        const kind = item[1];
+        const args = item[2];
+        //const parentClass = item[3];
+        const accessKind = item[4];
+        const doc = item[5];
 
-        NavigationData.renpyFunctions = data;
+        const completionItem = new CompletionItem(name, undefined);
+        completionItem.documentation = new MarkdownString(doc);
+
+        if (accessKind === "var") {
+            completionItem.kind = CompletionItemKind.Field;
+        } else if (kind === "class" || accessKind === "class") {
+            completionItem.kind = CompletionItemKind.Class;
+        } else if (accessKind === "exception") {
+            completionItem.kind = CompletionItemKind.Issue;
+        } else if (storage === "basefile") {
+            completionItem.kind = CompletionItemKind.Field;
+        } else if (accessKind === "attribute") {
+            completionItem.kind = CompletionItemKind.Property;
+        } else if (storage === "audio") {
+            completionItem.kind = CompletionItemKind.Method;
+        } else if (accessKind === "ui") {
+            completionItem.kind = CompletionItemKind.Event;
+        } else if (kind === "image") {
+            completionItem.kind = CompletionItemKind.Constant;
+        } else if (kind === "function" || accessKind === "function") {
+            completionItem.kind = CompletionItemKind.Function;
+        } else if (accessKind === "method") {
+            completionItem.kind = CompletionItemKind.Method;
+        } else {
+            console.error("Unhandled kind: " + kind);
+        }
+
+        // Automatically add parenthesis and trigger hints for functions and methods
+        if (completionItem.kind === CompletionItemKind.Method || completionItem.kind === CompletionItemKind.Function) {
+            completionItem.insertText = new SnippetString(`${name}($1)`);
+            completionItem.command = { command: "editor.action.triggerParameterHints", title: "Parameter Hints" };
+            completionItem.detail = `def ${name}(${args})`;
+        }
+
+        if (storage === "obsolete") {
+            completionItem.tags = [CompletionItemTag.Deprecated];
+        }
+        return completionItem;
+    }
+
+    static async init(extensionPath: string) {
+        logMessage(LogLevel.Info, `NavigationData init`);
+
+        NavigationData.renpyFunctions = data as RenpyFunctions;
         NavigationData.autoCompleteKeywords = kwData;
 
         NavigationData.renpyAutoComplete = [];
-        for (const key in NavigationData.renpyFunctions.renpy) {
-            if (key.charAt(0) === key.charAt(0).toUpperCase()) {
-                NavigationData.renpyAutoComplete.push(new CompletionItem(key.substring(6), CompletionItemKind.Class));
-            } else {
-                NavigationData.renpyAutoComplete.push(new CompletionItem(key.substring(6), CompletionItemKind.Method));
+
+        // for key and value in NavigationData.renpyFunctions.renpy (which is an object)
+        for (const [key, value] of Object.entries(NavigationData.renpyFunctions.renpy)) {
+            if (typeof value === "string") {
+                continue;
             }
+            NavigationData.renpyAutoComplete.push(NavigationData.makeCompletionItem(key.substring(6), value));
         }
 
         NavigationData.configAutoComplete = [];
-        for (const key in NavigationData.renpyFunctions.config) {
-            NavigationData.configAutoComplete.push(new CompletionItem(key.substring(7), CompletionItemKind.Property));
+        for (const [key, value] of Object.entries(NavigationData.renpyFunctions.config)) {
+            if (typeof value === "string") {
+                continue;
+            }
+            NavigationData.configAutoComplete.push(NavigationData.makeCompletionItem(key.substring(7), value));
         }
 
         NavigationData.guiAutoComplete = [];
         NavigationData.internalAutoComplete = [];
-        for (const key in NavigationData.renpyFunctions.internal) {
-            NavigationData.internalAutoComplete.push(new CompletionItem(key, CompletionItemKind.Class));
+        for (const [key, value] of Object.entries(NavigationData.renpyFunctions.internal)) {
+            if (typeof value === "string") {
+                continue;
+            }
+
+            NavigationData.internalAutoComplete.push(NavigationData.makeCompletionItem(key, value));
             if (key.startsWith("gui.")) {
-                NavigationData.guiAutoComplete.push(new CompletionItem(key.substring(4), CompletionItemKind.Variable));
+                NavigationData.guiAutoComplete.push(NavigationData.makeCompletionItem(key.substring(4), value));
             }
         }
 
@@ -58,13 +125,13 @@ export class NavigationData {
     }
 
     static async refresh(interactive = false): Promise<boolean> {
-        console.log(`${Date()}: NavigationData refresh`);
+        logMessage(LogLevel.Info, `${Date()}: NavigationData refresh`);
         NavigationData.isImporting = true;
         try {
             NavigationData.data = readNavigationJson();
 
             if (NavigationData.data.error) {
-                window.showWarningMessage("Navigation data is empty. Ren'Py could not compile your project. Please check your project can start successfully.");
+                logToast(LogLevel.Warning, "Navigation data is empty. Ren'Py could not compile your project. Please check your project can start successfully.");
             }
             if (NavigationData.data.location === undefined) {
                 NavigationData.data.location = {};
@@ -99,14 +166,14 @@ export class NavigationData {
             await NavigationData.scanForFonts();
             await NavigationData.scanForAudio();
             commands.executeCommand("renpy.refreshDiagnostics");
-            console.log(`NavigationData for ${NavigationData.data.name} v${NavigationData.data.version} loaded`);
+            logMessage(LogLevel.Info, `NavigationData for ${NavigationData.data.name} v${NavigationData.data.version} loaded`);
             if (interactive) {
-                window.showInformationMessage(`NavigationData for ${NavigationData.data.name} v${NavigationData.data.version} loaded`);
+                logToast(LogLevel.Info, `NavigationData for ${NavigationData.data.name} v${NavigationData.data.version} loaded`);
             }
         } catch (error) {
-            console.log(`Error loading NavigationData.json: ${error}`);
+            logMessage(LogLevel.Error, `Error loading NavigationData.json: ${error}`);
             if (interactive) {
-                window.showErrorMessage(`NavigationData.json not loaded. Please check Ren'Py can start your project successfully.`);
+                logToast(LogLevel.Error, `NavigationData.json not loaded. Please check Ren'Py can start your project successfully.`);
             }
         } finally {
             NavigationData.isImporting = false;
@@ -201,6 +268,8 @@ export class NavigationData {
         if (locations && locations.length > 0) {
             return locations;
         }
+
+        return undefined;
     }
 
     static getNavigationDumpEntry(keyword: string): Navigation | undefined {
@@ -208,6 +277,7 @@ export class NavigationData {
         if (data) {
             return data[0];
         }
+        return undefined;
     }
 
     static getNavigationDumpEntries(keyword: string): Navigation[] | undefined {
@@ -416,6 +486,7 @@ export class NavigationData {
                 }
             }
         }
+        return;
     }
 
     static getClassData(location: Navigation): Navigation {
@@ -593,7 +664,7 @@ export class NavigationData {
             0, //location
             array[5], //documentation
             array[2], //args
-            array[4] //type
+            array[4], //type
         );
     }
 
@@ -913,7 +984,7 @@ export class NavigationData {
     }
 
     static async getCharacterImageAttributes() {
-        //console.log("getCharacterImageAttributes");
+        //logMessage(LogLevel.Info, "getCharacterImageAttributes");
         const characters = NavigationData.gameObjects["characters"];
         const displayables = NavigationData.data.location["displayable"];
         for (const key in characters) {
@@ -1034,7 +1105,7 @@ export class NavigationData {
 export function readNavigationJson() {
     try {
         const filepath = getNavigationJsonFilepath();
-        console.log(`readNavigationJson: ${filepath}`);
+        logMessage(LogLevel.Info, `readNavigationJson: ${filepath}`);
         let flatData;
         try {
             flatData = fs.readFileSync(filepath, "utf-8");
@@ -1044,7 +1115,7 @@ export function readNavigationJson() {
         const json = JSON.parse(flatData);
         return json;
     } catch (error) {
-        window.showErrorMessage(`readNavigationJson error: ${error}`);
+        logToast(LogLevel.Error, `readNavigationJson error: ${error}`);
     }
 }
 

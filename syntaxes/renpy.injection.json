@@ -1,0 +1,26 @@
+{
+  "scopeName": "renpy.comment.injection",
+  "injectionSelector": "L:string.quoted.docstring",
+  "patterns": [
+    {
+      "include": "#renpy-source"
+    }
+  ],
+  "repository": {
+    "renpy-source": {
+      "contentName": "meta.embedded.renpy",
+      "begin": "(?<=^\\\"\\\"\\\")renpy",
+      "beginCaptures": {
+        "0": {
+          "name": "keyword.renpy"
+        }
+      },
+      "end": "(?=^\\\"\\\"\\\")",
+      "patterns": [
+        {
+          "include": "source.renpy"
+        }
+      ]
+    }
+  }
+}

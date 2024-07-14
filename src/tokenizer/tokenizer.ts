@@ -434,6 +434,7 @@ class DocumentTokenizer {
                 if (backref !== undefined) {
                     return escapeRegExpCharacters(backref);
                 }
+                logCatMessage(LogLevel.Warning, LogCategory.Tokenizer, `Could not find content to replace backreference ${g1}!`);
                 return "";
             });
 

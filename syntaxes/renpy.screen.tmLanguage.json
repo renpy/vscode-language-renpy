@@ -312,7 +312,10 @@
     "screen-language": {
       "comment": "https://www.renpy.org/doc/html/screens.html#screen-language",
       "patterns": [
+        { "include": "source.renpy#define" },
+        { "include": "source.renpy#default-statement" },
         { "include": "source.renpy#conditionals" },
+        { "include": "source.renpy#python-statements" },
         { "include": "#screen-frame" },
         { "include": "#screen-window" },
         { "include": "#screen-box" },

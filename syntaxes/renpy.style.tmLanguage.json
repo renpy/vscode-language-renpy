@@ -49,7 +49,7 @@
           "beginCaptures": {
             "1": { "name": "keyword.operator.logical.python" }
           },
-          "end": "(?<=[^ \\t])(?!\\G)|$",
+          "end": "(?!\\G)(?<=[^ \\t])|$",
           "patterns": [
             {
               "name": "entity.name.type.style.base.renpy",
@@ -67,7 +67,7 @@
           "beginCaptures": {
             "1": { "name": "keyword.take.renpy" }
           },
-          "end": "(?<=[^ \\t])(?!\\G)|$",
+          "end": "(?!\\G)(?<=[^ \\t])|$",
           "patterns": [
             { "include": "source.renpy#name" },
             { "include": "source.renpy#fallback-patterns" }

@@ -434,6 +434,7 @@ class DocumentTokenizer {
                 if (backref !== undefined) {
                     return escapeRegExpCharacters(backref);
                 }
+                logCatMessage(LogLevel.Warning, LogCategory.Tokenizer, `Could not find content to replace backreference ${g1}!`);
                 return "";
             });
 
@@ -447,6 +448,13 @@ class DocumentTokenizer {
         }
         let matchEnd = reEnd.exec(result.source);
         const contentMatches = new Stack<ScanResult>();
+
+        if (!matchEnd) {
+            // If no end match could be found, we'll need to expand the range to the end of the source
+            const reLastChar = /$(?!\r\n|\r|\n)/dg;
+            reLastChar.lastIndex = Math.max(0, result.source.length - 1);
+            matchEnd = reLastChar.exec(result.source);
+        }
 
         if (matchEnd) {
             // Check if any child pattern has content that would extend the currently determined end match
@@ -639,7 +647,7 @@ class DocumentTokenizer {
         const contentNode = new TreeNode();
 
         // p.contentToken matches the range 'between'; after the end of beginMatch and before the start of endMatch
-        if (p.contentToken) {
+        if (p.contentToken && contentStart !== contentEnd) {
             contentNode.token = new Token(p.contentToken, this.positionAt(contentStart), this.positionAt(contentEnd));
         }
 
@@ -742,8 +750,14 @@ class DocumentTokenizer {
         while (lastMatchIndex < lastCharIndex) {
             const bestMatch = this.scanPattern(pattern, source, lastMatchIndex, cache);
 
-            if (!bestMatch || bestMatch.matchBegin.index >= lastCharIndex) {
+            if (!bestMatch) {
                 break; // No valid match was found in the remaining text. Break the loop
+            }
+
+            const matchBegin = bestMatch.matchBegin;
+            const beginMatchEnd = matchBegin.index + matchBegin[0].length;
+            if (matchBegin.index >= lastCharIndex || beginMatchEnd > lastCharIndex) {
+                break;
             }
 
             const failSafeIndex = lastMatchIndex; // Debug index to break in case of an infinite loop
@@ -756,8 +770,7 @@ class DocumentTokenizer {
                 const matchEnd = bestMatch.matchEnd!;
                 lastMatchIndex = matchEnd.index + matchEnd[0].length;
             } else {
-                const matchBegin = bestMatch.matchBegin;
-                lastMatchIndex = matchBegin.index + matchBegin[0].length;
+                lastMatchIndex = beginMatchEnd;
             }
 
             if (failSafeIndex === lastMatchIndex) {

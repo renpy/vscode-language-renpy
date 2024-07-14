@@ -448,6 +448,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     Other: { name: "Other", value: KeywordTokenType.Other },
     OtherPython: { name: "OtherPython", value: KeywordTokenType.OtherPython },
     OtherAudio: { name: "OtherAudio", value: KeywordTokenType.OtherAudio },
+    Layer: { name: "Layer", value: KeywordTokenType.Layer },
 
     Take: { name: "Take", value: KeywordTokenType.Take },
     Del: { name: "Del", value: KeywordTokenType.Del },
@@ -635,6 +636,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
 
     SimpleExpression: { name: "SimpleExpression", value: MetaTokenType.SimpleExpression },
 
+    RenpyBlock: { name: "RenpyBlock", value: MetaTokenType.RenpyBlock },
     CodeBlock: { name: "CodeBlock", value: MetaTokenType.CodeBlock },
     PythonLine: { name: "PythonLine", value: MetaTokenType.PythonLine },
     PythonBlock: { name: "PythonBlock", value: MetaTokenType.PythonBlock },

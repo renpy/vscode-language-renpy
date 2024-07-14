@@ -64,6 +64,7 @@ export const enum KeywordTokenType {
     Other,
     OtherPython,
     OtherAudio,
+    Layer,
 
     // Renpy style sub-expression keywords
     Take,
@@ -286,6 +287,7 @@ export const enum MetaTokenType {
 
     SimpleExpression,
 
+    RenpyBlock,
     CodeBlock,
     PythonLine,
     PythonBlock,

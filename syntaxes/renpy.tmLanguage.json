@@ -1353,9 +1353,8 @@
     "menu": {
       "name": "meta.menu.statement.renpy",
       "contentName": "meta.menu.block.renpy",
-      "begin": "^([ \\t]+)?(menu)[ \\t]*(.+)?(:)",
+      "begin": "(?<=(^[ \\t]*))(menu)[ \\t]*(.+)?(:)",
       "beginCaptures": {
-        "1": { "name": "punctuation.whitespace.menu.leading.renpy" },
         "2": { "name": "storage.type.function.renpy" },
         "3": {
           "patterns": [
@@ -1364,7 +1363,15 @@
               "match": "[a-zA-Z_.]\\w*",
               "name": "entity.name.function.menu.renpy"
             },
-            { "include": "source.renpy.python#odd-function-call" }
+            {
+              "name": "meta.function-call.python",
+              "begin": "(?<=\\bmenu\\s*)(?=\\()",
+              "end": "(\\))",
+              "endCaptures": {
+                "1": { "name": "punctuation.definition.arguments.end.python" }
+              },
+              "patterns": [ { "include": "source.renpy.python#function-arguments" } ]
+            }
           ]
         },
         "4": { "name": "punctuation.section.menu.begin.renpy" }

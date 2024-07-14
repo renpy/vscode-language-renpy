@@ -742,8 +742,14 @@ class DocumentTokenizer {
         while (lastMatchIndex < lastCharIndex) {
             const bestMatch = this.scanPattern(pattern, source, lastMatchIndex, cache);
 
-            if (!bestMatch || bestMatch.matchBegin.index >= lastCharIndex) {
+            if (!bestMatch) {
                 break; // No valid match was found in the remaining text. Break the loop
+            }
+
+            const matchBegin = bestMatch.matchBegin;
+            const beginMatchEnd = matchBegin.index + matchBegin[0].length;
+            if (matchBegin.index >= lastCharIndex || beginMatchEnd > lastCharIndex) {
+                break;
             }
 
             const failSafeIndex = lastMatchIndex; // Debug index to break in case of an infinite loop
@@ -756,8 +762,7 @@ class DocumentTokenizer {
                 const matchEnd = bestMatch.matchEnd!;
                 lastMatchIndex = matchEnd.index + matchEnd[0].length;
             } else {
-                const matchBegin = bestMatch.matchBegin;
-                lastMatchIndex = matchBegin.index + matchBegin[0].length;
+                lastMatchIndex = beginMatchEnd;
             }
 
             if (failSafeIndex === lastMatchIndex) {

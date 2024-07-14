@@ -449,6 +449,13 @@ class DocumentTokenizer {
         let matchEnd = reEnd.exec(result.source);
         const contentMatches = new Stack<ScanResult>();
 
+        if (!matchEnd) {
+            // If no end match could be found, we'll need to expand the range to the end of the source
+            const reLastChar = /$(?!\r\n|\r|\n)/dg;
+            reLastChar.lastIndex = Math.max(0, result.source.length - 1);
+            matchEnd = reLastChar.exec(result.source);
+        }
+
         if (matchEnd) {
             // Check if any child pattern has content that would extend the currently determined end match
             if (p._patternsRepo) {

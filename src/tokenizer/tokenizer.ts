@@ -639,7 +639,7 @@ class DocumentTokenizer {
         const contentNode = new TreeNode();
 
         // p.contentToken matches the range 'between'; after the end of beginMatch and before the start of endMatch
-        if (p.contentToken) {
+        if (p.contentToken && contentStart !== contentEnd) {
             contentNode.token = new Token(p.contentToken, this.positionAt(contentStart), this.positionAt(contentEnd));
         }
 

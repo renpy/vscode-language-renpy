@@ -94,6 +94,8 @@ label start:
     e "Ren'Py is a language and engine for writing and playing visual
        novel games."
 
+   $ seen = 1
+
     e "Our goal is to allow people to be able to write the script for
        a game, and with very little effort, turn that script into
        a working game."

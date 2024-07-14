@@ -226,32 +226,45 @@
             "default": true,
             "description": "Show Automatic Images in the displayable auto-completion list. If not checked (false), only images defined in the script will be shown. If checked (true), both script-defined images and images detected in the images folders will be shown."
           },
-          "renpy.warnOnObsoleteMethods": {
+          "renpy.diagnostics.diagnosticMode": {
+            "type": "string",
+            "default": "openFilesOnly",
+            "enum": [
+              "openFilesOnly",
+              "workspace"
+            ],
+            "enumDescriptions": [
+              "Only diagnoses open files.",
+              "Diagnose all Ren'Py files in the workspace. This mode applies recursive expressions that can be resource-intensive in projects with a large codebase."
+            ],
+            "description": "Select whether to analyze all Ren'Py files in the workspace or only open files (default)."
+          },
+          "renpy.diagnostics.warnOnObsoleteMethods": {
             "type": "boolean",
             "default": true,
             "description": "Enable obsolete method warnings. If checked (true), obsolete methods (e.g., im.Crop) will be marked with a warning in the editor."
           },
-          "renpy.warnOnUndefinedPersistents": {
+          "renpy.diagnostics.warnOnUndefinedPersistents": {
             "type": "boolean",
             "default": true,
             "description": "Enable undefined persistent warnings. If checked (true), persistent variables will be marked with a warning in the editor if they haven't been defaulted/defined."
           },
-          "renpy.warnOnUndefinedStoreVariables": {
+          "renpy.diagnostics.warnOnUndefinedStoreVariables": {
             "type": "boolean",
             "default": true,
             "description": "Enable undefined store variable warnings. If checked (true), store variables will be marked with a warning in the editor if they haven't been defaulted/defined."
           },
-          "renpy.warnOnReservedVariableNames": {
+          "renpy.diagnostics.warnOnReservedVariableNames": {
             "type": "boolean",
             "default": true,
             "description": "Enable reserved variable warnings. If checked (true), variables will be marked with an error in the editor if they are in the list of names reserved by Python."
           },
-          "renpy.warnOnInvalidVariableNames": {
+          "renpy.diagnostics.warnOnInvalidVariableNames": {
             "type": "boolean",
             "default": true,
             "description": "Enable invalid variable errors. Variables must begin with a letter or number. They may contain a '_' but may not begin with '_'. If set to true, variables will be flagged in the editor if they do not meet Ren'Py's specifications."
           },
-          "renpy.warnOnIndentationAndSpacingIssues": {
+          "renpy.diagnostics.warnOnIndentationAndSpacingIssues": {
             "type": "string",
             "default": "Error",
             "enum": [
@@ -266,7 +279,7 @@
             ],
             "description": "Enable indentation and inconsistent spacing checks. If set to Error or Warning, tab characters and inconsistent indentation spacing will be marked in the editor. If set to Disabled, indentation issues will be ignored."
           },
-          "renpy.warnOnInvalidFilenameIssues": {
+          "renpy.diagnostics.warnOnInvalidFilenameIssues": {
             "type": "string",
             "default": "Error",
             "enum": [

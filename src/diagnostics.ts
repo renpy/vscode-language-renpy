@@ -1,6 +1,7 @@
 // Diagnostics (warnings and errors)
-import { Diagnostic, DiagnosticCollection, DiagnosticSeverity, ExtensionContext, Range, TextDocument, window, workspace } from "vscode";
+import { commands, Diagnostic, DiagnosticCollection, DiagnosticSeverity, Disposable, ExtensionContext, FileType, languages, Range, TextDocument, Uri, window, workspace } from "vscode";
 import { NavigationData } from "./navigation-data";
+import { getAllOpenTabInputTextUri } from "./utilities/functions";
 import { extractFilename } from "./workspace";
 
 // Renpy Store Variables (https://www.renpy.org/doc/html/store_variables.html)
@@ -50,18 +51,51 @@ const rxStoreCheck = /\s+store\.(\w+)[^a-zA-Z_]?/g;
 const rxTabCheck = /^(\t+)/g;
 const rsComparisonCheck = /\s+(if|while)\s+(\w+)\s*(=)\s*(\w+)\s*/g;
 
+const diagnosticModeEvents: Disposable[] = [];
+
+/**
+ * Init diagnostics
+ * @param context extension context
+ */
+export function diagnosticsInit(context: ExtensionContext) {
+    const diagnostics = languages.createDiagnosticCollection("renpy");
+    context.subscriptions.push(diagnostics);
+
+    // custom command - refresh diagnostics
+    const refreshDiagnosticsCommand = commands.registerCommand("renpy.refreshDiagnostics", () => {
+        if (window.activeTextEditor) {
+            refreshDiagnostics(window.activeTextEditor.document, diagnostics);
+        }
+    });
+    context.subscriptions.push(refreshDiagnosticsCommand);
+
+    // Listen to diagnosticMode changes
+    context.subscriptions.push(
+        workspace.onDidChangeConfiguration((e) => {
+            if (e.affectsConfiguration("renpy.diagnostics.diagnosticMode")) {
+                updateDiagnosticMode(context, diagnostics);
+            }
+        }),
+    );
+
+    const onDidChangeTextDocument = workspace.onDidChangeTextDocument((doc) => refreshDiagnostics(doc.document, diagnostics));
+    context.subscriptions.push(onDidChangeTextDocument);
+
+    updateDiagnosticMode(context, diagnostics);
+}
+
 /**
  * Analyzes the text document for problems.
  * @param doc text document to analyze
  * @param diagnostics diagnostic collection
  */
-export function refreshDiagnostics(doc: TextDocument, diagnosticCollection: DiagnosticCollection): void {
+function refreshDiagnostics(doc: TextDocument, diagnosticCollection: DiagnosticCollection): void {
     if (doc.languageId !== "renpy") {
         return;
     }
 
     const diagnostics: Diagnostic[] = [];
-    const config = workspace.getConfiguration("renpy");
+    const config = workspace.getConfiguration("renpy.diagnostics");
 
     //Filenames must begin with a letter or number,
     //and may not begin with "00", as Ren'Py uses such files for its own purposes.
@@ -165,22 +199,55 @@ export function refreshDiagnostics(doc: TextDocument, diagnosticCollection: Diag
     diagnosticCollection.set(doc.uri, diagnostics);
 }
 
-export function subscribeToDocumentChanges(context: ExtensionContext, diagnostics: DiagnosticCollection): void {
-    if (window.activeTextEditor) {
-        refreshDiagnostics(window.activeTextEditor.document, diagnostics);
+function refreshOpenDocuments(diagnosticCollection: DiagnosticCollection) {
+    diagnosticCollection.clear();
+    const tabInputTextUris = getAllOpenTabInputTextUri();
+    tabInputTextUris.forEach((uri) => {
+        diagnoseFromUri(uri, diagnosticCollection);
+    });
+}
+
+function diagnoseFromUri(uri: Uri, diagnosticCollection: DiagnosticCollection) {
+    workspace.fs.stat(uri).then((stat) => {
+        if (stat.type === FileType.File) {
+            workspace.openTextDocument(uri).then((document) => refreshDiagnostics(document, diagnosticCollection));
+        }
+    });
+}
+
+function onDeleteFromWorkspace(uri: Uri, diagnosticCollection: DiagnosticCollection) {
+    diagnosticCollection.forEach((diagnosticUri) => {
+        if (diagnosticUri.fsPath.startsWith(uri.fsPath)) {
+            diagnosticCollection.delete(diagnosticUri);
+        }
+    });
+}
+
+function updateDiagnosticMode(context: ExtensionContext, diagnosticCollection: DiagnosticCollection): void {
+    diagnosticModeEvents.forEach((e) => e.dispose());
+    if (workspace.getConfiguration("renpy.diagnostics").get<string>("diagnosticMode") === "openFilesOnly") {
+        context.subscriptions.push(window.onDidChangeVisibleTextEditors(() => refreshOpenDocuments(diagnosticCollection), undefined, diagnosticModeEvents));
+        // There is no guarantee that this event fires when an editor tab is closed
+        context.subscriptions.push(
+            workspace.onDidCloseTextDocument(
+                (doc) => {
+                    if (diagnosticCollection.has(doc.uri)) {
+                        diagnosticCollection.delete(doc.uri);
+                    }
+                },
+                undefined,
+                diagnosticModeEvents,
+            ),
+        );
+        refreshOpenDocuments(diagnosticCollection);
+    } else {
+        const fsWatcher = workspace.createFileSystemWatcher("**/*");
+        diagnosticModeEvents.push(fsWatcher);
+        fsWatcher.onDidChange((uri) => diagnoseFromUri(uri, diagnosticCollection));
+        fsWatcher.onDidCreate((uri) => diagnoseFromUri(uri, diagnosticCollection));
+        fsWatcher.onDidDelete((uri) => onDeleteFromWorkspace(uri, diagnosticCollection));
+        workspace.findFiles("**/*.rpy").then((uris) => uris.forEach((uri) => diagnoseFromUri(uri, diagnosticCollection)));
     }
-
-    context.subscriptions.push(
-        window.onDidChangeActiveTextEditor((editor) => {
-            if (editor) {
-                refreshDiagnostics(editor.document, diagnostics);
-            }
-        }),
-    );
-
-    context.subscriptions.push(workspace.onDidChangeTextDocument((e) => refreshDiagnostics(e.document, diagnostics)));
-
-    context.subscriptions.push(workspace.onDidCloseTextDocument((doc) => diagnostics.delete(doc.uri)));
 }
 
 function checkObsoleteMethods(diagnostics: Diagnostic[], line: string, lineIndex: number) {

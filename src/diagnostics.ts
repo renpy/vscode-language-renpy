@@ -1,6 +1,4 @@
 // Diagnostics (warnings and errors)
-"use strict";
-
 import { commands, Diagnostic, DiagnosticCollection, DiagnosticSeverity, Disposable, ExtensionContext, FileType, languages, Range, TextDocument, Uri, window, workspace } from "vscode";
 import { NavigationData } from "./navigation-data";
 import { getAllOpenTabInputTextUri } from "./utilities/functions";
@@ -77,7 +75,7 @@ export function diagnosticsInit(context: ExtensionContext) {
             if (e.affectsConfiguration("renpy.diagnostics.diagnosticMode")) {
                 updateDiagnosticMode(context, diagnostics);
             }
-        })
+        }),
     );
 
     const onDidChangeTextDocument = workspace.onDidChangeTextDocument((doc) => refreshDiagnostics(doc.document, diagnostics));
@@ -165,7 +163,7 @@ function refreshDiagnostics(doc: TextDocument, diagnosticCollection: DiagnosticC
                     const diagnostic = new Diagnostic(
                         range,
                         `Inconsistent spacing detected (${indention} given, expected a multiple of ${firstIndentation}). Indentation must consist only of spaces in Ren'Py scripts. Each indentation level must consist of the same number of spaces. (4 spaces is strongly recommended.)`,
-                        severity
+                        severity,
                     );
                     diagnostics.push(diagnostic);
                 }
@@ -238,8 +236,8 @@ function updateDiagnosticMode(context: ExtensionContext, diagnosticCollection: D
                     }
                 },
                 undefined,
-                diagnosticModeEvents
-            )
+                diagnosticModeEvents,
+            ),
         );
         refreshOpenDocuments(diagnosticCollection);
     } else {

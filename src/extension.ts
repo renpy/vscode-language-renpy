@@ -81,7 +81,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
                     logMessage(LogLevel.Error, error as string);
                 }
             }
-        })
+        }),
     );
 
     // diagnostics (errors and warnings)
@@ -167,7 +167,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
                 request: "launch",
                 program: rpyPath,
             },
-            { noDebug: true }
+            { noDebug: true },
         );
 
         //call renpy
@@ -281,8 +281,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
                     ];
                 },
             },
-            DebugConfigurationProviderTriggerKind.Dynamic
-        )
+            DebugConfigurationProviderTriggerKind.Dynamic,
+        ),
     );
 
     const taskProvider = new RenpyTaskProvider();

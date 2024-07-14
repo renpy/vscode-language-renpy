@@ -242,7 +242,7 @@ async function updateDecorations() {
             range: range,
             hoverMessage: {
                 language: "text",
-                value: `Token: ${tokenTypeToStringMap[token.type]}(id: ${token.type})
+                value: `${token.isMetaToken() ? "MetaToken" : "Token"}: ${tokenTypeToStringMap[token.type]}(id: ${token.type})
 Start: {Line: ${range.start.line + 1}, Char: ${range.start.character + 1}}
 End: {Line: ${range.end.line + 1}, Char: ${range.end.character + 1}}
 Content: {${content?.replaceAll("\n", "\\n")}}`,
@@ -327,6 +327,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case KeywordTokenType.Other:
             case KeywordTokenType.OtherPython:
             case KeywordTokenType.OtherAudio:
+            case KeywordTokenType.Layer:
             case KeywordTokenType.Take: // Renpy style sub-expression keywords
             case KeywordTokenType.Del:
             case KeywordTokenType.Clear:

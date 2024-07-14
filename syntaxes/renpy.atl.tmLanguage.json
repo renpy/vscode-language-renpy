@@ -378,17 +378,13 @@
     },
 
     "atl-block-tester": {
-      "patterns": [
-        {
-          "contentName": "meta.atl-block.renpy",
-          "begin": "(?<=(^[ \\t]*)(?:camera|image|show|scene|transform|on|block|parallel|contains|choice)\\b.*?)(:)",
-          "beginCaptures": {
-            "2": { "name": "punctuation.section.atl.begin.renpy" }
-          },
-          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [ { "include": "source.renpy.atl" } ]
-        }
-      ]
+      "contentName": "meta.atl-block.renpy",
+      "begin": "(?<=(^[ \\t]*)(?:camera|image|show|scene|transform|on|block|parallel|contains|choice)\\b.*?)(:)",
+      "beginCaptures": {
+        "2": { "name": "punctuation.section.atl.begin.renpy" }
+      },
+      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
+      "patterns": [ { "include": "source.renpy.atl" } ]
     },
 
     "transform": {

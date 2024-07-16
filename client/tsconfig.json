@@ -1,0 +1,18 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "../tsconfig.base.json",
+
+    "compilerOptions": {
+        "module": "NodeNext",
+        "target": "ESNext",
+        "lib": [ "ESNext" ],
+        "baseUrl": ".", // Base directory to resolve non-absolute module names.
+        "rootDir": "src",
+        "outDir": "out",
+
+        /* Source Map Options */
+        "sourceMap": true,
+    },
+    "exclude": [ "node_modules", ".vscode-test", "dist", "out" ],
+    "include": [ "src/**/*.ts", "./node_modules/vscode/vscode.d.ts", "./node_modules/vscode/lib/*", "node_modules/node-hot-loader/NodeHotLoaderWebpackPlugin.d.ts" ],
+}

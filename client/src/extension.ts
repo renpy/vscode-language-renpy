@@ -4,7 +4,32 @@
 
 import * as cp from "child_process";
 import * as fs from "fs";
-import { ExtensionContext, languages, commands, window, TextDocument, Position, debug, Range, workspace, Uri, DebugConfiguration, ProviderResult, DebugConfigurationProviderTriggerKind, tasks, LogLevel, ExtensionMode } from "vscode";
+import * as path from "path";
+import {
+    ExtensionContext,
+    languages,
+    commands,
+    window,
+    TextDocument,
+    Position,
+    debug,
+    Range,
+    workspace,
+    Uri,
+    DebugConfiguration,
+    ProviderResult,
+    DebugConfigurationProviderTriggerKind,
+    tasks,
+    LogLevel,
+    ExtensionMode,
+    Diagnostic,
+    Command,
+    CodeAction,
+    CodeActionContext,
+    NotebookCell,
+} from "vscode";
+import { DiagnosticPullMode, ErrorHandler, LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions, TransportKind } from "vscode-languageclient/node";
+
 import { colorProvider } from "./color";
 import { getStatusBarText, NavigationData } from "./navigation-data";
 import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
@@ -22,8 +47,10 @@ import { initializeLoggingSystems, logMessage, logToast, updateStatusBar } from 
 import { Configuration } from "./configuration";
 import { RenpyAdapterDescriptorFactory, RenpyConfigurationProvider } from "./debugger";
 import { RenpyTaskProvider } from "./task-provider";
+import { testParser } from "./parser/parser-test";
 
 let extensionMode: ExtensionMode = null!;
+let client: LanguageClient;
 
 export function isShippingBuild(): boolean {
     return extensionMode !== ExtensionMode.Development;
@@ -33,6 +60,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
     extensionMode = context.extensionMode;
     initializeLoggingSystems(context);
     updateStatusBar("$(sync~spin) Loading Ren'Py extension...");
+
+    startServer(context);
+
+    testParser();
 
     Configuration.initialize(context);
 
@@ -291,9 +322,11 @@ export async function activate(context: ExtensionContext): Promise<void> {
     logMessage(LogLevel.Info, "Ren'Py extension activated!");
 }
 
-export function deactivate() {
+export function deactivate(): Thenable<void> | undefined {
     logMessage(LogLevel.Info, "Ren'Py extension deactivating");
     fs.unwatchFile(getNavigationJsonFilepath());
+
+    return stopServer();
 }
 
 export function getKeywordPrefix(document: TextDocument, position: Position, range: Range): string | undefined {
@@ -328,6 +361,213 @@ export function isValidExecutable(renpyExecutableLocation: string): boolean {
     }
     return fs.existsSync(renpyExecutableLocation);
 }
+
+function startServer(context: ExtensionContext) {
+    // The server is implemented in node
+    const serverModule = context.asAbsolutePath(path.join("dist", "server.js"));
+
+    // If the extension is launched in debug mode then the debug server options are used
+    // Otherwise the run options are used
+    const serverOptions: ServerOptions = {
+        run: { module: serverModule, transport: TransportKind.ipc },
+        debug: { module: serverModule, transport: TransportKind.ipc },
+    };
+
+    const defaultErrorHandler: ErrorHandler = client.createDefaultErrorHandler();
+    let serverCalledProcessExit: boolean = false;
+    // see https://github.com/microsoft/vscode-eslint/blob/edc9685bcda26462dc52decce213167af8d2b25d/client/src/client.ts#L87
+
+    // Options to control the language client
+    const clientOptions: LanguageClientOptions = {
+        // Register the server for renpy documents
+        documentSelector: [{ scheme: "file", language: "renpy" }],
+        revealOutputChannelOn: RevealOutputChannelOn.Debug,
+        initializationOptions: {},
+        progressOnInitialization: true,
+        synchronize: {
+            // Notify the server about file changes to '.clientrc files contained in the workspace
+            fileEvents: workspace.createFileSystemWatcher("**/package.json"),
+        },
+        initializationFailedHandler: (error) => {
+            client.error("Server initialization failed.", error);
+            client.outputChannel.show(true);
+            return false;
+        },
+        errorHandler: {
+            error: (error, message, count) => {
+                return defaultErrorHandler.error(error, message, count);
+            },
+            closed: () => {
+                if (serverCalledProcessExit) {
+                    return { action: CloseAction.DoNotRestart };
+                }
+                return defaultErrorHandler.closed();
+            },
+        },
+        diagnosticPullOptions: {
+            onChange: true,
+            onSave: true,
+            filter: (document, mode) => {
+                const config = workspace.getConfiguration("eslint", document);
+                const run = config.get<RunValues>("run", "onType");
+                if (mode === DiagnosticPullMode.onType && run !== "onType") {
+                    return true;
+                } else if (mode === DiagnosticPullMode.onSave && run !== "onSave") {
+                    return true;
+                }
+                return validator.check(document) === Validate.off;
+            },
+            onTabs: false,
+        },
+        middleware: {
+            didOpen: async (document, next) => {
+                if (languages.match(packageJsonFilter, document) || languages.match(configFileFilter, document) || validator.check(document) !== Validate.off) {
+                    const result = next(document);
+                    syncedDocuments.set(document.uri.toString(), document);
+
+                    return result;
+                }
+            },
+            didChange: async (event, next) => {
+                if (syncedDocuments.has(event.document.uri.toString())) {
+                    return next(event);
+                }
+            },
+            willSave: async (event, next) => {
+                if (syncedDocuments.has(event.document.uri.toString())) {
+                    return next(event);
+                }
+            },
+            willSaveWaitUntil: (event, next) => {
+                if (syncedDocuments.has(event.document.uri.toString())) {
+                    return next(event);
+                } else {
+                    return Promise.resolve([]);
+                }
+            },
+            didSave: async (document, next) => {
+                if (syncedDocuments.has(document.uri.toString())) {
+                    return next(document);
+                }
+            },
+            didClose: async (document, next) => {
+                const uri = document.uri.toString();
+                if (syncedDocuments.has(uri)) {
+                    syncedDocuments.delete(uri);
+                    return next(document);
+                }
+            },
+            notebooks: {
+                didOpen: (notebookDocument, cells, next) => {
+                    const result = next(notebookDocument, cells);
+                    for (const cell of cells) {
+                        syncedDocuments.set(cell.document.uri.toString(), cell.document);
+                    }
+                    return result;
+                },
+                didChange: (event, next) => {
+                    if (event.cells?.structure?.didOpen !== undefined) {
+                        for (const open of event.cells.structure.didOpen) {
+                            syncedDocuments.set(open.document.uri.toString(), open.document);
+                        }
+                    }
+                    if (event.cells?.structure?.didClose !== undefined) {
+                        for (const closed of event.cells.structure.didClose) {
+                            syncedDocuments.delete(closed.document.uri.toString());
+                        }
+                    }
+                    return next(event);
+                },
+                didClose: (document, cells, next) => {
+                    for (const cell of cells) {
+                        const key = cell.document.uri.toString();
+                        syncedDocuments.delete(key);
+                    }
+                    return next(document, cells);
+                },
+            },
+            provideCodeActions: async (document, range, context, token, next): Promise<(Command | CodeAction)[] | null | undefined> => {
+                if (!syncedDocuments.has(document.uri.toString())) {
+                    return [];
+                }
+                if (context.only !== undefined && !supportedQuickFixKinds.has(context.only.value)) {
+                    return [];
+                }
+                if (context.only === undefined && (!context.diagnostics || context.diagnostics.length === 0)) {
+                    return [];
+                }
+                const eslintDiagnostics: Diagnostic[] = [];
+                for (const diagnostic of context.diagnostics) {
+                    if (diagnostic.source === "eslint") {
+                        eslintDiagnostics.push(diagnostic);
+                    }
+                }
+                if (context.only === undefined && eslintDiagnostics.length === 0) {
+                    return [];
+                }
+                const newContext: CodeActionContext = Object.assign({}, context, { diagnostics: eslintDiagnostics });
+                const start = Date.now();
+                const result = await next(document, range, newContext, token);
+                if (context.only?.value.startsWith("source.fixAll")) {
+                    let performanceInfo = performanceStatus.get(document.languageId);
+                    if (performanceInfo === undefined) {
+                        performanceInfo = PerformanceStatus.defaultValue;
+                        performanceStatus.set(document.languageId, performanceInfo);
+                    } else {
+                        performanceInfo.firstReport = false;
+                    }
+                    performanceInfo.fixTime = Date.now() - start;
+                    updateStatusBar(document);
+                }
+                return result;
+            },
+            workspace: {
+                didChangeWatchedFile: (event, next) => {
+                    validator.clear();
+                    return next(event);
+                },
+                didChangeConfiguration: async (sections, next) => {
+                    if (migration !== undefined && (sections === undefined || sections.length === 0)) {
+                        migration.captureDidChangeSetting(() => {
+                            return next(sections);
+                        });
+                    } else {
+                        return next(sections);
+                    }
+                },
+                configuration: (params) => {
+                    return readConfiguration(params);
+                },
+            },
+        },
+        notebookDocumentOptions: {
+            filterCells: (_notebookDocument, cells) => {
+                const result: NotebookCell[] = [];
+                for (const cell of cells) {
+                    const document = cell.document;
+                    if (Languages.match(packageJsonFilter, document) || Languages.match(configFileFilter, document) || validator.check(document) !== Validate.off) {
+                        result.push(cell);
+                    }
+                }
+                return result;
+            },
+        },
+    };
+
+    // Create the language client and start the client.
+    client = new LanguageClient("languageServerExample", "Language Server Example", serverOptions, clientOptions);
+
+    // Start the client. This will also launch the server
+    client.start();
+}
+
+function stopServer(): Thenable<void> | undefined {
+    if (!client) {
+        return undefined;
+    }
+    return client.stop();
+}
+
 // Attempts to run renpy executable through console commands.
 function RunWorkspaceFolder(): boolean {
     const rpyPath = Configuration.getRenpyExecutablePath();

@@ -12,7 +12,7 @@ const PATHS = {
 
 export const basePlugins: (((this: Compiler, compiler: Compiler) => void) | WebpackPluginInstance)[] = [
     new CopyWebpackPlugin({
-        patterns: [{ from: "src", to: ".", globOptions: { ignore: ["**/test/**", "**/*.ts"] }, noErrorOnMissing: true }],
+        patterns: [{ from: "client/src", to: ".", globOptions: { ignore: ["**/test/**", "**/*.ts"] }, noErrorOnMissing: true }],
     }),
     new ForkTsCheckerWebpackPlugin({
         typescript: {
@@ -27,20 +27,12 @@ export const basePlugins: (((this: Compiler, compiler: Compiler) => void) | Webp
 
 export const baseConfig: Configuration = {
     mode: "none", // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
-    output: {
-        // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
-        filename: "extension.js",
-        path: PATHS.dist,
-        library: {
-            type: "commonjs2",
-        },
-        devtoolModuleFilenameTemplate: "../[resource-path]", // Removes the webpack:/// prefix from source maps
-    },
+
     module: {
         rules: [
             {
                 test: /\.ts$/,
-                include: PATHS.src,
+                exclude: /node_modules/,
                 use: [
                     {
                         // configure TypeScript loader:
@@ -58,9 +50,6 @@ export const baseConfig: Configuration = {
     },
     externals: {
         vscode: "commonjs vscode", // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
-    },
-    entry: {
-        extension: path.join(PATHS.src, "extension.ts"),
     },
     devtool: "source-map",
 
@@ -99,6 +88,7 @@ export const nodeConfig: Configuration = {
     },
     resolve: {
         // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
+        conditionNames: ["import", "require", "node"],
         mainFields: ["module", "main"],
         extensions: [".ts", ".js"], // support ts-files and js-files
     },

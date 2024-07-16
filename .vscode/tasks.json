@@ -36,6 +36,9 @@
     {
       "type": "npm",
       "script": "watch",
+      "dependsOn": [
+        "install_task"
+      ],
       "problemMatcher": {
         "owner": "typescript",
         "fileLocation": "relative",
@@ -69,11 +72,14 @@
       "presentation": {
         "reveal": "never",
         "clear": true,
-        "close": true
+        "panel": "dedicated"
       },
       "group": {
         "kind": "build",
         "isDefault": true
+      },
+      "runOptions": {
+        "runOn": "folderOpen"
       }
     },
     {
@@ -112,7 +118,8 @@
       "presentation": {
         "reveal": "never",
         "clear": true,
-        "close": true
+        "close": true,
+        "panel": "dedicated"
       },
       "group": "build"
     },
@@ -120,7 +127,27 @@
       "type": "npm",
       "script": "lint",
       "group": "build",
-      "problemMatcher": [ "$eslint-stylish" ]
+      "problemMatcher": [
+        "$eslint-stylish"
+      ]
+    },
+    {
+      "label": "install_task",
+      "type": "npm",
+      "script": "install",
+      "group": "build",
+      "problemMatcher": [ ],
+      "isBackground": true,
+      "presentation": {
+        "reveal": "never",
+        "clear": true,
+        "close": true,
+        "panel": "dedicated"
+      },
+      "detail": "install dependencies from package",
+      "runOptions": {
+        "runOn": "folderOpen"
+      }
     }
   ]
 }

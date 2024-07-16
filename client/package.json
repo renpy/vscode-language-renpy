@@ -1,0 +1,16 @@
+{
+	"name": "client",
+	"private": true,
+	"version": "2.3.10",
+
+	"engines": {
+		"vscode": "^1.91.0"
+	},
+	"dependencies": {
+		"vscode-languageclient": "^9.0.1"
+	},
+	"devDependencies": {
+		"@types/vscode": "^1.91.0",
+		"@vscode/debugadapter": "^1.66.0"
+	}
+}

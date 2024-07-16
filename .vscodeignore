@@ -5,6 +5,7 @@ examples/**
 src
 out
 node_modules
+**/*.ts
 **/*.map
 
 # Specific root files
@@ -14,7 +15,5 @@ node_modules
 .gitignore
 CODE_OF_CONDUCT.md
 Contributing.md
-package-lock.json
-tsconfig.json
-browser.webpack.config.ts
-webpack.config.ts
+**/package-lock.json
+**/tsconfig.json

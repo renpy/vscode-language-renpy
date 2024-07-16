@@ -14,6 +14,8 @@
         "--extensionDevelopmentPath=${workspaceFolder}",
         "${workspaceFolder}/examples" // open examples directory
       ],
+      "autoAttachChildProcesses": true,
+      "sourceMaps": true,
       "outFiles": [ "${workspaceFolder}/dist/**/*.js" ],
       "preLaunchTask": "npm: watch",
       "skipFiles": [ "<node_internals>/**", "**/extensions/git*/**", "**/node_modules/prettier/**", "**/node/extensionHostProcess.js" ]

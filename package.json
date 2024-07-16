@@ -27,7 +27,7 @@
     "Snippets"
   ],
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.91.0"
   },
   "capabilities": {
     "untrustedWorkspaces": {
@@ -298,6 +298,23 @@
             "type": "string",
             "default": "",
             "description": "Location of Ren'Py installation. Should be .exe on Windows and .sh on Mac/Linux."
+          },
+          "renpy.maxNumberOfProblems": {
+            "scope": "resource",
+            "type": "number",
+            "default": 100,
+            "description": "Controls the maximum number of problems produced by the server."
+          },
+          "renpy.trace.server": {
+            "scope": "window",
+            "type": "string",
+            "enum": [
+              "off",
+              "messages",
+              "verbose"
+            ],
+            "default": "off",
+            "description": "Traces the communication between VS Code and the language server."
           }
         }
       }
@@ -305,35 +322,43 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
-    "package": "webpack --mode production --devtool hidden-source-map",
-    "watch": "webpack --mode development --watch",
-    "watch-release": "webpack --mode production --watch",
+    "package": "webpack --mode production --devtool hidden-source-map --config ./client/webpack.config.ts && webpack --mode production --devtool hidden-source-map --config ./server/webpack.config.ts",
+
+    "watch": "npm-run-all -p watch:*",
+    "watch:client": "webpack --mode development --watch --config ./client/webpack.config.ts",
+    "watch:server": "webpack --mode development --watch --config ./server/webpack.config.ts",
+
+    "lint": "eslint ./client/src ./server/src -c .eslintrc.json --ext .ts",
+
+    "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
+
     "test-compile": "tsc -p ./",
     "test": "npm run test-compile && node ./node_modules/vscode/bin/test",
-    "lint": "eslint -c .eslintrc.json --ext .ts ./src/",
     "vsce-package": "vsce package -o language-renpy.vsix",
-    "format-check": "prettier --check 'src/**/*.ts' '.github/**/*.yml'"
+    "format-check": "prettier --check '**/*.ts' '.github/**/*.yml'"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.7",
+
     "@types/node": "^20.14.10",
-    "@types/vscode": "1.75",
-    "@types/webpack": "^5.28.5",
-    "@typescript-eslint/eslint-plugin": "^7.15.0",
-    "@typescript-eslint/parser": "^7.15.0",
-    "@vscode/debugadapter": "^1.66.0",
-    "@vscode/vsce": "^2.29.0",
-    "copy-webpack-plugin": "^12.0.2",
-    "eslint": "^8.42.0",
-    "eslint-plugin-import": "^2.29.1",
-    "fork-ts-checker-webpack-plugin": "^9.0.2",
-    "node-polyfill-webpack-plugin": "^4.0.0",
-    "prettier": "^3.3.2",
-    "ts-loader": "^9.5.1",
-    "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
+    "@types/webpack": "^5.28.5",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/parser": "^7.16.0",
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
+    "eslint-plugin-import": "^2.29.1",
+    "prettier": "^3.3.3",
+
+    "@vscode/vsce": "^2.30.0",
     "vscode-test": "^1.6.1",
-    "webpack": "^5.92.1",
-    "webpack-cli": "^5.1.4"
+
+    "webpack": "^5.93.0",
+    "ts-node": "^10.9.2",
+    "webpack-cli": "^5.1.4",
+    "copy-webpack-plugin": "^12.0.2",
+    "fork-ts-checker-webpack-plugin": "^9.0.2",
+    "ts-loader": "^9.5.1",
+
+    "npm-run-all": "^4.1.5"
   }
 }

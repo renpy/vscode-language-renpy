@@ -10,6 +10,7 @@
     "out": true, // set this to false to include "out" folder in search results
     "dist": true // set this to false to include "dist" folder in search results
   },
+  "task.allowAutomaticTasks": "on",
   "cmake.configureOnOpen": true,
   "editor.formatOnPaste": false,
   "editor.formatOnSave": true,

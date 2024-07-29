@@ -50,7 +50,7 @@ jobs:
       - name: Build Extension
         run: npm run vsce-package
       - name: Upload Extension
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: languague-renpy-package
           path: "**/*.vsix"

@@ -316,7 +316,7 @@
   },
   "devDependencies": {
     "@types/mocha": "^10.0.7",
-    "@types/node": "^20.14.10",
+    "@types/node": "^22.0.2",
     "@types/vscode": "1.75",
     "@types/webpack": "^5.28.5",
     "@typescript-eslint/eslint-plugin": "^7.15.0",

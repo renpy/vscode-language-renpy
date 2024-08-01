@@ -8,7 +8,7 @@ const stringParser = new StringLiteralRule();
 const identifierParser = new IdentifierRule();
 const pythonExpressionParser = new PythonExpressionRule();
 const simpleExpressionParser = new SimpleExpressionRule();
-const memberAccessParser = new MemberAccessExpressionRule();
+// const memberAccessParser = new MemberAccessExpressionRule();
 
 /**
  * define_operator = "+=" | "|=" | "=";

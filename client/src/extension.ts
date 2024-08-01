@@ -27,8 +27,26 @@ import {
     CodeAction,
     CodeActionContext,
     NotebookCell,
+    LanguageStatusItem,
+    LanguageStatusSeverity,
 } from "vscode";
-import { DiagnosticPullMode, ErrorHandler, LanguageClient, LanguageClientOptions, RevealOutputChannelOn, ServerOptions, TransportKind } from "vscode-languageclient/node";
+import {
+    CloseAction,
+    DiagnosticPullMode,
+    DidCloseTextDocumentNotification,
+    DidOpenTextDocumentNotification,
+    DocumentFilter,
+    ErrorHandler,
+    ExecuteCommandParams,
+    ExecuteCommandRequest,
+    LanguageClient,
+    LanguageClientOptions,
+    RevealOutputChannelOn,
+    ServerOptions,
+    State,
+    TransportKind,
+    VersionedTextDocumentIdentifier,
+} from "vscode-languageclient/node";
 
 import { colorProvider } from "./color";
 import { getStatusBarText, NavigationData } from "./navigation-data";
@@ -47,7 +65,7 @@ import { initializeLoggingSystems, logMessage, logToast, updateStatusBar } from 
 import { Configuration } from "./configuration";
 import { RenpyAdapterDescriptorFactory, RenpyConfigurationProvider } from "./debugger";
 import { RenpyTaskProvider } from "./task-provider";
-import { testParser } from "./parser/parser-test";
+import { ExitCalled, ShowOutputChannel, Status, StatusNotification, StatusParams } from "./customMessages";
 
 let extensionMode: ExtensionMode = null!;
 let client: LanguageClient;
@@ -62,8 +80,6 @@ export async function activate(context: ExtensionContext): Promise<void> {
     updateStatusBar("$(sync~spin) Loading Ren'Py extension...");
 
     startServer(context);
-
-    testParser();
 
     Configuration.initialize(context);
 
@@ -362,9 +378,116 @@ export function isValidExecutable(renpyExecutableLocation: string): boolean {
     return fs.existsSync(renpyExecutableLocation);
 }
 
+export namespace Is {
+    const toString = Object.prototype.toString;
+
+    export function boolean(value: unknown): value is boolean {
+        return value === true || value === false;
+    }
+
+    export function string(value: unknown): value is string {
+        return typeof value === "string";
+    }
+
+    export function objectLiteral(value: unknown): value is object {
+        return value !== null && value !== undefined && !Array.isArray(value) && typeof value === "object";
+    }
+}
+
+export enum Validate {
+    on = "on",
+    off = "off",
+    probe = "probe",
+}
+
+export type ValidateItem = {
+    language: string;
+    autoFix?: boolean;
+};
+export namespace ValidateItem {
+    export function is(item: unknown): item is ValidateItem {
+        const candidate = item as ValidateItem;
+        return candidate && Is.string(candidate.language) && (Is.boolean(candidate.autoFix) || candidate.autoFix === void 0);
+    }
+}
+
+export class Validator {
+    private readonly probeFailed: Set<string> = new Set();
+
+    public clear(): void {
+        this.probeFailed.clear();
+    }
+
+    public add(uri: Uri): void {
+        this.probeFailed.add(uri.toString());
+    }
+
+    public check(textDocument: TextDocument): Validate {
+        const config = workspace.getConfiguration("renpy", textDocument.uri);
+
+        if (!config.get<boolean>("enable", true)) {
+            return Validate.off;
+        }
+
+        if (textDocument.uri.scheme === "untitled" && config.get<boolean>("ignoreUntitled", false)) {
+            return Validate.off;
+        }
+
+        const languageId = textDocument.languageId;
+        const validate = config.get<(ValidateItem | string)[] | null>("validate", null);
+        if (Array.isArray(validate)) {
+            for (const item of validate) {
+                if (Is.string(item) && item === languageId) {
+                    return Validate.on;
+                } else if (ValidateItem.is(item) && item.language === languageId) {
+                    return Validate.on;
+                }
+            }
+            return Validate.off;
+        }
+
+        if (this.probeFailed.has(textDocument.uri.toString())) {
+            return Validate.off;
+        }
+
+        const probe: string[] | undefined = config.get<string[]>("probe");
+        if (Array.isArray(probe)) {
+            for (const item of probe) {
+                if (item === languageId) {
+                    return Validate.probe;
+                }
+            }
+        }
+
+        return Validate.off;
+    }
+}
+
+interface TimeBudget {
+    warn: number;
+    error: number;
+}
+
+type PerformanceStatus = {
+    firstReport: boolean;
+    validationTime: number;
+    fixTime: number;
+    reported: number;
+    acknowledged: boolean;
+};
+
+namespace PerformanceStatus {
+    export const defaultValue: PerformanceStatus = { firstReport: true, validationTime: 0, fixTime: 0, reported: 0, acknowledged: false };
+}
+
+const validator: Validator = new Validator();
+
 function startServer(context: ExtensionContext) {
     // The server is implemented in node
     const serverModule = context.asAbsolutePath(path.join("dist", "server.js"));
+
+    // A map of documents synced to the server
+    const syncedDocuments: Map<string, TextDocument> = new Map();
 
     // If the extension is launched in debug mode then the debug server options are used
     // Otherwise the run options are used
@@ -372,10 +495,6 @@ function startServer(context: ExtensionContext) {
         run: { module: serverModule, transport: TransportKind.ipc },
         debug: { module: serverModule, transport: TransportKind.ipc },
     };
-
-    const defaultErrorHandler: ErrorHandler = client.createDefaultErrorHandler();
-    let serverCalledProcessExit: boolean = false;
-    // see https://github.com/microsoft/vscode-eslint/blob/edc9685bcda26462dc52decce213167af8d2b25d/client/src/client.ts#L87
 
     // Options to control the language client
     const clientOptions: LanguageClientOptions = {
@@ -404,40 +523,47 @@ function startServer(context: ExtensionContext) {
                 return defaultErrorHandler.closed();
             },
         },
+
         diagnosticPullOptions: {
             onChange: true,
             onSave: true,
             filter: (document, mode) => {
-                const config = workspace.getConfiguration("eslint", document);
+                /*const config = workspace.getConfiguration("renpy", document);
                 const run = config.get<RunValues>("run", "onType");
                 if (mode === DiagnosticPullMode.onType && run !== "onType") {
                     return true;
                 } else if (mode === DiagnosticPullMode.onSave && run !== "onSave") {
                     return true;
                 }
-                return validator.check(document) === Validate.off;
+                return validator.check(document) === Validate.off;*/
+
+                return false;
             },
             onTabs: false,
         },
+
         middleware: {
             didOpen: async (document, next) => {
-                if (languages.match(packageJsonFilter, document) || languages.match(configFileFilter, document) || validator.check(document) !== Validate.off) {
+                if (languages.match("renpy", document) || validator.check(document) !== Validate.off) {
                     const result = next(document);
                     syncedDocuments.set(document.uri.toString(), document);
 
                     return result;
                 }
             },
+
             didChange: async (event, next) => {
                 if (syncedDocuments.has(event.document.uri.toString())) {
                     return next(event);
                 }
             },
+
             willSave: async (event, next) => {
                 if (syncedDocuments.has(event.document.uri.toString())) {
                     return next(event);
                 }
             },
+
             willSaveWaitUntil: (event, next) => {
                 if (syncedDocuments.has(event.document.uri.toString())) {
                     return next(event);
@@ -445,11 +571,13 @@ function startServer(context: ExtensionContext) {
                     return Promise.resolve([]);
                 }
             },
+
             didSave: async (document, next) => {
                 if (syncedDocuments.has(document.uri.toString())) {
                     return next(document);
                 }
             },
+
             didClose: async (document, next) => {
                 const uri = document.uri.toString();
                 if (syncedDocuments.has(uri)) {
@@ -457,6 +585,7 @@ function startServer(context: ExtensionContext) {
                     return next(document);
                 }
             },
+
             notebooks: {
                 didOpen: (notebookDocument, cells, next) => {
                     const result = next(notebookDocument, cells);
@@ -486,26 +615,27 @@ function startServer(context: ExtensionContext) {
                     return next(document, cells);
                 },
             },
+
             provideCodeActions: async (document, range, context, token, next): Promise<(Command | CodeAction)[] | null | undefined> => {
                 if (!syncedDocuments.has(document.uri.toString())) {
                     return [];
                 }
-                if (context.only !== undefined && !supportedQuickFixKinds.has(context.only.value)) {
+                /*if (context.only !== undefined && !supportedQuickFixKinds.has(context.only.value)) {
                     return [];
-                }
+                }*/
                 if (context.only === undefined && (!context.diagnostics || context.diagnostics.length === 0)) {
                     return [];
                 }
-                const eslintDiagnostics: Diagnostic[] = [];
+                const renpyDiagnostics: Diagnostic[] = [];
                 for (const diagnostic of context.diagnostics) {
-                    if (diagnostic.source === "eslint") {
-                        eslintDiagnostics.push(diagnostic);
+                    if (diagnostic.source === "renpy") {
+                        renpyDiagnostics.push(diagnostic);
                     }
                 }
-                if (context.only === undefined && eslintDiagnostics.length === 0) {
+                if (context.only === undefined && renpyDiagnostics.length === 0) {
                     return [];
                 }
-                const newContext: CodeActionContext = Object.assign({}, context, { diagnostics: eslintDiagnostics });
+                const newContext: CodeActionContext = Object.assign({}, context, { diagnostics: renpyDiagnostics });
                 const start = Date.now();
                 const result = await next(document, range, newContext, token);
                 if (context.only?.value.startsWith("source.fixAll")) {
@@ -521,31 +651,35 @@ function startServer(context: ExtensionContext) {
                 }
                 return result;
             },
+
             workspace: {
                 didChangeWatchedFile: (event, next) => {
                     validator.clear();
                     return next(event);
                 },
+
                 didChangeConfiguration: async (sections, next) => {
-                    if (migration !== undefined && (sections === undefined || sections.length === 0)) {
+                    /*if (migration !== undefined && (sections === undefined || sections.length === 0)) {
                         migration.captureDidChangeSetting(() => {
                             return next(sections);
                         });
-                    } else {
-                        return next(sections);
-                    }
+                    } else {*/
+                    return next(sections);
+                    //}
                 },
-                configuration: (params) => {
+
+                /*configuration: (params) => {
                     return readConfiguration(params);
-                },
+                },*/
             },
         },
+
         notebookDocumentOptions: {
             filterCells: (_notebookDocument, cells) => {
                 const result: NotebookCell[] = [];
                 for (const cell of cells) {
                     const document = cell.document;
-                    if (Languages.match(packageJsonFilter, document) || Languages.match(configFileFilter, document) || validator.check(document) !== Validate.off) {
+                    if (languages.match("renpy", document) || validator.check(document) !== Validate.off) {
                         result.push(cell);
                     }
                 }
@@ -557,8 +691,245 @@ function startServer(context: ExtensionContext) {
     // Create the language client and start the client.
     client = new LanguageClient("languageServerExample", "Language Server Example", serverOptions, clientOptions);
 
+    const defaultErrorHandler: ErrorHandler = client.createDefaultErrorHandler();
+    let serverCalledProcessExit: boolean = false;
+    // see https://github.com/microsoft/vscode-eslint/blob/edc9685bcda26462dc52decce213167af8d2b25d/client/src/client.ts#L87
+
+    // The client's status bar item.
+    const languageStatus: LanguageStatusItem = languages.createLanguageStatusItem("renpy.languageStatusItem", []);
+    let serverRunning: boolean | undefined;
+
+    const starting = "Ren'Py server is starting.";
+    const running = "Ren'Py server is running.";
+    const stopped = "Ren'Py server stopped.";
+    languageStatus.name = "Renpy";
+    languageStatus.text = "Renpy";
+    languageStatus.command = { title: "Open ESLint Output", command: "renpy.showOutputChannel" };
+
+    type StatusInfo = Omit<Omit<StatusParams, "uri">, "validationTime"> & object;
+    const documentStatus: Map<string, StatusInfo> = new Map();
+    const performanceStatus: Map<string, PerformanceStatus> = new Map();
+
+    // If the workspace configuration changes we need to update the synced documents since the
+    // list of probe language type can change.
+    context.subscriptions.push(
+        workspace.onDidChangeConfiguration(() => {
+            validator.clear();
+            for (const textDocument of syncedDocuments.values()) {
+                if (validator.check(textDocument) === Validate.off) {
+                    const provider = client.getFeature(DidCloseTextDocumentNotification.method).getProvider(textDocument);
+                    provider?.send(textDocument).catch((error) => client.error(`Sending close notification failed.`, error));
+                }
+            }
+            for (const textDocument of workspace.textDocuments) {
+                if (!syncedDocuments.has(textDocument.uri.toString()) && validator.check(textDocument) !== Validate.off) {
+                    const provider = client.getFeature(DidOpenTextDocumentNotification.method).getProvider(textDocument);
+                    provider?.send(textDocument).catch((error) => client.error(`Sending open notification failed.`, error));
+                }
+            }
+        }),
+    );
+
+    client.onNotification(ShowOutputChannel.type, () => {
+        client.outputChannel.show();
+    });
+
+    client.onNotification(StatusNotification.type, (params) => {
+        updateDocumentStatus(params);
+    });
+
+    client.onNotification(ExitCalled.type, (params) => {
+        serverCalledProcessExit = true;
+        client.error(`Server process exited with code ${params[0]}. This usually indicates a misconfigured ESLint setup.`, params[1]);
+
+        void window.showErrorMessage(`ESLint server shut down itself. See 'ESLint' output channel for details.`, { title: "Open Output", id: 1 }).then((value) => {
+            if (value !== undefined && value.id === 1) {
+                client.outputChannel.show();
+            }
+        });
+    });
+
+    client.onDidChangeState((event) => {
+        if (event.newState === State.Starting) {
+            client.info(starting);
+            serverRunning = undefined;
+        } else if (event.newState === State.Running) {
+            client.info(running);
+            serverRunning = true;
+        } else {
+            client.info(stopped);
+            serverRunning = false;
+        }
+        updateStatusBar(undefined);
+    });
+
+    context.subscriptions.push(
+        window.onDidChangeActiveTextEditor(() => {
+            updateStatusBar(undefined);
+        }),
+
+        workspace.onDidCloseTextDocument((document) => {
+            const uri = document.uri.toString();
+            documentStatus.delete(uri);
+            updateLanguageStatusSelector();
+            updateStatusBar(undefined);
+        }),
+
+        commands.registerCommand("renpy.executeAutofix", async () => {
+            const textEditor = window.activeTextEditor;
+            if (!textEditor) {
+                return;
+            }
+            const textDocument: VersionedTextDocumentIdentifier = {
+                uri: textEditor.document.uri.toString(),
+                version: textEditor.document.version,
+            };
+            const params: ExecuteCommandParams = {
+                command: "renpy.applyAllFixes",
+                arguments: [textDocument],
+            };
+            await client.start();
+            client.sendRequest(ExecuteCommandRequest.type, params).then(undefined, () => {
+                void window.showErrorMessage("Failed to apply ESLint fixes to the document. Please consider opening an issue with steps to reproduce.");
+            });
+        }),
+    );
+
     // Start the client. This will also launch the server
     client.start();
+
+    function updateDocumentStatus(params: StatusParams): void {
+        const needsSelectorUpdate = !documentStatus.has(params.uri);
+        documentStatus.set(params.uri, { state: params.state });
+        if (needsSelectorUpdate) {
+            updateLanguageStatusSelector();
+        }
+        const textDocument = syncedDocuments.get(params.uri);
+        if (textDocument !== undefined) {
+            let performanceInfo = performanceStatus.get(textDocument.languageId);
+            if (performanceInfo === undefined) {
+                performanceInfo = PerformanceStatus.defaultValue;
+                performanceStatus.set(textDocument.languageId, performanceInfo);
+            } else {
+                performanceInfo.firstReport = false;
+            }
+            performanceInfo.validationTime = params.validationTime ?? 0;
+        }
+        updateStatusBar(textDocument);
+    }
+
+    function updateLanguageStatusSelector(): void {
+        const selector: DocumentFilter[] = [];
+        for (const key of documentStatus.keys()) {
+            const uri: Uri = Uri.parse(key);
+            const document = syncedDocuments.get(key);
+            const filter: DocumentFilter = {
+                scheme: uri.scheme,
+                pattern: uri.fsPath,
+                language: document?.languageId ?? "",
+            };
+            selector.push(filter);
+        }
+        languageStatus.selector = selector;
+    }
+
+    function acknowledgePerformanceStatus(): void {
+        const activeTextDocument = window.activeTextEditor?.document;
+        if (activeTextDocument === undefined) {
+            return;
+        }
+        const performanceInfo = performanceStatus.get(activeTextDocument.languageId);
+        if (performanceInfo === undefined || performanceInfo.reported === 0) {
+            return;
+        }
+        performanceInfo.acknowledged = true;
+        updateStatusBar(activeTextDocument);
+    }
+
+    function updateStatusBar(textDocument: TextDocument | undefined) {
+        const activeTextDocument = textDocument ?? window.activeTextEditor?.document;
+        if (activeTextDocument === undefined || serverRunning === false) {
+            return;
+        }
+        const performanceInfo = performanceStatus.get(activeTextDocument.languageId);
+        const statusInfo = documentStatus.get(activeTextDocument.uri.toString()) ?? { state: Status.ok };
+
+        let validationBudget = workspace.getConfiguration("renpy", activeTextDocument).get<TimeBudget>("timeBudget.onValidation", { warn: 4000, error: 8000 });
+        if (validationBudget.warn < 0 || validationBudget.error < 0) {
+            validationBudget = {
+                warn: validationBudget.warn < 0 ? Number.MAX_VALUE : validationBudget.warn,
+                error: validationBudget.error < 0 ? Number.MAX_VALUE : validationBudget.error,
+            };
+        }
+        let fixesBudget = workspace.getConfiguration("renpy", activeTextDocument).get<TimeBudget>("timeBudget.onFixes", { warn: 3000, error: 6000 });
+        if (fixesBudget.warn < 0 || fixesBudget.error < 0) {
+            fixesBudget = {
+                warn: fixesBudget.warn < 0 ? Number.MAX_VALUE : fixesBudget.warn,
+                error: fixesBudget.error < 0 ? Number.MAX_VALUE : fixesBudget.error,
+            };
+        }
+
+        let severity: LanguageStatusSeverity = LanguageStatusSeverity.Information;
+        const [timeTaken, detail, message, timeBudget] = (function (): [number, string | undefined, string, TimeBudget] {
+            if (performanceInfo === undefined || performanceInfo.firstReport || performanceInfo.acknowledged) {
+                return [-1, undefined, "", { warn: 0, error: 0 }];
+            }
+            if (performanceInfo.fixTime > performanceInfo.validationTime) {
+                const timeTaken = Math.max(performanceInfo.fixTime, performanceInfo.reported);
+                return [
+                    timeTaken,
+                    timeTaken > fixesBudget.warn ? `Computing fixes took ${timeTaken}ms` : undefined,
+                    `Computing fixes during save for file ${activeTextDocument.uri.toString()} during save took ${timeTaken}ms. Please check the ESLint rules for performance issues.`,
+                    fixesBudget,
+                ];
+            } else if (performanceInfo.validationTime > 0) {
+                const timeTaken = Math.max(performanceInfo.validationTime, performanceInfo.reported);
+                return [
+                    timeTaken,
+                    timeTaken > validationBudget.warn ? `Validation took ${timeTaken}ms` : undefined,
+                    `Linting file ${activeTextDocument.uri.toString()} took ${timeTaken}ms. Please check the ESLint rules for performance issues.`,
+                    validationBudget,
+                ];
+            }
+            return [-1, undefined, "", { warn: 0, error: 0 }];
+        })();
+
+        switch (statusInfo.state) {
+            case Status.ok:
+                break;
+            case Status.warn:
+                severity = LanguageStatusSeverity.Warning;
+                break;
+            case Status.error:
+                severity = LanguageStatusSeverity.Error;
+                break;
+        }
+        if (severity === LanguageStatusSeverity.Information && timeTaken > timeBudget.warn) {
+            severity = LanguageStatusSeverity.Warning;
+        }
+        if (severity === LanguageStatusSeverity.Warning && timeTaken > timeBudget.error) {
+            severity = LanguageStatusSeverity.Error;
+        }
+        if (timeTaken > timeBudget.warn && performanceInfo !== undefined) {
+            if (timeTaken > performanceInfo.reported) {
+                if (timeTaken > timeBudget.error) {
+                    client.error(message);
+                } else {
+                    client.warn(message);
+                }
+            }
+        }
+
+        if (detail !== undefined && languageStatus.detail !== detail) {
+            languageStatus.detail = detail;
+        }
+        if (languageStatus.severity !== severity) {
+            languageStatus.severity = severity;
+        }
+        if (performanceInfo !== undefined) {
+            performanceInfo.reported = Math.max(performanceInfo.reported, timeTaken);
+        }
+    }
 }
 
 function stopServer(): Thenable<void> | undefined {

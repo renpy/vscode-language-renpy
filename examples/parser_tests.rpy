@@ -1,0 +1,1 @@
+define e = Character('Sylvie', color="#000080")

@@ -1,6 +1,6 @@
 import { EntityTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "../tokenizer/renpy-tokens";
 import { DefaultStatementNode, DefineStatementNode, ExpressionNode, LiteralNode, SayStatementNode, StatementNode } from "./ast-nodes";
-import { AssignmentOperationRule, GrammarRule, IntegerLiteralRule, PythonExpressionRule, IdentifierRule, StringLiteralRule, SimpleExpressionRule, MemberAccessExpressionRule } from "./grammar-rules";
+import { AssignmentOperationRule, GrammarRule, IntegerLiteralRule, PythonExpressionRule, IdentifierRule, StringLiteralRule, SimpleExpressionRule } from "./grammar-rules";
 import { DocumentParser } from "./parser";
 
 const integerParser = new IntegerLiteralRule();
@@ -8,7 +8,6 @@ const stringParser = new StringLiteralRule();
 const identifierParser = new IdentifierRule();
 const pythonExpressionParser = new PythonExpressionRule();
 const simpleExpressionParser = new SimpleExpressionRule();
-// const memberAccessParser = new MemberAccessExpressionRule();
 
 /**
  * define_operator = "+=" | "|=" | "=";

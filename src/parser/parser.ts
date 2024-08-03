@@ -56,8 +56,6 @@ export class DocumentParser {
         this._it = tokens.getIterator();
         this._it.setFilter(new Set([MetaTokenType.Comment, CharacterTokenType.Whitespace]));
 
-        // Advance so the iterator is pointing at the next token and our current token is the first token.
-        this.next();
         this._currentToken = this.INVALID_TOKEN;
     }
 
@@ -86,13 +84,13 @@ export class DocumentParser {
     }
 
     public skipEmptyLines() {
-        while (this.test(CharacterTokenType.NewLine)) {
+        while (this.test(CharacterTokenType.NewLine) && this.hasNext()) {
             this.next();
         }
     }
 
     public skipToEOL() {
-        while (!this.test(CharacterTokenType.NewLine)) {
+        while (!this.test(CharacterTokenType.NewLine) && this.hasNext()) {
             this.next();
         }
     }

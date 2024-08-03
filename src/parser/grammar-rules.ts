@@ -111,7 +111,7 @@ export class PythonExpressionRule extends GrammarRule<ExpressionNode> {
 
     public parse(parser: DocumentParser) {
         let expression = "";
-        while (parser.test(MetaTokenType.PythonExpression)) {
+        while (parser.test(MetaTokenType.PythonExpression) && parser.hasNext()) {
             parser.next();
             expression += parser.currentValue();
         }

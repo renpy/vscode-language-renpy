@@ -644,6 +644,8 @@ ${(decoration.hoverMessage as MarkdownString).value}`
             case OperatorTokenType.LessThan:
             case OperatorTokenType.GreaterThanEquals:
             case OperatorTokenType.LessThanEquals:
+            case OperatorTokenType.Unpacking:
+            case OperatorTokenType.PositionalParameter:
                 operators.push(decoration);
                 break;
 

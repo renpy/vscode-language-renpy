@@ -1,9 +1,7 @@
 import { LogLevel, Position, Range as VSRange, TextDocument } from "vscode";
-
 import { Vector } from "src/types";
 import { EnumToString } from "src/utilities";
-
-import { logMessage } from "../logger";
+import { LogCategory, logCatMessage, logMessage } from "../logger";
 
 import {
     CharacterTokenType,
@@ -286,6 +284,15 @@ export class TreeNode {
             if (start.charStartOffset > currentEnd.charStartOffset) {
                 // There is a gap between the current end position and the start of the next token range
                 const gapToken = new Token(this.token.type, currentEnd, start);
+
+                if (gapToken.isMetaToken()) {
+                    logCatMessage(
+                        LogLevel.Error,
+                        LogCategory.Parser,
+                        `Attempting to assign meta token "${tokenTypeToString(gapToken.type)}" to token gap @ (${gapToken.startPos}) -> (${gapToken.endPos}). Update the token pattern to assign a value token to this gap!"`
+                    );
+                }
+
                 tokens.pushBack(gapToken);
             }
             currentEnd = currentEnd.charStartOffset > token.endPos.charStartOffset ? currentEnd : token.endPos;

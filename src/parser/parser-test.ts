@@ -1,5 +1,5 @@
 import { DocumentParser } from "./parser";
-import { LogLevel, window } from "vscode";
+import { LogLevel, Range, window } from "vscode";
 import { RenpyStatementRule } from "./renpy-grammar-rules";
 import { AST } from "./ast-nodes";
 import { LogCategory, logCatMessage } from "../logger";
@@ -8,6 +8,12 @@ import { RpyProgram } from "../interpreter/program";
 // Test decorations
 const defDecorationType = window.createTextEditorDecorationType({
     backgroundColor: "rgba(255, 255, 255, 0.3)",
+    fontWeight: "bold",
+    textDecoration: "underline wavy 1pt",
+});
+
+const errorDecorationType = window.createTextEditorDecorationType({
+    color: "red",
     fontWeight: "bold",
     textDecoration: "underline wavy 1pt",
 });
@@ -42,7 +48,13 @@ export async function testParser() {
         }
     }
 
-    parser.printErrors();
+    const errors: Range[] = [];
+    for (const error of parser.errors) {
+        logCatMessage(LogLevel.Error, LogCategory.Parser, parser.getErrorMessage(error));
+        errors.push(error.nextToken.getVSCodeRange());
+    }
+    activeEditor.setDecorations(errorDecorationType, errors);
+
     logCatMessage(LogLevel.Debug, LogCategory.Parser, ast.toString());
 
     const program = new RpyProgram();

@@ -1,5 +1,5 @@
-import { CharacterTokenType, EntityTokenType, LiteralTokenType, MetaTokenType, TokenType } from "../tokenizer/renpy-tokens";
-import { ASTNode, AssignmentOperationNode, ExpressionNode, LiteralNode, IdentifierNode, MemberAccessNode } from "./ast-nodes";
+import { CharacterTokenType, EntityTokenType, LiteralTokenType, MetaTokenType, OperatorTokenType, TokenType } from "../tokenizer/renpy-tokens";
+import { ASTNode, AssignmentOperationNode, ExpressionNode, LiteralNode, IdentifierNode, MemberAccessNode, ParameterNode } from "./ast-nodes";
 import { DocumentParser } from "./parser";
 
 export abstract class GrammarRule<T extends ASTNode> {
@@ -104,7 +104,7 @@ export class ParenthesizedExpressionRule extends GrammarRule<ExpressionNode> {
     }
 }*/
 
-export class PythonExpressionRule extends GrammarRule<ExpressionNode> {
+export class PythonExpressionMetaRule extends GrammarRule<ExpressionNode> {
     public test(parser: DocumentParser) {
         return parser.test(MetaTokenType.PythonExpression);
     }
@@ -116,6 +116,30 @@ export class PythonExpressionRule extends GrammarRule<ExpressionNode> {
             expression += parser.currentValue();
         }
         return new LiteralNode(expression);
+    }
+}
+
+export class PythonExpressionRule extends GrammarRule<ExpressionNode> {
+    private rules = [new StringLiteralRule(), new PythonExpressionMetaRule()];
+
+    public test(parser: DocumentParser) {
+        for (const rule of this.rules) {
+            if (rule.test(parser)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public parse(parser: DocumentParser): LiteralNode | null {
+        for (const rule of this.rules) {
+            if (rule.test(parser)) {
+                return rule.parse(parser) as LiteralNode;
+            }
+        }
+
+        return null;
     }
 }
 
@@ -180,7 +204,7 @@ export class MemberAccessExpressionRule extends GrammarRule<IdentifierNode | Mem
  *   ;
  */
 export class LiteralRule extends GrammarRule<ExpressionNode> {
-    rules = [new IntegerLiteralRule(), new FloatLiteralRule(), new StringLiteralRule()];
+    private rules = [new IntegerLiteralRule(), new FloatLiteralRule(), new StringLiteralRule()];
 
     public test(parser: DocumentParser): boolean {
         for (const rule of this.rules) {
@@ -235,8 +259,10 @@ export class StringLiteralRule extends GrammarRule<LiteralNode> {
         }
 
         let content = "";
-        if (parser.optionalToken(LiteralTokenType.String)) {
-            content = parser.currentValue();
+        // TODO: Implement string interpolate expressions
+        while (parser.test(LiteralTokenType.String) && !parser.test(MetaTokenType.StringEnd)) {
+            parser.requireToken(LiteralTokenType.String);
+            content += parser.currentValue();
         }
 
         if (!parser.requireToken(MetaTokenType.StringEnd)) {
@@ -306,6 +332,51 @@ export class AssignmentOperationRule extends GrammarRule<AssignmentOperationNode
         }
 
         return new AssignmentOperationNode(left, operator, right);
+    }
+}
+
+/*
+parameters = "(", [",".parameter+], ")";
+parameter = NAME, [python_assignment_operation];
+python_assignment_operation = "=", PYTHON_EXPRESSION;
+*/
+export class ParametersRule extends GrammarRule<ParameterNode[]> {
+    private identifierParser = new IdentifierRule();
+    private pythonExpressionParser = new PythonExpressionRule();
+
+    public test(parser: DocumentParser): boolean {
+        return parser.test(CharacterTokenType.OpenParentheses);
+    }
+
+    public parse(parser: DocumentParser): ParameterNode[] | null {
+        if (!parser.requireToken(CharacterTokenType.OpenParentheses)) {
+            return null;
+        }
+        const parameters: ParameterNode[] = [];
+        while (!parser.test(CharacterTokenType.CloseParentheses)) {
+            // TODO: Implement NAME
+            const identifier = parser.require(this.identifierParser);
+            if (identifier === null) {
+                return null;
+            }
+            let value: ExpressionNode | null = null;
+            if (parser.optionalToken(OperatorTokenType.Assignment)) {
+                value = parser.require(this.pythonExpressionParser);
+                if (value === null) {
+                    return null;
+                }
+            }
+            parameters.push(new ParameterNode(identifier, value));
+            if (!parser.test(CharacterTokenType.CloseParentheses)) {
+                if (!parser.requireToken(CharacterTokenType.Comma)) {
+                    return null;
+                }
+            }
+        }
+        if (!parser.requireToken(CharacterTokenType.CloseParentheses)) {
+            return null;
+        }
+        return parameters;
     }
 }
 

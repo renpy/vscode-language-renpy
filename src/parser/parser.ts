@@ -68,6 +68,10 @@ export class DocumentParser {
         });
     }
 
+    public get errors() {
+        return this._errors;
+    }
+
     public printErrors() {
         for (const error of this._errors) {
             logCatMessage(LogLevel.Error, LogCategory.Parser, this.getErrorMessage(error));
@@ -130,6 +134,7 @@ export class DocumentParser {
 
     public expectEOL() {
         if (!this.test(CharacterTokenType.NewLine)) {
+            // TODO: This error should cover the entire line after the current token.
             this.addError(ParseErrorType.UnexpectedEndOfLine);
         }
         this.skipToEOL();
@@ -196,9 +201,9 @@ export class DocumentParser {
             case ParseErrorType.UnexpectedEndOfFile:
                 return "Unexpected end of file";
             case ParseErrorType.UnexpectedToken:
-                return `Expected token of type '${this.getTokenTypeString(error.expectedTokenType)}', but got '${this.getTokenTypeString(error.nextToken.type)}'\n\tat: ${error.nextToken.startPos}`;
+                return `Syntax error: Expected token of type '${this.getTokenTypeString(error.expectedTokenType)}', but got '${this.getTokenTypeString(error.nextToken.type)}'\n\tat: (${error.nextToken.startPos}) -> (${error.nextToken.endPos})`;
             case ParseErrorType.UnexpectedEndOfLine:
-                return `Unexpected end of line. \n\tat: ${error.nextToken.startPos}`;
+                return `Syntax error: Unexpected end of line.\n\tat: (${error.nextToken.startPos}) -> (${error.nextToken.endPos})`;
         }
     }
 

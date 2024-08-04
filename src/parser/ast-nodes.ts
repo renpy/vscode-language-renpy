@@ -22,7 +22,7 @@ export abstract class ASTNode {
         Object.entries(object).forEach(([key, v]) => {
             output += " ".repeat(ASTNode._printIndent);
             const tokenString = tokenTypeToString(v);
-            const hasToString = v.toString !== Object.prototype.toString;
+            const hasToString = v && v.toString !== Object.prototype.toString;
             const value = tokenString || (hasToString ? v.toString() : JSON.stringify(v));
             output += `${key}: ${value}\n`;
         });
@@ -278,5 +278,31 @@ export class SayStatementNode extends StatementNode {
         this.attributes = attributes;
         this.temporaryAttributes = temporaryAttributes;
         this.what = what;
+    }
+}
+
+export class ParameterNode extends ASTNode {
+    public name: IdentifierNode;
+    public value: ExpressionNode | null;
+
+    constructor(name: IdentifierNode, value: ExpressionNode | null) {
+        super();
+        this.name = name;
+        this.value = value;
+    }
+}
+
+export class LabelStatementNode extends StatementNode {
+    public name: IdentifierNode;
+    public parameters: ParameterNode[] | null;
+    public hide: boolean;
+    public block: StatementNode[];
+
+    constructor(name: IdentifierNode, parameters: ParameterNode[] | null, hide: boolean, block: StatementNode[]) {
+        super();
+        this.name = name;
+        this.parameters = parameters;
+        this.hide = hide;
+        this.block = block;
     }
 }

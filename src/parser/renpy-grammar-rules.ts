@@ -1,6 +1,6 @@
-import { EntityTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "../tokenizer/renpy-tokens";
-import { DefaultStatementNode, DefineStatementNode, ExpressionNode, LiteralNode, SayStatementNode, StatementNode } from "./ast-nodes";
-import { AssignmentOperationRule, GrammarRule, IntegerLiteralRule, PythonExpressionRule, IdentifierRule, StringLiteralRule, SimpleExpressionRule } from "./grammar-rules";
+import { CharacterTokenType, EntityTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "../tokenizer/renpy-tokens";
+import { DefaultStatementNode, DefineStatementNode, ExpressionNode, IdentifierNode, LabelStatementNode, LiteralNode, SayStatementNode, StatementNode } from "./ast-nodes";
+import { AssignmentOperationRule, GrammarRule, IntegerLiteralRule, PythonExpressionRule, IdentifierRule, StringLiteralRule, SimpleExpressionRule, ParametersRule } from "./grammar-rules";
 import { DocumentParser } from "./parser";
 
 const integerParser = new IntegerLiteralRule();
@@ -8,6 +8,7 @@ const stringParser = new StringLiteralRule();
 const identifierParser = new IdentifierRule();
 const pythonExpressionParser = new PythonExpressionRule();
 const simpleExpressionParser = new SimpleExpressionRule();
+const parametersParser = new ParametersRule();
 
 /**
  * define_operator = "+=" | "|=" | "=";
@@ -74,12 +75,10 @@ say = say_who?, say_attributes?, say_temporary_attributes?, say_what;
 export class SayStatementRule extends GrammarRule<StatementNode> {
     private sayAttributesParser = new SayAttributesRule();
     public test(parser: DocumentParser): boolean {
-        return parser.test(MetaTokenType.SayStatement);
+        return parser.test(MetaTokenType.SayStatement) || stringParser.test(parser);
     }
 
     public parse(parser: DocumentParser): StatementNode | null {
-        parser.debugPrintLine();
-
         const who = parser.optional(simpleExpressionParser);
         const attributes = parser.optional(this.sayAttributesParser);
         let temporaryAttributes: ExpressionNode | null = null;
@@ -118,8 +117,119 @@ export class SayAttributesRule extends GrammarRule<ExpressionNode> {
     }
 }
 
+/**
+ * IDENTIFIER = "\p{XID_Start}", {"\p{XID_Continue}"}; (* Based on Python specification. See: https://docs.python.org/3/reference/lexical_analysis.html#identifiers *)
+ * WORD = IDENTIFIER;
+ * NAME = WORD - RENPY_KEYWORD;
+ * DOTTED_NAME = NAME, {".", NAME};
+ * LABEL_NAME = [NAME?, "."], NAME;
+ */
+export class LabelNameRule extends GrammarRule<IdentifierNode> {
+    public test(parser: DocumentParser): boolean {
+        return parser.anyOfToken([EntityTokenType.FunctionName, CharacterTokenType.Dot]); // TODO: Incomplete
+    }
+
+    public parse(parser: DocumentParser): IdentifierNode {
+        let dot = false;
+
+        if (parser.test(CharacterTokenType.Dot)) {
+            dot = parser.requireToken(CharacterTokenType.Dot);
+        } else {
+            parser.requireToken(EntityTokenType.FunctionName);
+            dot = parser.optionalToken(CharacterTokenType.Dot);
+        }
+
+        if (dot) {
+            parser.requireToken(EntityTokenType.FunctionName);
+        } else {
+            parser.optionalToken(EntityTokenType.FunctionName);
+        }
+
+        return new IdentifierNode(parser.locationFromCurrent(), parser.currentValue());
+    }
+}
+
+/**
+ * label = "label", LABEL_NAME, parameters?, "hide"?, begin_block;
+ */
+export class LabelStatementRule extends GrammarRule<LabelStatementNode> {
+    private blockParser = new RenpyBlockRule();
+    private labelNameParser = new LabelNameRule();
+
+    public test(parser: DocumentParser): boolean {
+        return parser.test(KeywordTokenType.Label);
+    }
+
+    public parse(parser: DocumentParser): LabelStatementNode | null {
+        parser.requireToken(KeywordTokenType.Label);
+
+        const identifier = parser.require(this.labelNameParser);
+        if (identifier === null) {
+            return null;
+        }
+
+        const parameters = parser.optional(parametersParser);
+        const hide = parser.optionalToken(KeywordTokenType.Hide);
+        const block = parser.require(this.blockParser);
+        if (block === null) {
+            return null;
+        }
+
+        return new LabelStatementNode(identifier, parameters, hide, block);
+    }
+}
+
+/*
+begin_block = ":", NEWLINE, INDENT, block;
+block = statement+, DEDENT;
+*/
+export class RenpyBlockRule extends GrammarRule<StatementNode[]> {
+    public test(parser: DocumentParser): boolean {
+        return parser.test(CharacterTokenType.Colon);
+    }
+
+    public parse(parser: DocumentParser): StatementNode[] | null {
+        if (!parser.requireToken(CharacterTokenType.Colon)) {
+            return null;
+        }
+        if (!parser.requireToken(CharacterTokenType.NewLine)) {
+            return null;
+        }
+
+        // TODO: Implement INDENT and DEDENT
+        if (!parser.test(MetaTokenType.RenpyBlock)) {
+            parser.expectEOL();
+            return null;
+        }
+
+        const statements: StatementNode[] = [];
+        while (parser.test(MetaTokenType.RenpyBlock) && parser.hasNext()) {
+            parser.skipEmptyLines();
+
+            if (statementParser.test(parser)) {
+                const statement = parser.require(statementParser);
+                parser.expectEOL();
+
+                if (statement !== null) {
+                    statements.push(statement);
+                }
+            }
+
+            if (parser.test(MetaTokenType.RenpyBlock) && parser.hasNext()) {
+                parser.next();
+            }
+        }
+
+        /*if (!parser.requireToken(CharacterTokenType.Dedent)) {
+            return null;
+        }*/
+
+        return statements;
+    }
+}
+
 export class RenpyStatementRule extends GrammarRule<StatementNode> {
-    rules = [new DefineStatementRule(), new DefaultStatementRule(), new SayStatementRule()];
+    rules = [new DefineStatementRule(), new DefaultStatementRule(), new LabelStatementRule(), new SayStatementRule()];
 
     public test(state: DocumentParser): boolean {
         for (const rule of this.rules) {
@@ -135,3 +245,5 @@ export class RenpyStatementRule extends GrammarRule<StatementNode> {
         return parser.anyOf(this.rules);
     }
 }
+
+const statementParser = new RenpyStatementRule();

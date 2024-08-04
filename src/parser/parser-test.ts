@@ -1,5 +1,5 @@
 import { DocumentParser } from "./parser";
-import { LogLevel, Range, window } from "vscode";
+import { LogLevel, Range as VSRange, window } from "vscode";
 import { RenpyStatementRule } from "./renpy-grammar-rules";
 import { AST } from "./ast-nodes";
 import { LogCategory, logCatMessage } from "../logger";
@@ -48,7 +48,7 @@ export async function testParser() {
         }
     }
 
-    const errors: Range[] = [];
+    const errors: VSRange[] = [];
     for (const error of parser.errors) {
         logCatMessage(LogLevel.Error, LogCategory.Parser, parser.getErrorMessage(error));
         errors.push(error.nextToken.getVSCodeRange());

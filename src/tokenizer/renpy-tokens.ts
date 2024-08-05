@@ -9,6 +9,7 @@ export const enum TokenTypeIndex {
     CharactersStart = 4001,
     EscapedCharacterStart = 5001,
     MetaStart = 6001,
+    EOFTokenID = 9996,
     DeprecatedTokenID = 9997,
     UnknownCharacterID = 9998,
     InvalidTokenID = 9999,
@@ -279,6 +280,7 @@ export const enum EscapedCharacterTokenType {
 export const enum MetaTokenType {
     Invalid = TokenTypeIndex.InvalidTokenID,
     Deprecated = TokenTypeIndex.DeprecatedTokenID,
+    EOF = TokenTypeIndex.EOFTokenID,
 
     Comment = TokenTypeIndex.MetaStart,
     CommentCodeTag,

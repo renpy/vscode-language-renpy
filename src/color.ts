@@ -148,7 +148,7 @@ export async function injectCustomColorStyles(document: TextDocument) {
 
     // Build the new rules for this file
     colorTags.forEach((colorNode) => {
-        const lowerColor = document.getText(colorNode.token?.getVSCodeRange()).toLowerCase();
+        const lowerColor = document.getText(colorNode.token?.getVSRange()).toLowerCase();
         const newRule = new TextMateRule(`renpy.meta.color.${lowerColor}`, { foreground: lowerColor });
         colorRules.add(newRule);
     });

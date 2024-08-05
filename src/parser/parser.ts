@@ -4,7 +4,7 @@ import { ASTNode } from "./ast-nodes";
 import { GrammarRule } from "./grammar-rules";
 import { Tokenizer } from "../tokenizer/tokenizer";
 import { CharacterTokenType, MetaTokenType, TokenType } from "../tokenizer/renpy-tokens";
-import { Token, TokenPosition, TokenListIterator, tokenTypeToStringMap } from "../tokenizer/token-definitions";
+import { Token, TokenPosition, TokenListIterator, tokenTypeToStringMap, Range } from "../tokenizer/token-definitions";
 import { Vector } from "../utilities/vector";
 import { LogCategory, logCatMessage } from "../logger";
 
@@ -20,6 +20,7 @@ export interface ParseError {
     currentToken: Token;
     nextToken: Token;
     expectedTokenType: TokenType | null;
+    errorRange: Range;
 }
 
 export class DocumentParser {
@@ -29,7 +30,7 @@ export class DocumentParser {
 
     private _errors: Vector<ParseError> = new Vector<ParseError>();
 
-    private INVALID_TOKEN = new Token(MetaTokenType.Invalid, new TokenPosition(0, 0, -1), new TokenPosition(0, 0, -1));
+    private readonly INVALID_TOKEN = new Token(MetaTokenType.Invalid, new TokenPosition(0, 0, -1), new TokenPosition(0, 0, -1));
 
     private _parsed = false;
 
@@ -38,7 +39,7 @@ export class DocumentParser {
     }
 
     public locationFromCurrent(): VSLocation {
-        return new VSLocation(this._document.uri, this.current().getVSCodeRange());
+        return new VSLocation(this._document.uri, this.current().getVSRange());
     }
 
     public locationFromRange(range: VSRange): VSLocation {
@@ -59,44 +60,13 @@ export class DocumentParser {
         this._currentToken = this.INVALID_TOKEN;
     }
 
-    private addError(errorType: ParseErrorType, expectedToken: TokenType | null = null) {
-        this._errors.pushBack({
-            type: errorType,
-            currentToken: this.current(),
-            nextToken: this.peekNext(),
-            expectedTokenType: expectedToken,
-        });
-    }
-
-    public get errors() {
-        return this._errors;
-    }
-
-    public printErrors() {
-        for (const error of this._errors) {
-            logCatMessage(LogLevel.Error, LogCategory.Parser, this.getErrorMessage(error));
-        }
-    }
-
     public next() {
         if (!this._it.hasNext()) {
             this.addError(ParseErrorType.UnexpectedEndOfFile);
             return;
         }
-        this._currentToken = this._it.token!;
+        this._currentToken = this._it.token;
         this._it.next();
-    }
-
-    public skipEmptyLines() {
-        while (this.test(CharacterTokenType.NewLine) && this.hasNext()) {
-            this.next();
-        }
-    }
-
-    public skipToEOL() {
-        while (!this.test(CharacterTokenType.NewLine) && this.hasNext()) {
-            this.next();
-        }
     }
 
     public hasNext(): boolean {
@@ -112,19 +82,28 @@ export class DocumentParser {
     }
 
     public peekNext() {
-        return this._it.token ?? this.INVALID_TOKEN;
+        return this._it.token;
     }
 
-    public test(tokenType: TokenType) {
+    public peek(tokenType: TokenType) {
         return this.peekNext().type === tokenType || this.peekNext().hasMetaToken(tokenType);
     }
 
-    public testValue(value: string) {
+    public peekAnyOf(tokenTypes: TokenType[]) {
+        for (const tokenType of tokenTypes) {
+            if (this.peek(tokenType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public peekValue(value: string) {
         return this.peekNext()?.getValue(this._document) === value ?? false;
     }
 
     public requireToken(tokenType: TokenType) {
-        if (this.test(tokenType)) {
+        if (this.peek(tokenType)) {
             this.next();
             return true;
         }
@@ -132,31 +111,11 @@ export class DocumentParser {
         return false;
     }
 
-    public expectEOL() {
-        if (!this.test(CharacterTokenType.NewLine)) {
-            // TODO: This error should cover the entire line after the current token.
-            this.addError(ParseErrorType.UnexpectedEndOfLine);
-        }
-        this.skipToEOL();
-        return this.test(CharacterTokenType.NewLine);
-    }
-
     public optionalToken(tokenType: TokenType) {
-        if (this.test(tokenType)) {
+        if (this.peek(tokenType)) {
             this.next();
             return true;
         }
-        return false;
-    }
-
-    public anyOfToken(tokenTypes: TokenType[]) {
-        for (const tokenType of tokenTypes) {
-            if (this.test(tokenType)) {
-                this.next();
-                return true;
-            }
-        }
-        this.addError(ParseErrorType.UnexpectedToken);
         return false;
     }
 
@@ -171,6 +130,17 @@ export class DocumentParser {
         return rule.parse(this);
     }
 
+    public anyOfToken(tokenTypes: TokenType[]) {
+        for (const tokenType of tokenTypes) {
+            if (this.peek(tokenType)) {
+                this.next();
+                return true;
+            }
+        }
+        this.addError(ParseErrorType.UnexpectedToken);
+        return false;
+    }
+
     public anyOf<T extends ASTNode>(rules: GrammarRule<T>[]): T | null {
         for (const rule of rules) {
             if (rule.test(this)) {
@@ -179,6 +149,52 @@ export class DocumentParser {
         }
         this.addError(ParseErrorType.UnexpectedEndOfLine);
         return null;
+    }
+
+    public skipEmptyLines() {
+        while (this.peek(CharacterTokenType.NewLine)) {
+            this.next();
+        }
+    }
+
+    public skipToEOL() {
+        while (!this.peekAnyOf([CharacterTokenType.NewLine, MetaTokenType.EOF])) {
+            this.next();
+        }
+    }
+
+    public expectEOL() {
+        if (!this.peekAnyOf([CharacterTokenType.NewLine, MetaTokenType.EOF])) {
+            const start = this.peekNext().startPos.charStartOffset;
+
+            this.skipToEOL();
+
+            const end = this.current().endPos.charStartOffset;
+
+            this.addError(ParseErrorType.UnexpectedEndOfLine, null, new Range(start, end));
+        }
+        return this.peekAnyOf([CharacterTokenType.NewLine, MetaTokenType.EOF]);
+    }
+
+    public get errors() {
+        return this._errors;
+    }
+
+    private addError(errorType: ParseErrorType, expectedToken: TokenType | null = null, errorRange: Range | null = null) {
+        const nextToken = this.peekNext();
+        this._errors.pushBack({
+            type: errorType,
+            currentToken: this.current(),
+            nextToken: nextToken,
+            expectedTokenType: expectedToken,
+            errorRange: errorRange ?? new Range(nextToken.startPos.charStartOffset, nextToken.endPos.charStartOffset),
+        });
+    }
+
+    public printErrors() {
+        for (const error of this._errors) {
+            logCatMessage(LogLevel.Error, LogCategory.Parser, this.getErrorMessage(error));
+        }
     }
 
     /**

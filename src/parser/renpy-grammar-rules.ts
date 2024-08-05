@@ -21,7 +21,7 @@ export class DefineStatementRule extends GrammarRule<DefineStatementNode> {
     private assignmentOperation = new AssignmentOperationRule(identifierParser, this.allowedOperators, pythonExpressionParser);
 
     public test(state: DocumentParser): boolean {
-        return state.test(KeywordTokenType.Define);
+        return state.peek(KeywordTokenType.Define);
     }
 
     public parse(parser: DocumentParser): DefineStatementNode | null {
@@ -46,7 +46,7 @@ export class DefaultStatementRule extends GrammarRule<DefaultStatementNode> {
     private assignmentOperation = new AssignmentOperationRule(identifierParser, [OperatorTokenType.Assignment], pythonExpressionParser);
 
     public test(parser: DocumentParser): boolean {
-        return parser.test(KeywordTokenType.Default);
+        return parser.peek(KeywordTokenType.Default);
     }
 
     public parse(parser: DocumentParser): DefaultStatementNode | null {
@@ -75,14 +75,14 @@ say = say_who?, say_attributes?, say_temporary_attributes?, say_what;
 export class SayStatementRule extends GrammarRule<StatementNode> {
     private sayAttributesParser = new SayAttributesRule();
     public test(parser: DocumentParser): boolean {
-        return parser.test(MetaTokenType.SayStatement) || stringParser.test(parser);
+        return parser.peek(MetaTokenType.SayStatement) || stringParser.test(parser);
     }
 
     public parse(parser: DocumentParser): StatementNode | null {
         const who = parser.optional(simpleExpressionParser);
         const attributes = parser.optional(this.sayAttributesParser);
         let temporaryAttributes: ExpressionNode | null = null;
-        if (parser.test(KeywordTokenType.At)) {
+        if (parser.peek(KeywordTokenType.At)) {
             parser.next();
             temporaryAttributes = parser.require(this.sayAttributesParser);
         }
@@ -100,7 +100,7 @@ say_attributes = WHITESPACE.say_attribute+;
  */
 export class SayAttributesRule extends GrammarRule<ExpressionNode> {
     public test(parser: DocumentParser): boolean {
-        return parser.test(OperatorTokenType.Minus) || parser.test(EntityTokenType.ImageName);
+        return parser.peekAnyOf([OperatorTokenType.Minus, EntityTokenType.ImageName]);
     }
 
     public parse(parser: DocumentParser): ExpressionNode[] | null {
@@ -132,7 +132,7 @@ export class LabelNameRule extends GrammarRule<IdentifierNode> {
     public parse(parser: DocumentParser): IdentifierNode {
         let dot = false;
 
-        if (parser.test(CharacterTokenType.Dot)) {
+        if (parser.peek(CharacterTokenType.Dot)) {
             dot = parser.requireToken(CharacterTokenType.Dot);
         } else {
             parser.requireToken(EntityTokenType.FunctionName);
@@ -157,7 +157,7 @@ export class LabelStatementRule extends GrammarRule<LabelStatementNode> {
     private labelNameParser = new LabelNameRule();
 
     public test(parser: DocumentParser): boolean {
-        return parser.test(KeywordTokenType.Label);
+        return parser.peek(KeywordTokenType.Label);
     }
 
     public parse(parser: DocumentParser): LabelStatementNode | null {
@@ -185,7 +185,7 @@ block = statement+, DEDENT;
 */
 export class RenpyBlockRule extends GrammarRule<StatementNode[]> {
     public test(parser: DocumentParser): boolean {
-        return parser.test(CharacterTokenType.Colon);
+        return parser.peek(CharacterTokenType.Colon);
     }
 
     public parse(parser: DocumentParser): StatementNode[] | null {
@@ -197,25 +197,26 @@ export class RenpyBlockRule extends GrammarRule<StatementNode[]> {
         }
 
         // TODO: Implement INDENT and DEDENT
-        if (!parser.test(MetaTokenType.RenpyBlock)) {
+        if (!parser.peek(MetaTokenType.RenpyBlock)) {
             parser.expectEOL();
             return null;
         }
 
         const statements: StatementNode[] = [];
-        while (parser.test(MetaTokenType.RenpyBlock) && parser.hasNext()) {
+        while (parser.peek(MetaTokenType.RenpyBlock)) {
             parser.skipEmptyLines();
 
             if (statementParser.test(parser)) {
                 const statement = parser.require(statementParser);
-                parser.expectEOL();
 
                 if (statement !== null) {
                     statements.push(statement);
                 }
             }
 
-            if (parser.test(MetaTokenType.RenpyBlock) && parser.hasNext()) {
+            parser.expectEOL();
+
+            if (parser.peek(MetaTokenType.RenpyBlock)) {
                 parser.next();
             }
         }

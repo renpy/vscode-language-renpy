@@ -46,7 +46,7 @@ export class ParenthesizedExpressionRule extends GrammarRule<ExpressionNode> {
     private expressionParser = new ExpressionRule();
 
     public test(parser: DocumentParser) {
-        return parser.test(CharacterTokenType.OpenParentheses);
+        return parser.peek(CharacterTokenType.OpenParentheses);
     }
 
     public parse(parser: DocumentParser) {
@@ -106,12 +106,12 @@ export class ParenthesizedExpressionRule extends GrammarRule<ExpressionNode> {
 
 export class PythonExpressionMetaRule extends GrammarRule<ExpressionNode> {
     public test(parser: DocumentParser) {
-        return parser.test(MetaTokenType.PythonExpression);
+        return parser.peek(MetaTokenType.PythonExpression);
     }
 
     public parse(parser: DocumentParser) {
         let expression = "";
-        while (parser.test(MetaTokenType.PythonExpression) && parser.hasNext()) {
+        while (parser.peek(MetaTokenType.PythonExpression)) {
             parser.next();
             expression += parser.currentValue();
         }
@@ -152,12 +152,12 @@ export class PythonExpressionRule extends GrammarRule<ExpressionNode> {
  */
 export class SimpleExpressionRule extends GrammarRule<ExpressionNode> {
     public test(parser: DocumentParser): boolean {
-        return parser.test(MetaTokenType.SimpleExpression);
+        return parser.peek(MetaTokenType.SimpleExpression);
     }
 
     public parse(parser: DocumentParser): ExpressionNode | null {
         let expression = "";
-        while (parser.test(MetaTokenType.SimpleExpression)) {
+        while (parser.peek(MetaTokenType.SimpleExpression)) {
             parser.next();
             expression += parser.currentValue();
         }
@@ -183,7 +183,7 @@ export class MemberAccessExpressionRule extends GrammarRule<IdentifierNode | Mem
             return null;
         }
 
-        while (parser.test(CharacterTokenType.Dot)) {
+        while (parser.peek(CharacterTokenType.Dot)) {
             parser.next();
             const right = parser.require(this.identifierParser);
             if (!right) {
@@ -234,7 +234,7 @@ export class LiteralRule extends GrammarRule<ExpressionNode> {
  */
 export class IntegerLiteralRule extends GrammarRule<LiteralNode> {
     public test(parser: DocumentParser): boolean {
-        return parser.test(LiteralTokenType.Integer);
+        return parser.peek(LiteralTokenType.Integer);
     }
 
     public parse(parser: DocumentParser): LiteralNode {
@@ -250,7 +250,7 @@ export class IntegerLiteralRule extends GrammarRule<LiteralNode> {
  */
 export class StringLiteralRule extends GrammarRule<LiteralNode> {
     public test(parser: DocumentParser): boolean {
-        return parser.test(MetaTokenType.StringBegin);
+        return parser.peek(MetaTokenType.StringBegin);
     }
 
     public parse(parser: DocumentParser): LiteralNode | null {
@@ -260,7 +260,7 @@ export class StringLiteralRule extends GrammarRule<LiteralNode> {
 
         let content = "";
         // TODO: Implement string interpolate expressions
-        while (parser.test(LiteralTokenType.String) && !parser.test(MetaTokenType.StringEnd)) {
+        while (!parser.peek(MetaTokenType.StringEnd)) {
             parser.requireToken(LiteralTokenType.String);
             content += parser.currentValue();
         }
@@ -279,7 +279,7 @@ export class StringLiteralRule extends GrammarRule<LiteralNode> {
  * */
 export class FloatLiteralRule extends GrammarRule<LiteralNode> {
     public test(parser: DocumentParser): boolean {
-        return parser.test(LiteralTokenType.Float);
+        return parser.peek(LiteralTokenType.Float);
     }
 
     public parse(parser: DocumentParser): LiteralNode {
@@ -290,7 +290,7 @@ export class FloatLiteralRule extends GrammarRule<LiteralNode> {
 
 export class IdentifierRule extends GrammarRule<IdentifierNode> {
     public test(parser: DocumentParser): boolean {
-        return parser.test(EntityTokenType.Identifier);
+        return parser.peek(EntityTokenType.Identifier);
     }
 
     public parse(parser: DocumentParser): IdentifierNode {
@@ -345,7 +345,7 @@ export class ParametersRule extends GrammarRule<ParameterNode[]> {
     private pythonExpressionParser = new PythonExpressionRule();
 
     public test(parser: DocumentParser): boolean {
-        return parser.test(CharacterTokenType.OpenParentheses);
+        return parser.peek(CharacterTokenType.OpenParentheses);
     }
 
     public parse(parser: DocumentParser): ParameterNode[] | null {
@@ -353,7 +353,7 @@ export class ParametersRule extends GrammarRule<ParameterNode[]> {
             return null;
         }
         const parameters: ParameterNode[] = [];
-        while (!parser.test(CharacterTokenType.CloseParentheses)) {
+        while (!parser.peek(CharacterTokenType.CloseParentheses)) {
             // TODO: Implement NAME
             const identifier = parser.require(this.identifierParser);
             if (identifier === null) {
@@ -367,7 +367,7 @@ export class ParametersRule extends GrammarRule<ParameterNode[]> {
                 }
             }
             parameters.push(new ParameterNode(identifier, value));
-            if (!parser.test(CharacterTokenType.CloseParentheses)) {
+            if (!parser.peek(CharacterTokenType.CloseParentheses)) {
                 if (!parser.requireToken(CharacterTokenType.Comma)) {
                     return null;
                 }

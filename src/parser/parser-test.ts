@@ -51,7 +51,7 @@ export async function testParser() {
     const errors: VSRange[] = [];
     for (const error of parser.errors) {
         logCatMessage(LogLevel.Error, LogCategory.Parser, parser.getErrorMessage(error));
-        errors.push(error.nextToken.getVSCodeRange());
+        errors.push(error.errorRange.toVSRange(activeEditor.document));
     }
     activeEditor.setDecorations(errorDecorationType, errors);
 

@@ -38,8 +38,16 @@ export class DocumentParser {
         this._document = document;
     }
 
+    public get document() {
+        return this._document;
+    }
+
     public locationFromCurrent(): VSLocation {
         return new VSLocation(this._document.uri, this.current().getVSRange());
+    }
+
+    public locationFromNext(): VSLocation {
+        return new VSLocation(this._document.uri, this.peekNext().getVSRange());
     }
 
     public locationFromRange(range: VSRange): VSLocation {
@@ -67,6 +75,14 @@ export class DocumentParser {
         }
         this._currentToken = this._it.token;
         this._it.next();
+    }
+
+    public previous() {
+        if (!this._it.hasPrevious()) {
+            return;
+        }
+        this._it.previous();
+        this._currentToken = this._it.token;
     }
 
     public hasNext(): boolean {
@@ -165,13 +181,19 @@ export class DocumentParser {
 
     public expectEOL() {
         if (!this.peekAnyOf([CharacterTokenType.NewLine, MetaTokenType.EOF])) {
-            const start = this.peekNext().startPos.charStartOffset;
+            const start = this.peekNext();
 
             this.skipToEOL();
 
-            const end = this.current().endPos.charStartOffset;
+            const end = this.current();
 
-            this.addError(ParseErrorType.UnexpectedEndOfLine, null, new Range(start, end));
+            this._errors.pushBack({
+                type: ParseErrorType.UnexpectedEndOfLine,
+                currentToken: start,
+                nextToken: end,
+                expectedTokenType: null,
+                errorRange: new Range(start.startPos.charStartOffset, end.endPos.charStartOffset),
+            });
         }
         return this.peekAnyOf([CharacterTokenType.NewLine, MetaTokenType.EOF]);
     }
@@ -219,7 +241,7 @@ export class DocumentParser {
             case ParseErrorType.UnexpectedToken:
                 return `Syntax error: Expected token of type '${this.getTokenTypeString(error.expectedTokenType)}', but got '${this.getTokenTypeString(error.nextToken.type)}'\n\tat: (${error.nextToken.startPos}) -> (${error.nextToken.endPos})`;
             case ParseErrorType.UnexpectedEndOfLine:
-                return `Syntax error: Unexpected end of line.\n\tat: (${error.nextToken.startPos}) -> (${error.nextToken.endPos})`;
+                return `Syntax error: Unexpected end of line.\n\tat: (${error.currentToken.startPos}) -> (${error.nextToken.endPos})`;
         }
     }
 

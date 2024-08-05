@@ -1,7 +1,8 @@
 import { CharacterTokenType, EntityTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "../tokenizer/renpy-tokens";
-import { DefaultStatementNode, DefineStatementNode, ExpressionNode, IdentifierNode, LabelStatementNode, LiteralNode, SayStatementNode, StatementNode } from "./ast-nodes";
+import { DefaultStatementNode, DefineStatementNode, ExpressionNode, LabelNameNode, LabelStatementNode, LiteralNode, SayStatementNode, StatementNode } from "./ast-nodes";
 import { AssignmentOperationRule, GrammarRule, IntegerLiteralRule, PythonExpressionRule, IdentifierRule, StringLiteralRule, SimpleExpressionRule, ParametersRule } from "./grammar-rules";
 import { DocumentParser } from "./parser";
+import { Range } from "../tokenizer/token-definitions";
 
 const integerParser = new IntegerLiteralRule();
 const stringParser = new StringLiteralRule();
@@ -121,31 +122,36 @@ export class SayAttributesRule extends GrammarRule<ExpressionNode> {
  * IDENTIFIER = "\p{XID_Start}", {"\p{XID_Continue}"}; (* Based on Python specification. See: https://docs.python.org/3/reference/lexical_analysis.html#identifiers *)
  * WORD = IDENTIFIER;
  * NAME = WORD - RENPY_KEYWORD;
- * DOTTED_NAME = NAME, {".", NAME};
  * LABEL_NAME = [NAME?, "."], NAME;
  */
-export class LabelNameRule extends GrammarRule<IdentifierNode> {
+export class LabelNameRule extends GrammarRule<LabelNameNode> {
     public test(parser: DocumentParser): boolean {
         return parser.anyOfToken([EntityTokenType.FunctionName, CharacterTokenType.Dot]); // TODO: Incomplete
     }
 
-    public parse(parser: DocumentParser): IdentifierNode {
-        let dot = false;
+    public parse(parser: DocumentParser): LabelNameNode {
+        const start = parser.peekNext().startPos.charStartOffset;
 
-        if (parser.peek(CharacterTokenType.Dot)) {
-            dot = parser.requireToken(CharacterTokenType.Dot);
+        let globalName: string | null = null;
+        let localName: string | null = null;
+
+        if (parser.optionalToken(CharacterTokenType.Dot)) {
+            parser.requireToken(EntityTokenType.FunctionName);
+            localName = parser.currentValue();
         } else {
             parser.requireToken(EntityTokenType.FunctionName);
-            dot = parser.optionalToken(CharacterTokenType.Dot);
-        }
+            globalName = parser.currentValue();
 
-        if (dot) {
-            parser.requireToken(EntityTokenType.FunctionName);
-        } else {
-            parser.optionalToken(EntityTokenType.FunctionName);
+            if (parser.optionalToken(CharacterTokenType.Dot)) {
+                parser.requireToken(EntityTokenType.FunctionName);
+                localName = parser.currentValue();
+            }
         }
+        const end = parser.current().endPos.charStartOffset;
 
-        return new IdentifierNode(parser.locationFromCurrent(), parser.currentValue());
+        const location = parser.locationFromRange(new Range(start, end).toVSRange(parser.document));
+
+        return new LabelNameNode(location, globalName, localName);
     }
 }
 
@@ -192,20 +198,17 @@ export class RenpyBlockRule extends GrammarRule<StatementNode[]> {
         if (!parser.requireToken(CharacterTokenType.Colon)) {
             return null;
         }
+
         if (!parser.requireToken(CharacterTokenType.NewLine)) {
             return null;
         }
 
-        // TODO: Implement INDENT and DEDENT
         if (!parser.peek(MetaTokenType.RenpyBlock)) {
-            parser.expectEOL();
             return null;
         }
 
         const statements: StatementNode[] = [];
         while (parser.peek(MetaTokenType.RenpyBlock)) {
-            parser.skipEmptyLines();
-
             if (statementParser.test(parser)) {
                 const statement = parser.require(statementParser);
 
@@ -213,17 +216,15 @@ export class RenpyBlockRule extends GrammarRule<StatementNode[]> {
                     statements.push(statement);
                 }
             }
-
             parser.expectEOL();
 
-            if (parser.peek(MetaTokenType.RenpyBlock)) {
-                parser.next();
-            }
+            parser.skipEmptyLines();
         }
 
-        /*if (!parser.requireToken(CharacterTokenType.Dedent)) {
-            return null;
-        }*/
+        // We need to rollback to the last new line token. (Side effect of the tokenizer also marking the last new line and a block).
+        if (parser.current().type === CharacterTokenType.NewLine) {
+            parser.previous();
+        }
 
         return statements;
     }

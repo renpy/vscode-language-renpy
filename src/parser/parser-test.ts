@@ -53,12 +53,21 @@ export async function testParser() {
         logCatMessage(LogLevel.Error, LogCategory.Parser, parser.getErrorMessage(error));
         errors.push(error.errorRange.toVSRange(activeEditor.document));
     }
-    activeEditor.setDecorations(errorDecorationType, errors);
 
     logCatMessage(LogLevel.Debug, LogCategory.Parser, ast.toString());
 
     const program = new RpyProgram();
     ast.process(program);
+
+    for (const error of program.errorList) {
+        logCatMessage(LogLevel.Error, LogCategory.Parser, error.message);
+
+        if (error.errorLocation !== null) {
+            errors.push(error.errorLocation.range);
+        }
+    }
+
+    activeEditor.setDecorations(errorDecorationType, errors);
 
     const sym = program.globalScope.resolve("e");
     if (sym === null) {

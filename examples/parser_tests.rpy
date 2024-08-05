@@ -15,6 +15,7 @@ label global_label:
     
     label local:
     label .local:
+        
     label global_name.local:
     label global_label.local_name.error:
     label .global_label.local_name.error:

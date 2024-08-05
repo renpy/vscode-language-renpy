@@ -56,7 +56,7 @@ export class AST {
                 try {
                     node.process(program);
                 } catch (e) {
-                    program.errorList.pushBack(e as Error);
+                    program.errorList.pushBack({ message: `Internal compiler error: ${(e as Error).message}`, errorLocation: null });
                 }
             }
         });
@@ -292,17 +292,81 @@ export class ParameterNode extends ASTNode {
     }
 }
 
+export class LabelNameNode extends ExpressionNode {
+    public readonly srcLocation: VSLocation;
+    public globalName: string | null;
+    public localName: string | null;
+
+    constructor(srcLocation: VSLocation, globalName: string | null, localName: string | null) {
+        super();
+        this.srcLocation = srcLocation;
+        this.globalName = globalName;
+        this.localName = localName;
+    }
+}
+
 export class LabelStatementNode extends StatementNode {
-    public name: IdentifierNode;
+    public labelName: LabelNameNode;
     public parameters: ParameterNode[] | null;
     public hide: boolean;
     public block: StatementNode[];
 
-    constructor(name: IdentifierNode, parameters: ParameterNode[] | null, hide: boolean, block: StatementNode[]) {
+    constructor(labelName: LabelNameNode, parameters: ParameterNode[] | null, hide: boolean, block: StatementNode[]) {
         super();
-        this.name = name;
+        this.labelName = labelName;
         this.parameters = parameters;
         this.hide = hide;
         this.block = block;
+    }
+
+    private processDefinition(program: RpyProgram) {
+        // If we have a local name without global. `program.globalScope` requires parentLabel to be defined.
+        // If we have a global name and a local name, check if the global name is equal to `program.globalScope`
+
+        let globalName = this.labelName.globalName;
+        const localName = this.labelName.localName;
+
+        if (globalName === null) {
+            // .local label
+            if (localName === null) {
+                program.errorList.pushBack({ message: "Expected a local label name", errorLocation: this.labelName.srcLocation });
+                return;
+            }
+            if (program.globalScope.parentLabel === null) {
+                program.errorList.pushBack({ message: "Expected a parent label to be defined", errorLocation: this.labelName.srcLocation });
+                return;
+            }
+
+            globalName = program.globalScope.parentLabel.identifier;
+
+            program.globalScope.defineLabel(`${globalName}.${localName}`, this.labelName.srcLocation);
+        } else {
+            if (program.globalScope.parentLabel !== null) {
+                program.errorList.pushBack({ message: "Cannot define a global label within a label", errorLocation: this.labelName.srcLocation });
+                return;
+            }
+
+            if (localName) {
+                // full global.local name
+                program.globalScope.defineLabel(`${globalName}.${localName}`, this.labelName.srcLocation);
+            } else {
+                // global name
+                const symbol = program.globalScope.defineLabel(`${globalName}`, this.labelName.srcLocation);
+
+                program.globalScope.parentLabel = symbol;
+            }
+        }
+    }
+
+    public override process(program: RpyProgram) {
+        this.processDefinition(program);
+
+        this.block.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.process(program);
+            }
+        });
+
+        program.globalScope.parentLabel = null;
     }
 }

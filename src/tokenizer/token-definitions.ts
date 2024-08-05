@@ -374,9 +374,26 @@ export class TokenListIterator {
         // Move to the next node
         this._index++;
 
-        // We should skip any nodes with blacklisted tokens
+        // We should also skip any nodes with blacklisted tokens
         while (this.isBlacklisted() && this.hasNext()) {
             this._index++;
+        }
+    }
+
+    /**
+     * Advances the iterator to the next node that has a valid token that is not blacklisted
+     */
+    public previous() {
+        if (!this.hasPrevious()) {
+            throw new Error("previous() was called on an iterator that has no more nodes to visit.");
+        }
+
+        // Move to the next node
+        this._index--;
+
+        // We should also revert any nodes with blacklisted tokens
+        while (this.isBlacklisted() && this.hasPrevious()) {
+            this._index--;
         }
     }
 
@@ -434,6 +451,13 @@ export class TokenListIterator {
      */
     public hasNext() {
         return this._index < this._tokens.size;
+    }
+
+    /**
+     * Returns true if there are more nodes to visit
+     */
+    public hasPrevious() {
+        return this._index > 0;
     }
 }
 

@@ -954,11 +954,14 @@
 
             # This line is incorrect, and will cause an error or incorrect
             # behavior.
-            # "Plain {b}Bold {i}Bold-Italic{/b} Italic{/i} Plain"
+            "Plain {b}Bold {i}Bold-Italic{/b} Italic{/i} Plain"
+
+            "{a=https://renpy.org}Ren'Py's home page{/a}?" #test
+            "{a=https://renpy.org}Ren'Py' s home page?" #test
 
         label test:
 
-            e "Why don't you visit {a=https://renpy.org}Ren'Py's home page{/a}?"
+            e "Why don't you visit {a=https://renpy.org}Ren'Py's home page{/a}?" #
 
             e "Or {a=jump:more_text}here for more info{/a}."
 
@@ -996,6 +999,8 @@
             "Let's have a {outlinecolor=#00ff00}Green{/outlinecolor} outline."
 
             "{b}This is bold. {plain}This is not.{/plain} This is bold.{/b}"
+            "{b}This is bold. {plain}This is not. Plain till end of string.{/b}"
+            "{b}This is bold till end of string."
 
             g "It's good {s}to see you{/s}."
 
@@ -1006,6 +1011,7 @@
             g "It's good to {u}see{/u} you."
 
             "Line 1{vspace=30}Line 2"
+            "Line 1{=mystyle}Line 2{/=mystyle}"
 
             "New{#playlist}"
 

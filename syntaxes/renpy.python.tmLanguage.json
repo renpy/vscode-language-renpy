@@ -746,7 +746,7 @@
       "end": "(,)|(?=:|$)",
       "beginCaptures": {
         "1": { "name": "variable.parameter.function.language.python" },
-        "2": { "name": "keyword.operator.python" }
+        "2": { "name": "keyword.operator.assignment.python" }
       },
       "endCaptures": {
         "1": { "name": "punctuation.separator.parameters.python" }
@@ -836,7 +836,7 @@
       "begin": "(=)",
       "end": "(,)|(?=\\))",
       "beginCaptures": {
-        "1": { "name": "keyword.operator.python" }
+        "1": { "name": "keyword.operator.assignment.python" }
       },
       "endCaptures": {
         "1": { "name": "punctuation.separator.parameters.python" }

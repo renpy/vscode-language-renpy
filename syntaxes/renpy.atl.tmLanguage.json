@@ -33,67 +33,67 @@
         },
         {
           "comment": "position props (int, absolute, or a float)",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:xpos|ypos|xanchor|yanchor|xcenter|ycenter|radius)\\b"
         },
         {
           "comment": "position pair props",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:pos|anchor|xycenter|around|alignaround|matrixanchor)\\b"
         },
         {
           "comment": "float props",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:xalign|yalign|zoom|xzoom|yzoom|alpha|additive|angle|delay|events|zpos)\\b"
         },
         {
           "comment": "float pair props",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:align|knot)\\b"
         },
         {
           "comment": "int props",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:xoffset|yoffset|xtile|ytile)\\b"
         },
         {
           "comment": "int pair props",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:offset)\\b"
         },
         {
           "comment": "boolean props",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:rotate_pad|transform_anchor|nearest|crop_relative|subpixel|zzoom)\\b"
         },
         {
           "comment": "('#float' | None)",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:rotate|xpan|ypan|blur)\\b"
         },
         {
           "comment": "('#position' | None)",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:xsize|ysize)\\b"
         },
         {
           "comment": "('\\(int, int, int, int\\)' | '\\(float, float, float, float\\)' | None)",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:crop)\\b"
         },
         {
           "comment": "('\\(int, int\\)' | None)",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:corner1|corner2)\\b"
         },
         {
           "comment": "('\\(position, position\\)' | None)",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:xysize)\\b"
         },
         {
           "comment": "('#string' | None)",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:fit)\\b"
         },
         {
@@ -103,17 +103,17 @@
         },
         {
           "comment": "('#Matrix' | '#MatrixColor' | None)",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:matrixcolor)\\b"
         },
         {
           "comment": "('#Matrix' | '#TransformMatrix' | None)",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:matrixtransform)\\b"
         },
         {
           "comment": "('#bool' | '#float' | '\\(float, float, float\\)')",
-          "name": "support.type.property-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:perspective)\\b"
         }
       ]
@@ -258,7 +258,7 @@
       "contentName": "meta.atl.on.parameters.renpy",
       "begin": "(?<=^[ \\t]*)(on)\\b[ \\t]*",
       "beginCaptures": {
-        "1": { "name": "keyword.on.renpy" }
+        "1": { "name": "keyword.control.flow.on.renpy" }
       },
       "end": "(?=#|:)|$",
 
@@ -390,7 +390,7 @@
     "transform": {
       "name": "meta.transform.statement.renpy",
       "contentName": "meta.transform.parameters.renpy",
-      "begin": "(?<=^[ \\t]*)(transform)\\b[ \\t]*",
+      "begin": "(?<=^[ \\t]*)(transform)\\b",
       "beginCaptures": {
         "1": { "name": "keyword.transform.renpy" }
       },
@@ -398,9 +398,10 @@
 
       "patterns": [
         {
-          "name": "variable.name.transform.renpy",
+          "name": "entity.name.type.transform.renpy",
           "match": "\\b([[:alpha:]_]\\w*)\\b"
-        }
+        },
+        { "include": "source.renpy#whitespace" }
       ]
     }
   }

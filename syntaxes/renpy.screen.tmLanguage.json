@@ -39,80 +39,85 @@
         },
         {
           "comment": "Special manipulation keywords",
-          "match": "\\b(?<!\\.)(key|input|(?:text|image)?button|grid|auto|mousearea|side|timer|[vh]?bar|action|viewport|scrollbars|mousewheel|vpgrid|imagemap)\\b",
+          "name": "keyword.control.flow.renpy",
+          "match": "\\b(?<!\\.)(?:action|at|(?:un)?hovered|alt|value|dragged)\\b"
+        },
+        {
+          "comment": "Special manipulation keywords",
+          "match": "\\b(?<!\\.)(key|input|(?:text|image)?button|grid|auto|mousearea|side|timer|[vh]?bar|action|viewport|(?:vp)?grid|imagemap|hotspot|hotbar|transclude)\\b",
           "captures": {
             "1": { "name": "keyword.other.renpy" }
           }
         },
         {
           "comment": "Random props",
-          "name": "entity.name.tag.css.transform.renpy",
-          "match": "\\b(?<!\\.)(?:[xy]padding|area|(un)?hovered|draggable|cols|spacing|side_[xy]align)\\b"
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "match": "\\b(?<!\\.)(?:(?:[xy]|top_|bottom_|left_|right_)padding|[xy]margin|background|width|height|area|draggable|droppable|drag_handle|mousewheel|scrollbars|cols|spacing|(?:text_|side_[xy])?align)\\b"
         },
         {
           "comment": "position props (int, absolute, or a float)",
-          "name": "entity.name.tag.css.transform.renpy",
-          "match": "\\b(?<!\\.)(?:xpos|ypos|xanchor|yanchor|xcenter|ycenter|radius)\\b"
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "match": "\\b(?<!\\.)(?:[xy]?pos|[xy]?anchor|[xy]?maximum|(?:x?y?)center|radius)\\b"
         },
         {
           "comment": "position pair props",
-          "name": "entity.name.tag.css.transform.renpy",
-          "match": "\\b(?<!\\.)(?:pos|anchor|xycenter|around|alignaround|matrixanchor)\\b"
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "match": "\\b(?<!\\.)(?:around|alignaround|matrixanchor)\\b"
         },
         {
           "comment": "float props",
-          "name": "entity.name.tag.css.transform.renpy",
-          "match": "\\b(?<!\\.)(?:xalign|yalign|zoom|xzoom|yzoom|alpha|additive|angle|delay|events|zpos)\\b"
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "match": "\\b(?<!\\.)(?:[xy]align|[xy]?zoom|alpha|additive|angle|delay|events|zpos)\\b"
         },
         {
           "comment": "float pair props",
-          "name": "entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:align|knot)\\b"
         },
         {
           "comment": "int props",
-          "name": "entity.name.tag.css.transform.renpy",
-          "match": "\\b(?<!\\.)(?:xoffset|yoffset|xtile|ytile|size)\\b"
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "match": "\\b(?<!\\.)(?:[xy]offset|[xy]tile|size)\\b"
         },
         {
           "comment": "int pair props",
-          "name": "entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:offset)\\b"
         },
         {
           "comment": "boolean props",
-          "name": "entity.name.tag.css.transform.renpy",
-          "match": "\\b(?<!\\.)(?:rotate_pad|transform_anchor|nearest|crop_relative|subpixel|zzoom)\\b"
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "match": "\\b(?<!\\.)(?:rotate_pad|transform_anchor|nearest|crop_relative|subpixel|zzoom|transpose|[xy]fill)\\b"
         },
         {
           "comment": "('#float' | None)",
-          "name": "entity.name.tag.css.transform.renpy",
-          "match": "\\b(?<!\\.)(?:rotate|xpan|ypan|blur)\\b"
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "match": "\\b(?<!\\.)(?:rotate|[xy]pan|blur)\\b"
         },
         {
           "comment": "('#position' | None)",
-          "name": "entity.name.tag.css.transform.renpy",
-          "match": "\\b(?<!\\.)(?:xsize|ysize)\\b"
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "match": "\\b(?<!\\.)(?:[xy]size)\\b"
         },
         {
           "comment": "('\\(int, int, int, int\\)' | '\\(float, float, float, float\\)' | None)",
-          "name": "entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:crop)\\b"
         },
         {
           "comment": "('\\(int, int\\)' | None)",
-          "name": "entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:corner1|corner2)\\b"
         },
         {
           "comment": "('\\(position, position\\)' | None)",
-          "name": "entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:xysize)\\b"
         },
         {
           "comment": "('#string' | None)",
-          "name": "entity.name.tag.css.transform.renpy",
-          "match": "\\b(?<!\\.)(?:fit)\\b"
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "match": "\\b(?<!\\.)(?:fit|drag_name|child)\\b"
         },
         {
           "comment": "('\\(int, int\\)' | None)",
@@ -121,17 +126,17 @@
         },
         {
           "comment": "('#Matrix' | '#MatrixColor' | None)",
-          "name": "entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:matrixcolor)\\b"
         },
         {
           "comment": "('#Matrix' | '#TransformMatrix' | None)",
-          "name": "entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:matrixtransform)\\b"
         },
         {
           "comment": "('#bool' | '#float' | '\\(float, float, float\\)')",
-          "name": "entity.name.tag.css.transform.renpy",
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
           "match": "\\b(?<!\\.)(?:perspective)\\b"
         }
       ]
@@ -180,24 +185,28 @@
           "patterns": [ { "include": "#screen-simple-expression" } ]
         },
         {
-          "name": "keyword.other.renpy",
-          "match": "\\b(?<!\\.)(?:modal|sensitive|tag|at|use|zorder|variant|layer|roll_forward|text)\\b"
+          "name": "keyword.control.flow.renpy",
+          "match": "\\b(?<!\\.)(?:showif|has|on|use)\\b"
         },
         {
           "name": "keyword.other.renpy",
-          "match": "\\b(?<!\\.)(?:style|style_group|style_prefix)\\b"
+          "match": "\\b(?<!\\.)(?:sensitive|tag|text|drag|draggroup|id|test)\\b"
+        },
+        {
+          "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
+          "match": "\\b(?<!\\.)(?:modal|style|style_group|style_prefix|zorder|tooltip|variant|layer|roll_forward)\\b"
         },
         {
           "name": "keyword.other.renpy",
-          "match": "\\b(?<!\\.)(?:has|vbox|hbox|label|add|xfill)\\b"
+          "match": "\\b(?<!\\.)(?:vbox|hbox|label|add|null)\\b"
         }
       ]
     },
     "screen-block-tester": {
       "patterns": [
         {
-          "contentName": "meta.screen-block.renpy",
-          "begin": "(?<=(^[ \\t]*)(?:screen|frame|window|text|vbox|hbox)\\b.*?)(:)",
+          "contentName": "meta.screen.block.renpy",
+          "begin": "(?<=(^[ \\t]*)(?:screen|frame|fixed|window|viewport|drag|draggroup|(?:vp)?grid|text|vbox|hbox|imagemap)\\b.*?)(:)",
           "beginCaptures": {
             "2": { "name": "punctuation.section.screen.begin.renpy" }
           },
@@ -214,6 +223,13 @@
       "match": "(?<=^[ \\t]*)(frame)\\b",
       "captures": {
         "1": { "name": "keyword.frame.renpy" }
+      }
+    },
+    "screen-fixed": {
+      "name": "meta.screen.fixed.statement.renpy",
+      "match": "(?<=^[ \\t]*)(fixed)\\b",
+      "captures": {
+        "1": { "name": "keyword.fixed.renpy" }
       }
     },
     "screen-window": {
@@ -317,6 +333,7 @@
         { "include": "source.renpy#conditionals" },
         { "include": "source.renpy#python-statements" },
         { "include": "#screen-frame" },
+        { "include": "#screen-fixed" },
         { "include": "#screen-window" },
         { "include": "#screen-box" },
         { "include": "#screen-text" },

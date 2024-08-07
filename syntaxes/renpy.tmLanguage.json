@@ -892,21 +892,13 @@
         },
         {
           "name": "meta.say.narrator.renpy meta.say.statement.renpy",
-          "contentName": "string.quoted.narrator.renpy",
-          "begin": "(?<=^[ \\t]+)(\"\"\"|\"|'''|'|```|`)",
-          "beginCaptures": {
-            "1": { "name": "string.quoted.renpy punctuation.definition.string.begin.renpy" }
-          },
-          "end": "(?<![^\\\\]\\\\)(((?<=\\1)\\1)|\\1)([ \\t]*\\(.*?\\)(?![^\\(]*?\\)))?",
-          "endCaptures": {
-            "1": { "name": "string.quoted.renpy punctuation.definition.string.end.renpy" },
-            "2": { "name": "meta.empty-string.renpy" },
-            "3": {
-              "name": "meta.say.arguments.renpy",
-              "patterns": [ { "include": "source.renpy.python#odd-function-call" } ]
-            }
-          },
-          "patterns": [ { "include": "#strings-interior" } ]
+          "begin": "(?<=(^[ \\t]+))(?=r?(?:\"|'|`))",
+          "end": "$",
+          "patterns": [
+            { "include": "#strings" },
+            { "include": "source.renpy.python#odd-function-call" },
+            { "include": "#fallback-patterns" }
+          ]
         }
       ]
     },

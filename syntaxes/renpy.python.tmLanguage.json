@@ -277,7 +277,7 @@
     },
     "member-access-attribute": {
       "comment": "Highlight attribute access in otherwise non-specialized cases.",
-      "name": "variable.name.python meta.attribute.python",
+      "name": "variable.name.python meta.data.attribute.python",
       "match": "\\b([[:alpha:]_]\\w*)\\b"
     },
     "special-names": {

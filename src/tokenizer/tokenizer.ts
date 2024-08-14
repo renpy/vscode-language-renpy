@@ -343,8 +343,6 @@ class DocumentTokenizer {
             const [startPos, endPos] = match.indices![i];
 
             if (captures[i] === undefined) {
-                const pos = this.positionAt(startPos);
-
                 if (!isShippingBuild()) {
                     // If this is a 'begin' capture it's also possible to have it matched on the end pattern. Let's make sure we don't report false positives.
                     if (captureSource === CaptureSource.BeginCaptures && pattern.end !== undefined) {
@@ -355,6 +353,7 @@ class DocumentTokenizer {
                         }
                     }
 
+                    const pos = this.positionAt(startPos);
                     logCatMessage(
                         LogLevel.Debug,
                         LogCategory.Tokenizer,
@@ -400,7 +399,7 @@ class DocumentTokenizer {
         }
     }
 
-    private scanMatchPattern(pattern: ExTokenMatchPattern, source: string, sourceStartOffset: number): MatchScanResult | null {
+    private scanMatchPattern(pattern: ExTokenMatchPattern, source: string, sourceStartOffset: number) {
         const re = pattern.match;
         re.lastIndex = sourceStartOffset;
         const match = re.exec(source);
@@ -408,10 +407,10 @@ class DocumentTokenizer {
             return null;
         }
 
-        return { pattern, matchBegin: match };
+        return { pattern, matchBegin: match } as MatchScanResult;
     }
 
-    private scanRangePattern(pattern: ExTokenRangePattern, source: string, sourceStartOffset: number): RangeScanResult | null {
+    private scanRangePattern(pattern: ExTokenRangePattern, source: string, sourceStartOffset: number) {
         const reBegin = pattern.begin;
         reBegin.lastIndex = sourceStartOffset;
         const matchBegin = reBegin.exec(source);
@@ -420,7 +419,7 @@ class DocumentTokenizer {
             return null;
         }
 
-        return { pattern, matchBegin: matchBegin, matchEnd: null, expanded: false, contentMatches: null, source };
+        return { pattern, matchBegin: matchBegin, matchEnd: null, expanded: false, contentMatches: null, source } as RangeScanResult;
     }
 
     private expandRangeScanResult(result: RangeScanResult, cache: Array<ScanResult | undefined>) {

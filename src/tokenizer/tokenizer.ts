@@ -77,6 +77,9 @@ export class Tokenizer {
     private static async runTokenizer(document: TextDocument) {
         logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Running tokenizer on document: ${document.fileName}`);
         const tokenizer = new DocumentTokenizer(document);
+
+        const t0 = performance.now();
+
         await Promise.resolve(tokenizer.tokenize());
 
         // TODO: Need to mark all these functions async for this to work properly
@@ -86,7 +89,9 @@ export class Tokenizer {
             logToast(LogLevel.Info, `Tokenizer timed out after ${TOKENIZER_TIMEOUT}ms, while attempting to tokenize the document at: ${document.uri}`);
         });*/
 
-        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Tokenizer completed!`);
+        const t1 = performance.now();
+
+        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Tokenizer completed in ${(t1 - t0).toFixed(2)}ms`);
         this._tokenCache.set(document.uri, { documentVersion: document.version, tokens: tokenizer.tokens });
         return tokenizer.tokens;
     }

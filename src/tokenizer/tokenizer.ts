@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { assert } from "console";
 import { performance } from "perf_hooks";
-import { LogLevel, TextDocument, Uri, Range as VSRange } from "vscode";
+import { LogLevel, TextDocument, Uri, Range as VSRange, workspace } from "vscode";
 import { Token, isRangePattern, isMatchPattern, isRepoPattern, TokenPosition, TokenTree, TreeNode, Range } from "./token-definitions";
 import { RenpyPatterns } from "./token-patterns.g";
 import { Stack } from "../utilities/stack";
@@ -75,7 +75,7 @@ export class Tokenizer {
     }
 
     private static async runTokenizer(document: TextDocument) {
-        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Running tokenizer on document: ${document.fileName}`);
+        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Running tokenizer on document: "${workspace.asRelativePath(document.uri, true)}"`);
         const tokenizer = new DocumentTokenizer(document);
 
         const t0 = performance.now();
@@ -86,7 +86,7 @@ export class Tokenizer {
         /*await withTimeout(, TOKENIZER_TIMEOUT, () => {
             // If the tokenizer times out, we still want to cache the document so that we don't try to tokenize it again
             this._tokenCache.set(document.uri, { documentVersion: document.version, tokens: new TokenTree() });
-            logToast(LogLevel.Info, `Tokenizer timed out after ${TOKENIZER_TIMEOUT}ms, while attempting to tokenize the document at: ${document.uri}`);
+            logToast(LogLevel.Info, `Tokenizer timed out after ${TOKENIZER_TIMEOUT}ms, while attempting to tokenize the document at: "${workspace.asRelativePath(document.uri, true)}"`);
         });*/
 
         const t1 = performance.now();

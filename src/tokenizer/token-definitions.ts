@@ -203,6 +203,12 @@ export class TreeNode {
         return this.token === null && !this.hasChildren();
     }
 
+    public clear() {
+        this.token = null;
+        this.parent = null;
+        this.children.clear();
+    }
+
     // Recursively iterate over all children
     public forEach(callback: (node: TreeNode) => void): void {
         this.children.forEach((child) => {
@@ -286,6 +292,10 @@ export class TokenTree {
 
     constructor() {
         this.root = new TreeNode();
+    }
+
+    public clear() {
+        this.root.clear();
     }
 
     public isEmpty(): boolean {

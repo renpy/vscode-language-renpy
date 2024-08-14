@@ -101,10 +101,10 @@
         "background": {
           "activeOnStart": true,
           "beginsPattern": {
-            "regexp": "^Type-checking in progress|[Cc]ompiled (?:.*?successfully|with .*?(?:error|warning))"
+            "regexp": "^asset|cached"
           },
           "endsPattern": {
-            "regexp": "^Found \\d+ (?:error|warning)|^No errors found"
+            "regexp": "[Cc]ompiled (?:.*?successfully|with .*?(?:error|warning))"
           }
         }
       },

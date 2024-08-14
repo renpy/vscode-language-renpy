@@ -509,7 +509,7 @@
         {
           "comment": "Valid tags with numeric params (self-closing)",
           "name": "meta.string.tag.${2:/downcase}.self-closing.renpy",
-          "match": "({)\\s*(p|w)(=)(\\+?)(\\d*(?:.\\d+)?)\\s*(})",
+          "match": "({)\\s*(p|w)(=)(\\+)?(\\d*(?:.\\d+)?)\\s*(})",
           "captures": {
             "1": { "name": "constant.character.format.placeholder.other.renpy punctuation.definition.tag.begin.renpy" },
             "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
@@ -522,7 +522,7 @@
         {
           "comment": "Valid tags with numeric params (self-closing)",
           "name": "meta.string.tag.${2:/downcase}.self-closing.renpy",
-          "match": "({)\\s*(v?space)(=)(\\+?)(\\d+)\\s*(})",
+          "match": "({)\\s*(v?space)(=)(\\+)?(\\d+)\\s*(})",
           "captures": {
             "1": { "name": "constant.character.format.placeholder.other.renpy punctuation.definition.tag.begin.renpy" },
             "2": { "name": "entity.name.tag.${2:/downcase}.renpy" },
@@ -654,7 +654,7 @@
         },
         {
           "comment": "Close tags",
-          "match": "({/)\\s*([[:alpha:]_]?\\w*)(=?)(.*?)\\s*(})",
+          "match": "({/)\\s*([[:alpha:]_]\\w*)?(=)?(.*?)?\\s*(})",
           "captures": {
             "0": { "name": "meta.string.tag.${2:/downcase}.end.renpy" },
             "1": { "name": "constant.character.format.placeholder.other.renpy punctuation.definition.tag.begin.renpy" },
@@ -666,7 +666,7 @@
         },
         {
           "comment": "Custom tags (optional close)",
-          "match": "({)\\s*([[:alpha:]_]?\\w*)(=?)(.*?)\\s*(})",
+          "match": "({)\\s*([[:alpha:]_]\\w*)?(=)?(.*?)?\\s*(})",
           "captures": {
             "0": { "name": "meta.string.tag.${2:/downcase}.start.renpy" },
             "1": { "name": "constant.character.format.placeholder.other.renpy punctuation.definition.tag.begin.renpy" },

@@ -300,7 +300,7 @@
         "5": { "name": "constant.character.escape.backslash.python.renpy" },
         "6": { "name": "constant.character.escape.open.bracket.python.renpy" },
         "7": { "name": "constant.character.escape.open.square-bracket.python.renpy" },
-        "8": { "name": "constant.character.escape.ampersand.python.renpy" }
+        "8": { "name": "constant.character.escape.percent.python.renpy" }
       }
     },
     "constant_placeholder": {
@@ -634,7 +634,7 @@
                   "match": "\\b(jump)\\b(:)([[:alpha:]_]\\w*)",
                   "captures": {
                     "1": { "name": "keyword.control.flow.jump.renpy" },
-                    "2": { "name": "punctuation.definition.jump.begin.renpy keyword.operator.jump.renpy" },
+                    "2": { "name": "keyword.operator.jump.renpy punctuation.colon.renpy" },
                     "3": {
                       "patterns": [
                         { "include": "#label-name" },
@@ -1156,7 +1156,7 @@
             },
             {
               "comment": "Only the first word is the language name",
-              "name": "entity.name.type.translate.language.renpy",
+              "name": "entity.name.type.language.translate.renpy",
               "match": "(?<=translate[ \\t]+)\\b([[:alpha:]_]\\w*)\\b"
             },
             { "include": "#label-access" },

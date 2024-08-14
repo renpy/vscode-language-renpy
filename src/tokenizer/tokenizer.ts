@@ -11,20 +11,6 @@ import { LogCategory, logCatMessage } from "../logger";
 import { escapeRegExpCharacters } from "../utilities/utils";
 import { isShippingBuild } from "../extension";
 
-const cloneScanResult = (obj: ScanResult | undefined): ScanResult | undefined => {
-    if (obj === undefined) return undefined;
-    if (obj === null) return null;
-    return { ...obj };
-};
-
-const cloneCache = (obj: Array<ScanResult | undefined>): Array<ScanResult | undefined> => {
-    const clone = new Array<ScanResult | undefined>(obj.length);
-    for (let i = 0; i < obj.length; ++i) {
-        clone[i] = cloneScanResult(obj[i]);
-    }
-    return clone;
-};
-
 interface MatchScanResult {
     pattern: ExTokenPattern;
     matchBegin: RegExpExecArray;
@@ -466,13 +452,10 @@ class DocumentTokenizer {
                 const sourceRange = new Range(matchBegin.index + matchBegin[0].length, matchEnd.index);
 
                 // Scan the content for any matches that would extend beyond the current end match
-                const tempCache = cloneCache(cache);
-                //const tempCache = new Array<ScanResult | undefined>(uniquePatternCount).fill(undefined);
-
                 let lastCharIndex = sourceRange.end;
                 let lastMatchIndex = sourceRange.start;
                 while (lastMatchIndex < lastCharIndex) {
-                    const bestMatch = this.scanPattern(p._patternsRepo, result.source, lastMatchIndex, tempCache);
+                    const bestMatch = this.scanPattern(p._patternsRepo, result.source, lastMatchIndex, cache);
 
                     if (!bestMatch || bestMatch.matchBegin.index >= lastCharIndex) {
                         break; // No valid match was found in the remaining text. Break the loop

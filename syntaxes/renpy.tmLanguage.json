@@ -253,12 +253,12 @@
         {
           "comment": "[TODO: Should probably only be a keyword in the expression] Renpy sub expression keywords",
           "name": "keyword.other.renpy",
-          "match": "\\b(?<!\\.)(?:set|expression|at|with|from|style_prefix|spacing|textbutton)\\b"
+          "match": "\\b(?<!\\.)(?:set|expression|from|style_prefix|spacing|textbutton)\\b"
         },
         {
           "comment": "[TODO: Should probably only be a keyword in the expression] Renpy sub expression keywords",
           "name": "keyword.control.flow.other.renpy",
-          "match": "\\b(?<!\\.)(?:action)\\b"
+          "match": "\\b(?<!\\.)(?:action|at|with)\\b"
         }
       ]
     },
@@ -306,25 +306,26 @@
     "constant_placeholder": {
       "comment": "Python value interpolation using [ ... ]",
       "name": "constant.other.placeholder.tags.renpy",
-      "match": "(\\[)(.*?)(\\])(?![^\\[]*?\\])",
-      "captures": {
-        "1": { "name": "constant.character.format.placeholder.other.renpy" },
-        "2": {
-          "name": "meta.embedded.line.python",
-          "patterns": [
-            {
-              "name": "meta.interpolate.flags.renpy",
-              "match": "(!)([rstiqulc]+)",
-              "captures": {
-                "1": { "name": "punctuation.definition.interpolate.flags.begin.renpy" },
-                "2": { "name": "storage.modifier.flag.renpy" }
-              }
-            },
-            { "include": "source.renpy.python#expression" }
-          ]
+      "contentName": "meta.embedded.line.python",
+      "begin": "(?<=[^\\[])\\[",
+      "end": "\\]",
+      "beginCaptures": {
+        "0": { "name": "constant.character.format.placeholder.begin.renpy" }
+      },
+      "endCaptures": {
+        "0": { "name": "constant.character.format.placeholder.end.renpy" }
+      },
+      "patterns": [
+        {
+          "name": "meta.interpolate.flags.renpy",
+          "match": "(!)([rstiqulc]+)",
+          "captures": {
+            "1": { "name": "punctuation.definition.interpolate.flags.begin.renpy" },
+            "2": { "name": "storage.modifier.flag.renpy" }
+          }
         },
-        "3": { "name": "constant.character.format.placeholder.other.renpy" }
-      }
+        { "include": "source.renpy.python#expression" }
+      ]
     },
     "escaped_unicode_char": {
       "match": "(\\\\U[0-9A-Fa-f]{8})|(\\\\u[0-9A-Fa-f]{4})|(\\\\N\\{[a-zA-Z ]+\\})",
@@ -895,11 +896,12 @@
         },
         {
           "name": "meta.say.narrator.renpy meta.say.statement.renpy",
-          "begin": "(?<=(^[ \\t]+))(?=r?(?:\"|'|`))",
+          "begin": "(?<=^[ \\t]+)(?=r?(?:\"|'|`))",
           "end": "$",
           "patterns": [
             { "include": "#strings" },
             { "include": "source.renpy.python#odd-function-call" },
+            { "include": "#with-statement" },
             { "include": "#fallback-patterns" }
           ]
         }

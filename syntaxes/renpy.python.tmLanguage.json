@@ -1996,11 +1996,11 @@
     },
     "string-quoted-single-line": {
       "name": "string.quoted.single.python",
-      "begin": "(\\b[rRuU])?(\\b\\w+)?(['\"])",
+      "begin": "(?:\\b([rR])(?=[uU]))?([uU])?(['\"])",
       "end": "(\\3)|((?<!\\\\)\\n)",
       "beginCaptures": {
-        "1": { "name": "storage.type.string.python" },
-        "2": { "name": "invalid.illegal.prefix.python" },
+        "1": { "name": "invalid.illegal.prefix.python" },
+        "2": { "name": "storage.type.string.python" },
         "3": { "name": "punctuation.definition.string.begin.python" }
       },
       "endCaptures": {

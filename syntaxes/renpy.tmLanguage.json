@@ -1384,7 +1384,8 @@
           "match": "\\b(?<!\\.)(hide)\\b"
         },
         { "include": "#label-def-name" },
-        { "include": "source.renpy.python#parameters" }
+        { "include": "source.renpy.python#parameters" },
+        { "include": "#fallback-patterns" }
       ]
     },
     "return-statements": {

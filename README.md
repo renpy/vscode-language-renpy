@@ -7,6 +7,9 @@ Snippets converted from [Ren'Py language support in Atom](https://github.com/ren
 
 Feel free to [contribute](https://github.com/renpy/vscode-language-renpy/blob/master/Contributing.md), fork this and send a pull request. :smile:
 
+## Building 
+To build and run the extension locally, see [this section](https://github.com/renpy/vscode-language-renpy/blob/master/Contributing.md#how-to-contribute) on the contributing page.
+
 ## Features
 
 ### Syntax Highlighting

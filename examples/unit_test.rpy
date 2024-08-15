@@ -439,7 +439,7 @@
             window hide # hides the window.
             pause       # the window is hidden during this pause.
 
-            window show dissolve # shows the window with dissolve.
+            window show show.dissolve.show # shows the window with dissolve.
             pause                # the window is shown during this pause.
             window hide dissolve # hides the window with dissolve.
             pause                # the window is hidden during this pause.

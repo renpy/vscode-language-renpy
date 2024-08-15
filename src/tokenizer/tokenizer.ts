@@ -136,7 +136,7 @@ export class Tokenizer {
         stack.push(RenpyPatterns.basePatterns as ExTokenRepoPattern);
 
         const mFlagRe = /(?<!\[)[\^$]/g;
-        const gAnchorRe = /\(\\G\)|\(\?!\\G\)/g;
+        const gAnchorRe = /(?:\(\?!\\G\))|(?:\\G)/g;
         while (!stack.isEmpty()) {
             const p = stack.pop()!;
             assert(p !== undefined, "This pattern is undefined! Please make sure that circular includes are added after both patterns are defined.");
@@ -162,7 +162,7 @@ export class Tokenizer {
                 }
 
                 if (gAnchorRe.test(reBeginSource)) {
-                    assert("Can't use the \\G anchor, please update the regex!");
+                    assert(false, "Can't use the \\G anchor, please update the regex!");
                     reBeginSource = reBeginSource.replace(gAnchorRe, "");
                 }
 
@@ -206,7 +206,7 @@ export class Tokenizer {
                     if (reEndSource.startsWith("(?!\\G)")) {
                         p._endNotG = true;
                     } else {
-                        assert("The end patterns only supports (?!\\G) at the start of the regex. Please update the regex!");
+                        assert(false, "The end patterns only supports (?!\\G) at the start of the regex. Please update the regex!");
                         reEndSource = reEndSource.replace(gAnchorRe, "");
                     }
                 }
@@ -223,6 +223,11 @@ export class Tokenizer {
 
                 if (p.match.source.match(mFlagRe)) {
                     assert(p.match.multiline, "To match this pattern the 'm' flag is required!");
+                }
+
+                if (gAnchorRe.test(p.match.source)) {
+                    assert(false, "The \\G anchors are not yet supported on match patterns!");
+                    p.match = new RegExp(p.match.source.replace(gAnchorRe, ""), p.match.flags);
                 }
 
                 assert(p.match.global, "To match this pattern the 'g' flag is required!");

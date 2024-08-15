@@ -895,11 +895,12 @@
         },
         {
           "name": "meta.say.narrator.renpy meta.say.statement.renpy",
-          "begin": "(?<=(^[ \\t]+))(?=r?(?:\"|'|`))",
+          "begin": "(?<=^[ \\t]+)(?=r?(?:\"|'|`))",
           "end": "$",
           "patterns": [
             { "include": "#strings" },
             { "include": "source.renpy.python#odd-function-call" },
+            { "include": "#with-statement" },
             { "include": "#fallback-patterns" }
           ]
         }

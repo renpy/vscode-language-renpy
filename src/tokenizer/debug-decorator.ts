@@ -301,6 +301,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case KeywordTokenType.Scene:
             case KeywordTokenType.Camera:
             case KeywordTokenType.Show:
+            case KeywordTokenType.Auto:
             case KeywordTokenType.Image:
             case KeywordTokenType.Layeredimage:
             case KeywordTokenType.Window:
@@ -476,6 +477,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case MetaTokenType.SceneStatement:
             case MetaTokenType.ShowStatement:
             case MetaTokenType.HideStatement:
+            case MetaTokenType.WindowStatement:
             case MetaTokenType.CallStatement:
             case MetaTokenType.CallArguments:
             case MetaTokenType.FromClause:

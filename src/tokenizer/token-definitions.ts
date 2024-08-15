@@ -424,6 +424,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     Scene: { name: "Scene", value: KeywordTokenType.Scene },
     Camera: { name: "Camera", value: KeywordTokenType.Camera },
     Show: { name: "Show", value: KeywordTokenType.Show },
+    Auto: { name: "Auto", value: KeywordTokenType.Auto },
     Image: { name: "Image", value: KeywordTokenType.Image },
     Layeredimage: { name: "Layeredimage", value: KeywordTokenType.Layeredimage },
     Window: { name: "Window", value: KeywordTokenType.Window },
@@ -704,6 +705,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     SceneStatement: { name: "SceneStatement", value: MetaTokenType.SceneStatement },
     ShowStatement: { name: "ShowStatement", value: MetaTokenType.ShowStatement },
     HideStatement: { name: "HideStatement", value: MetaTokenType.HideStatement },
+    WindowStatement: { name: "WindowStatement", value: MetaTokenType.WindowStatement },
 
     CallStatement: { name: "CallStatement", value: MetaTokenType.CallStatement },
     CallArguments: { name: "CallArguments", value: MetaTokenType.CallArguments },

@@ -1210,7 +1210,7 @@
     "window": {
       "patterns": [
         {
-          "name": "meta.show.statement.renpy",
+          "name": "meta.window.statement.renpy",
           "begin": "(?<=^[ \\t]*)(window)",
           "beginCaptures": {
             "1": { "name": "keyword.window.renpy" }
@@ -1218,12 +1218,16 @@
           "end": "$",
           "patterns": [
             {
+              "name": "keyword.auto.renpy",
+              "match": "(?<=window[ \\t]+)\\b(auto)\\b"
+            },
+            {
               "name": "keyword.control.flow.show.renpy",
-              "match": "\\b(show)\\b"
+              "match": "(?<=(?:window|auto)[ \\t]+)\\b(show)\\b"
             },
             {
               "name": "keyword.control.flow.hide.renpy",
-              "match": "\\b(hide)\\b"
+              "match": "(?<=window[ \\t]+)\\b(hide)\\b"
             },
             { "include": "#whitespace" },
             { "include": "#simple-expression" }

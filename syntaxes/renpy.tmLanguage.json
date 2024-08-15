@@ -1380,8 +1380,7 @@
           "match": "\\b(?<!\\.)(hide)\\b"
         },
         { "include": "#label-def-name" },
-        { "include": "source.renpy.python#parameters" },
-        { "include": "#fallback-patterns-with-error" }
+        { "include": "source.renpy.python#parameters" }
       ]
     },
     "return-statements": {
@@ -1639,6 +1638,7 @@
         { "include": "#translate" },
         { "include": "#audio" },
         { "include": "#pause" },
+        { "include": "#renpy-block-tester" },
         { "include": "source.renpy.atl#transform" },
         { "include": "source.renpy.atl#atl-block-tester" },
         { "include": "#scene" },

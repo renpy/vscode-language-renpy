@@ -40,11 +40,11 @@
         {
           "comment": "Special manipulation keywords",
           "name": "keyword.control.flow.renpy",
-          "match": "\\b(?<!\\.)(?:action|at|(?:un)?hovered|alt|value|dragged)\\b"
+          "match": "\\b(?<!\\.)(?:action|at|(?:un)?hovered|alt|value|dragged|released)\\b"
         },
         {
           "comment": "Special manipulation keywords",
-          "match": "\\b(?<!\\.)(key|input|(?:text|image)?button|grid|auto|mousearea|side|timer|[vh]?bar|action|viewport|(?:vp)?grid|imagemap|hotspot|hotbar|transclude)\\b",
+          "match": "\\b(?<!\\.)(key|default|input|(?:text|image)?button|grid|auto|mousearea|side|timer|[vh]?bar|action|viewport|(?:vp)?grid|imagemap|hotspot|hotbar|transclude)\\b",
           "captures": {
             "1": { "name": "keyword.other.renpy" }
           }
@@ -190,11 +190,11 @@
         },
         {
           "name": "keyword.other.renpy",
-          "match": "\\b(?<!\\.)(?:sensitive|tag|text|drag|draggroup|id|test)\\b"
+          "match": "\\b(?<!\\.)(?:sensitive|tag|text|drag|draggroup|id|test|style)\\b[^\\.]"
         },
         {
           "name": "entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy",
-          "match": "\\b(?<!\\.)(?:modal|style|style_group|style_prefix|zorder|tooltip|variant|layer|roll_forward)\\b"
+          "match": "\\b(?<!\\.)(?:modal|style_group|style_prefix|zorder|tooltip|variant|layer|roll_forward)\\b"
         },
         {
           "name": "keyword.other.renpy",
@@ -206,13 +206,25 @@
       "patterns": [
         {
           "contentName": "meta.screen.block.renpy",
-          "begin": "(?<=(^[ \\t]*)(?:screen|frame|fixed|window|viewport|drag|draggroup|(?:vp)?grid|text|vbox|hbox|imagemap)\\b.*?)(:)",
+          "begin": "(?<=(^[ \\t]*)(?:screen|frame|fixed|window|viewport|drag|draggroup|(?:vp)?grid|vbox|hbox|imagemap)\\b.*?)(:)",
           "beginCaptures": {
             "2": { "name": "punctuation.section.screen.begin.renpy" }
           },
           "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
           "patterns": [
             { "include": "#screen-language" }
+          ]
+        },
+        {
+          "contentName": "meta.atl.block.renpy",
+          "begin": "(?<=(^[ \\t]*)(?:text)\\b.*?)(:)",
+          "beginCaptures": {
+            "2": { "name": "punctuation.section.atl.begin.renpy" }
+          },
+          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
+          "patterns": [
+            { "include": "#screen-language" },
+            { "include": "source.renpy.atl" }
           ]
         }
       ]
@@ -240,45 +252,22 @@
       }
     },
     "screen-text": {
-      "contentName": "meta.screen.text.renpy",
-      "begin": "^([ \\t]+)?(text)\\b[ \\t]*(:)",
+      "name": "meta.screen.text.renpy",
+      "begin": "(?<=^[ \\t]*)(text)\\b",
       "beginCaptures": {
-        "1": { "name": "punctuation.whitespace.leading.block.renpy" },
-        "2": { "name": "keyword.text.renpy" },
-        "3": { "name": "punctuation.section.block.begin.renpy" }
+        "1": { "name": "keyword.text.renpy" }
       },
-      "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-
+      "end": "(?=:)|$",
       "patterns": [
+        { "include": "source.renpy#strings" },
         {
-          "name": "meta.screen.text.renpy",
-          "contentName": "meta.atl-block.renpy",
-          "begin": "^([ \\t]+)?(text)\\b[ \\t]*([a-zA-Z_0-9 ]*)(:)",
-          "beginCaptures": {
-            "1": { "name": "punctuation.whitespace.leading.renpy" },
-            "2": { "name": "keyword.text.renpy" },
-            "3": { "name": "entity.name.type.text.renpy" },
-            "4": { "name": "punctuation.section.atl.begin.renpy" }
-          },
-          "end": "^(?=(?!\\1)[ \\t]*[^\\s#]|\\1[^\\s#])",
-          "patterns": [ { "include": "source.renpy.atl" } ]
+          "match": "(?<=text[ \\t]*)\\b(?:[a-zA-Z_0-9]+)\\b(?=[ \\t]+|$)",
+          "name": "entity.name.type.text.renpy"
         },
-        {
-          "name": "meta.screen.text.renpy",
-          "begin": "(?<=^[ \\t]*)(text)\\b[ \\t]*",
-          "beginCaptures": {
-            "1": { "name": "keyword.text.renpy" }
-          },
-          "end": "(?=\\b(at)\\b|#|=)|$",
-          "patterns": [
-            { "include": "source.renpy#strings" },
-            {
-              "match": "\\b(?:[a-zA-Z_0-9]+)\\b[ \\t]*",
-              "name": "entity.name.type.text.renpy"
-            }
-          ]
-        },
-        { "include": "source.renpy#at-statement" }
+        { "include": "source.renpy#at-statement" },
+        { "include": "#screen-keywords" },
+        { "include": "#screen-simple-expression" },
+        { "include": "source.renpy#fallback-patterns" }
       ]
     },
     "screen-box": {
@@ -337,6 +326,7 @@
         { "include": "#screen-window" },
         { "include": "#screen-box" },
         { "include": "#screen-text" },
+        { "include": "#screen-block-tester" },
         { "include": "#screen-keywords" },
         { "include": "#screen-simple-expression" },
         { "include": "#screen-fallback" }

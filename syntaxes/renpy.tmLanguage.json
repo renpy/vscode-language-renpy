@@ -253,12 +253,12 @@
         {
           "comment": "[TODO: Should probably only be a keyword in the expression] Renpy sub expression keywords",
           "name": "keyword.other.renpy",
-          "match": "\\b(?<!\\.)(?:set|expression|at|with|from|style_prefix|spacing|textbutton)\\b"
+          "match": "\\b(?<!\\.)(?:set|expression|from|style_prefix|spacing|textbutton)\\b"
         },
         {
           "comment": "[TODO: Should probably only be a keyword in the expression] Renpy sub expression keywords",
           "name": "keyword.control.flow.other.renpy",
-          "match": "\\b(?<!\\.)(?:action)\\b"
+          "match": "\\b(?<!\\.)(?:action|at|with)\\b"
         }
       ]
     },

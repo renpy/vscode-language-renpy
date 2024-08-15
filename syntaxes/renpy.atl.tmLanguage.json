@@ -401,6 +401,7 @@
           "name": "entity.name.type.transform.renpy",
           "match": "\\b([[:alpha:]_]\\w*)\\b"
         },
+        { "include": "source.renpy.python#parameters" },
         { "include": "source.renpy#whitespace" }
       ]
     }

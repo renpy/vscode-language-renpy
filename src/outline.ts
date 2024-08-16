@@ -1,8 +1,9 @@
 // Document Symbol (Outline) Provider
-import { TextDocument, DocumentSymbol, Uri, Range, SymbolKind, languages, CancellationToken, ProviderResult } from "vscode";
+import { TextDocument, DocumentSymbol, Uri, Range, SymbolKind, languages, CancellationToken, ProviderResult, LogLevel } from "vscode";
 import { Navigation } from "./navigation";
 import { NavigationData } from "./navigation-data";
 import { stripWorkspaceFromFile } from "./workspace";
+import { logMessage } from "./logger";
 
 export const symbolProvider = languages.registerDocumentSymbolProvider("renpy", {
     provideDocumentSymbols(document: TextDocument, token: CancellationToken): ProviderResult<DocumentSymbol[]> {
@@ -170,7 +171,14 @@ function getStoreDocumentSymbols(classParent: DocumentSymbol, key: string) {
     if (fields) {
         for (const f of fields) {
             const childRange = new Range(f.location - 1, 0, f.location - 1, 0);
-            classParent.children.push(new DocumentSymbol(f.keyword.substring(key.length + 1), `:${f.location}`, SymbolKind.Field, childRange, childRange));
+            const name = f.keyword.substring(key.length + 1);
+
+            if (!name) {
+                logMessage(LogLevel.Warning, `Invalid field name: ${f.keyword}`);
+                continue;
+            }
+
+            classParent.children.push(new DocumentSymbol(name, `:${f.location}`, SymbolKind.Field, childRange, childRange));
         }
     }
 }

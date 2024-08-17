@@ -851,7 +851,7 @@
         {
           "name": "meta.say.statement.renpy",
           "contentName": "renpy.meta.say.$1 string.quoted.renpy",
-          "begin": "(?<=^[ \\t]+)(?:([a-zA-Z_]\\w*)\\b|\"([a-zA-Z_]\\w*)\\b\")((?:[ \\t]+(?:@|\\w+))*)?[ \\t]*(\"\"\"|\"|'''|'|```|`)",
+          "begin": "(?<=^[ \\t]+)(?:((?:character\\.)?[a-zA-Z_]\\w*)\\b|\"([a-zA-Z_]\\w*)\\b\")((?:[ \\t]+(?:@|\\w+))*)?(?=[ \\t]*r?(?:\"|'|`))",
           "beginCaptures": {
             "1": {
               "name": "renpy.meta.character.$1 variable.other.renpy",
@@ -883,16 +883,13 @@
             },
             "4": { "name": "string.quoted.renpy punctuation.definition.string.begin.renpy" }
           },
-          "end": "(?<![^\\\\]\\\\)(((?<=\\4)\\4)|\\4)([ \\t]*\\(.*?\\)(?![^\\(]*?\\)))?",
-          "endCaptures": {
-            "1": { "name": "string.quoted.renpy punctuation.definition.string.end.renpy" },
-            "2": { "name": "meta.empty-string.renpy" },
-            "3": {
-              "name": "meta.say.arguments.renpy",
-              "patterns": [ { "include": "source.renpy.python#odd-function-call" } ]
-            }
-          },
-          "patterns": [ { "include": "#strings-interior" } ]
+          "end": "$",
+          "patterns": [
+            { "include": "#strings" },
+            { "include": "source.renpy.python#odd-function-call" },
+            { "include": "#with-statement" },
+            { "include": "#fallback-patterns" }
+          ]
         },
         {
           "name": "meta.say.narrator.renpy meta.say.statement.renpy",
@@ -1012,21 +1009,34 @@
       "patterns": [
         {
           "name": "meta.image.statement.renpy",
-          "begin": "(?<=^[ \\t]*)(image)\\b[ \\t]*",
+          "begin": "(?<=^[ \\t]*)(image)\\b",
           "beginCaptures": {
             "1": { "name": "keyword.image.renpy" }
           },
-          "end": "(?=\\b(at|with)\\b|#|=|:)|$",
+          "end": "(?=:)|$",
           "patterns": [
             { "include": "#strings" },
             {
-              "match": "\\b(?:[a-zA-Z_0-9]+)\\b[ \\t]*",
+              "match": "\\b(?:[a-zA-Z_0-9]+)\\b",
               "name": "entity.name.type.image.renpy"
-            }
+            },
+            { "include": "#at-statement" },
+            { "include": "#with-statement" },
+            {
+              "contentName": "meta.python.expression.renpy",
+              "begin": "=",
+              "beginCaptures": {
+                "0": { "name": "keyword.operator.assignment.renpy" }
+              },
+              "end": "$",
+              "patterns": [
+                { "include": "source.renpy.python#expression" },
+                { "include": "#whitespace" }
+              ]
+            },
+            { "include": "#fallback-patterns" }
           ]
-        },
-        { "include": "#at-statement" },
-        { "include": "#with-statement" }
+        }
       ]
     },
 
@@ -1374,7 +1384,7 @@
     "label": {
       "name": "meta.label.statement.renpy",
       "begin": "(?<=^[ \\t]*)(label)\\b",
-      "end": "(?=#|:)|$",
+      "end": "(?=:)|$",
       "beginCaptures": {
         "1": { "name": "storage.type.function.label.renpy" }
       },

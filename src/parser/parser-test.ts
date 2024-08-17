@@ -6,21 +6,10 @@ import { LogCategory, logCatMessage } from "../logger";
 import { RpyProgram } from "../interpreter/program";
 
 // Test decorations
-const defDecorationType = window.createTextEditorDecorationType({
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
-    fontWeight: "bold",
-    textDecoration: "underline wavy 1pt",
-});
-
 const errorDecorationType = window.createTextEditorDecorationType({
     color: "red",
     fontWeight: "bold",
     textDecoration: "underline wavy 1pt",
-});
-
-const refDecorationType = window.createTextEditorDecorationType({
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
-    textDecoration: "underline",
 });
 
 export async function testParser() {
@@ -68,15 +57,4 @@ export async function testParser() {
     }
 
     activeEditor.setDecorations(errorDecorationType, errors);
-
-    const sym = program.globalScope.resolve("e");
-    if (sym === null) {
-        logCatMessage(LogLevel.Info, LogCategory.Parser, "Sym: null");
-    } else {
-        // highlight all sym.references in the active editor
-        activeEditor.setDecorations(refDecorationType, sym.references.map((ref) => ref.range).toArray());
-        activeEditor.setDecorations(defDecorationType, [sym.definitionLocation.range]);
-
-        logCatMessage(LogLevel.Info, LogCategory.Parser, "Sym: " + sym.toString());
-    }
 }

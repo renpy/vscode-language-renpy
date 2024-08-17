@@ -1,5 +1,18 @@
 import { CharacterTokenType, EntityTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "../tokenizer/renpy-tokens";
-import { DefaultStatementNode, DefineStatementNode, ExpressionNode, LabelNameNode, LabelStatementNode, LiteralNode, SayStatementNode, StatementNode } from "./ast-nodes";
+import {
+    AssignmentOperationNode,
+    DefaultStatementNode,
+    DefineStatementNode,
+    ExpressionNode,
+    IdentifierNode,
+    ImageNameNode,
+    ImageStatementNode,
+    LabelNameNode,
+    LabelStatementNode,
+    LiteralNode,
+    SayStatementNode,
+    StatementNode,
+} from "./ast-nodes";
 import { AssignmentOperationRule, GrammarRule, IntegerLiteralRule, PythonExpressionRule, IdentifierRule, StringLiteralRule, SimpleExpressionRule, ParametersRule } from "./grammar-rules";
 import { DocumentParser } from "./parser";
 import { Range } from "../tokenizer/token-definitions";
@@ -185,6 +198,111 @@ export class LabelStatementRule extends GrammarRule<LabelStatementNode> {
     }
 }
 
+/**
+ * IMAGE_NAME_COMPONENT = WORD_CHAR+;
+ * image_name_component_def = !"-", IMAGE_NAME_COMPONENT;
+ */
+export class ImageNameComponentRule extends GrammarRule<IdentifierNode> {
+    public test(parser: DocumentParser): boolean {
+        return parser.peek(EntityTokenType.ImageName);
+    }
+
+    public parse(parser: DocumentParser): IdentifierNode {
+        const start = parser.peekNext().startPos.charStartOffset;
+        parser.requireToken(EntityTokenType.ImageName);
+        const value = parser.currentValue();
+        const end = parser.current().endPos.charStartOffset;
+        const location = parser.locationFromRange(new Range(start, end).toVSRange(parser.document));
+        return new IdentifierNode(location, value);
+    }
+}
+
+/**
+ * IMAGE_NAME = WHITESPACE.IMAGE_NAME_COMPONENT+;
+ * image_name_def = WHITESPACE.image_name_component_def+;
+ */
+export class ImageNameRule extends GrammarRule<ImageNameNode> {
+    private componentParser = new ImageNameComponentRule();
+
+    public test(parser: DocumentParser): boolean {
+        return this.componentParser.test(parser);
+    }
+
+    public parse(parser: DocumentParser): ImageNameNode | null {
+        const start = parser.peekNext().startPos.charStartOffset;
+
+        const components: IdentifierNode[] = [];
+
+        while (this.componentParser.test(parser)) {
+            const component = parser.require(this.componentParser);
+
+            if (component === null) {
+                return null;
+            }
+
+            components.push(component);
+        }
+
+        if (components.length === 0) {
+            // TODO: better error handling
+            throw new Error("Expected at least one image name component.");
+            return null;
+        }
+
+        const end = parser.current().endPos.charStartOffset;
+        const location = parser.locationFromRange(new Range(start, end).toVSRange(parser.document));
+        return new ImageNameNode(location, components);
+    }
+}
+
+/**
+ * image =
+ *     | "image", image_name_def, begin_atl_block
+ *     | "image", image_name_def, python_assignment_operation, NEWLINE
+ *     ;
+ */
+export class ImageStatementRule extends GrammarRule<ImageStatementNode> {
+    private imageNameParser = new ImageNameRule();
+
+    public test(parser: DocumentParser): boolean {
+        return parser.peek(KeywordTokenType.Image);
+    }
+
+    public parse(parser: DocumentParser): ImageStatementNode | null {
+        parser.requireToken(KeywordTokenType.Image);
+
+        const imageName = parser.require(this.imageNameParser);
+        if (imageName === null) {
+            return null;
+        }
+
+        let block: StatementNode[] | null = null;
+        let assignment: AssignmentOperationNode | null = null;
+
+        if (parser.peek(MetaTokenType.ATLBlock)) {
+            block = parser.require(new ATLBlockRule());
+            if (block === null) {
+                return null;
+            }
+        } else {
+            if (!parser.requireToken(OperatorTokenType.Assignment)) {
+                return null;
+            }
+
+            const pythonExpression = parser.require(pythonExpressionParser);
+            if (pythonExpression === null) {
+                return null;
+            }
+
+            assignment = new AssignmentOperationNode(imageName, OperatorTokenType.Assignment, pythonExpression);
+
+            parser.expectEOL();
+        }
+
+        return new ImageStatementNode(imageName, block, assignment);
+    }
+}
+
 /*
 begin_block = ":", NEWLINE, INDENT, block;
 block = statement+, DEDENT;
@@ -230,8 +348,54 @@ export class RenpyBlockRule extends GrammarRule<StatementNode[]> {
     }
 }
 
+/*
+begin_block = ":", NEWLINE, INDENT, block;
+block = statement+, DEDENT;
+*/
+export class ATLBlockRule extends GrammarRule<StatementNode[]> {
+    public test(parser: DocumentParser): boolean {
+        return parser.peek(CharacterTokenType.Colon);
+    }
+
+    public parse(parser: DocumentParser): StatementNode[] | null {
+        if (!parser.requireToken(CharacterTokenType.Colon)) {
+            return null;
+        }
+
+        if (!parser.requireToken(CharacterTokenType.NewLine)) {
+            return null;
+        }
+
+        if (!parser.peek(MetaTokenType.ATLBlock)) {
+            return null;
+        }
+
+        const statements: StatementNode[] = [];
+        while (parser.peek(MetaTokenType.ATLBlock)) {
+            // TODO: Use ATL statements instead
+            if (statementParser.test(parser)) {
+                const statement = parser.require(statementParser);
+
+                if (statement !== null) {
+                    statements.push(statement);
+                }
+            }
+            parser.expectEOL();
+
+            parser.skipEmptyLines();
+        }
+
+        // We need to rollback to the last new line token. (Side effect of the tokenizer also marking the last new line and a block).
+        if (parser.current().type === CharacterTokenType.NewLine) {
+            parser.previous();
+        }
+
+        return statements;
+    }
+}
+
 export class RenpyStatementRule extends GrammarRule<StatementNode> {
-    rules = [new DefineStatementRule(), new DefaultStatementRule(), new LabelStatementRule(), new SayStatementRule()];
+    rules = [new ImageStatementRule(), new DefineStatementRule(), new DefaultStatementRule(), new LabelStatementRule(), new SayStatementRule()];
 
     public test(state: DocumentParser): boolean {
         for (const rule of this.rules) {

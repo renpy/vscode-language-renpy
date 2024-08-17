@@ -1,12 +1,14 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { LogLevel, TextDocument, Location as VSLocation, Range as VSRange } from "vscode";
-import { ASTNode } from "./ast-nodes";
+import { LogLevel, TextDocument, Uri, Location as VSLocation, Range as VSRange, workspace } from "vscode";
+import { AST, ASTNode } from "./ast-nodes";
 import { GrammarRule } from "./grammar-rules";
 import { Tokenizer } from "../tokenizer/tokenizer";
 import { CharacterTokenType, MetaTokenType, TokenType } from "../tokenizer/renpy-tokens";
 import { Token, TokenPosition, TokenListIterator, tokenTypeToStringMap, Range } from "../tokenizer/token-definitions";
 import { Vector } from "../utilities/vector";
 import { LogCategory, logCatMessage } from "../logger";
+import { RpyProgram } from "../interpreter/program";
+import { RenpyStatementRule } from "./renpy-grammar-rules";
 
 // eslint-disable-next-line no-shadow
 export const enum ParseErrorType {
@@ -21,6 +23,52 @@ export interface ParseError {
     nextToken: Token;
     expectedTokenType: TokenType | null;
     errorRange: Range;
+}
+
+type DocumentCache = { readonly documentVersion: number; readonly program: RpyProgram };
+
+export class Parser {
+    private static _documentCache = new Map<Uri, DocumentCache>();
+
+    public static async parseDocument(document: TextDocument) {
+        const cachedTokens = this._documentCache.get(document.uri);
+        if (cachedTokens?.documentVersion === document.version) {
+            return cachedTokens.program;
+        }
+
+        return await this.runParser(document);
+    }
+
+    private static async runParser(document: TextDocument) {
+        logCatMessage(LogLevel.Info, LogCategory.Parser, `Running parser on document: "${workspace.asRelativePath(document.uri, true)}"`);
+
+        const parser = new DocumentParser(document);
+        await parser.initialize();
+
+        const statementParser = new RenpyStatementRule();
+        const ast = new AST();
+
+        while (parser.hasNext()) {
+            parser.skipEmptyLines();
+
+            if (statementParser.test(parser)) {
+                ast.append(statementParser.parse(parser));
+                parser.expectEOL();
+            }
+
+            if (parser.hasNext()) {
+                parser.next();
+            }
+        }
+
+        // TODO: Store parse errors so they can be accessed later.
+
+        const program = new RpyProgram();
+        ast.process(program);
+
+        this._documentCache.set(document.uri, { documentVersion: document.version, program });
+        return program;
+    }
 }
 
 export class DocumentParser {
@@ -202,7 +250,7 @@ export class DocumentParser {
         return this._errors;
     }
 
-    private addError(errorType: ParseErrorType, expectedToken: TokenType | null = null, errorRange: Range | null = null) {
+    public addError(errorType: ParseErrorType, expectedToken: TokenType | null = null, errorRange: Range | null = null) {
         const nextToken = this.peekNext();
         this._errors.pushBack({
             type: errorType,

@@ -279,6 +279,27 @@ export class SayStatementNode extends StatementNode {
         this.temporaryAttributes = temporaryAttributes;
         this.what = what;
     }
+
+    public override process(program: RpyProgram) {
+        if (this.who instanceof IdentifierNode) {
+            const variableName = this.who.name;
+            const definitionSymbol = program.globalScope.resolve(variableName);
+            if (definitionSymbol === null) {
+                program.errorList.pushBack({ message: `Undefined variable '${variableName}'`, errorLocation: this.who.srcLocation });
+            }
+
+            definitionSymbol?.references.pushBack(this.who.srcLocation);
+        } else if (this.who instanceof MemberAccessNode) {
+            /*const variableName = this.who.left.name;
+            const definitionSymbol = program.globalScope.resolve(variableName);
+            if (definitionSymbol === null) {
+                program.errorList.pushBack({ message: `Undefined variable ${variableName}`, errorLocation: this.who.left.srcLocation });
+            }
+
+            definitionSymbol?.references.pushBack(this.who.left.srcLocation);*/
+            // TODO: Implement member access using 'storage scopes'
+        }
+    }
 }
 
 export class ParameterNode extends ASTNode {
@@ -368,5 +389,29 @@ export class LabelStatementNode extends StatementNode {
         });
 
         program.globalScope.parentLabel = null;
+    }
+}
+
+export class ImageNameNode extends ExpressionNode {
+    public readonly srcLocation: VSLocation;
+    public nameComponents: IdentifierNode[] | null;
+
+    constructor(srcLocation: VSLocation, nameComponents: IdentifierNode[] | null) {
+        super();
+        this.srcLocation = srcLocation;
+        this.nameComponents = nameComponents;
+    }
+}
+
+export class ImageStatementNode extends StatementNode {
+    public imageName: ImageNameNode;
+    public block: StatementNode[] | null;
+    public assignment: AssignmentOperationNode | null;
+
+    constructor(imageName: ImageNameNode, block: StatementNode[] | null, assignment: AssignmentOperationNode | null) {
+        super();
+        this.imageName = imageName;
+        this.block = block;
+        this.assignment = assignment;
     }
 }

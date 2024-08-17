@@ -152,10 +152,18 @@ export class PythonExpressionRule extends GrammarRule<ExpressionNode> {
  */
 export class SimpleExpressionRule extends GrammarRule<ExpressionNode> {
     public test(parser: DocumentParser): boolean {
-        return parser.peek(MetaTokenType.SimpleExpression);
+        return parser.peekAnyOf([EntityTokenType.Identifier, MetaTokenType.MemberAccess, MetaTokenType.SimpleExpression]);
     }
 
     public parse(parser: DocumentParser): ExpressionNode | null {
+        if (parser.peek(MetaTokenType.MemberAccess)) {
+            return parser.require(new MemberAccessExpressionRule());
+        }
+
+        if (parser.peek(EntityTokenType.Identifier)) {
+            return parser.require(new IdentifierRule());
+        }
+
         let expression = "";
         while (parser.peek(MetaTokenType.SimpleExpression)) {
             parser.next();

@@ -1,6 +1,8 @@
 // Semantic Token Provider
 import {
     CancellationToken,
+    DocumentHighlight,
+    DocumentHighlightKind,
     languages,
     LogLevel,
     Position,
@@ -10,17 +12,74 @@ import {
     SemanticTokensBuilder,
     SemanticTokensLegend,
     TextDocument,
+    window,
 } from "vscode";
-
 import { stripWorkspaceFromFile } from "src/utilities";
 
 import { logMessage } from "./logger";
 import { DataType, getCurrentContext, Navigation, rangeAsString, splitParameters } from "./navigation";
 import { NavigationData, updateNavigationData } from "./navigation-data";
+import { Parser } from "./parser/parser";
 
 const tokenTypes = ["class", "parameter", "variable", "keyword"];
 const tokenModifiers = ["declaration", "defaultLibrary"];
 const legend = new SemanticTokensLegend(tokenTypes, tokenModifiers);
+
+export function registerHighlightProvider() {
+    return languages.registerDocumentHighlightProvider("renpy", {
+        async provideDocumentHighlights(document: TextDocument, position: Position, token: CancellationToken) {
+            if (token.isCancellationRequested) {
+                return;
+            }
+
+            // Test parser version if active document
+            const activeEditor = window.activeTextEditor;
+            if (activeEditor?.document === document) {
+                const program = await Parser.parseDocument(document);
+
+                const word = document.getText(document.getWordRangeAtPosition(position));
+
+                const symbol = program.globalScope.resolve(word);
+                if (symbol) {
+                    const highlights: DocumentHighlight[] = [];
+
+                    highlights.push(new DocumentHighlight(symbol.definitionLocation.range, DocumentHighlightKind.Write));
+
+                    for (const reference of symbol.references) {
+                        highlights.push(new DocumentHighlight(reference.range, DocumentHighlightKind.Read));
+                    }
+
+                    return highlights;
+                }
+            }
+
+            return Promise.resolve(getDocumentHighlights(document, position));
+        },
+    });
+}
+
+export function getDocumentHighlights(document: TextDocument, position: Position) {
+    const wordRange = document.getWordRangeAtPosition(position);
+    if (!wordRange) {
+        return [];
+    }
+
+    // Implement copy of the default word highlighter, will need to update this to use symbols later
+    const word = document.getText(wordRange);
+    const highlights: DocumentHighlight[] = [];
+    const wordPattern = new RegExp(`\\b${word}\\b`, "g");
+
+    for (let i = 0; i < document.lineCount; i++) {
+        const line = document.lineAt(i);
+        let match;
+        while ((match = wordPattern.exec(line.text)) !== null) {
+            const matchRange = new Range(i, match.index, i, match.index + word.length);
+            highlights.push(new DocumentHighlight(matchRange, DocumentHighlightKind.Text));
+        }
+    }
+
+    return highlights;
+}
 
 export function registerSemanticTokensProvider() {
     return languages.registerDocumentSemanticTokensProvider(

@@ -38,7 +38,7 @@ import { initializeLoggingSystems, logMessage, logToast, updateStatusBar } from 
 import { getStatusBarText, NavigationData } from "./navigation-data";
 import { registerSymbolProvider } from "./outline";
 import { registerReferencesProvider } from "./references";
-import { registerSemanticTokensProvider } from "./semantics";
+import { registerHighlightProvider, registerSemanticTokensProvider } from "./semantics";
 import { registerSignatureProvider } from "./signature";
 import { RenpyTaskProvider } from "./task-provider";
 import { testParser } from "./parser/parser-test";
@@ -61,6 +61,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     // Subscribe to supported language features
     context.subscriptions.push(registerHoverProvider());
+    context.subscriptions.push(registerHighlightProvider());
     context.subscriptions.push(registerDefinitionProvider());
     context.subscriptions.push(registerSymbolProvider());
     context.subscriptions.push(registerSignatureProvider());

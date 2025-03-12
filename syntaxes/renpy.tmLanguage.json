@@ -821,7 +821,7 @@
       ]
     },
     "one-line-python": {
-      "begin": "(?<=^[ \\t]*)(\\$)(?=[ \\t]|$)",
+      "begin": "(?<=^[ \\t]*)(\\$)",
       "beginCaptures": {
         "1": { "name": "keyword.dollar.sign.renpy" }
       },
@@ -838,7 +838,7 @@
         {
           "name": "meta.say.statement.renpy",
           "contentName": "renpy.meta.say.$1 string.quoted.renpy",
-          "begin": "(?<=^[ \\t]+)(?:([a-zA-Z_]\\w*)\\b|\"([a-zA-Z_]\\w*)\\b\")((?:[ \\t]+(?:@|\\w+))*)?[ \\t]*(\"\"\"|\"|'''|'|```|`)",
+          "begin": "(?<=^[ \\t]*)(?:([a-zA-Z_]\\w*)\\b|\"([a-zA-Z_]\\w*)\\b\")((?:[ \\t]+(?:@|\\w+))*)?[ \\t]*(\"\"\"|\"|'''|'|```|`)",
           "beginCaptures": {
             "1": {
               "name": "renpy.meta.character.$1 variable.other.renpy",
@@ -883,7 +883,7 @@
         {
           "name": "meta.say.narrator.renpy",
           "contentName": "string.quoted.narrator.renpy",
-          "begin": "(?<=^[ \\t]+)(\"\"\"|\"|'''|'|```|`)",
+          "begin": "(?<=^[ \\t]*)(\"\"\"|\"|'''|'|```|`)",
           "beginCaptures": {
             "1": { "name": "string.quoted.renpy punctuation.definition.string.begin.renpy" }
           },
@@ -903,7 +903,7 @@
     "pause": {
       "name": "meta.pause.statement.renpy",
       "contentName": "meta.pause.parameters.renpy",
-      "begin": "(?<=^[ \\t]+)(pause)\\b",
+      "begin": "(?<=^[ \\t]*)(pause)\\b",
       "beginCaptures": {
         "1": { "name": "keyword.control.flow.pause.renpy" }
       },
@@ -923,7 +923,7 @@
     },
 
     "conditionals": {
-      "begin": "(?<=^[ \\t]+)(if|elif|else|while|for)\\b",
+      "begin": "(?<=^[ \\t]*)(if|elif|else|while|for)\\b",
       "beginCaptures": {
         "1": { "name": "keyword.control.flow.renpy" }
       },
@@ -1205,7 +1205,7 @@
       }
     },
     "return-statements": {
-      "begin": "(?<=^[ \\t]+)(return)\\b",
+      "begin": "(?<=^[ \\t]*)(return)\\b",
       "beginCaptures": {
         "1": { "name": "keyword.control.flow.return.renpy" }
       },
@@ -1222,7 +1222,7 @@
     },
     "jump": {
       "name": "meta.jump.statement.renpy",
-      "begin": "(?<=^[ \\t]+)(jump)\\b[ \\t]*",
+      "begin": "(?<=^[ \\t]*)(jump)\\b[ \\t]*",
       "beginCaptures": {
         "1": { "name": "keyword.control.flow.jump.renpy" }
       },
@@ -1270,7 +1270,7 @@
     "call": {
       "name": "meta.call.statement.renpy",
       "contentName": "meta.call.arguments.renpy",
-      "begin": "(?<=^[ \\t]+)(call)\\b",
+      "begin": "(?<=^[ \\t]*)(call)\\b",
       "beginCaptures": {
         "1": { "name": "keyword.control.flow.call.renpy" }
       },
@@ -1315,7 +1315,7 @@
     },
     "menu-option": {
       "contentName": "meta.menu-option.block.renpy",
-      "begin": "(?<=(^[ \\t]+))((?:\".*\")|(?:'.*')|(?:\"\"\".*\"\"\"))(.+)?(:)",
+      "begin": "(?<=(^[ \\t]*))((?:\".*\")|(?:'.*')|(?:\"\"\".*\"\"\"))(.+)?(:)",
       "beginCaptures": {
         "2": {
           "name": "meta.menu-option.renpy",
@@ -1343,7 +1343,7 @@
     },
     "menu-set": {
       "contentName": "meta.embedded.line.python",
-      "begin": "(?<=^[ \\t]+)(set)\\b",
+      "begin": "(?<=^[ \\t]*)(set)\\b",
       "beginCaptures": {
         "1": { "name": "keyword.set.renpy" }
       },

@@ -268,7 +268,7 @@ export class StringLiteralRule extends GrammarRule<LiteralNode> {
 
         let content = "";
         // TODO: Implement string interpolate expressions
-        while (!parser.peek(MetaTokenType.StringEnd)) {
+        for (let i = 0; i < 1000 && parser.hasNext() && !parser.peek(MetaTokenType.StringEnd); ++i) {
             parser.requireToken(LiteralTokenType.String);
             content += parser.currentValue();
         }

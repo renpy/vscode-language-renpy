@@ -13,7 +13,7 @@ import { RenpyStatementRule } from "./renpy-grammar-rules";
 // eslint-disable-next-line no-shadow
 export const enum ParseErrorType {
     UnexpectedToken,
-    UnexpectedEndOfLine,
+    ExpectedEndOfLine,
     UnexpectedEndOfFile,
 }
 
@@ -116,6 +116,9 @@ export class DocumentParser {
         this._currentToken = this.INVALID_TOKEN;
     }
 
+    /**
+     * Moves the iterator to the next token.
+     */
     public next() {
         if (!this._it.hasNext()) {
             this.addError(ParseErrorType.UnexpectedEndOfFile);
@@ -125,6 +128,9 @@ export class DocumentParser {
         this._it.next();
     }
 
+    /**
+     * Moves the iterator to the previous token.
+     */
     public previous() {
         if (!this._it.hasPrevious()) {
             return;
@@ -133,26 +139,52 @@ export class DocumentParser {
         this._currentToken = this._it.token;
     }
 
+    /**
+     * Returns true if there are more tokens to parse.
+     * @returns True if there are more tokens to parse.
+     */
     public hasNext(): boolean {
         return this._it.hasNext();
     }
 
+    /**
+     * Returns the current token's value.
+     * @returns The current token's value.
+     */
     public currentValue(): string {
         return this.current().getValue(this._document);
     }
 
+    /**
+     * Returns the current token.
+     * @returns The current token.
+     */
     public current() {
         return this._currentToken;
     }
 
+    /**
+     * Peeks the next token.
+     * @returns The next token.
+     */
     public peekNext() {
         return this._it.token;
     }
 
+    /**
+     * Peeks the next token and checks if it is the given token type.
+     * @param tokenType The token type to check for.
+     * @returns True if the next token is the given token type.
+     */
     public peek(tokenType: TokenType) {
         return this.peekNext().type === tokenType || this.peekNext().hasMetaToken(tokenType);
     }
 
+    /**
+     * Peeks the next token and checks if it is any of the given token types.
+     * @param tokenTypes List of token types to check for.
+     * @returns True if the next token is any of the given token types.
+     */
     public peekAnyOf(tokenTypes: TokenType[]) {
         for (const tokenType of tokenTypes) {
             if (this.peek(tokenType)) {
@@ -162,10 +194,26 @@ export class DocumentParser {
         return false;
     }
 
+    /**
+     * Peeks the next token and checks if it has the given value.
+     * @param value The value to check for.
+     * @returns True if the next token has the given value.
+     */
     public peekValue(value: string) {
-        return this.peekNext()?.getValue(this._document) === value ?? false;
+        const next = this.peekNext();
+
+        if (next.type === MetaTokenType.EOF) {
+            return "";
+        }
+
+        return next.getValue(this._document) === value;
     }
 
+    /**
+     * Parses the given token type and returns true if the token was parsed.
+     * @param tokenType The token type to parse.
+     * @returns True if the token was parsed.
+     */
     public requireToken(tokenType: TokenType) {
         if (this.peek(tokenType)) {
             this.next();
@@ -175,6 +223,11 @@ export class DocumentParser {
         return false;
     }
 
+    /**
+     * Optionally parses the given token type and returns true if the token was parsed.
+     * @param tokenType The token type to parse.
+     * @returns True if the token was parsed.
+     */
     public optionalToken(tokenType: TokenType) {
         if (this.peek(tokenType)) {
             this.next();
@@ -183,6 +236,11 @@ export class DocumentParser {
         return false;
     }
 
+    /**
+     * Optionally parses the given rule and returns the AST node if the rule matches the current token.
+     * @param rule The rule to parse.
+     * @returns The parsed AST node or null if the rule did not match.
+     */
     public optional<T extends ASTNode>(rule: GrammarRule<T>): T | null {
         if (!rule.test(this)) {
             return null;
@@ -190,10 +248,20 @@ export class DocumentParser {
         return rule.parse(this);
     }
 
+    /**
+     * Parses the given rule and returns the AST node if the rule matches the current token.
+     * @param rule The rule to parse.
+     * @returns The parsed AST node or null if the rule did not match.
+     */
     public require<T extends ASTNode>(rule: GrammarRule<T>): T | null {
         return rule.parse(this);
     }
 
+    /**
+     * Checks if the next token is any of the given token types. If it is, the token is consumed and true is returned.
+     * @param tokenTypes List of token types to check for.
+     * @returns True if the next token is any of the given token types.
+     */
     public anyOfToken(tokenTypes: TokenType[]) {
         for (const tokenType of tokenTypes) {
             if (this.peek(tokenType)) {
@@ -205,30 +273,46 @@ export class DocumentParser {
         return false;
     }
 
+    /**
+     * Parses the first rule that matches the current token.
+     * @param rules List of rules to test and parse.
+     * @returns The parsed AST node or null if no rule matched.
+     */
     public anyOf<T extends ASTNode>(rules: GrammarRule<T>[]): T | null {
         for (const rule of rules) {
             if (rule.test(this)) {
                 return rule.parse(this);
             }
         }
-        this.addError(ParseErrorType.UnexpectedEndOfLine);
+        this.addError(ParseErrorType.ExpectedEndOfLine);
         return null;
     }
 
+    /**
+     * Skips all empty lines until the next non-empty line is found.
+     */
     public skipEmptyLines() {
         while (this.peek(CharacterTokenType.NewLine)) {
             this.next();
         }
     }
 
+    /**
+     * Skips all tokens until the next end of line token is found.
+     */
     public skipToEOL() {
         while (!this.peekAnyOf([CharacterTokenType.NewLine, MetaTokenType.EOF])) {
             this.next();
         }
     }
 
+    /**
+     * Expect an end of line token. If any other token is found, an error is added to the error list.
+     * @returns True if the next token is a NewLine or EOF token.
+     */
     public expectEOL() {
-        if (!this.peekAnyOf([CharacterTokenType.NewLine, MetaTokenType.EOF])) {
+        const isEndOfLine = this.peekAnyOf([CharacterTokenType.NewLine, MetaTokenType.EOF]);
+        if (!isEndOfLine) {
             const start = this.peekNext();
 
             this.skipToEOL();
@@ -236,14 +320,14 @@ export class DocumentParser {
             const end = this.current();
 
             this._errors.pushBack({
-                type: ParseErrorType.UnexpectedEndOfLine,
+                type: ParseErrorType.ExpectedEndOfLine,
                 currentToken: start,
                 nextToken: end,
                 expectedTokenType: null,
                 errorRange: new Range(start.startPos.charStartOffset, end.endPos.charStartOffset),
             });
         }
-        return this.peekAnyOf([CharacterTokenType.NewLine, MetaTokenType.EOF]);
+        return isEndOfLine;
     }
 
     public get errors() {
@@ -288,8 +372,8 @@ export class DocumentParser {
                 return "Unexpected end of file";
             case ParseErrorType.UnexpectedToken:
                 return `Syntax error: Expected token of type '${this.getTokenTypeString(error.expectedTokenType)}', but got '${this.getTokenTypeString(error.nextToken.type)}'\n\tat: (${error.nextToken.startPos}) -> (${error.nextToken.endPos})`;
-            case ParseErrorType.UnexpectedEndOfLine:
-                return `Syntax error: Unexpected end of line.\n\tat: (${error.currentToken.startPos}) -> (${error.nextToken.endPos})`;
+            case ParseErrorType.ExpectedEndOfLine:
+                return `Syntax error: Expected end of line.\n\tat: (${error.currentToken.startPos}) -> (${error.nextToken.endPos})`;
         }
     }
 

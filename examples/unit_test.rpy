@@ -3949,5 +3949,9 @@ if True:
 else
     pass
 s "Hello world"
+while condition:
+    #block of code to run
+for value in variable:
+    pass
 return
 #endregion

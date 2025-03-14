@@ -531,6 +531,12 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     Hbox: { name: "Hbox", value: KeywordTokenType.Hbox },
     Fixed: { name: "Fixed", value: KeywordTokenType.Fixed },
 
+    Rpy: { name: "Rpy", value: KeywordTokenType.Rpy },
+    Monologue: { name: "Monologue", value: KeywordTokenType.Monologue },
+    Double: { name: "Double", value: KeywordTokenType.Double },
+    Single: { name: "Single", value: KeywordTokenType.Single },
+    None: { name: "None", value: KeywordTokenType.None },
+
     At: { name: "At", value: KeywordTokenType.At },
     As: { name: "As", value: KeywordTokenType.As },
     With: { name: "With", value: KeywordTokenType.With },

@@ -67,27 +67,47 @@ export class AST {
     }
 }
 
-export class IfStatementNode extends StatementNode {
+export class IfClauseNode extends StatementNode {
     public condition: ExpressionNode;
-    public thenBranch: StatementNode;
-    public elseBranch: StatementNode | null;
+    public block: StatementNode[];
 
-    constructor(condition: ExpressionNode, thenBranch: StatementNode, elseBranch: StatementNode | null) {
+    constructor(condition: ExpressionNode, block: StatementNode[]) {
         super();
         this.condition = condition;
-        this.thenBranch = thenBranch;
-        this.elseBranch = elseBranch;
+        this.block = block;
+    }
+}
+
+export class ElseClauseNode extends StatementNode {
+    public block: StatementNode[];
+
+    constructor(block: StatementNode[]) {
+        super();
+        this.block = block;
+    }
+}
+
+export class IfStatementNode extends StatementNode {
+    public ifClause: IfClauseNode;
+    public elifClauses: IfClauseNode[];
+    public elseClause: ElseClauseNode | null;
+
+    constructor(ifClause: IfClauseNode, elifClauses: IfClauseNode[], elseClause: ElseClauseNode | null) {
+        super();
+        this.ifClause = ifClause;
+        this.elifClauses = elifClauses;
+        this.elseClause = elseClause;
     }
 }
 
 export class WhileStatementNode extends StatementNode {
     public condition: ExpressionNode;
-    public body: StatementNode;
+    public block: StatementNode[];
 
-    constructor(condition: ExpressionNode, body: StatementNode) {
+    constructor(condition: ExpressionNode, block: StatementNode[]) {
         super();
         this.condition = condition;
-        this.body = body;
+        this.block = block;
     }
 }
 
@@ -413,5 +433,233 @@ export class ImageStatementNode extends StatementNode {
         this.imageName = imageName;
         this.block = block;
         this.assignment = assignment;
+    }
+}
+
+export class ReturnStatementNode extends StatementNode {
+    public expression: ExpressionNode | null;
+
+    constructor(expression: ExpressionNode | null) {
+        super();
+        this.expression = expression;
+    }
+}
+
+export class PassStatementNode extends StatementNode {
+    constructor() {
+        super();
+    }
+}
+
+export class CallStatementNode extends StatementNode {
+    public target: ExpressionNode | LabelNameNode;
+    public isPass: boolean;
+    public arguments: ExpressionNode[] | null;
+    public fromExpression: LabelNameNode | null;
+
+    constructor(target: ExpressionNode | LabelNameNode, isPass: boolean, args: ExpressionNode[] | null, fromExpression: LabelNameNode | null) {
+        super();
+        this.target = target;
+        this.isPass = isPass;
+        this.arguments = args;
+        this.fromExpression = fromExpression;
+    }
+}
+
+export class WithStatementNode extends StatementNode {
+    public expression: ExpressionNode;
+
+    constructor(expression: ExpressionNode) {
+        super();
+        this.expression = expression;
+    }
+}
+
+export class JumpStatementNode extends StatementNode {
+    public target: ExpressionNode | LabelNameNode;
+
+    constructor(target: ExpressionNode | LabelNameNode) {
+        super();
+        this.target = target;
+    }
+}
+
+export class MenuItemSetNode extends StatementNode {
+    public expression: ExpressionNode;
+
+    constructor(expression: ExpressionNode) {
+        super();
+        this.expression = expression;
+    }
+}
+
+export class MenuItemChoiceNode extends StatementNode {
+    public caption: LiteralNode;
+    public arguments: ExpressionNode[] | null;
+    public condition: ExpressionNode | null;
+    public block: StatementNode[];
+
+    constructor(caption: LiteralNode, args: ExpressionNode[] | null, condition: ExpressionNode | null, block: StatementNode[]) {
+        super();
+        this.caption = caption;
+        this.arguments = args;
+        this.condition = condition;
+        this.block = block;
+    }
+}
+
+export class MenuStatementNode extends StatementNode {
+    public labelName: LabelNameNode | null;
+    public arguments: ExpressionNode[] | null;
+    public items: StatementNode[];
+
+    constructor(labelName: LabelNameNode | null, args: ExpressionNode[] | null, items: StatementNode[]) {
+        super();
+        this.labelName = labelName;
+        this.arguments = args;
+        this.items = items;
+    }
+}
+
+export class ImageSpecifierNode extends ASTNode {
+    public target: ExpressionNode | ImageNameNode;
+    public clauses: ExpressionNode[];
+
+    constructor(target: ExpressionNode | ImageNameNode, clauses: ExpressionNode[]) {
+        super();
+        this.target = target;
+        this.clauses = clauses;
+    }
+}
+
+export class SceneStatementNode extends StatementNode {
+    public imageSpecifier: ImageSpecifierNode | null;
+    public withExpr: ExpressionNode | null;
+    public onlayer: ExpressionNode | null;
+    public block: StatementNode[] | null;
+
+    constructor(imageSpecifier: ImageSpecifierNode | null, withExpr: ExpressionNode | null, onlayer: ExpressionNode | null, block: StatementNode[] | null) {
+        super();
+        this.imageSpecifier = imageSpecifier;
+        this.withExpr = withExpr;
+        this.onlayer = onlayer;
+        this.block = block;
+    }
+}
+
+export class ShowStatementNode extends StatementNode {
+    public imageSpecifier: ImageSpecifierNode;
+    public withExpr: ExpressionNode | null;
+    public block: StatementNode[] | null;
+
+    constructor(imageSpecifier: ImageSpecifierNode, withExpr: ExpressionNode | null, block: StatementNode[] | null) {
+        super();
+        this.imageSpecifier = imageSpecifier;
+        this.withExpr = withExpr;
+        this.block = block;
+    }
+}
+
+export class ShowLayerStatementNode extends StatementNode {
+    public layerName: string;
+    public atExpression: ExpressionNode | null;
+    public block: StatementNode[] | null;
+
+    constructor(layerName: string, atExpression: ExpressionNode | null, block: StatementNode[] | null) {
+        super();
+        this.layerName = layerName;
+        this.atExpression = atExpression;
+        this.block = block;
+    }
+}
+
+export class HideStatementNode extends StatementNode {
+    public imageSpecifier: ImageSpecifierNode;
+    public withExpr: ExpressionNode | null;
+
+    constructor(imageSpecifier: ImageSpecifierNode, withExpr: ExpressionNode | null) {
+        super();
+        this.imageSpecifier = imageSpecifier;
+        this.withExpr = withExpr;
+    }
+}
+
+export class CameraStatementNode extends StatementNode {
+    public name: string | null;
+    public atExpression: ExpressionNode | null;
+    public block: StatementNode[] | null;
+
+    constructor(name: string | null, atExpression: ExpressionNode | null, block: StatementNode[] | null) {
+        super();
+        this.name = name;
+        this.atExpression = atExpression;
+        this.block = block;
+    }
+}
+
+export class TransformStatementNode extends StatementNode {
+    public offset: LiteralNode | null;
+    public name: string;
+    public parameters: ParameterNode[] | null;
+    public block: StatementNode[];
+
+    constructor(offset: LiteralNode | null, name: string, parameters: ParameterNode[] | null, block: StatementNode[]) {
+        super();
+        this.offset = offset;
+        this.name = name;
+        this.parameters = parameters;
+        this.block = block;
+    }
+}
+
+export class OneLinePythonStatementNode extends StatementNode {
+    public expression: ExpressionNode;
+
+    constructor(expression: ExpressionNode) {
+        super();
+        this.expression = expression;
+    }
+}
+
+export class PythonStatementNode extends StatementNode {
+    public isEarly: boolean;
+    public isHide: boolean;
+    public inName: string | null;
+    public block: StatementNode[];
+
+    constructor(isEarly: boolean, isHide: boolean, inName: string | null, block: StatementNode[]) {
+        super();
+        this.isEarly = isEarly;
+        this.isHide = isHide;
+        this.inName = inName;
+        this.block = block;
+    }
+}
+
+export class InitStatementNode extends StatementNode {
+    public offset: LiteralNode | null;
+    public statement: StatementNode | null;
+    public block: StatementNode[] | null;
+
+    constructor(offset: LiteralNode | null, statement: StatementNode | null, block: StatementNode[] | null) {
+        super();
+        this.offset = offset;
+        this.statement = statement;
+        this.block = block;
+    }
+}
+
+export class RpyMonologueStatementNode extends StatementNode {
+    public quotationType: string; // "double", "single", or "none"
+
+    constructor(quotationType: string) {
+        super();
+        this.quotationType = quotationType;
+    }
+}
+
+export class RpyPythonStatementNode extends StatementNode {
+    constructor() {
+        super();
     }
 }

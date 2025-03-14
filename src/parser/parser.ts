@@ -15,6 +15,7 @@ export const enum ParseErrorType {
     UnexpectedToken,
     ExpectedEndOfLine,
     UnexpectedEndOfFile,
+    InvalidMonologueType,
 }
 
 export interface ParseError {
@@ -374,6 +375,8 @@ export class DocumentParser {
                 return `Syntax error: Expected token of type '${this.getTokenTypeString(error.expectedTokenType)}', but got '${this.getTokenTypeString(error.nextToken.type)}'\n\tat: (${error.nextToken.startPos}) -> (${error.nextToken.endPos})`;
             case ParseErrorType.ExpectedEndOfLine:
                 return `Syntax error: Expected end of line.\n\tat: (${error.currentToken.startPos}) -> (${error.nextToken.endPos})`;
+            case ParseErrorType.InvalidMonologueType:
+                return `Syntax error: Invalid monologue type. Expected one of: double, single, or none.\n\tat: (${error.errorRange.start}) -> (${error.errorRange.end})`;
         }
     }
 

@@ -83,6 +83,13 @@ export const enum KeywordTokenType {
     Hbox,
     Fixed,
 
+    // Renpy sub-expression keywords
+    Rpy,
+    Monologue,
+    Double,
+    Single,
+    None,
+
     // Renpy control flow keywords
     At,
     As,

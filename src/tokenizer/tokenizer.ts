@@ -260,11 +260,12 @@ const enum CaptureSource {
 
 class DocumentTokenizer {
     private readonly backrefTestRe = /\\(\d+)/g;
-    public readonly tokens: TokenTree = new TokenTree();
+    public readonly tokens: TokenTree;
     private readonly document: TextDocument;
 
     constructor(document: TextDocument) {
         this.document = document;
+        this.tokens = new TokenTree(document);
     }
 
     public tokenize() {

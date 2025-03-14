@@ -260,12 +260,12 @@ export class TreeNode {
      * We should ensure the entire range of the current token is covered.
      * If it's not covered by all children, we should create a new token filling the gaps and assigning the current token type
      */
-    public flatten(): Vector<Token> {
+    public flatten(document: TextDocument): Vector<Token> {
         const tokens = new Vector<Token>();
 
         // Step 2: Recursively flatten each child node and add its tokens to the vector
         this.children.forEach((child) => {
-            const childTokens = child.flatten();
+            const childTokens = child.flatten(document);
             childTokens.forEach((token) => {
                 tokens.pushBack(token);
             });
@@ -289,17 +289,24 @@ export class TreeNode {
             const start = token.startPos;
             if (start.charStartOffset > currentEnd.charStartOffset) {
                 // There is a gap between the current end position and the start of the next token range
+
                 const gapToken = new Token(this.token.type, currentEnd, start);
 
-                if (gapToken.isMetaToken()) {
-                    logCatMessage(
-                        LogLevel.Error,
-                        LogCategory.Parser,
-                        `Attempting to assign meta token "${tokenTypeToString(gapToken.type)}" to token gap @ (${gapToken.startPos}) -> (${gapToken.endPos}). Update the token pattern to assign a value token to this gap!"`
-                    );
-                }
+                const value = gapToken.getValue(document);
+                // Check if the gap is just whitespace and ignore it
+                if (value.trim().length === 0) {
+                    tokens.pushBack(new Token(CharacterTokenType.Whitespace, currentEnd, start));
+                } else {
+                    if (gapToken.isMetaToken()) {
+                        logCatMessage(
+                            LogLevel.Error,
+                            LogCategory.Parser,
+                            `Attempting to assign meta token "${tokenTypeToString(gapToken.type)}" to token gap @ (${gapToken.startPos}) -> (${gapToken.endPos}). Update the token pattern to assign a value token to this gap!"`
+                        );
+                    }
 
-                tokens.pushBack(gapToken);
+                    tokens.pushBack(gapToken);
+                }
             }
             currentEnd = currentEnd.charStartOffset > token.endPos.charStartOffset ? currentEnd : token.endPos;
         }
@@ -315,9 +322,11 @@ export class TreeNode {
 
 export class TokenTree {
     public root: TreeNode;
+    public document: TextDocument;
 
-    constructor() {
+    constructor(document: TextDocument) {
         this.root = new TreeNode();
+        this.document = document;
     }
 
     public clear() {
@@ -345,7 +354,7 @@ export class TokenTree {
     }
 
     public flatten(): Vector<Token> {
-        return this.root.flatten();
+        return this.root.flatten(this.document);
     }
 }
 

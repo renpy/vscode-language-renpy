@@ -306,11 +306,11 @@ export class Vector<T> implements Iterable<T> {
     }
 
     /**
-     * Grow the buffer to double the current capacity
+     * Grow the buffer to +50% the current capacity
      */
     private _grow() {
-        const currentCapacity = Math.max(this.capacity, 1);
+        const halfCapacity = Math.ceil(Math.max(this.capacity / 2, 1));
 
-        this.buffer = this.buffer.concat(new Array<T | null>(currentCapacity).fill(null));
+        this.buffer = this.buffer.concat(new Array<T | null>(halfCapacity).fill(null));
     }
 }

@@ -326,28 +326,6 @@ TRANSLATE_STRING = "translate", NAME, "strings", ":";
 TRANSLATE_BLOCK = "translate", NAME, ("python" | "style"), ":";
 TRANSLATE_EARLY_BLOCK = "translate early", NAME, ("python" | "style"), ":";
 
-SCREEN = "screen", NAME, [parameters], ":";
-SCREEN_PROPERTY = NAME, python_assignment_operation;
-SCREEN_STYLE_PROPERTY = NAME, python_assignment_operation;
-SCREEN_style = "style", NAME, {SCREEN_STYLE_PROPERTY}, ":";
-SCREEN_USE = "use", NAME, [arguments];
-SCREEN_VBAR = "|";
-SCREEN_TAG = "$";
-SCREEN_TEXT = PYTHON_STRING;
-SCREEN_NL = "%";
-SCREEN_SPACE = " ";
-SCREEN_INDENT = "\t";
-SCREEN_CHILD = SCREEN_PROPERTY | SCREEN_style | SCREEN_USE | SCREEN_VBAR | SCREEN_TAG | SCREEN_TEXT | NEWLINE | SCREEN_NL | SCREEN_SPACE | SCREEN_INDENT;
-SCREEN_CHILDREN = {SCREEN_CHILD};
-
-
-
-(* Proposal parser changes (WIP! Incomplete!) *)
-IDENTIFIER = "\p{XID_Start}", {"\p{XID_Continue}"}; (* Based on Python specification. See: https://docs.python.org/3/reference/lexical_analysis.html#identifiers *)
-WORD = IDENTIFIER;
-
 renpy_literal = NAME | INTEGER | FLOAT | STRING;
 python_literal = PYTHON_STRING;
 literal = renpy_literal | python_literal;
-
-init = ? fixed init ? 

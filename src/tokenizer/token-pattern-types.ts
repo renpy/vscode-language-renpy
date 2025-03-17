@@ -60,3 +60,10 @@ export interface TokenMatchPattern {
 
 export declare type TokenPattern = (TokenRangePattern | TokenMatchPattern | TokenRepoPattern) & TokenPatternDebugInfo;
 export declare type TokenPatternArray = Array<TokenPattern>;
+
+/**
+ * Used to fill a gap in the array that needs to be set after it's defined.
+ */
+export const placeholderPattern: TokenPattern = {
+    patterns: [],
+};

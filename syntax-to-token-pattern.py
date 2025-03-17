@@ -467,14 +467,12 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
 
         includes: list[tuple[str, int]] = []
         external_includes: list[tuple[str, int]] = []
-        last_pattern_index = 0
 
         # Handle includes first to make sure they are pushed in the correct order
         for i in range(len(patterns)):
             pattern = patterns[i]
 
             if "include" not in pattern:
-                last_pattern_index = i
                 continue
 
             include: str = pattern["include"]
@@ -503,25 +501,15 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
                 # All includes that have not been defined yet, are pushed at the bottom of the file
                 if include not in state.defined_variables:
                     includes.append((include, i))
-                else:
-                    last_pattern_index = i
 
         # Add the includes to the list of includes
         def process_includes(include_list: list[tuple[str, int]], entries_list: list[str]):
-            push_list: list[str] = []
             for i in range(len(include_list)):
                 [include, index] = include_list[i]
-                if index < last_pattern_index: # 0 < 0
-                    entries_list.append(f"{access_str}.patterns!.splice({index}, 0, {include});")
-                else:
-                    push_list.append(include)
-
-            if len(push_list) > 0:
-                entries_list.append(f"{access_str}.patterns!.push({', '.join(push_list)});")
+                entries_list.append(f"{access_str}.patterns!.splice({index}, 1, {include});")
 
         if len(includes) > 0:
             process_includes(includes, state.pattern_include_entries)
-            last_pattern_index = includes[-1][1]
 
         if len(external_includes) > 0:
             process_includes(external_includes, state.external_pattern_include_entries)
@@ -534,11 +522,15 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
             if "include" in pattern:
                 include: str = pattern["include"]
                 if include.startswith("source.renpy"):
+                    typescript_entry += f"{get_indent(indent)}placeholderPattern, // Placeholder for {include}\n"
                     continue
 
                 include = camelCase(include)
                 if include in state.defined_variables:
                     typescript_entry += f"{get_indent(indent)}{include},\n"
+                else:
+                    typescript_entry += f"{get_indent(indent)}placeholderPattern, // Placeholder for {include}\n"
+
                 
                 continue
 
@@ -594,7 +586,7 @@ def generate_file(state: GeneratorState, source_file: str, output_file: str):
         contents += "\n"
 
         contents += f"import {{ {', '.join(state.used_token_types)} }} from \"./renpy-tokens\";\n"
-        contents += "import { TokenPattern } from \"./token-pattern-types\";\n\n"
+        contents += "import { placeholderPattern, TokenPattern } from \"./token-pattern-types\";\n\n"
         contents += "\n".join(src_lines)
 
         if len(state.pattern_include_entries) > 0:
@@ -633,8 +625,8 @@ def generate_token_patterns():
         contents += "\n"
 
         # Add all source import from all states, but only the unique ones
-        source_imports = set(renpy_state.source_imports + atl_state.source_imports + screen_state.source_imports + style_state.source_imports + python_state.source_imports)
-        
+        source_imports = list(dict.fromkeys(renpy_state.source_imports + atl_state.source_imports + screen_state.source_imports + style_state.source_imports + python_state.source_imports))
+
         for source_import in source_imports:
             contents += f"import * as {titleCase(source_import)}Patterns from \"./{source_import}-token-patterns.g\";\n"
 

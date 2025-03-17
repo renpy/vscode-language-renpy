@@ -21,7 +21,7 @@ export const definitionProvider = languages.registerDefinitionProvider("renpy", 
 
             const symbol = program.globalScope.resolve(word);
             if (symbol) {
-                return new Location(document.uri, symbol.definitionLocation.range);
+                return symbol.definitionLocation;
             }
         }
 

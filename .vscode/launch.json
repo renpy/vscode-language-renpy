@@ -29,7 +29,7 @@
       ],
       "outFiles": [ "${workspaceFolder}/dist/**/*.js" ],
       "preLaunchTask": "npm: watch-release",
-      "skipFiles": [ "<node_internals>/**", "**/extensions/git*/**", "**/node_modules/prettier/**" ]
+      "skipFiles": [ "**/extensions/git*/**", "**/node_modules/prettier/**" ],
     },
     {
       "name": "Extension Tests",

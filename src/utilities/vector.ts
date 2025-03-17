@@ -15,7 +15,13 @@ export class Vector<T> implements Iterable<T> {
      * @param capacity The amount of items this vector should be able to hold
      */
     constructor(capacity = 0) {
-        if (capacity > 0) this.buffer = new Array<T | null>(capacity).fill(null);
+        this.reserve(capacity);
+    }
+
+    public reserve(capacity: number) {
+        if (capacity > this.capacity) {
+            this.buffer = this.buffer.concat(new Array<T | null>(capacity - this.capacity).fill(null));
+        }
     }
 
     public clone(): Vector<T> {

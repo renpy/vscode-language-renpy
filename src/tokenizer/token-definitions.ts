@@ -196,6 +196,10 @@ export class TreeNode {
         this.parent = null;
     }
 
+    public reserve(size: number) {
+        this.children.reserve(size);
+    }
+
     public addChild(child: TreeNode): void {
         child.parent = this;
         this.children.pushBack(child);
@@ -315,6 +319,7 @@ export class TokenTree {
 
     constructor(document: TextDocument) {
         this.root = new TreeNode();
+        this.root.reserve(128);
         this.document = document;
     }
 

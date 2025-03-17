@@ -11,6 +11,10 @@ export class Stack<T> implements Iterable<T> {
         this.buffer = new Vector<T | null>(capacity);
     }
 
+    public reserve(capacity: number) {
+        this.buffer.reserve(capacity);
+    }
+
     /**
      * Create a copy of the current Stack so we can later restart from there.
      */

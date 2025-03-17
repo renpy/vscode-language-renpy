@@ -372,6 +372,7 @@ class DocumentTokenizer {
             }
 
             if (p.patterns) {
+                captureNode.reserve(8);
                 this.executePattern(p as ExTokenRepoPattern, source, new Range(startPos, endPos), captureNode);
             }
 
@@ -393,6 +394,7 @@ class DocumentTokenizer {
 
             if (p.patterns) {
                 const captureNode = new TreeNode();
+                captureNode.reserve(8);
                 rootNode.addChild(captureNode);
 
                 this.executePattern(p as ExTokenRepoPattern, source, new Range(startPos, endPos), captureNode);
@@ -452,7 +454,7 @@ class DocumentTokenizer {
             ++reEnd.lastIndex;
         }
         let matchEnd = reEnd.exec(result.source);
-        const contentMatches = new Stack<ScanResult>();
+        const contentMatches = new Stack<ScanResult>(8);
 
         if (!matchEnd) {
             // If no end match could be found, we'll need to expand the range to the end of the source
@@ -662,6 +664,7 @@ class DocumentTokenizer {
 
         // Patterns are only applied on 'content' (see p.contentToken above)
         if (p._patternsRepo) {
+            contentNode.reserve(16);
             while (!bestMatch.contentMatches!.isEmpty()) {
                 const contentScanResult = bestMatch.contentMatches!.pop()!;
                 this.applyScanResult(contentScanResult, source, contentNode);

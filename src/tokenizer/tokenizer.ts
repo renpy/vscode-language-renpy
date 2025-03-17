@@ -46,7 +46,13 @@ export class Tokenizer {
         this.setupAndValidatePatterns();
 
         if (RUN_BENCHMARKS) {
+            if (isShippingBuild()) {
+                logCatMessage(LogLevel.Error, LogCategory.Tokenizer, "Benchmarks are enabled! This will slow down the tokenizer significantly.");
+            }
+
+            console.profile();
             this.benchmark(document);
+            console.profileEnd();
         }
 
         const cachedTokens = this._tokenCache.get(document.uri);
@@ -84,7 +90,7 @@ export class Tokenizer {
     }
 
     private static benchmark(document: TextDocument) {
-        // screens.rpy, 10000 loops; 19.69293530988693 avg.
+        // screens.rpy, 10000 loops; 37.96ms avg.
 
         const loops = 10000;
         const reportEveryXPercent = 1;
@@ -98,6 +104,7 @@ export class Tokenizer {
         for (let i = 0; i < loops; ++i) {
             const t0 = performance.now();
             const tokenizer: DocumentTokenizer = new DocumentTokenizer(document);
+            tokenizer.tokenize();
             const t1 = performance.now();
 
             avg += t1 - t0;
@@ -344,7 +351,7 @@ class DocumentTokenizer {
             const [startPos, endPos] = match.indices![i];
 
             if (captures[i] === undefined) {
-                if (!isShippingBuild()) {
+                if (!isShippingBuild() && !RUN_BENCHMARKS) {
                     // If this is a 'begin' capture it's also possible to have it matched on the end pattern. Let's make sure we don't report false positives.
                     if (captureSource === CaptureSource.BeginCaptures && pattern.end !== undefined) {
                         // test the end pattern for backreferences to this capture index
@@ -358,7 +365,7 @@ class DocumentTokenizer {
                     logCatMessage(
                         LogLevel.Debug,
                         LogCategory.Tokenizer,
-                        `There is no pattern defined for capture group '${i}', on a pattern that matched '${match[i]}' near L:${pos.line + 1} C:${pos.character + 1}.\nThis should probably be added or be a non-capturing group.`
+                        `There is no pattern defined for capture group '${i}', on a pattern that matched '${match[i]}' near ${pos.toString()}.\nThis should probably be added or be a non-capturing group.`
                     );
                 }
 
@@ -669,8 +676,6 @@ class DocumentTokenizer {
                 const contentScanResult = bestMatch.contentMatches!.pop()!;
                 this.applyScanResult(contentScanResult, source, contentNode);
             }
-
-            //this.executePattern(p._patternsRepo, source, new Range(contentStart, matchEnd!.index), contentNode);
         }
 
         if (!contentNode.isEmpty()) {
@@ -680,20 +685,20 @@ class DocumentTokenizer {
         // End captures are only applied to endMatch[0] content
         this.applyCaptures(p, CaptureSource.EndCaptures, matchEnd!, source, rangeNode);
 
-        //assert(!rangeNode.isEmpty(), "A RangePattern must produce a valid token tree!");
-
-        const coverageResult = this.checkTokenTreeCoverage(rangeNode, new Range(startPos, endPos));
-        if (!coverageResult.valid) {
-            logCatMessage(LogLevel.Debug, LogCategory.Tokenizer, `The token tree is not covering the entire match range!`);
-            for (const gap of coverageResult.gaps) {
-                const gapStartPos = this.document.positionAt(gap.start);
-                const gapEndPos = this.document.positionAt(gap.end);
-                const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
-                logCatMessage(
-                    LogLevel.Debug,
-                    LogCategory.Tokenizer,
-                    `Gap from L:${gapStartPos.line + 1} C:${gapStartPos.character + 1} to L:${gapEndPos.line + 1} C:${gapEndPos.character + 1}, Text: '${text}'`
-                );
+        if (!isShippingBuild() && !RUN_BENCHMARKS) {
+            const coverageResult = this.checkTokenTreeCoverage(rangeNode, new Range(startPos, endPos));
+            if (!coverageResult.valid) {
+                logCatMessage(LogLevel.Debug, LogCategory.Tokenizer, `The token tree is not covering the entire match range!`);
+                for (const gap of coverageResult.gaps) {
+                    const gapStartPos = this.document.positionAt(gap.start);
+                    const gapEndPos = this.document.positionAt(gap.end);
+                    const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
+                    logCatMessage(
+                        LogLevel.Debug,
+                        LogCategory.Tokenizer,
+                        `Gap from ${gapStartPos.toString()} to ${gapEndPos.toString()}, Text: '${text}'`
+                    );
+                }
             }
         }
 
@@ -714,18 +719,20 @@ class DocumentTokenizer {
 
         this.applyCaptures(p, CaptureSource.MatchCaptures, match, source, contentNode);
 
-        const coverageResult = this.checkTokenTreeCoverage(contentNode, new Range(startPos, endPos));
-        if (!coverageResult.valid) {
-            logCatMessage(LogLevel.Debug, LogCategory.Tokenizer, `The token tree is not covering the entire match range!`);
-            for (const gap of coverageResult.gaps) {
-                const gapStartPos = this.document.positionAt(gap.start);
-                const gapEndPos = this.document.positionAt(gap.end);
-                const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
-                logCatMessage(
-                    LogLevel.Debug,
-                    LogCategory.Tokenizer,
-                    `Gap from L${gapStartPos.line + 1}:${gapStartPos.character + 1} to L${gapEndPos.line + 1}:${gapEndPos.character + 1}, Text: '${text}'`
-                );
+        if (!isShippingBuild() && !RUN_BENCHMARKS) {
+            const coverageResult = this.checkTokenTreeCoverage(contentNode, new Range(startPos, endPos));
+            if (!coverageResult.valid) {
+                logCatMessage(LogLevel.Debug, LogCategory.Tokenizer, `The token tree is not covering the entire match range!`);
+                for (const gap of coverageResult.gaps) {
+                    const gapStartPos = this.document.positionAt(gap.start);
+                    const gapEndPos = this.document.positionAt(gap.end);
+                    const text = this.document.getText(new VSRange(gapStartPos, gapEndPos));
+                    logCatMessage(
+                        LogLevel.Debug,
+                        LogCategory.Tokenizer,
+                        `Gap from ${gapStartPos.toString()} to ${gapEndPos.toString()}, Text: '${text}'`
+                    );
+                }
             }
         }
 

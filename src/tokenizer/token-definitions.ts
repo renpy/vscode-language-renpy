@@ -86,6 +86,10 @@ export class TokenPosition {
         this.charStartOffset = newValue.charStartOffset;
     }
 
+    public isEqual(other: TokenPosition) {
+        return this.line === other.line && this.character === other.character;
+    }
+
     public toString() {
         return `L${this.line + 1}:C${this.character + 1}`;
     }
@@ -105,13 +109,12 @@ export class Token {
     }
 
     public getVSRange() {
-        const start = new Position(this.startPos.line, this.startPos.character);
-        const end = new Position(this.endPos.line, this.endPos.character);
-
-        if (start.isEqual(end)) {
-            logMessage(LogLevel.Warning, `Empty token detected at L: ${start.line + 1}, C: ${start.character + 1} !`);
+        if (this.startPos.isEqual(this.endPos)) {
+            logMessage(LogLevel.Warning, `Empty token detected at: ${this.startPos.toString()}!`);
         }
 
+        const start = new Position(this.startPos.line, this.startPos.character);
+        const end = new Position(this.endPos.line, this.endPos.character);
         return new VSRange(start, end);
     }
 

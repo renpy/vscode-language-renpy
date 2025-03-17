@@ -97,8 +97,8 @@
           "match": "\\b(?<!\\.)(?:fit)\\b"
         },
         {
-          "comment": "('\\(int, int\\)' | None)",
-          "name": "invalid.deprecated.renpy",
+          "comment": "deprecated ('\\(int, int\\)' | None)",
+          "name": "entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy entity.name.tag.css.atl.renpy",
           "match": "\\b(?<!\\.)(?:size|maxsize)\\b"
         },
         {

@@ -1426,6 +1426,7 @@
       },
       "patterns": [
         { "include": "#call-jump-expression" },
+        { "include": "#call-jump-pass" },
         {
           "comment": "Label expression",
           "begin": "(?=[a-zA-Z_.])",
@@ -1435,7 +1436,7 @@
         { "include": "#whitespace" }
       ]
     },
-    "call-pass": {
+    "call-jump-pass": {
       "begin": "\\b(?<!\\.)(pass)\\b(?=[ \\t]*\\()",
       "beginCaptures": {
         "1": { "name": "keyword.control.flow.pass.renpy" }
@@ -1475,7 +1476,7 @@
       },
       "patterns": [
         { "include": "#call-jump-expression" },
-        { "include": "#call-pass" },
+        { "include": "#call-jump-pass" },
         { "include": "#call-from" },
         { "include": "#screen-call" },
         {

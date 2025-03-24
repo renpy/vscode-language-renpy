@@ -22,14 +22,14 @@ jobs:
       - run: npm ci
       - name: Publish to Visual Studio Marketplace
         id: publishToVSM
-        uses: HaaLeo/publish-vscode-extension@v1
+        uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
           preRelease: ${{ env.IS_PRE_RELEASE }}
       - name: Publish to Open VSX Registry
         if: ${{ ! fromJSON(env.IS_PRE_RELEASE) }}
-        uses: HaaLeo/publish-vscode-extension@v1
+        uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.OVSX_TOKEN }}
           registryUrl: https://open-vsx.org

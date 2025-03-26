@@ -35,7 +35,7 @@ export abstract class ASTNode {
     // public abstract process(): void;
 }
 export abstract class StatementNode extends ASTNode {
-    public process(program: RpyProgram) {
+    public visit(program: RpyProgram) {
         return; // Do nothing by default
     }
 }
@@ -50,11 +50,11 @@ export class AST {
         }
     }
 
-    public process(program: RpyProgram) {
+    public visit(program: RpyProgram) {
         this.nodes.forEach((node) => {
             if (node instanceof StatementNode) {
                 try {
-                    node.process(program);
+                    node.visit(program);
                 } catch (e) {
                     program.errorList.pushBack({ message: `Internal compiler error: ${(e as Error).message}`, errorLocation: null });
                 }
@@ -76,6 +76,14 @@ export class IfClauseNode extends StatementNode {
         this.condition = condition;
         this.block = block;
     }
+
+    public override visit(program: RpyProgram) {
+        this.block.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.visit(program);
+            }
+        });
+    }
 }
 
 export class ElseClauseNode extends StatementNode {
@@ -84,6 +92,14 @@ export class ElseClauseNode extends StatementNode {
     constructor(block: StatementNode[]) {
         super();
         this.block = block;
+    }
+
+    public override visit(program: RpyProgram) {
+        this.block.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.visit(program);
+            }
+        });
     }
 }
 
@@ -98,6 +114,14 @@ export class IfStatementNode extends StatementNode {
         this.elifClauses = elifClauses;
         this.elseClause = elseClause;
     }
+
+    public override visit(program: RpyProgram) {
+        this.ifClause.visit(program);
+        this.elifClauses.forEach((clause) => clause.visit(program));
+        if (this.elseClause !== null) {
+            this.elseClause.visit(program);
+        }
+    }
 }
 
 export class WhileStatementNode extends StatementNode {
@@ -108,6 +132,14 @@ export class WhileStatementNode extends StatementNode {
         super();
         this.condition = condition;
         this.block = block;
+    }
+
+    public override visit(program: RpyProgram) {
+        this.block.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.visit(program);
+            }
+        });
     }
 }
 
@@ -168,6 +200,14 @@ export class ClassDefinitionNode extends StatementNode {
         this.name = name;
         this.body = body;
     }
+
+    public override visit(program: RpyProgram) {
+        this.body.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.visit(program);
+            }
+        });
+    }
 }
 
 export class BinaryOperationNode extends ExpressionNode {
@@ -195,6 +235,7 @@ export class UnaryOperationNode extends ExpressionNode {
 }
 
 type LiteralValue = string | number | boolean;
+
 export class LiteralNode extends ExpressionNode {
     public value: LiteralValue;
 
@@ -252,7 +293,7 @@ export class DefineStatementNode extends StatementNode {
         this.assignmentOperation = assignmentOperation;
     }
 
-    public override process(program: RpyProgram) {
+    public override visit(program: RpyProgram) {
         if (this.assignmentOperation === null) {
             throw new Error("Should remove the option for this to be null. Parser should error if it is null.");
         }
@@ -276,7 +317,7 @@ export class DefaultStatementNode extends StatementNode {
         this.assignmentOperation = assignmentOperation;
     }
 
-    public override process(program: RpyProgram) {
+    public override visit(program: RpyProgram) {
         if (!(this.assignmentOperation.left instanceof IdentifierNode)) {
             throw new Error("Expected identifier node");
         }
@@ -300,7 +341,7 @@ export class SayStatementNode extends StatementNode {
         this.what = what;
     }
 
-    public override process(program: RpyProgram) {
+    public override visit(program: RpyProgram) {
         if (this.who instanceof IdentifierNode) {
             const variableName = this.who.name;
             const definitionSymbol = program.globalScope.resolve(variableName);
@@ -399,12 +440,12 @@ export class LabelStatementNode extends StatementNode {
         }
     }
 
-    public override process(program: RpyProgram) {
+    public override visit(program: RpyProgram) {
         this.processDefinition(program);
 
         this.block.forEach((node) => {
             if (node instanceof StatementNode) {
-                node.process(program);
+                node.visit(program);
             }
         });
 
@@ -433,6 +474,14 @@ export class ImageStatementNode extends StatementNode {
         this.imageName = imageName;
         this.block = block;
         this.assignment = assignment;
+    }
+
+    public override visit(program: RpyProgram) {
+        this.block?.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.visit(program);
+            }
+        });
     }
 }
 
@@ -506,6 +555,14 @@ export class MenuItemChoiceNode extends StatementNode {
         this.condition = condition;
         this.block = block;
     }
+
+    public override visit(program: RpyProgram) {
+        this.block.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.visit(program);
+            }
+        });
+    }
 }
 
 export class MenuStatementNode extends StatementNode {
@@ -518,6 +575,14 @@ export class MenuStatementNode extends StatementNode {
         this.labelName = labelName;
         this.arguments = args;
         this.items = items;
+    }
+
+    public override visit(program: RpyProgram) {
+        this.items.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.visit(program);
+            }
+        });
     }
 }
 
@@ -545,6 +610,14 @@ export class SceneStatementNode extends StatementNode {
         this.onlayer = onlayer;
         this.block = block;
     }
+
+    public override visit(program: RpyProgram) {
+        this.block?.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.visit(program);
+            }
+        });
+    }
 }
 
 export class ShowStatementNode extends StatementNode {
@@ -558,6 +631,14 @@ export class ShowStatementNode extends StatementNode {
         this.withExpr = withExpr;
         this.block = block;
     }
+
+    public override visit(program: RpyProgram) {
+        this.block?.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.visit(program);
+            }
+        });
+    }
 }
 
 export class ShowLayerStatementNode extends StatementNode {
@@ -570,6 +651,14 @@ export class ShowLayerStatementNode extends StatementNode {
         this.layerName = layerName;
         this.atExpression = atExpression;
         this.block = block;
+    }
+
+    public override visit(program: RpyProgram) {
+        this.block?.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.visit(program);
+            }
+        });
     }
 }
 
@@ -595,6 +684,14 @@ export class CameraStatementNode extends StatementNode {
         this.atExpression = atExpression;
         this.block = block;
     }
+
+    public override visit(program: RpyProgram) {
+        this.block?.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.visit(program);
+            }
+        });
+    }
 }
 
 export class TransformStatementNode extends StatementNode {
@@ -609,6 +706,14 @@ export class TransformStatementNode extends StatementNode {
         this.name = name;
         this.parameters = parameters;
         this.block = block;
+    }
+
+    public override visit(program: RpyProgram) {
+        this.block.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.visit(program);
+            }
+        });
     }
 }
 
@@ -634,6 +739,14 @@ export class PythonStatementNode extends StatementNode {
         this.inName = inName;
         this.block = block;
     }
+
+    public override visit(program: RpyProgram) {
+        this.block.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.visit(program);
+            }
+        });
+    }
 }
 
 export class InitStatementNode extends StatementNode {
@@ -646,6 +759,14 @@ export class InitStatementNode extends StatementNode {
         this.offset = offset;
         this.statement = statement;
         this.block = block;
+    }
+
+    public override visit(program: RpyProgram) {
+        this.block?.forEach((node) => {
+            if (node instanceof StatementNode) {
+                node.visit(program);
+            }
+        });
     }
 }
 

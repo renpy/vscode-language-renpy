@@ -65,7 +65,7 @@ export class Parser {
         // TODO: Store parse errors so they can be accessed later.
 
         const program = new RpyProgram();
-        ast.process(program);
+        ast.visit(program);
 
         this._documentCache.set(document.uri, { documentVersion: document.version, program });
         return program;

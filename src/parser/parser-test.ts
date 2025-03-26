@@ -46,7 +46,7 @@ export async function testParser() {
     logCatMessage(LogLevel.Debug, LogCategory.Parser, ast.toString());
 
     const program = new RpyProgram();
-    ast.process(program);
+    ast.visit(program);
 
     for (const error of program.errorList) {
         logCatMessage(LogLevel.Error, LogCategory.Parser, error.message);

@@ -374,6 +374,17 @@ export class ParameterNode extends ASTNode {
     }
 }
 
+export class ArgumentNode extends ASTNode {
+    public name: IdentifierNode | null;
+    public value: ExpressionNode;
+
+    constructor(name: IdentifierNode | null, value: ExpressionNode) {
+        super();
+        this.name = name;
+        this.value = value;
+    }
+}
+
 export class LabelNameNode extends ExpressionNode {
     public readonly srcLocation: VSLocation;
     public globalName: string | null;

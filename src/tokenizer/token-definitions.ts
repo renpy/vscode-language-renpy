@@ -371,54 +371,17 @@ export class TokenTree {
  * This will allow us to advance based on conditions
  */
 export class TokenListIterator {
+    public readonly EOF_TOKEN = new Token(MetaTokenType.EOF, new TokenPosition(0, 0, -1), new TokenPosition(0, 0, -1));
     private readonly _tokens: Vector<Token>;
     private _index = 0;
-    private _blacklist: Set<TokenType> = new Set<TokenType>();
-    public readonly EOF_TOKEN = new Token(MetaTokenType.EOF, new TokenPosition(0, 0, -1), new TokenPosition(0, 0, -1));
 
-    constructor(tokens: Vector<Token>) {
+    constructor(tokens: Vector<Token>, startIndex = 0) {
         this._tokens = tokens;
+        this._index = startIndex;
     }
 
-    /**
-     * Advances the iterator to the next node that has a valid token that is not blacklisted
-     */
-    public next() {
-        if (!this.hasNext()) {
-            throw new Error("next() was called on an iterator that has no more nodes to visit.");
-        }
-
-        // Move to the next node
-        this._index++;
-
-        // We should also skip any nodes with blacklisted tokens
-        while (this.isBlacklisted() && this.hasNext()) {
-            this._index++;
-        }
-    }
-
-    /**
-     * Advances the iterator to the next node that has a valid token that is not blacklisted
-     */
-    public previous() {
-        if (!this.hasPrevious()) {
-            throw new Error("previous() was called on an iterator that has no more nodes to visit.");
-        }
-
-        // Move to the next node
-        this._index--;
-
-        // We should also revert any nodes with blacklisted tokens
-        while (this.isBlacklisted() && this.hasPrevious()) {
-            this._index--;
-        }
-    }
-
-    public clone() {
-        const newIterator = new TokenListIterator(this._tokens);
-        newIterator._index = this._index;
-        newIterator._blacklist = new Set(this._blacklist);
-        return newIterator;
+    public get index() {
+        return this._index;
     }
 
     public get token() {
@@ -437,30 +400,39 @@ export class TokenListIterator {
     }
 
     /**
-     * Check is the current token is blacklisted
+     * Advances the iterator to the next node that has a valid token that is not blacklisted
      */
-    private isBlacklisted() {
-        if (this._blacklist.has(this.tokenType)) {
-            return true;
+    public next() {
+        if (!this.hasNext()) {
+            throw new Error("next() was called on an iterator that has no more nodes to visit.");
         }
 
-        return this.metaTokens.any((token) => {
-            return this._blacklist.has(token);
-        });
+        // Move to the next node
+        this._index++;
     }
 
     /**
-     * Add a filter to the iterator. This will prevent the iterator from visiting nodes that match the filter.
+     * Advances the iterator to the next node that has a valid token that is not blacklisted
      */
-    public setFilter(blacklist: Set<TokenType>) {
-        this._blacklist = blacklist;
+    public previous() {
+        if (!this.hasPrevious()) {
+            throw new Error("previous() was called on an iterator that has no more nodes to visit.");
+        }
+
+        // Move to the previous node
+        this._index--;
     }
 
     /**
-     * Returns the current filter
+     * Seek to a specific index
+     * @param index The new index of the iterator
      */
-    public getFilter() {
-        return this._blacklist;
+    public seek(index: number) {
+        if (index < 0 || index >= this._tokens.size) {
+            throw new Error(`Index out of bounds: ${index}`);
+        }
+
+        this._index = index;
     }
 
     /**

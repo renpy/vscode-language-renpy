@@ -4,12 +4,9 @@ import {
     CameraStatementNode,
     DefaultStatementNode,
     DefineStatementNode,
-    ElseClauseNode,
     ExpressionNode,
     HideStatementNode,
     IdentifierNode,
-    IfClauseNode,
-    IfStatementNode,
     ImageNameNode,
     ImageSpecifierNode,
     ImageStatementNode,
@@ -35,9 +32,22 @@ import {
     CallStatementNode,
     TransformStatementNode,
     WithStatementNode,
-    WhileStatementNode,
 } from "./ast-nodes";
-import { AssignmentOperationRule, GrammarRule, IntegerLiteralRule, PythonExpressionRule, IdentifierRule, StringLiteralRule, SimpleExpressionRule, ParametersRule } from "./grammar-rules";
+import { GrammarRule } from "./grammar-rule";
+import {
+    AssignmentOperationRule,
+    IntegerLiteralRule,
+    IdentifierRule,
+    StringLiteralRule,
+    ParametersRule,
+    ArgumentsRule,
+    GuardExpressionRule,
+    IfStatementRule,
+    WhileStatementRule,
+    PythonExpressionRule,
+    LiteralRule,
+    MemberAccessExpressionRule,
+} from "./rpy-python-grammar-rules";
 import { DocumentParser, ParseErrorType } from "./parser";
 import { Range } from "../tokenizer/token-definitions";
 
@@ -45,7 +55,6 @@ const integerParser = new IntegerLiteralRule();
 const stringParser = new StringLiteralRule();
 const identifierParser = new IdentifierRule();
 const pythonExpressionParser = new PythonExpressionRule();
-const simpleExpressionParser = new SimpleExpressionRule();
 const parametersParser = new ParametersRule();
 
 /**
@@ -141,6 +150,8 @@ export class PassStatementRule extends GrammarRule<PassStatementNode> {
  * with_expression = "with", simple_expression;
  */
 export class WithExpressionRule extends GrammarRule<ExpressionNode> {
+    private simpleExpressionParser = new SimpleExpressionRule();
+
     public test(parser: DocumentParser): boolean {
         return parser.peek(KeywordTokenType.With);
     }
@@ -148,7 +159,7 @@ export class WithExpressionRule extends GrammarRule<ExpressionNode> {
     public parse(parser: DocumentParser): ExpressionNode | null {
         parser.requireToken(KeywordTokenType.With);
 
-        const expression = parser.require(simpleExpressionParser);
+        const expression = parser.require(this.simpleExpressionParser);
         if (expression === null) {
             return null;
         }
@@ -183,6 +194,8 @@ export class WithStatementRule extends GrammarRule<WithStatementNode> {
  * expression_clause = "expression", simple_expression;
  */
 export class ExpressionClauseRule extends GrammarRule<ExpressionNode> {
+    private simpleExpressionParser = new SimpleExpressionRule();
+
     public test(parser: DocumentParser): boolean {
         return parser.peek(KeywordTokenType.Expression);
     }
@@ -190,7 +203,7 @@ export class ExpressionClauseRule extends GrammarRule<ExpressionNode> {
     public parse(parser: DocumentParser): ExpressionNode | null {
         parser.requireToken(KeywordTokenType.Expression);
 
-        const expression = parser.require(simpleExpressionParser);
+        const expression = parser.require(this.simpleExpressionParser);
         if (expression === null) {
             return null;
         }
@@ -271,174 +284,6 @@ export class FromExpressionRule extends GrammarRule<LabelNameNode> {
 }
 
 /**
- * arguments = "(", [",".argument+], ")";
- * argument = [NAME, "="], PYTHON_EXPRESSION;
- */
-export class ArgumentsRule extends GrammarRule<ExpressionNode[]> {
-    private argumentParser = new ArgumentRule();
-
-    public test(parser: DocumentParser): boolean {
-        return parser.peek(CharacterTokenType.OpenParentheses);
-    }
-
-    public parse(parser: DocumentParser): ExpressionNode[] | null {
-        if (!parser.requireToken(CharacterTokenType.OpenParentheses)) {
-            return null;
-        }
-
-        const args: ExpressionNode[] = [];
-
-        if (!parser.peek(CharacterTokenType.CloseParentheses)) {
-            do {
-                const arg = parser.require(this.argumentParser);
-                if (arg === null) {
-                    return null;
-                }
-                args.push(arg);
-            } while (parser.optionalToken(CharacterTokenType.Comma));
-        }
-
-        if (!parser.requireToken(CharacterTokenType.CloseParentheses)) {
-            return null;
-        }
-
-        return args;
-    }
-}
-
-/**
- * argument = [NAME, "="], PYTHON_EXPRESSION;
- */
-export class ArgumentRule extends GrammarRule<ExpressionNode> {
-    public test(parser: DocumentParser): boolean {
-        return parser.peek(EntityTokenType.FunctionName) || pythonExpressionParser.test(parser);
-    }
-
-    public parse(parser: DocumentParser): ExpressionNode | null {
-        // This is simplified - in a real implementation, you would handle the NAME, "=" part
-        // and create an argument node that includes the name
-        return parser.require(pythonExpressionParser);
-    }
-}
-
-/**
- * while = "while", PYTHON_EXPRESSION, begin_block;
- * begin_block = ":", NEWLINE, INDENT, block;
- * block = statement+, DEDENT;
- */
-export class WhileStatementRule extends GrammarRule<WhileStatementNode> {
-    private blockParser = new RenpyBlockRule();
-
-    public test(parser: DocumentParser): boolean {
-        return parser.peek(KeywordTokenType.While);
-    }
-
-    public parse(parser: DocumentParser): WhileStatementNode | null {
-        parser.requireToken(KeywordTokenType.While);
-
-        const condition = parser.require(pythonExpressionParser);
-        if (condition === null) {
-            return null;
-        }
-
-        const block = parser.require(this.blockParser);
-        if (block === null) {
-            return null;
-        }
-
-        return new WhileStatementNode(condition, block);
-    }
-}
-
-/**
- * if_statement = if_clause, elif_clause*, else_clause?;
- * if_clause = "if", PYTHON_EXPRESSION, begin_block;
- * elif_clause = "elif", PYTHON_EXPRESSION, begin_block;
- * else_clause = "else", begin_block;
- * begin_block = ":", NEWLINE, INDENT, block;
- * block = statement+, DEDENT;
- */
-export class IfStatementRule extends GrammarRule<IfStatementNode> {
-    private blockParser = new RenpyBlockRule();
-
-    public test(parser: DocumentParser): boolean {
-        return parser.peek(KeywordTokenType.If);
-    }
-
-    public parse(parser: DocumentParser): IfStatementNode | null {
-        // Parse if clause
-        const ifClause = this.parseIfClause(parser);
-        if (ifClause === null) {
-            return null;
-        }
-
-        // Parse elif clauses (zero or more)
-        const elifClauses: IfClauseNode[] = [];
-        while (parser.peek(KeywordTokenType.Elif)) {
-            const elifClause = this.parseElifClause(parser);
-            if (elifClause === null) {
-                return null;
-            }
-            elifClauses.push(elifClause);
-        }
-
-        // Parse optional else clause
-        let elseClause: ElseClauseNode | null = null;
-        if (parser.peek(KeywordTokenType.Else)) {
-            elseClause = this.parseElseClause(parser);
-            if (elseClause === null) {
-                return null;
-            }
-        }
-
-        return new IfStatementNode(ifClause, elifClauses, elseClause);
-    }
-
-    private parseIfClause(parser: DocumentParser): IfClauseNode | null {
-        parser.requireToken(KeywordTokenType.If);
-
-        const condition = parser.require(pythonExpressionParser);
-        if (condition === null) {
-            return null;
-        }
-
-        const block = parser.require(this.blockParser);
-        if (block === null) {
-            return null;
-        }
-
-        return new IfClauseNode(condition, block);
-    }
-
-    private parseElifClause(parser: DocumentParser): IfClauseNode | null {
-        parser.requireToken(KeywordTokenType.Elif);
-
-        const condition = parser.require(pythonExpressionParser);
-        if (condition === null) {
-            return null;
-        }
-
-        const block = parser.require(this.blockParser);
-        if (block === null) {
-            return null;
-        }
-
-        return new IfClauseNode(condition, block);
-    }
-
-    private parseElseClause(parser: DocumentParser): ElseClauseNode | null {
-        parser.requireToken(KeywordTokenType.Else);
-
-        const block = parser.require(this.blockParser);
-        if (block === null) {
-            return null;
-        }
-
-        return new ElseClauseNode(block);
-    }
-}
-
-/**
 say_who = simple_expression;
 say_what = STRING;
 say_attribute = "-"?, IMAGE_NAME_COMPONENT;
@@ -448,12 +293,14 @@ say = say_who?, say_attributes?, say_temporary_attributes?, say_what;
 */
 export class SayStatementRule extends GrammarRule<StatementNode> {
     private sayAttributesParser = new SayAttributesRule();
+    private simpleExpressionParser = new SimpleExpressionRule();
+
     public test(parser: DocumentParser): boolean {
         return parser.peek(MetaTokenType.SayStatement) || stringParser.test(parser);
     }
 
     public parse(parser: DocumentParser): StatementNode | null {
-        const who = parser.optional(simpleExpressionParser);
+        const who = parser.optional(this.simpleExpressionParser);
         const attributes = parser.optional(this.sayAttributesParser);
         let temporaryAttributes: ExpressionNode | null = null;
         if (parser.peek(KeywordTokenType.At)) {
@@ -686,8 +533,16 @@ export class RenpyBlockRule extends GrammarRule<StatementNode[]> {
             return null;
         }
 
+        parser.skipEmptyLines();
+        const blockIndent = parser.getIndent();
+
         const statements: StatementNode[] = [];
         while (parser.peek(MetaTokenType.RenpyBlock)) {
+            const indent = parser.getIndent();
+            if (indent < blockIndent) {
+                break;
+            }
+
             if (statementParser.test(parser)) {
                 const statement = parser.require(statementParser);
 
@@ -695,12 +550,12 @@ export class RenpyBlockRule extends GrammarRule<StatementNode[]> {
                     statements.push(statement);
                 }
             }
-            parser.expectEOL();
 
+            parser.expectEOL();
             parser.skipEmptyLines();
         }
 
-        // We need to rollback to the last new line token. (Side effect of the tokenizer also marking the last new line and a block).
+        // We need to rollback to the last new line token. (Side effect of the tokenizer also marking the last new line as a block).
         if (parser.current().type === CharacterTokenType.NewLine) {
             parser.previous();
         }
@@ -815,26 +670,6 @@ export class MenuItemSetRule extends GrammarRule<MenuItemSetNode> {
         parser.expectEOL();
 
         return new MenuItemSetNode(expression);
-    }
-}
-
-/**
- * guard_expression = "if", PYTHON_EXPRESSION;
- */
-export class GuardExpressionRule extends GrammarRule<ExpressionNode> {
-    public test(parser: DocumentParser): boolean {
-        return parser.peek(KeywordTokenType.If);
-    }
-
-    public parse(parser: DocumentParser): ExpressionNode | null {
-        parser.requireToken(KeywordTokenType.If);
-
-        const expression = parser.require(pythonExpressionParser);
-        if (expression === null) {
-            return null;
-        }
-
-        return expression;
     }
 }
 
@@ -978,14 +813,16 @@ export class AtExpressionRule extends GrammarRule<ExpressionNode[]> {
  * simple_expression_list = simple_expression, {",", simple_expression};
  */
 export class SimpleExpressionListRule extends GrammarRule<ExpressionNode[]> {
+    private simpleExpressionParser = new SimpleExpressionRule();
+
     public test(parser: DocumentParser): boolean {
-        return simpleExpressionParser.test(parser);
+        return this.simpleExpressionParser.test(parser);
     }
 
     public parse(parser: DocumentParser): ExpressionNode[] | null {
         const expressions: ExpressionNode[] = [];
 
-        const firstExpr = parser.require(simpleExpressionParser);
+        const firstExpr = parser.require(this.simpleExpressionParser);
         if (firstExpr === null) {
             return null;
         }
@@ -993,7 +830,7 @@ export class SimpleExpressionListRule extends GrammarRule<ExpressionNode[]> {
         expressions.push(firstExpr);
 
         while (parser.optionalToken(CharacterTokenType.Comma)) {
-            const nextExpr = parser.require(simpleExpressionParser);
+            const nextExpr = parser.require(this.simpleExpressionParser);
             if (nextExpr === null) {
                 return null;
             }
@@ -1054,13 +891,15 @@ export class OnlayerExpressionRule extends GrammarRule<IdentifierNode> {
  * zorder_expression = "zorder", simple_expression;
  */
 export class ZorderExpressionRule extends GrammarRule<ExpressionNode> {
+    private simpleExpressionParser = new SimpleExpressionRule();
+
     public test(parser: DocumentParser): boolean {
         return parser.peek(KeywordTokenType.Zorder);
     }
 
     public parse(parser: DocumentParser): ExpressionNode | null {
         parser.requireToken(KeywordTokenType.Zorder);
-        return parser.require(simpleExpressionParser);
+        return parser.require(this.simpleExpressionParser);
     }
 }
 
@@ -1454,6 +1293,86 @@ export class OneLinePythonStatementRule extends GrammarRule<OneLinePythonStateme
 }
 
 /**
+ * Expression
+ *   : Literal
+ *   | ParenthesizedExpression
+ *   ;
+ */
+export class ExpressionRule extends GrammarRule<ExpressionNode> {
+    rules = [new LiteralRule(), new ParenthesizedExpressionRule()];
+
+    public test(parser: DocumentParser) {
+        for (const rule of this.rules) {
+            if (rule.test(parser)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public parse(parser: DocumentParser): ExpressionNode | LiteralNode | null {
+        for (const rule of this.rules) {
+            if (rule.test(parser)) {
+                return rule.parse(parser);
+            }
+        }
+
+        return null;
+    }
+}
+
+/**
+ * ParenthesizedExpression
+ *   : '(' Expression ')'
+ *   ;
+ */
+export class ParenthesizedExpressionRule extends GrammarRule<ExpressionNode> {
+    private expressionParser = new ExpressionRule();
+
+    public test(parser: DocumentParser) {
+        return parser.peek(CharacterTokenType.OpenParentheses);
+    }
+
+    public parse(parser: DocumentParser) {
+        parser.requireToken(CharacterTokenType.OpenParentheses);
+        const expression = this.expressionParser.parse(parser);
+        parser.requireToken(CharacterTokenType.CloseParentheses);
+        return expression;
+    }
+}
+
+/**
+ * simple_expression
+ * : OPERATOR*, (PYTHON_STRING | NAME | FLOAT | parenthesized_python), [(".", NAME) | parenthesized_python]
+ * | identifier, [(".", NAME) | parenthesized_python]
+ * | member_access_expression
+ * ;
+ */
+export class SimpleExpressionRule extends GrammarRule<ExpressionNode> {
+    public test(parser: DocumentParser): boolean {
+        return parser.peekAnyOf([EntityTokenType.Identifier, MetaTokenType.MemberAccess, MetaTokenType.SimpleExpression]);
+    }
+
+    public parse(parser: DocumentParser): ExpressionNode | null {
+        if (parser.peek(MetaTokenType.MemberAccess)) {
+            return parser.require(new MemberAccessExpressionRule());
+        }
+
+        if (parser.peek(EntityTokenType.Identifier)) {
+            return parser.require(new IdentifierRule());
+        }
+
+        let expression = "";
+        while (parser.peek(MetaTokenType.SimpleExpression)) {
+            parser.next();
+            expression += parser.currentValue();
+        }
+        return new LiteralNode(expression);
+    }
+}
+
+/**
  * python_in_clause = "in", DOTTED_NAME;
  * python = "python", "early"?, "hide"?, python_in_clause?, begin_python_block;
  */
@@ -1709,10 +1628,10 @@ export class RenpyStatementRule extends GrammarRule<StatementNode> {
         new PythonStatementRule(),
         new LabelStatementRule(),
         new RpyMonologueStatementRule(),
-        //screen
-        //testcase
-        //translate
-        //style
+        // TODO: screen
+        // TODO: testcase
+        // TODO: translate
+        // TODO: style
         new RpyPythonStatementRule(),
         new SayStatementRule(),
     ];

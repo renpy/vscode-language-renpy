@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { LogLevel, TextDocument, Uri, Location as VSLocation, Range as VSRange, workspace } from "vscode";
 import { AST, ASTNode } from "./ast-nodes";
-import { GrammarRule } from "./grammar-rules";
+import { GrammarRule } from "./grammar-rule";
 import { Tokenizer } from "../tokenizer/tokenizer";
 import { CharacterTokenType, MetaTokenType, TokenType } from "../tokenizer/renpy-tokens";
 import { Token, TokenPosition, TokenListIterator, tokenTypeToStringMap, Range } from "../tokenizer/token-definitions";

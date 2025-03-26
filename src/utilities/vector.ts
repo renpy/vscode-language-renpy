@@ -246,6 +246,20 @@ export class Vector<T> implements Iterable<T> {
     }
 
     /**
+     * Returns the index of the first occurrence of a value in an array, or -1 if it is not present.
+     * @param searchElement The value to locate in the array.
+     * @param fromIndex The array index at which to begin the search. If fromIndex is omitted, the search starts at index 0.
+     */
+    public find(item: T, fromIndex?: number) {
+        const index = this.indexOf(item, fromIndex);
+        if (index === -1) {
+            return null;
+        }
+
+        return this.buffer[index] as T;
+    }
+
+    /**
      * Get the amount of items that the vector is able to hold at this time
      * @returns The amount items that could fit in the internal memory buffer
      */

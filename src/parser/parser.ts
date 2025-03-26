@@ -73,15 +73,14 @@ export class Parser {
 }
 
 export class DocumentParser {
-    private _it: TokenListIterator = null!;
     private _document: TextDocument;
+    private _it: TokenListIterator = null!;
     private _currentToken: Token = null!;
-
+    private _blacklist: Set<TokenType> = new Set<TokenType>();
     private _errors: Vector<ParseError> = new Vector<ParseError>();
+    private _parsed = false;
 
     private readonly INVALID_TOKEN = new Token(MetaTokenType.Invalid, new TokenPosition(0, 0, -1), new TokenPosition(0, 0, -1));
-
-    private _parsed = false;
 
     constructor(document: TextDocument) {
         this._document = document;
@@ -112,9 +111,40 @@ export class DocumentParser {
         this._parsed = true;
         const tokens = await Tokenizer.tokenizeDocument(this._document);
         this._it = tokens.getIterator();
-        this._it.setFilter(new Set([MetaTokenType.Comment, CharacterTokenType.Whitespace]));
+        this.setFilter(new Set([MetaTokenType.Comment, CharacterTokenType.Whitespace]));
 
         this._currentToken = this.INVALID_TOKEN;
+    }
+
+    /**
+     * Check if the current token is blacklisted
+     */
+    private isBlacklisted() {
+        if (this._blacklist.has(this._it.tokenType)) {
+            return true;
+        }
+
+        return this._it.metaTokens.any((token) => {
+            return this._blacklist.has(token);
+        });
+    }
+
+    /**
+     * Add a blacklist to the token iterator. This will prevent the iterator from visiting nodes that match the filter.
+     */
+    public setFilter(blacklist: Set<TokenType>) {
+        this._blacklist = blacklist;
+    }
+
+    /**
+     * Returns the current token blacklist
+     */
+    public getFilter() {
+        return this._blacklist;
+    }
+
+    public get index() {
+        return this._it.index;
     }
 
     /**
@@ -125,8 +155,14 @@ export class DocumentParser {
             this.addError(ParseErrorType.UnexpectedEndOfFile);
             return;
         }
+
         this._currentToken = this._it.token;
         this._it.next();
+
+        // We should also skip any nodes with blacklisted tokens
+        while (this.isBlacklisted() && this.hasNext()) {
+            this._it.next();
+        }
     }
 
     /**
@@ -136,13 +172,36 @@ export class DocumentParser {
         if (!this._it.hasPrevious()) {
             return;
         }
+
         this._it.previous();
+
+        // We should also revert any nodes with blacklisted tokens
+        while (this.isBlacklisted() && this.hasPrevious()) {
+            this._it.previous();
+        }
+
+        // TODO: Should this also revert to the previous token?
         this._currentToken = this._it.token;
     }
 
     /**
-     * Returns true if there are more tokens to parse.
-     * @returns True if there are more tokens to parse.
+     * Moves the token iterator to the given index.
+     * @param index The index to move to.
+     */
+    public seek(index: number) {
+        this._it.seek(index);
+        this._currentToken = this._it.token;
+    }
+
+    /**
+     * Returns true if there are more nodes to visit
+     */
+    public hasPrevious() {
+        return this._it.hasPrevious();
+    }
+
+    /**
+     * Returns true if there are more nodes to visit
      */
     public hasNext(): boolean {
         return this._it.hasNext();
@@ -289,6 +348,32 @@ export class DocumentParser {
         return null;
     }
 
+    public getIndent(): number {
+        // Use iterator version to avoid blacklisted tokens
+        this._it.previous();
+        const previousToken = this._it.token;
+        this._it.next();
+
+        if (previousToken.type === CharacterTokenType.NewLine) {
+            return 0;
+        }
+
+        if (previousToken.type !== CharacterTokenType.Whitespace) {
+            throw new Error("Internal parser error: Expected whitespace token.");
+        }
+
+        return previousToken.getValue(this._document).length;
+    }
+
+    /**
+     * Skips all whitespace tokens until the next non-whitespace token is found.
+     */
+    public skipWhitespace() {
+        while (this.peek(CharacterTokenType.Whitespace)) {
+            this.next();
+        }
+    }
+
     /**
      * Skips all empty lines until the next non-empty line is found.
      */
@@ -356,14 +441,15 @@ export class DocumentParser {
      * Prints all token types from the current token to the end of the line.
      */
     public debugPrintLine() {
-        const itCopy = this._it.clone();
+        const itStart = this.index;
         let output = "Next line tokens: [\n";
-        while (itCopy.hasNext() && itCopy.token.type !== CharacterTokenType.NewLine) {
-            output += `  ${itCopy.token.toString()},\n`;
-            itCopy.next();
+        while (this.hasNext() && !this.peekAnyOf([CharacterTokenType.NewLine, MetaTokenType.EOF])) {
+            output += `  ${this.peekNext().toString()},\n`;
+            this.next();
         }
         output = output.slice(0, -2); // Remove the last comma and space.
         output += "\n]";
+        this.seek(itStart);
         logCatMessage(LogLevel.Debug, LogCategory.Parser, output);
     }
 
@@ -388,173 +474,3 @@ export class DocumentParser {
         return tokenTypeToStringMap[tokenType];
     }
 }
-
-/*
-class Parser {
-    private variables: VariableBank;
-
-    constructor(variables: VariableBank) {
-        this.variables = variables;
-    }
-
-    public parse(tokens: TokenTree[], errors: ParseError[]): IExpression {
-        const operandStack = new Stack<IExpression>();
-        const operatorStack = new Stack<Token>();
-        let tokenIndex = 0;
-
-        while (tokenIndex < tokens.length) {
-            const token = tokens[tokenIndex];
-
-            if (token.tokenType === TokenType.OpenParentheses) {
-                const subExpr = Parser.getSubExpression(tokens, tokenIndex);
-                operandStack.push(this.parse(subExpr, errors));
-                continue;
-            } else if (token.tokenType === TokenType.CloseParentheses) {
-                errors.push({ message: "Mismatched parentheses in expression", errorTokenIndex: tokenIndex });
-            }
-
-            if (Parser.isOperator(token)) {
-                while (!operatorStack.isEmpty() && token.tokenType < operatorStack.peek().tokenType) {
-                    const op = operatorStack.pop();
-
-                    switch (op.tokenType) {
-                        case TokenType.Not:
-                        case TokenType.PlusPlus:
-                        case TokenType.MinMin: {
-                            const op1 = operandStack.pop();
-                            const nop = new SingleValueOperationExpression();
-                            nop.value = op1;
-                            nop.operator = op.tokenType;
-                            operandStack.push(nop);
-                            break;
-                        }
-                        default: {
-                            const arg2 = operandStack.pop();
-                            const arg1 = operandStack.pop();
-                            const ex = new OperationExpression();
-                            ex.left = arg1;
-                            ex.operator = op.tokenType;
-                            ex.right = arg2;
-                            operandStack.push(ex);
-                            break;
-                        }
-                    }
-                }
-
-                operatorStack.push(token);
-            } else {
-                switch (token.tokenType) {
-                    case TokenType.SequenceTerminator:
-                        break;
-                    case TokenType.Variable: {
-                        const expression = new VariableParseExpression();
-
-                        const identifiers = token.value.split(".");
-                        let root = this.variables.root;
-
-                        for (let i = 0; i < identifiers.length; ++i) {
-                            const identifier = identifiers[i];
-
-                            if (root.containsMember(identifier)) {
-                                root = root[identifier];
-                            } else {
-                                root = null;
-                                errors.push({ message: `Variable does not exist: ${identifier}`, errorTokenIndex: tokenIndex });
-                            }
-                        }
-                        expression.variable = root;
-                        operandStack.push(expression);
-                        break;
-                    }
-                    case TokenType.Boolean:
-                    case TokenType.Number:
-                    case TokenType.FloatingPointNumber:
-                    case TokenType.StringValue: {
-                        const expression = new ValueParseExpression();
-                        expression.value = token.value;
-                        expression.valueType = token.tokenType;
-                        operandStack.push(expression);
-                        break;
-                    }
-                    default:
-                        throw new Error(`Missing expression value type: ${token.tokenType}`);
-                }
-            }
-
-            tokenIndex++;
-        }
-
-        while (!operatorStack.isEmpty()) {
-            const op = operatorStack.pop();
-
-            switch (op.tokenType) {
-                case TokenType.Not:
-                case TokenType.PlusPlus:
-                case TokenType.MinMin: {
-                    const op1 = operandStack.pop();
-                    const nop = new SingleValueOperationExpression();
-                    nop.value = op1;
-                    nop.operator = op.tokenType;
-                    operandStack.push(nop);
-                    break;
-                }
-                default: {
-                    const arg2 = operandStack.pop();
-                    const arg1 = operandStack.pop();
-                    const ex = new OperationExpression();
-                    ex.left = arg1;
-                    ex.operator = op.tokenType;
-                    ex.right = arg2;
-                    operandStack.push(ex);
-                    break;
-                }
-            }
-        }
-
-        return operandStack.pop();
-    }
-
-    private static getSubExpression(tokens: Token[], index: number): Token[] {
-        const subExpr: Token[] = [];
-        let parenlevels = 1;
-
-        index++;
-
-        while (index < tokens.length && parenlevels > 0) {
-            const token = tokens[index];
-
-            if (tokens[index].tokenType === TokenType.OpenParentheses) {
-                parenlevels += 1;
-            }
-
-            if (tokens[index].tokenType === TokenType.CloseParentheses) {
-                parenlevels -= 1;
-            }
-
-            if (parenlevels > 0) {
-                subExpr.push(token);
-            }
-
-            index += 1;
-        }
-
-        if (parenlevels > 0) {
-            throw new Error("Mismatched parentheses in expression");
-        }
-
-        return subExpr;
-    }
-
-    private static isOperator(token: Token): boolean {
-        return (
-            token.tokenType === TokenType.Assign ||
-            token.tokenType === TokenType.PlusAssign ||
-            token.tokenType === TokenType.PlusPlus ||
-            token.tokenType === TokenType.MinMin ||
-            token.tokenType === TokenType.MinusAssign ||
-            token.tokenType === TokenType.MultiplyAssign ||
-            token.tokenType === TokenType.DivideAssign
-        );
-    }
-}
-*/

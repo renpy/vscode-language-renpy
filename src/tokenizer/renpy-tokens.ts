@@ -87,7 +87,6 @@ export const enum KeywordTokenType {
     Monologue,
     Double,
     Single,
-    None,
 
     // Renpy control flow keywords
     At,
@@ -125,14 +124,27 @@ export const enum KeywordTokenType {
     Function,
 
     // Python keywords
-    Import,
-    Class,
-    Metaclass,
-    Lambda,
-    Async,
-    Def,
+    None,
+    True,
+    False,
+
+    Raise,
+    Except,
     Global,
     Nonlocal,
+    Async,
+    Await,
+    Def,
+    Class,
+    Lambda,
+    Import,
+    Assert,
+
+    Continue,
+    Yield,
+    Break,
+    Try,
+    Finally,
 }
 
 export const enum EntityTokenType {
@@ -191,6 +203,7 @@ export const enum OperatorTokenType {
 
     // Assignment operators
     Assignment, // =
+    ColonAssignment, // :=
     PlusAssign, // +=
     MinusAssign, // -=
     MultiplyAssign, // *=

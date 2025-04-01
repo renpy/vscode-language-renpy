@@ -331,7 +331,7 @@
     "prettier": "^3.3.2",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.3",
+    "typescript": "^5.8.2",
     "vscode-test": "^1.6.1",
     "webpack": "^5.92.1",
     "webpack-cli": "^5.1.4"

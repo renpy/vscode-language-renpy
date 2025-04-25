@@ -1,57 +1,88 @@
 import * as vscode from "vscode";
-import { DebugSession, TerminatedEvent } from "@vscode/debugadapter";
-import { getWorkspaceFolder } from "./workspace";
-import { Configuration } from "./configuration";
-import { logToast } from "./logger";
-import { isValidExecutable } from "./extension";
-
-function getTerminal(name: string): vscode.Terminal {
-    let i: number;
-    for (i = 0; i < vscode.window.terminals.length; i++) {
-        if (vscode.window.terminals[i].name === name) {
-            return vscode.window.terminals[i];
-        }
-    }
-    return vscode.window.createTerminal(name);
-}
+import { DebugSession, ExitedEvent, InitializedEvent, TerminatedEvent } from "@vscode/debugadapter";
+import { ExecuteRunpyRun } from "./extension";
+import { DebugProtocol } from "@vscode/debugprotocol";
+import { logMessage } from "./logger";
+import { ChildProcessWithoutNullStreams } from "child_process";
 
 export class RenpyAdapterDescriptorFactory implements vscode.DebugAdapterDescriptorFactory {
     createDebugAdapterDescriptor(session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
-        return new vscode.DebugAdapterInlineImplementation(new RenpyDebugSession(session.configuration.command, session.configuration.args));
+        return new vscode.DebugAdapterInlineImplementation(new RenpyDebugSession());
     }
 }
 
 class RenpyDebugSession extends DebugSession {
-    private command = "run";
-    private args?: string[];
+    childProcess: ChildProcessWithoutNullStreams | null = null;
 
-    public constructor(command: string, args?: string[]) {
-        super();
-        this.command = command;
-        if (args) {
-            this.args = args;
+    protected override initializeRequest(response: DebugProtocol.InitializeResponse): void {
+        this.sendEvent(new InitializedEvent());
+
+        response.body = { supportTerminateDebuggee: true };
+
+        const childProcess = ExecuteRunpyRun();
+        if (childProcess === null) {
+            logMessage(vscode.LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
+            return;
+        }
+        this.childProcess = childProcess;
+
+        childProcess
+            .addListener("spawn", () => {
+                const processEvent: DebugProtocol.ProcessEvent = {
+                    event: "process",
+                    body: {
+                        name: "Ren'Py",
+                        isLocalProcess: true,
+                        startMethod: "launch",
+                    },
+                    seq: 0,
+                    type: "event",
+                };
+                if (childProcess.pid !== undefined) {
+                    processEvent.body.systemProcessId = childProcess.pid;
+                }
+                this.sendEvent(processEvent);
+                this.sendResponse(response);
+            })
+            .addListener("exit", (code) => {
+                this.sendEvent(new ExitedEvent(code ?? 1));
+                this.sendEvent(new TerminatedEvent());
+            });
+        childProcess.stdout.on("data", (data) => {
+            logMessage(vscode.LogLevel.Info, `Ren'Py stdout: ${data}`);
+        });
+        childProcess.stderr.on("data", (data) => {
+            logMessage(vscode.LogLevel.Error, `Ren'Py stderr: ${data}`);
+        });
+    }
+
+    protected override terminateRequest(): void {
+        this.terminate();
+    }
+
+    protected override disconnectRequest(response: DebugProtocol.DisconnectResponse, args: DebugProtocol.DisconnectArguments): void {
+        if (args.terminateDebuggee) {
+            this.terminate();
+        } else {
+            this.disconnect();
+            this.sendEvent(new TerminatedEvent());
         }
     }
 
-    protected override initializeRequest(): void {
-        const terminal = getTerminal("Ren'py Debug");
-        terminal.show();
-        let program = Configuration.getRenpyExecutablePath();
-
-        if (!isValidExecutable(program)) {
-            logToast(vscode.LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
+    private terminate() {
+        if (this.childProcess === null) {
             return;
         }
+        this.childProcess.kill();
+        this.childProcess = null;
+    }
 
-        program += " " + getWorkspaceFolder();
-        if (this.command) {
-            program += " " + this.command;
+    private disconnect() {
+        if (this.childProcess === null) {
+            return;
         }
-        if (this.args) {
-            program += " " + this.args.join(" ");
-        }
-        terminal.sendText(program);
-        this.sendEvent(new TerminatedEvent());
+        this.childProcess.disconnect();
+        this.childProcess = null;
     }
 }
 
@@ -63,8 +94,6 @@ export class RenpyConfigurationProvider implements vscode.DebugConfigurationProv
                 config.type = "renpy";
                 config.request = "launch";
                 config.name = "Ren'Py: Launch";
-                config.command = "run";
-                config.args = [];
             }
         }
         return config;

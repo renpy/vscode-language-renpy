@@ -1,8 +1,9 @@
 // Diagnostics (warnings and errors)
-import { commands, Diagnostic, DiagnosticCollection, DiagnosticSeverity, Disposable, ExtensionContext, FileType, languages, Range, TextDocument, Uri, window, workspace } from "vscode";
+import { commands, Diagnostic, DiagnosticCollection, DiagnosticSeverity, Disposable, ExtensionContext, FileType, languages, LogLevel, Range, TextDocument, Uri, window, workspace } from "vscode";
 import { NavigationData } from "./navigation-data";
 import { getAllOpenTabInputTextUri } from "./utilities/functions";
 import { extractFilename } from "./workspace";
+import { LogCategory, logCatMessage } from "./logger";
 
 // Renpy Store Variables (https://www.renpy.org/doc/html/store_variables.html)
 // These variables do not begin with '_' but should be ignored by store warnings because they are pre-defined by Ren'Py
@@ -202,17 +203,21 @@ function refreshDiagnostics(doc: TextDocument, diagnosticCollection: DiagnosticC
 function refreshOpenDocuments(diagnosticCollection: DiagnosticCollection) {
     diagnosticCollection.clear();
     const tabInputTextUris = getAllOpenTabInputTextUri();
-    tabInputTextUris.forEach((uri) => {
-        diagnoseFromUri(uri, diagnosticCollection);
+    tabInputTextUris.forEach(async (uri) => {
+        await diagnoseFromUri(uri, diagnosticCollection);
     });
 }
 
-function diagnoseFromUri(uri: Uri, diagnosticCollection: DiagnosticCollection) {
-    workspace.fs.stat(uri).then((stat) => {
-        if (stat.type === FileType.File) {
+async function diagnoseFromUri(uri: Uri, diagnosticCollection: DiagnosticCollection) {
+    try {
+        const fileInfo = await workspace.fs.stat(uri);
+
+        if (fileInfo.type === FileType.File) {
             workspace.openTextDocument(uri).then((document) => refreshDiagnostics(document, diagnosticCollection));
         }
-    });
+    } catch (error) {
+        logCatMessage(LogLevel.Error, LogCategory.Default, error as string);
+    }
 }
 
 function onDeleteFromWorkspace(uri: Uri, diagnosticCollection: DiagnosticCollection) {

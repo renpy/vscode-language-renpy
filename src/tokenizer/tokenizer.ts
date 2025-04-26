@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { assert } from "console";
 import { performance } from "perf_hooks";
-import { LogLevel, TextDocument, Uri, Range as VSRange } from "vscode";
+import { LogLevel, TextDocument, Uri, Range as VSRange, workspace } from "vscode";
 import { Token, isRangePattern, isMatchPattern, isRepoPattern, TokenPosition, TokenTree, TreeNode, Range } from "./token-definitions";
 import { RenpyPatterns } from "./token-patterns.g";
 import { Stack } from "../utilities/stack";
@@ -10,20 +10,6 @@ import { TokenPatternCapture, TokenCapturePattern, TokenRepoPattern, TokenRangeP
 import { LogCategory, logCatMessage } from "../logger";
 import { escapeRegExpCharacters } from "../utilities/utils";
 import { isShippingBuild } from "../extension";
-
-const cloneScanResult = (obj: ScanResult | undefined): ScanResult | undefined => {
-    if (obj === undefined) return undefined;
-    if (obj === null) return null;
-    return { ...obj };
-};
-
-const cloneCache = (obj: Array<ScanResult | undefined>): Array<ScanResult | undefined> => {
-    const clone = new Array<ScanResult | undefined>(obj.length);
-    for (let i = 0; i < obj.length; ++i) {
-        clone[i] = cloneScanResult(obj[i]);
-    }
-    return clone;
-};
 
 interface MatchScanResult {
     pattern: ExTokenPattern;
@@ -75,18 +61,23 @@ export class Tokenizer {
     }
 
     private static async runTokenizer(document: TextDocument) {
-        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Running tokenizer on document: ${document.fileName}`);
+        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Running tokenizer on document: "${workspace.asRelativePath(document.uri, true)}"`);
         const tokenizer = new DocumentTokenizer(document);
+
+        const t0 = performance.now();
+
         await Promise.resolve(tokenizer.tokenize());
 
         // TODO: Need to mark all these functions async for this to work properly
         /*await withTimeout(, TOKENIZER_TIMEOUT, () => {
             // If the tokenizer times out, we still want to cache the document so that we don't try to tokenize it again
             this._tokenCache.set(document.uri, { documentVersion: document.version, tokens: new TokenTree() });
-            logToast(LogLevel.Info, `Tokenizer timed out after ${TOKENIZER_TIMEOUT}ms, while attempting to tokenize the document at: ${document.uri}`);
+            logToast(LogLevel.Info, `Tokenizer timed out after ${TOKENIZER_TIMEOUT}ms, while attempting to tokenize the document at: "${workspace.asRelativePath(document.uri, true)}"`);
         });*/
 
-        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Tokenizer completed!`);
+        const t1 = performance.now();
+
+        logCatMessage(LogLevel.Info, LogCategory.Tokenizer, `Tokenizer completed in ${(t1 - t0).toFixed(2)}ms`);
         this._tokenCache.set(document.uri, { documentVersion: document.version, tokens: tokenizer.tokens });
         return tokenizer.tokens;
     }
@@ -145,7 +136,7 @@ export class Tokenizer {
         stack.push(RenpyPatterns.basePatterns as ExTokenRepoPattern);
 
         const mFlagRe = /(?<!\[)[\^$]/g;
-        const gAnchorRe = /\(\\G\)|\(\?!\\G\)/g;
+        const gAnchorRe = /(?:\(\?!\\G\))|(?:\\G)/g;
         while (!stack.isEmpty()) {
             const p = stack.pop()!;
             assert(p !== undefined, "This pattern is undefined! Please make sure that circular includes are added after both patterns are defined.");
@@ -171,7 +162,7 @@ export class Tokenizer {
                 }
 
                 if (gAnchorRe.test(reBeginSource)) {
-                    assert("Can't use the \\G anchor, please update the regex!");
+                    assert(false, "Can't use the \\G anchor, please update the regex!");
                     reBeginSource = reBeginSource.replace(gAnchorRe, "");
                 }
 
@@ -215,7 +206,7 @@ export class Tokenizer {
                     if (reEndSource.startsWith("(?!\\G)")) {
                         p._endNotG = true;
                     } else {
-                        assert("The end patterns only supports (?!\\G) at the start of the regex. Please update the regex!");
+                        assert(false, "The end patterns only supports (?!\\G) at the start of the regex. Please update the regex!");
                         reEndSource = reEndSource.replace(gAnchorRe, "");
                     }
                 }
@@ -232,6 +223,11 @@ export class Tokenizer {
 
                 if (p.match.source.match(mFlagRe)) {
                     assert(p.match.multiline, "To match this pattern the 'm' flag is required!");
+                }
+
+                if (gAnchorRe.test(p.match.source)) {
+                    assert(false, "The \\G anchors are not yet supported on match patterns!");
+                    p.match = new RegExp(p.match.source.replace(gAnchorRe, ""), p.match.flags);
                 }
 
                 assert(p.match.global, "To match this pattern the 'g' flag is required!");
@@ -338,8 +334,6 @@ class DocumentTokenizer {
             const [startPos, endPos] = match.indices![i];
 
             if (captures[i] === undefined) {
-                const pos = this.positionAt(startPos);
-
                 if (!isShippingBuild()) {
                     // If this is a 'begin' capture it's also possible to have it matched on the end pattern. Let's make sure we don't report false positives.
                     if (captureSource === CaptureSource.BeginCaptures && pattern.end !== undefined) {
@@ -350,6 +344,7 @@ class DocumentTokenizer {
                         }
                     }
 
+                    const pos = this.positionAt(startPos);
                     logCatMessage(
                         LogLevel.Debug,
                         LogCategory.Tokenizer,
@@ -395,7 +390,7 @@ class DocumentTokenizer {
         }
     }
 
-    private scanMatchPattern(pattern: ExTokenMatchPattern, source: string, sourceStartOffset: number): MatchScanResult | null {
+    private scanMatchPattern(pattern: ExTokenMatchPattern, source: string, sourceStartOffset: number) {
         const re = pattern.match;
         re.lastIndex = sourceStartOffset;
         const match = re.exec(source);
@@ -403,10 +398,10 @@ class DocumentTokenizer {
             return null;
         }
 
-        return { pattern, matchBegin: match };
+        return { pattern, matchBegin: match } as MatchScanResult;
     }
 
-    private scanRangePattern(pattern: ExTokenRangePattern, source: string, sourceStartOffset: number): RangeScanResult | null {
+    private scanRangePattern(pattern: ExTokenRangePattern, source: string, sourceStartOffset: number) {
         const reBegin = pattern.begin;
         reBegin.lastIndex = sourceStartOffset;
         const matchBegin = reBegin.exec(source);
@@ -415,7 +410,7 @@ class DocumentTokenizer {
             return null;
         }
 
-        return { pattern, matchBegin: matchBegin, matchEnd: null, expanded: false, contentMatches: null, source };
+        return { pattern, matchBegin: matchBegin, matchEnd: null, expanded: false, contentMatches: null, source } as RangeScanResult;
     }
 
     private expandRangeScanResult(result: RangeScanResult, cache: Array<ScanResult | undefined>) {
@@ -462,13 +457,10 @@ class DocumentTokenizer {
                 const sourceRange = new Range(matchBegin.index + matchBegin[0].length, matchEnd.index);
 
                 // Scan the content for any matches that would extend beyond the current end match
-                const tempCache = cloneCache(cache);
-                //const tempCache = new Array<ScanResult | undefined>(uniquePatternCount).fill(undefined);
-
                 let lastCharIndex = sourceRange.end;
                 let lastMatchIndex = sourceRange.start;
                 while (lastMatchIndex < lastCharIndex) {
-                    const bestMatch = this.scanPattern(p._patternsRepo, result.source, lastMatchIndex, tempCache);
+                    const bestMatch = this.scanPattern(p._patternsRepo, result.source, lastMatchIndex, cache);
 
                     if (!bestMatch || bestMatch.matchBegin.index >= lastCharIndex) {
                         break; // No valid match was found in the remaining text. Break the loop

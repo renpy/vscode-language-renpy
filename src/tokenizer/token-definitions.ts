@@ -203,6 +203,12 @@ export class TreeNode {
         return this.token === null && !this.hasChildren();
     }
 
+    public clear() {
+        this.token = null;
+        this.parent = null;
+        this.children.clear();
+    }
+
     // Recursively iterate over all children
     public forEach(callback: (node: TreeNode) => void): void {
         this.children.forEach((child) => {
@@ -286,6 +292,10 @@ export class TokenTree {
 
     constructor() {
         this.root = new TreeNode();
+    }
+
+    public clear() {
+        this.root.clear();
     }
 
     public isEmpty(): boolean {
@@ -414,8 +424,9 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     Scene: { name: "Scene", value: KeywordTokenType.Scene },
     Camera: { name: "Camera", value: KeywordTokenType.Camera },
     Show: { name: "Show", value: KeywordTokenType.Show },
+    Auto: { name: "Auto", value: KeywordTokenType.Auto },
     Image: { name: "Image", value: KeywordTokenType.Image },
-    LayeredImage: { name: "LayeredImage", value: KeywordTokenType.LayeredImage },
+    Layeredimage: { name: "Layeredimage", value: KeywordTokenType.Layeredimage },
     Window: { name: "Window", value: KeywordTokenType.Window },
     Frame: { name: "Frame", value: KeywordTokenType.Frame },
     Transform: { name: "Transform", value: KeywordTokenType.Transform },
@@ -432,12 +443,6 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
 
     Set: { name: "Set", value: KeywordTokenType.Set },
     Expression: { name: "Expression", value: KeywordTokenType.Expression },
-    At: { name: "At", value: KeywordTokenType.At },
-    As: { name: "As", value: KeywordTokenType.As },
-    With: { name: "With", value: KeywordTokenType.With },
-    Onlayer: { name: "Onlayer", value: KeywordTokenType.Onlayer },
-    Zorder: { name: "Zorder", value: KeywordTokenType.Zorder },
-    Behind: { name: "Behind", value: KeywordTokenType.Behind },
     Animation: { name: "Animation", value: KeywordTokenType.Animation },
     From: { name: "From", value: KeywordTokenType.From },
     Time: { name: "Time", value: KeywordTokenType.Time },
@@ -449,6 +454,10 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     OtherPython: { name: "OtherPython", value: KeywordTokenType.OtherPython },
     OtherAudio: { name: "OtherAudio", value: KeywordTokenType.OtherAudio },
     Layer: { name: "Layer", value: KeywordTokenType.Layer },
+    Always: { name: "Always", value: KeywordTokenType.Always },
+    Group: { name: "Group", value: KeywordTokenType.Group },
+    Attribute: { name: "Attribute", value: KeywordTokenType.Attribute },
+    Nopredict: { name: "Nopredict", value: KeywordTokenType.Nopredict },
 
     Take: { name: "Take", value: KeywordTokenType.Take },
     Del: { name: "Del", value: KeywordTokenType.Del },
@@ -457,6 +466,14 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
 
     Vbox: { name: "Vbox", value: KeywordTokenType.Vbox },
     Hbox: { name: "Hbox", value: KeywordTokenType.Hbox },
+    Fixed: { name: "Fixed", value: KeywordTokenType.Fixed },
+
+    At: { name: "At", value: KeywordTokenType.At },
+    As: { name: "As", value: KeywordTokenType.As },
+    With: { name: "With", value: KeywordTokenType.With },
+    Onlayer: { name: "Onlayer", value: KeywordTokenType.Onlayer },
+    Zorder: { name: "Zorder", value: KeywordTokenType.Zorder },
+    Behind: { name: "Behind", value: KeywordTokenType.Behind },
 
     If: { name: "If", value: KeywordTokenType.If },
     Elif: { name: "Elif", value: KeywordTokenType.Elif },
@@ -498,12 +515,15 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     FunctionName: { name: "FunctionName", value: EntityTokenType.FunctionName },
     TagName: { name: "TagName", value: EntityTokenType.TagName },
     Identifier: { name: "Identifier", value: EntityTokenType.Identifier },
-    StyleName: { name: "StyleName", value: EntityTokenType.StyleName },
 
+    StyleName: { name: "StyleName", value: EntityTokenType.StyleName },
+    TransformName: { name: "TransformName", value: EntityTokenType.TransformName },
     ImageName: { name: "ImageName", value: EntityTokenType.ImageName },
     TextName: { name: "TextName", value: EntityTokenType.TextName },
     AudioName: { name: "AudioName", value: EntityTokenType.AudioName },
     CharacterName: { name: "CharacterName", value: EntityTokenType.CharacterName },
+    LayeredimageName: { name: "LayeredimageName", value: EntityTokenType.LayeredimageName },
+    LanguageName: { name: "LanguageName", value: EntityTokenType.LanguageName },
 
     EventName: { name: "EventName", value: EntityTokenType.EventName },
     PropertyName: { name: "PropertyName", value: EntityTokenType.PropertyName },
@@ -616,6 +636,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     EscBackslash: { name: "EscBackslash", value: EscapedCharacterTokenType.EscBackslash },
     EscOpenSquareBracket: { name: "EscOpenSquareBracket", value: EscapedCharacterTokenType.EscOpenSquareBracket },
     EscOpenBracket: { name: "EscOpenBracket", value: EscapedCharacterTokenType.EscOpenBracket },
+    EscPercent: { name: "EscPercent", value: EscapedCharacterTokenType.EscPercent },
 
     Invalid: { name: "Invalid", value: MetaTokenType.Invalid },
     Deprecated: { name: "Deprecated", value: MetaTokenType.Deprecated },
@@ -635,6 +656,20 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     StringEnd: { name: "StringEnd", value: MetaTokenType.StringEnd },
 
     SimpleExpression: { name: "SimpleExpression", value: MetaTokenType.SimpleExpression },
+
+    LayeredimageBlock: { name: "LayeredimageBlock", value: MetaTokenType.LayeredimageBlock },
+    LayeredimageStatement: { name: "LayeredimageStatement", value: MetaTokenType.LayeredimageStatement },
+    LayeredimageParameters: { name: "LayeredimageParameters", value: MetaTokenType.LayeredimageParameters },
+    LayeredimageGroupStatement: { name: "LayeredimageGroupStatement", value: MetaTokenType.LayeredimageGroupStatement },
+    LayeredimageGroupParameters: { name: "LayeredimageGroupParameters", value: MetaTokenType.LayeredimageGroupParameters },
+    LayeredimageAttributeStatement: { name: "LayeredimageAttributeStatement", value: MetaTokenType.LayeredimageAttributeStatement },
+    LayeredimageAttributeParameters: { name: "LayeredimageAttributeParameters", value: MetaTokenType.LayeredimageAttributeParameters },
+
+    TranslateBlock: { name: "TranslateBlock", value: MetaTokenType.TranslateBlock },
+    TranslateStatement: { name: "TranslateStatement", value: MetaTokenType.TranslateStatement },
+    TranslateParameters: { name: "TranslateParameters", value: MetaTokenType.TranslateParameters },
+
+    ScreenCall: { name: "ScreenCall", value: MetaTokenType.ScreenCall },
 
     RenpyBlock: { name: "RenpyBlock", value: MetaTokenType.RenpyBlock },
     CodeBlock: { name: "CodeBlock", value: MetaTokenType.CodeBlock },
@@ -670,6 +705,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     SceneStatement: { name: "SceneStatement", value: MetaTokenType.SceneStatement },
     ShowStatement: { name: "ShowStatement", value: MetaTokenType.ShowStatement },
     HideStatement: { name: "HideStatement", value: MetaTokenType.HideStatement },
+    WindowStatement: { name: "WindowStatement", value: MetaTokenType.WindowStatement },
 
     CallStatement: { name: "CallStatement", value: MetaTokenType.CallStatement },
     CallArguments: { name: "CallArguments", value: MetaTokenType.CallArguments },
@@ -685,6 +721,8 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     ScreenSensitive: { name: "ScreenSensitive", value: MetaTokenType.ScreenSensitive },
     ScreenFrame: { name: "ScreenFrame", value: MetaTokenType.ScreenFrame },
     ScreenFrameStatement: { name: "ScreenFrameStatement", value: MetaTokenType.ScreenFrameStatement },
+    ScreenFixed: { name: "ScreenFixed", value: MetaTokenType.ScreenFixed },
+    ScreenFixedStatement: { name: "ScreenFixedStatement", value: MetaTokenType.ScreenFixedStatement },
     ScreenWindow: { name: "ScreenWindow", value: MetaTokenType.ScreenWindow },
     ScreenWindowStatement: { name: "ScreenWindowStatement", value: MetaTokenType.ScreenWindowStatement },
     ScreenText: { name: "ScreenText", value: MetaTokenType.ScreenText },
@@ -732,7 +770,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     MemberAccess: { name: "MemberAccess", value: MetaTokenType.MemberAccess },
     ItemAccess: { name: "ItemAccess", value: MetaTokenType.ItemAccess },
     IndexedName: { name: "IndexedName", value: MetaTokenType.IndexedName },
-    Attribute: { name: "Attribute", value: MetaTokenType.Attribute },
+    DataAttribute: { name: "DataAttribute", value: MetaTokenType.DataAttribute },
     ClassDefinition: { name: "ClassDefinition", value: MetaTokenType.ClassDefinition },
     ClassInheritance: { name: "ClassInheritance", value: MetaTokenType.ClassInheritance },
     FunctionDefinition: { name: "FunctionDefinition", value: MetaTokenType.FunctionDefinition },

@@ -81,7 +81,7 @@
             },
             {
               "name": "comment.typehint.type.notation.python",
-              "match": "(?<!\\.)\\b(bool|bytes|float|int|object|str|List|Dict|Iterable|Sequence|Set|FrozenSet|Callable|Union|Tuple|Any|None)\\b"
+              "match": "\\b(?<!\\.)(bool|bytes|float|int|object|str|List|Dict|Iterable|Sequence|Set|FrozenSet|Callable|Union|Tuple|Any|None)\\b"
             },
             {
               "name": "comment.typehint.punctuation.notation.python",
@@ -277,7 +277,7 @@
     },
     "member-access-attribute": {
       "comment": "Highlight attribute access in otherwise non-specialized cases.",
-      "name": "variable.name.python meta.attribute.python",
+      "name": "variable.name.python meta.data.attribute.python",
       "match": "\\b([[:alpha:]_]\\w*)\\b"
     },
     "special-names": {
@@ -315,7 +315,7 @@
     "odd-function-call": {
       "comment": "A bit obscured function call where there may have been an arbitrary number of other operations to get the function.E.g. \"arr[idx](args)\"",
       "name": "meta.function-call.python",
-      "begin": "(?<=\\]|\\)|\")\\s*(?=\\()",
+      "begin": "(?<=[\\]\\)\"])\\s*(?=\\()",
       "end": "(\\))",
       "endCaptures": {
         "1": { "name": "punctuation.definition.arguments.end.python" }
@@ -683,12 +683,6 @@
     "lambda": {
       "patterns": [
         {
-          "match": "((?<=\\.)lambda|lambda(?=\\s*[\\.=]))",
-          "captures": {
-            "1": { "name": "keyword.control.flow.python" }
-          }
-        },
-        {
           "match": "\\b(lambda)\\s*?(?=[,\\n]|$)",
           "captures": {
             "1": { "name": "storage.type.function.lambda.python" }
@@ -746,7 +740,7 @@
       "end": "(,)|(?=:|$)",
       "beginCaptures": {
         "1": { "name": "variable.parameter.function.language.python" },
-        "2": { "name": "keyword.operator.python" }
+        "2": { "name": "keyword.operator.assignment.python" }
       },
       "endCaptures": {
         "1": { "name": "punctuation.separator.parameters.python" }
@@ -836,7 +830,7 @@
       "begin": "(=)",
       "end": "(,)|(?=\\))",
       "beginCaptures": {
-        "1": { "name": "keyword.operator.python" }
+        "1": { "name": "keyword.operator.assignment.python" }
       },
       "endCaptures": {
         "1": { "name": "punctuation.separator.parameters.python" }
@@ -946,7 +940,7 @@
     "call-wrapper-inheritance": {
       "comment": "same as a function call, but in inheritance context",
       "name": "meta.function-call.python",
-      "begin": "\\b(?=([[:alpha:]_]\\w*)\\s*(\\())",
+      "begin": "\\b(?=[[:alpha:]_]\\w*\\s*\\()",
       "end": "(\\))",
       "endCaptures": {
         "1": { "name": "punctuation.definition.arguments.end.python" }
@@ -959,7 +953,7 @@
     "function-call": {
       "name": "meta.function-call.python",
       "comment": "Regular function call of the type \"name(args)\"",
-      "begin": "\\b(?=([[:alpha:]_]\\w*)\\s*(\\())",
+      "begin": "\\b(?=[[:alpha:]_]\\w*\\s*\\()",
       "end": "(\\))",
       "endCaptures": {
         "1": { "name": "punctuation.definition.arguments.end.python" }
@@ -972,7 +966,7 @@
         {
           "comment": "Some color schemas support meta.function-call.generic scope",
           "name": "entity.name.function.call.python meta.function-call.generic.python",
-          "match": "\\b([[:alpha:]_]\\w*)\\b"
+          "match": "\\b[[:alpha:]_]\\w*\\b"
         }
       ]
     },
@@ -1026,23 +1020,23 @@
     },
     "builtin-exceptions": {
       "name": "support.type.exception.python",
-      "match": "(?<!\\.)\\b((Arithmetic|Assertion|Attribute|Buffer|BlockingIO|BrokenPipe|ChildProcess|(Connection(Aborted|Refused|Reset)?)|EOF|Environment|FileExists|FileNotFound|FloatingPoint|IO|Import|Indentation|Index|Interrupted|IsADirectory|NotADirectory|Permission|ProcessLookup|Timeout|Key|Lookup|Memory|Name|NotImplemented|OS|Overflow|Reference|Runtime|Recursion|Syntax|System|Tab|Type|UnboundLocal|Unicode(Encode|Decode|Translate)?|Value|Windows|ZeroDivision|ModuleNotFound)Error|((Pending)?Deprecation|Runtime|Syntax|User|Future|Import|Unicode|Bytes|Resource)?Warning|SystemExit|Stop(Async)?Iteration|KeyboardInterrupt|GeneratorExit|(Base)?Exception)\\b"
+      "match": "\\b(?<!\\.)((Arithmetic|Assertion|Attribute|Buffer|BlockingIO|BrokenPipe|ChildProcess|(Connection(Aborted|Refused|Reset)?)|EOF|Environment|FileExists|FileNotFound|FloatingPoint|IO|Import|Indentation|Index|Interrupted|IsADirectory|NotADirectory|Permission|ProcessLookup|Timeout|Key|Lookup|Memory|Name|NotImplemented|OS|Overflow|Reference|Runtime|Recursion|Syntax|System|Tab|Type|UnboundLocal|Unicode(Encode|Decode|Translate)?|Value|Windows|ZeroDivision|ModuleNotFound)Error|((Pending)?Deprecation|Runtime|Syntax|User|Future|Import|Unicode|Bytes|Resource)?Warning|SystemExit|Stop(Async)?Iteration|KeyboardInterrupt|GeneratorExit|(Base)?Exception)\\b"
     },
     "builtin-functions": {
       "patterns": [
         {
           "name": "support.function.builtin.python",
-          "match": "(?<!\\.)\\b(__import__|abs|aiter|all|any|anext|ascii|bin|breakpoint|callable|chr|compile|copyright|credits|delattr|dir|divmod|enumerate|eval|exec|exit|filter|format|getattr|globals|hasattr|hash|help|hex|id|input|isinstance|issubclass|iter|len|license|locals|map|max|memoryview|min|next|oct|open|ord|pow|print|quit|range|reload|repr|reversed|round|setattr|sorted|sum|vars|zip)\\b"
+          "match": "\\b(?<!\\.)(__import__|abs|aiter|all|any|anext|ascii|bin|breakpoint|callable|chr|compile|copyright|credits|delattr|dir|divmod|enumerate|eval|exec|exit|filter|format|getattr|globals|hasattr|hash|help|hex|id|input|isinstance|issubclass|iter|len|license|locals|map|max|memoryview|min|next|oct|open|ord|pow|print|quit|range|reload|repr|reversed|round|setattr|sorted|sum|vars|zip)\\b"
         },
         {
           "name": "variable.legacy.builtin.python",
-          "match": "(?<!\\.)\\b(file|reduce|intern|raw_input|unicode|cmp|basestring|execfile|long|xrange)\\b"
+          "match": "\\b(?<!\\.)(file|reduce|intern|raw_input|unicode|cmp|basestring|execfile|long|xrange)\\b"
         }
       ]
     },
     "builtin-types": {
       "name": "support.type.python",
-      "match": "(?<!\\.)\\b(bool|bytearray|bytes|classmethod|complex|dict|float|frozenset|int|list|object|property|set|slice|staticmethod|str|tuple|type|super)\\b"
+      "match": "\\b(?<!\\.)(bool|bytearray|bytes|classmethod|complex|dict|float|frozenset|int|list|object|property|set|slice|staticmethod|str|tuple|type|super)\\b"
     },
     "magic-function-names": {
       "comment": "these methods have magic interpretation by python and are generally calledindirectly through syntactic constructs",

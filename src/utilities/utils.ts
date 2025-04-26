@@ -6,9 +6,10 @@ export function escapeRegExpCharacters(value: string): string {
     return value.replace(/[-\\{}*+?|^$.,[\]()#\s]/g, "\\$&");
 }
 
-export function withTimeout<T>(promise: Promise<T>, timeout: number, onTimeout?: () => void, timeoutMessage?: string): Promise<T> {
-    const timer = new Promise<T>((resolve, reject) => {
-        setTimeout(() => {
+export async function withTimeout<T>(promise: Promise<T>, timeout: number, onTimeout?: () => void, timeoutMessage?: string): Promise<T> {
+    let timerId: NodeJS.Timeout;
+    const timer = new Promise<T>((_, reject) => {
+        timerId = setTimeout(() => {
             if (onTimeout) {
                 onTimeout();
             }
@@ -16,5 +17,9 @@ export function withTimeout<T>(promise: Promise<T>, timeout: number, onTimeout?:
             reject(message);
         }, timeout);
     });
-    return Promise.race([promise, timer]);
+
+    return await Promise.race([promise, timer]).then((result) => {
+        clearTimeout(timerId);
+        return result;
+    });
 }

@@ -23,6 +23,13 @@
         define s = Character('Sylvie', color="#f44747")
         define s = Character('Sylvie', color="#808080")
 
+        default name1="foo"
+        default name2="bar"
+        default names=list(["[name1]","[name2][[]"])
+
+        label start:
+            $ my_list = ["[name1]]"]
+
         define m = Character('Me', color="#c8c8ff")
 
         image logo = "renpy logo.png"
@@ -64,7 +71,7 @@
             "Sylvie" "Sure!"
 
             show sylvie green smile at right
-            
+
             "Sylvie" "Did you ever hear Lincoln's famous saying, \"The problem with Internet quotations is that many of them are not genuine.\""
 
             scene bg meadow
@@ -231,7 +238,7 @@
 
                 text _("(click to continue)"):
                     size 18
-        
+
         pause .0
         transform ctc_appear:
             alpha 0.0
@@ -252,7 +259,7 @@
 
         "This is one logical line"
 
-        "Since this line contains a string, it continues 
+        "Since this line contains a string, it continues
         even when the line ends."
 
         $ a = [ "Because of parenthesis, this line also",
@@ -287,14 +294,14 @@
             label .local_name:
                 "..resides a local one."
                 jump .local_name
-            
+
             label local:
             label .local:
             label global_name.local:
             label global_label.local_name.error:
             label .global_label.local_name.error:
                 pass
-            
+
 
         label another_global:
             "Now lets jump inside local label located somewhere else."
@@ -432,7 +439,7 @@
             window hide # hides the window.
             pause       # the window is hidden during this pause.
 
-            window show dissolve # shows the window with dissolve.
+            window show show.dissolve.show # shows the window with dissolve.
             pause                # the window is shown during this pause.
             window hide dissolve # hides the window with dissolve.
             pause                # the window is hidden during this pause.
@@ -451,7 +458,7 @@
             show eileen
             with dissolve
 
-            "Without window auto show, the window would have been shown here."
+            "Without window auto show, the window would have been shown here." (what_color="#8c8")
 
         $ e("Hello, world.", interact=True)
         define character.e = Character("Eileen")
@@ -552,7 +559,7 @@
         show lucy mad at right
         with dissolve
 
-        show eileen happy with dissolve at left 
+        show eileen happy with dissolve at left
         show lucy mad at right with dissolve
 
         with None
@@ -604,7 +611,7 @@
             "Drink tea.":
                 $ drank_tea = True
             # spaces test
-            
+
                 $ drank_tea.function(something)
 
                 "I drink the tea, trying not to make a political statement as I do."
@@ -770,7 +777,7 @@
         else:
             jump worst_ending
 
-        if ( points >= 10 
+        if ( points >= 10
             and points >= 5
         ):
             jump best_ending
@@ -922,7 +929,7 @@
             voice "l02.ogg"
             l "Wait... that means they can mute me as well! Really?"
 
-        config.auto_voice = "voice/{id}.ogg"
+            $ config.auto_voice = "voice/{id}.ogg"
     #endregion Voice
 
 #endregion
@@ -954,11 +961,14 @@
 
             # This line is incorrect, and will cause an error or incorrect
             # behavior.
-            # "Plain {b}Bold {i}Bold-Italic{/b} Italic{/i} Plain"
+            "Plain {b}Bold {i}Bold-Italic{/b} Italic{/i} Plain"
+
+            "{a=https://renpy.org}Ren'Py's home page{/a}?" #test
+            "{a=https://renpy.org}Ren'Py' s home page?" #test
 
         label test:
 
-            e "Why don't you visit {a=https://renpy.org}Ren'Py's home page{/a}?"
+            e "Why don't you visit {a=https://renpy.org}Ren'Py's home page{/a}?" #
 
             e "Or {a=jump:more_text}here for more info{/a}."
 
@@ -996,6 +1006,8 @@
             "Let's have a {outlinecolor=#00ff00}Green{/outlinecolor} outline."
 
             "{b}This is bold. {plain}This is not.{/plain} This is bold.{/b}"
+            "{b}This is bold. {plain}This is not. Plain till end of string.{/b}"
+            "{b}This is bold till end of string."
 
             g "It's good {s}to see you{/s}."
 
@@ -1006,6 +1018,7 @@
             g "It's good to {u}see{/u} you."
 
             "Line 1{vspace=30}Line 2"
+            "Line 1{=mystyle}Line 2{/=mystyle}"
 
             "New{#playlist}"
 
@@ -1210,13 +1223,14 @@
                 This line will be separate. Bork bork bork.
                 """)
 
-        frame:
-            style_prefix "pref"
-            has vbox
+        screen my_screen:
+            frame:
+                style_prefix "pref"
+                has vbox
 
-            label _("Language")
-            textbutton "English" action Language(None)
-            textbutton "Igpay Atinlay" action Language("piglatin")
+                label _("Language")
+                textbutton "English" action Language(None)
+                textbutton "Igpay Atinlay" action Language("piglatin")
 
         define config.about = _p("""
             These two lines will be combined together
@@ -1225,7 +1239,7 @@
             This line will be separate.
             """)
 
-        
+
 
     #endregion Translation
 
@@ -1569,7 +1583,7 @@
                 @renpy.atl_warper
                 def linear(t):
                     return t
-            
+
             init python:
                 @dataclass
                 class LatLonPair:
@@ -1601,7 +1615,7 @@
             pause
             show eileen happy at headright
             pause
-            
+
     #endregion ATL
 
     #region Matrixcolor
@@ -1866,7 +1880,7 @@
         image big hello world = Text("Hello, World", size=40)
 
         screen big_hello_world:
-        text "Hello, World" size 40
+            text "Hello, World" size 40
 
         image big hello world = Text("Hello World", style="big")
 
@@ -1973,7 +1987,7 @@
 
                     text who id "who"
                     text what id "what"
-            
+
         screen hello_world():
             tag example
             zorder 1
@@ -2860,7 +2874,7 @@
             vbox:
                 for i in range(10):
                     text "[i]"
-            
+
         screen test:
             vbox:
                 for i in range(10):
@@ -3104,7 +3118,7 @@
             with fade
             window show
 
-            "We reached the meadows just outside our hometown. Autumn was so 
+            "We reached the meadows just outside our hometown. Autumn was so
             beautiful here."
             "When we were children, we often played here."
 
@@ -3359,27 +3373,27 @@
             on "replaced" action Play("music", "track1.ogg")
             textbutton "Music Room" action ShowMenu("music_room")
 
-        "And finally, I met the wizard himself."
+            "And finally, I met the wizard himself."
 
-        label meaning_of_life:
+            label meaning_of_life:
 
-            scene
+                scene
 
-            "Mage" "What is the meaning of life, you say?"
+                "Mage" "What is the meaning of life, you say?"
 
-            "Mage" "I've thought about it long and hard. A long time, I've
-                    spent pondering that very thing."
+                "Mage" "I've thought about it long and hard. A long time, I've
+                        spent pondering that very thing."
 
-            "Mage" "And I'll say - the answer - the meaning of life
-                    itself..."
+                "Mage" "And I'll say - the answer - the meaning of life
+                        itself..."
 
-            "Mage" "Is forty-three."
+                "Mage" "Is forty-three."
 
-            $ renpy.end_replay()
+                $ renpy.end_replay()
 
-            "Mage" "Something like that, anyway."
+                "Mage" "Something like that, anyway."
 
-        textbutton "The meaning of life" action Replay("meaning_of_life")
+            textbutton "The meaning of life" action Replay("meaning_of_life")
 
     #endregion Image Gallery, Music Room, and Replay Actions
 
@@ -3572,7 +3586,7 @@
 
     #region Customizing the Keymap
         # see https://www.renpy.org/doc/html/keymap.html
-        
+
         init python:
             config.keymap['dismiss'].append('t')
             config.keymap['dismiss'].remove('K_SPACE')
@@ -3857,14 +3871,14 @@
         return
     label after_load:
         return
-        
+
     label splashscreen:
         return
 
     label before_main_menu:
         return
     label main_menu:
-        
+
         return
     label after_warp:
         return
@@ -3874,7 +3888,7 @@
     # Python statements
     init:
         "Renpy code block"
-        
+
     python:
         renpy.pause(delay)
 
@@ -3918,4 +3932,26 @@
                 """Add an item to the inventory."""
                 self.items.append(item);
                 return
+#endregion
+
+#region no indentation
+label test:
+$no_space = True
+return
+label test_nospacing:
+"character" "hello"
+call test_nospacing
+jump test
+" "
+pause
+if True:
+    pass
+else
+    pass
+s "Hello world"
+while condition:
+    #block of code to run
+for value in variable:
+    pass
+return
 #endregion

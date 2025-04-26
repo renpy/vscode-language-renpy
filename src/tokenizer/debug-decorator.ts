@@ -301,8 +301,9 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case KeywordTokenType.Scene:
             case KeywordTokenType.Camera:
             case KeywordTokenType.Show:
+            case KeywordTokenType.Auto:
             case KeywordTokenType.Image:
-            case KeywordTokenType.LayeredImage:
+            case KeywordTokenType.Layeredimage:
             case KeywordTokenType.Window:
             case KeywordTokenType.Frame:
             case KeywordTokenType.Transform:
@@ -328,12 +329,17 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case KeywordTokenType.OtherPython:
             case KeywordTokenType.OtherAudio:
             case KeywordTokenType.Layer:
+            case KeywordTokenType.Always:
+            case KeywordTokenType.Group:
+            case KeywordTokenType.Attribute:
+            case KeywordTokenType.Nopredict:
             case KeywordTokenType.Take: // Renpy style sub-expression keywords
             case KeywordTokenType.Del:
             case KeywordTokenType.Clear:
             case KeywordTokenType.Variant:
             case KeywordTokenType.Vbox: // Renpy screen sub-expression keywords
             case KeywordTokenType.Hbox:
+            case KeywordTokenType.Fixed: // [52-73] Are control flow keywords
             case KeywordTokenType.Warp: // ATL keywords
             case KeywordTokenType.Circles:
             case KeywordTokenType.Clockwise:
@@ -359,6 +365,12 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
                 keywords.push(decoration);
                 break;
 
+            case KeywordTokenType.At: // Renpy control flow keywords
+            case KeywordTokenType.As:
+            case KeywordTokenType.With:
+            case KeywordTokenType.Onlayer:
+            case KeywordTokenType.Zorder:
+            case KeywordTokenType.Behind:
             case KeywordTokenType.If: // Conditional control flow keywords
             case KeywordTokenType.Elif:
             case KeywordTokenType.Else:
@@ -373,12 +385,6 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case KeywordTokenType.Parallel:
             case KeywordTokenType.Block:
             case KeywordTokenType.Choice:
-            case KeywordTokenType.At: // Renpy control flow keywords
-            case KeywordTokenType.As:
-            case KeywordTokenType.With:
-            case KeywordTokenType.Onlayer:
-            case KeywordTokenType.Zorder:
-            case KeywordTokenType.Behind:
                 controlKeywords.push(decoration);
                 break;
 
@@ -398,10 +404,13 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             // Variables
             case EntityTokenType.Identifier:
             case EntityTokenType.StyleName:
+            case EntityTokenType.TransformName:
             case EntityTokenType.ImageName:
             case EntityTokenType.TextName:
             case EntityTokenType.AudioName:
             case EntityTokenType.CharacterName:
+            case EntityTokenType.LayeredimageName:
+            case EntityTokenType.LanguageName:
             case EntityTokenType.PropertyName:
                 variables.push(decoration);
                 break;
@@ -428,6 +437,18 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case MetaTokenType.StringBegin:
             case MetaTokenType.StringEnd:
             case MetaTokenType.SimpleExpression:
+            case MetaTokenType.LayeredimageBlock:
+            case MetaTokenType.LayeredimageStatement:
+            case MetaTokenType.LayeredimageParameters:
+            case MetaTokenType.LayeredimageGroupStatement:
+            case MetaTokenType.LayeredimageGroupParameters:
+            case MetaTokenType.LayeredimageAttributeStatement:
+            case MetaTokenType.LayeredimageAttributeParameters:
+            case MetaTokenType.TranslateBlock:
+            case MetaTokenType.TranslateStatement:
+            case MetaTokenType.TranslateParameters:
+            case MetaTokenType.ScreenCall:
+            case MetaTokenType.RenpyBlock:
             case MetaTokenType.CodeBlock:
             case MetaTokenType.PythonLine:
             case MetaTokenType.PythonBlock:
@@ -442,13 +463,21 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case MetaTokenType.MenuBlock:
             case MetaTokenType.MenuOption:
             case MetaTokenType.MenuOptionBlock:
+            case MetaTokenType.LabelStatement:
+            case MetaTokenType.LabelCall:
+            case MetaTokenType.LabelAccess:
             case MetaTokenType.BehindStatement:
             case MetaTokenType.OnlayerStatement:
+            case MetaTokenType.ZorderStatement:
+            case MetaTokenType.AtStatement:
+            case MetaTokenType.AsStatement:
+            case MetaTokenType.WithStatement:
+            case MetaTokenType.ImageStatement:
             case MetaTokenType.CameraStatement:
             case MetaTokenType.SceneStatement:
             case MetaTokenType.ShowStatement:
             case MetaTokenType.HideStatement:
-            case MetaTokenType.ImageStatement:
+            case MetaTokenType.WindowStatement:
             case MetaTokenType.CallStatement:
             case MetaTokenType.CallArguments:
             case MetaTokenType.FromClause:
@@ -457,16 +486,12 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case MetaTokenType.PlayAudioStatement:
             case MetaTokenType.QueueAudioStatement:
             case MetaTokenType.StopAudioStatement:
-            case MetaTokenType.LabelStatement:
-            case MetaTokenType.LabelCall:
-            case MetaTokenType.LabelAccess:
-            case MetaTokenType.AtStatement:
-            case MetaTokenType.AsStatement:
-            case MetaTokenType.WithStatement:
             case MetaTokenType.ScreenStatement:
             case MetaTokenType.ScreenSensitive:
             case MetaTokenType.ScreenFrame:
             case MetaTokenType.ScreenFrameStatement:
+            case MetaTokenType.ScreenFixed:
+            case MetaTokenType.ScreenFixedStatement:
             case MetaTokenType.ScreenWindow:
             case MetaTokenType.ScreenWindowStatement:
             case MetaTokenType.ScreenText:
@@ -509,7 +534,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case MetaTokenType.MemberAccess:
             case MetaTokenType.ItemAccess:
             case MetaTokenType.IndexedName:
-            case MetaTokenType.Attribute:
+            case MetaTokenType.DataAttribute:
             case MetaTokenType.ClassDefinition:
             case MetaTokenType.ClassInheritance:
             case MetaTokenType.FunctionDefinition:
@@ -648,6 +673,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             case EscapedCharacterTokenType.EscBackslash:
             case EscapedCharacterTokenType.EscOpenSquareBracket:
             case EscapedCharacterTokenType.EscOpenBracket:
+            case EscapedCharacterTokenType.EscPercent:
                 escCharacters.push(decoration);
                 break;
 

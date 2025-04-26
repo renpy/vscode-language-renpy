@@ -27,7 +27,7 @@
     "Snippets"
   ],
   "engines": {
-    "vscode": "^1.75.0"
+    "vscode": "^1.98.0"
   },
   "capabilities": {
     "untrustedWorkspaces": {
@@ -148,7 +148,7 @@
         "runtime": "node",
         "configurationAttributes": {
           "launch": {
-            "required": [],
+            "required": [ ],
             "properties": {
               "command": {
                 "type": "string",
@@ -158,7 +158,7 @@
               "args": {
                 "type": "array",
                 "description": "Args to run Ren'Py with.",
-                "default": []
+                "default": [ ]
               }
             }
           }
@@ -169,7 +169,7 @@
             "request": "launch",
             "name": "Ren'Py: Launch",
             "command": "run",
-            "args": []
+            "args": [ ]
           }
         ],
         "configurationSnippets": [
@@ -181,7 +181,7 @@
               "request": "launch",
               "name": "Ren'Py",
               "command": "run",
-              "args": []
+              "args": [ ]
             }
           }
         ]
@@ -202,7 +202,7 @@
           "args": {
             "type": "array",
             "description": "Args to run Ren'Py with.",
-            "default": []
+            "default": [ ]
           }
         }
       }
@@ -310,30 +310,33 @@
     "watch-release": "webpack --mode production --watch",
     "test-compile": "tsc -p ./",
     "test": "npm run test-compile && node ./node_modules/vscode/bin/test",
-    "lint": "eslint -c .eslintrc.json --ext .ts ./src/",
+    "lint": "eslint -c eslint.config.mjs --ext .ts ./src/",
     "vsce-package": "vsce package -o language-renpy.vsix",
     "format-check": "prettier --check 'src/**/*.ts' '.github/**/*.yml'"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.7",
-    "@types/node": "^20.14.10",
-    "@types/vscode": "1.75",
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.23.0",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^22.13.13",
+    "@types/vscode": "1.98",
     "@types/webpack": "^5.28.5",
-    "@typescript-eslint/eslint-plugin": "^7.15.0",
-    "@typescript-eslint/parser": "^7.15.0",
-    "@vscode/debugadapter": "^1.66.0",
-    "@vscode/vsce": "^2.29.0",
-    "copy-webpack-plugin": "^12.0.2",
-    "eslint": "^8.42.0",
-    "eslint-plugin-import": "^2.29.1",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "@vscode/debugadapter": "^1.68.0",
+    "@vscode/vsce": "^3.3.0",
+    "copy-webpack-plugin": "^13.0.0",
+    "eslint": "^9.23.0",
+    "eslint-plugin-import": "^2.31.0",
     "fork-ts-checker-webpack-plugin": "^9.0.2",
-    "node-polyfill-webpack-plugin": "^4.0.0",
-    "prettier": "^3.3.2",
-    "ts-loader": "^9.5.1",
+    "globals": "^16.0.0",
+    "node-polyfill-webpack-plugin": "^4.1.0",
+    "prettier": "^3.5.3",
+    "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5.5.3",
+    "typescript": "^5.8.2",
     "vscode-test": "^1.6.1",
-    "webpack": "^5.92.1",
-    "webpack-cli": "^5.1.4"
+    "webpack": "^5.98.0",
+    "webpack-cli": "^6.0.1"
   }
 }

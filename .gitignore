@@ -4,3 +4,6 @@ out
 dist
 *.vsix
 dist/*
+/examples/**/*.rpyc
+/examples/errors.txt
+/examples/log.txt

@@ -159,21 +159,12 @@ export async function activate(context: ExtensionContext): Promise<void> {
             return;
         }
 
-        debug.startDebugging(
-            undefined,
-            {
-                type: "renpy",
-                name: "Run Project",
-                request: "launch",
-                program: rpyPath,
-            },
-            { noDebug: true },
-        );
-
         //call renpy
         const result = RunWorkspaceFolder();
         if (result) {
-            logToast(LogLevel.Info, "Ren'Py is running successfully");
+            logMessage(LogLevel.Info, "Ren'Py is running successfully");
+        } else {
+            logToast(LogLevel.Error, "Ren'Py failed to run.");
         }
     });
     context.subscriptions.push(runCommand);
@@ -327,44 +318,50 @@ export function isValidExecutable(renpyExecutableLocation: string): boolean {
         return false;
     }
     return fs.existsSync(renpyExecutableLocation);
+    1;
 }
 // Attempts to run renpy executable through console commands.
-function RunWorkspaceFolder(): boolean {
-    const rpyPath = Configuration.getRenpyExecutablePath();
-
-    if (isValidExecutable(rpyPath)) {
-        const renpyPath = cleanUpPath(Uri.file(rpyPath).path);
-        const cwd = renpyPath.substring(0, renpyPath.lastIndexOf("/"));
-        const workFolder = getWorkspaceFolder();
-        const args: string[] = [`${workFolder}`, "run"];
-        if (workFolder.endsWith("/game")) {
-            try {
-                updateStatusBar("$(sync~spin) Running Ren'Py...");
-                const result = cp.spawnSync(rpyPath, args, {
-                    cwd: `${cwd}`,
-                    env: { PATH: process.env.PATH },
-                });
-                if (result.error) {
-                    logMessage(LogLevel.Error, `renpy spawn error: ${result.error}`);
-                    return false;
-                }
-                if (result.stderr && result.stderr.length > 0) {
-                    logMessage(LogLevel.Error, `renpy spawn stderr: ${result.stderr}`);
-                    return false;
-                }
-            } catch (error) {
-                logMessage(LogLevel.Error, `renpy spawn error: ${error}`);
-                return false;
-            } finally {
-                updateStatusBar(getStatusBarText());
-            }
-            return true;
-        }
-        return false;
-    } else {
-        logMessage(LogLevel.Warning, "config for renpy does not exist");
+export function RunWorkspaceFolder(): boolean {
+    const childProcess = ExecuteRunpyRun();
+    if (childProcess === null) {
+        logToast(LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
         return false;
     }
+    childProcess
+        .on("spawn", () => {
+            updateStatusBar("$(sync~spin) Running Ren'Py...");
+        })
+        .on("error", (error) => {
+            logMessage(LogLevel.Error, `Ren'Py spawn error: ${error}`);
+        })
+        .on("exit", () => {
+            updateStatusBar(getStatusBarText());
+        });
+    childProcess.stdout.on("data", (data) => {
+        logMessage(LogLevel.Info, `Ren'Py stdout: ${data}`);
+    });
+    childProcess.stderr.on("data", (data) => {
+        logMessage(LogLevel.Error, `Ren'Py stderr: ${data}`);
+    });
+
+    return true;
+}
+
+export function ExecuteRunpyRun(): cp.ChildProcessWithoutNullStreams | null {
+    const rpyPath = Configuration.getRenpyExecutablePath();
+
+    if (!isValidExecutable(rpyPath)) {
+        return null;
+    }
+
+    const renpyPath = cleanUpPath(Uri.file(rpyPath).path);
+    const cwd = renpyPath.substring(0, renpyPath.lastIndexOf("/"));
+    const workFolder = getWorkspaceFolder();
+    const args: string[] = [`${workFolder}`, "run"];
+    return cp.spawn(rpyPath, args, {
+        cwd: `${cwd}`,
+        env: { PATH: process.env.PATH },
+    });
 }
 
 function ExecuteRenpyCompile(): boolean {

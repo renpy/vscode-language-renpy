@@ -88,9 +88,19 @@
       },
       {
         "scopeName": "renpy.comment.injection",
-        "path": "./syntaxes/injection.json",
+        "path": "./syntaxes/renpy.injection.json",
         "injectTo": [
           "source.python"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.renpy": "renpy"
+        }
+      },
+      {
+        "scopeName": "markdown.renpy.codeblock",
+        "path": "./syntaxes/renpy.markdown.json",
+        "injectTo": [
+          "text.html.markdown"
         ],
         "embeddedLanguages": {
           "meta.embedded.renpy": "renpy"

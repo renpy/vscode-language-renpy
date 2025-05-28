@@ -1,0 +1,21 @@
+{
+  "scopeName": "markdown.renpy.codeblock",
+  "injectionSelector": "L:markup.fenced_code.block.markdown",
+  "patterns": [
+    {
+      "include": "#renpy-source"
+    }
+  ],
+  "repository": {
+    "renpy-source": {
+      "contentName": "meta.embedded.renpy",
+      "begin": "renpy",
+      "end": "(^|\\G)(?=\\s*[`~]{3,}\\s*$)",
+      "patterns": [
+        {
+          "include": "source.renpy"
+        }
+      ]
+    }
+  }
+}

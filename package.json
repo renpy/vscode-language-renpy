@@ -97,6 +97,16 @@
         }
       },
       {
+        "scopeName": "markdown.renpy.codeblock",
+        "path": "./syntaxes/renpy.markdown.json",
+        "injectTo": [
+          "text.html.markdown"
+        ],
+        "embeddedLanguages": {
+          "meta.embedded.renpy": "renpy"
+        }
+      },
+      {
         "scopeName": "text.log.injection",
         "path": "./syntaxes/log.injection.json",
         "injectTo": [

@@ -88,7 +88,7 @@
       },
       {
         "scopeName": "renpy.comment.injection",
-        "path": "./syntaxes/injection.json",
+        "path": "./syntaxes/renpy.injection.json",
         "injectTo": [
           "source.python"
         ],

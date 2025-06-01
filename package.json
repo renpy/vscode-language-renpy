@@ -333,7 +333,7 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.5.3",
     "vscode-test": "^1.6.1",
-    "webpack": "^5.92.1",
+    "webpack": "^5.99.9",
     "webpack-cli": "^5.1.4"
   }
 }

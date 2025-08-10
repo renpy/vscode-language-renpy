@@ -12,41 +12,43 @@ const __dirname = path.dirname(__filename);
 const compat = new FlatCompat({
     baseDirectory: __dirname,
     recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all
+    allConfig: js.configs.all,
 });
 
-export default defineConfig([{
-    extends: compat.extends("eslint:recommended", "plugin:@typescript-eslint/recommended"),
+export default defineConfig([
+    {
+        extends: compat.extends("eslint:recommended", "plugin:@typescript-eslint/recommended"),
 
-    plugins: {
-        "@typescript-eslint": typescriptEslint,
-    },
-
-    languageOptions: {
-        globals: {
-            ...globals.browser,
-            ...globals.node,
+        plugins: {
+            "@typescript-eslint": typescriptEslint,
         },
 
-        parser: tsParser,
-        ecmaVersion: "latest",
-        sourceType: "module",
-    },
+        languageOptions: {
+            globals: {
+                ...globals.browser,
+                ...globals.node,
+            },
 
-    rules: {
-        "no-duplicate-imports": "error",
-        "no-self-compare": "error",
-        "no-unused-private-class-members": "warn",
-        eqeqeq: "warn",
-        "no-shadow": "warn",
-        "prefer-regex-literals": "warn",
-        "require-await": "warn",
-        camelcase: "error",
-        "no-invalid-regexp": "off",
-        "@typescript-eslint/no-var-requires": "warn",
-        "no-param-reassign": "warn",
-        "@typescript-eslint/no-namespace": "off",
-        "@typescript-eslint/ban-ts-comment": "off",
-        "@typescript-eslint/no-unused-vars": "off",
+            parser: tsParser,
+            ecmaVersion: "latest",
+            sourceType: "module",
+        },
+
+        rules: {
+            "no-duplicate-imports": "error",
+            "no-self-compare": "error",
+            "no-unused-private-class-members": "warn",
+            eqeqeq: "warn",
+            "no-shadow": "warn",
+            "prefer-regex-literals": "warn",
+            "require-await": "warn",
+            camelcase: "error",
+            "no-invalid-regexp": "off",
+            "@typescript-eslint/no-var-requires": "warn",
+            "no-param-reassign": "warn",
+            "@typescript-eslint/no-namespace": "off",
+            "@typescript-eslint/ban-ts-comment": "off",
+            "@typescript-eslint/no-unused-vars": "off",
+        },
     },
-}]);
+]);

@@ -1,5 +1,7 @@
 import { defineConfig } from "eslint/config";
 import typescriptEslint from "@typescript-eslint/eslint-plugin";
+import importPlugin from "eslint-plugin-import";
+import simpleImportSort from "eslint-plugin-simple-import-sort";
 import globals from "globals";
 import tsParser from "@typescript-eslint/parser";
 import path from "node:path";
@@ -26,6 +28,8 @@ export default defineConfig([
     {
         plugins: {
             "@typescript-eslint": typescriptEslint,
+            import: importPlugin,
+            "simple-import-sort": simpleImportSort,
         },
 
         languageOptions: {
@@ -54,6 +58,35 @@ export default defineConfig([
             "@typescript-eslint/no-namespace": "off",
             "@typescript-eslint/ban-ts-comment": "off",
             "@typescript-eslint/no-unused-vars": "off",
+
+            // Import sorting and organization rules
+            "simple-import-sort/imports": [
+                "error",
+                {
+                    groups: [
+                        // Side effect imports
+                        ["^\\u0000"],
+                        // Node.js builtins prefixed with `node:`
+                        ["^node:"],
+                        // Packages (things that start with a letter, digit, underscore, or `@` followed by a letter)
+                        ["^@?\\w"],
+                        // Internal packages (absolute imports from src)
+                        ["^src/"],
+                        // Parent imports (../)
+                        ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
+                        // Other relative imports (./)
+                        ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"],
+                        // Style imports
+                        ["^.+\\.s?css$"],
+                    ],
+                },
+            ],
+            "simple-import-sort/exports": "error",
+            "import/first": "error",
+            "import/newline-after-import": "error",
+            "import/no-duplicates": "error",
+            "import/no-unresolved": "off", // TypeScript handles this
+            "import/order": "off", // Using simple-import-sort instead
         },
     },
 ]);

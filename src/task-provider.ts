@@ -25,7 +25,7 @@ export class RenpyTaskProvider implements vscode.TaskProvider {
     }
 
     private getTasks(): vscode.Task[] {
-        if (this.tasks !== undefined) {
+        if (this.tasks != null) {
             return this.tasks;
         }
         this.tasks = [];

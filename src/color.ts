@@ -181,7 +181,7 @@ export function convertRgbToHex(r: number, g: number, b: number, a?: number): st
         return null;
     }
 
-    if (a === undefined) {
+    if (a == null) {
         return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
     } else {
         return "#" + (256 + r).toString(16).substring(1) + ((1 << 24) + (g << 16) + (b << 8) + a).toString(16).substring(1);

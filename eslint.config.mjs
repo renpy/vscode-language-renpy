@@ -48,7 +48,7 @@ export default defineConfig([
             "no-duplicate-imports": "error",
             "no-self-compare": "error",
             "no-unused-private-class-members": "warn",
-            eqeqeq: "warn",
+            eqeqeq: ["warn", "smart"],
             "no-shadow": "warn",
             "prefer-regex-literals": "warn",
             "require-await": "warn",

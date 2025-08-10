@@ -21,7 +21,7 @@ class RenpyDebugSession extends DebugSession {
         response.body = { supportTerminateDebuggee: true };
 
         const childProcess = ExecuteRunpyRun();
-        if (childProcess === null) {
+        if (childProcess == null) {
             logMessage(vscode.LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
             return;
         }
@@ -39,7 +39,7 @@ class RenpyDebugSession extends DebugSession {
                     seq: 0,
                     type: "event",
                 };
-                if (childProcess.pid !== undefined) {
+                if (childProcess.pid != null) {
                     processEvent.body.systemProcessId = childProcess.pid;
                 }
                 this.sendEvent(processEvent);
@@ -71,7 +71,7 @@ class RenpyDebugSession extends DebugSession {
     }
 
     private terminate() {
-        if (this.childProcess === null) {
+        if (this.childProcess == null) {
             return;
         }
         this.childProcess.kill();
@@ -79,7 +79,7 @@ class RenpyDebugSession extends DebugSession {
     }
 
     private disconnect() {
-        if (this.childProcess === null) {
+        if (this.childProcess == null) {
             return;
         }
         this.childProcess.disconnect();

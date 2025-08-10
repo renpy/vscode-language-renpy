@@ -283,7 +283,7 @@ function updateDiagnosticMode(context: ExtensionContext, diagnosticCollection: D
 
 function checkObsoleteMethods(diagnostics: Diagnostic[], line: string, lineIndex: number) {
     let matches;
-    while ((matches = rxObsoleteCheck.exec(line)) !== null) {
+    while ((matches = rxObsoleteCheck.exec(line)) != null) {
         const offset = matches.index + matches[0].indexOf(matches[1]);
         const range = new Range(lineIndex, offset, lineIndex, offset + matches[1].length);
         const diagnostic = new Diagnostic(range, `"${matches[1]}": This function is obsolete or outdated.`, DiagnosticSeverity.Warning);
@@ -294,7 +294,7 @@ function checkObsoleteMethods(diagnostics: Diagnostic[], line: string, lineIndex
 function checkComparisonVsAssignment(diagnostics: Diagnostic[], line: string, lineIndex: number) {
     // check for equality/assignment errors
     let matches;
-    while ((matches = rsComparisonCheck.exec(line)) !== null) {
+    while ((matches = rsComparisonCheck.exec(line)) != null) {
         const offset = matches.index + matches[0].indexOf(matches[3]);
         const range = new Range(lineIndex, offset, lineIndex, offset + matches[3].length);
         const diagnostic = new Diagnostic(range, `"=" is the assignment operator. Use "==" for comparison.`, DiagnosticSeverity.Warning);
@@ -305,7 +305,7 @@ function checkComparisonVsAssignment(diagnostics: Diagnostic[], line: string, li
 function checkReservedRenpyNames(diagnostics: Diagnostic[], line: string, lineIndex: number) {
     // check for default/define variables that are Ren'Py reserved names
     let matches;
-    while ((matches = rxReservedVariableCheck.exec(line)) !== null) {
+    while ((matches = rxReservedVariableCheck.exec(line)) != null) {
         const offset = matches.index + matches[0].indexOf(matches[2]);
         const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
         const diagnostic = new Diagnostic(
@@ -320,7 +320,7 @@ function checkReservedRenpyNames(diagnostics: Diagnostic[], line: string, lineIn
 function checkReservedPythonNames(diagnostics: Diagnostic[], line: string, lineIndex: number) {
     // check for default/define variables that are Python reserved names
     let matches;
-    while ((matches = rxReservedPythonCheck.exec(line)) !== null) {
+    while ((matches = rxReservedPythonCheck.exec(line)) != null) {
         const offset = matches.index + matches[0].indexOf(matches[2]);
         const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
         const diagnostic = new Diagnostic(
@@ -350,7 +350,7 @@ function checkInvalidVariableNames(diagnostics: Diagnostic[], line: string, line
     // check line for invalid define/default variable names
     // Variables must begin with a letter or number, and may not begin with '_'
     let matches;
-    while ((matches = rxVariableCheck.exec(line)) !== null) {
+    while ((matches = rxVariableCheck.exec(line)) != null) {
         if (!renpyStore.includes(matches[2])) {
             const offset = matches.index + matches[0].indexOf(matches[2]);
             const range = new Range(lineIndex, offset, lineIndex, offset + matches[2].length);
@@ -377,7 +377,7 @@ function checkStoreVariables(diagnostics: Diagnostic[], line: string, lineIndex:
     if (defaults) {
         const filtered: string[] = Object.keys(defaults).filter((key: string) => defaults[key].define === "default");
         let matches;
-        while ((matches = rxStoreCheck.exec(line)) !== null) {
+        while ((matches = rxStoreCheck.exec(line)) != null) {
             if (
                 !matches[1].startsWith("_") &&
                 !filtered.includes(matches[1]) &&
@@ -400,7 +400,7 @@ function checkStoreVariables(diagnostics: Diagnostic[], line: string, lineIndex:
 
 function checkUndefinedPersistent(diagnostics: Diagnostic[], persistents: string[], line: string, lineIndex: number) {
     let matches: RegExpExecArray | null;
-    while ((matches = rxPersistentCheck.exec(line)) !== null) {
+    while ((matches = rxPersistentCheck.exec(line)) != null) {
         if (line.match(rxPersistentDefines)) {
             if (!persistents.includes(matches[1])) {
                 persistents.push(matches[1]);

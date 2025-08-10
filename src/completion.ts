@@ -494,12 +494,7 @@ function getLayerConfiguration(quoted = false): CompletionItem[] | undefined {
 }
 
 function getDisplayableAutoComplete(quoted = false): CompletionItem[] {
-    if (
-        NavigationData.displayableAutoComplete === undefined ||
-        NavigationData.displayableAutoComplete.length === 0 ||
-        NavigationData.displayableQuotedAutoComplete === undefined ||
-        NavigationData.displayableQuotedAutoComplete.length === 0
-    ) {
+    if (NavigationData.displayableAutoComplete == null || NavigationData.displayableAutoComplete.length === 0 || NavigationData.displayableQuotedAutoComplete == null || NavigationData.displayableQuotedAutoComplete.length === 0) {
         NavigationData.displayableAutoComplete = [];
         NavigationData.displayableQuotedAutoComplete = [];
 
@@ -625,7 +620,7 @@ function getNamedStoreAutoComplete(keyword: string): CompletionItem[] | undefine
     }
 
     const objKey = `store.${keyword}`;
-    if (NavigationData.gameObjects["fields"][objKey] !== undefined) {
+    if (NavigationData.gameObjects["fields"][objKey] != null) {
         const fields = NavigationData.gameObjects["fields"][objKey];
         for (const field of fields) {
             const split = field.keyword.split(".");

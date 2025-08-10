@@ -157,7 +157,7 @@ export class NavigationData {
                     "Navigation data is empty. Ren'Py could not compile your project. Please check your project can start successfully."
                 );
             }
-            if (NavigationData.data.location === undefined) {
+            if (NavigationData.data.location == null) {
                 NavigationData.data.location = {};
                 NavigationData.data.location["callable"] = {};
                 NavigationData.data.location["screen"] = {};
@@ -781,7 +781,7 @@ export class NavigationData {
      * @param filename - The filename for the script file
      */
     static clearScannedDataForFile(filename: string) {
-        if (NavigationData.data.location === undefined) {
+        if (NavigationData.data.location == null) {
             NavigationData.data.location = {};
         }
         const categories = ["callable", "class", "displayable", "persistent", "properties", "fields", "stores"];
@@ -929,7 +929,7 @@ export class NavigationData {
                     NavigationData.data.location["outlines"]["array"] = [];
                 }
                 let currentOutlines = NavigationData.data.location["outlines"]["array"];
-                if (currentOutlines === undefined) {
+                if (currentOutlines == null) {
                     currentOutlines = [];
                 }
                 if (!currentOutlines.includes(match)) {
@@ -950,7 +950,7 @@ export class NavigationData {
             const stores = line.match(rxInitStore);
             if (stores) {
                 let match = "";
-                if (stores[4] !== undefined) {
+                if (stores[4] != null) {
                     match = stores[4];
                 } else {
                     match = stores[3];
@@ -1169,7 +1169,7 @@ export function getStatusBarText() {
     }
 
     if (NavigationData.data) {
-        if (NavigationData.data.name !== undefined) {
+        if (NavigationData.data.name != null) {
             return `${NavigationData.data.name} v${NavigationData.data.version}`;
         } else {
             return "(Uncompiled Game)";

@@ -131,7 +131,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     context.subscriptions.push(gotoFileLocationCommand);
 
     const migrateOldFilesCommand = commands.registerCommand("renpy.migrateOldFiles", async () => {
-        if (workspace !== null) {
+        if (workspace != null) {
             const altURIs = await workspace.findFiles("**/*.rpyc", null, 50);
             altURIs.forEach(async (uri) => {
                 const sourceFile = Uri.parse(uri.toString().replace(".rpyc", ".rpy"));
@@ -340,7 +340,7 @@ export function isValidExecutable(renpyExecutableLocation: string): boolean {
 // Attempts to run renpy executable through console commands.
 export function RunWorkspaceFolder(): boolean {
     const childProcess = ExecuteRunpyRun();
-    if (childProcess === null) {
+    if (childProcess == null) {
         logToast(LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
         return false;
     }

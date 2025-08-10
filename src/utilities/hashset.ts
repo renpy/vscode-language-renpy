@@ -57,7 +57,7 @@ export class HashSet<T> implements Iterable<T> {
     add(value: T) {
         const hash = this._hash(value);
         const bucket = this._buckets[hash];
-        if (bucket === undefined) {
+        if (bucket == null) {
             this._buckets[hash] = [value];
         } else {
             if (!bucket.includes(value)) {
@@ -76,13 +76,13 @@ export class HashSet<T> implements Iterable<T> {
     has(value: T) {
         const hash = this._hash(value);
         const bucket = this._buckets[hash];
-        return bucket !== undefined && bucket.includes(value);
+        return bucket != null && bucket.includes(value);
     }
 
     remove(value: T) {
         const hash = this._hash(value);
         const bucket = this._buckets[hash];
-        if (bucket !== undefined) {
+        if (bucket != null) {
             const index = bucket.indexOf(value);
             if (index >= 0) {
                 bucket.splice(index, 1);
@@ -97,7 +97,7 @@ export class HashSet<T> implements Iterable<T> {
         let bucket: T[] | undefined = this._buckets[0];
         return {
             next: () => {
-                while (bucket === undefined || index >= bucket.length) {
+                while (bucket == null || index >= bucket.length) {
                     bucket = this._buckets[++bucketIndex];
                     index = 0;
                 }
@@ -109,7 +109,7 @@ export class HashSet<T> implements Iterable<T> {
     toArray(): T[] {
         const result: T[] = [];
         for (const bucket of this._buckets) {
-            if (bucket !== undefined) {
+            if (bucket != null) {
                 result.push(...bucket);
             }
         }

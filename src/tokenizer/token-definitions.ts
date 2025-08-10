@@ -181,15 +181,15 @@ export class Token {
 }
 
 export function isRangePattern(p: TokenPattern): p is TokenRangePattern {
-    return (p as TokenRangePattern).begin !== undefined;
+    return (p as TokenRangePattern).begin != null;
 }
 
 export function isMatchPattern(p: TokenPattern): p is TokenMatchPattern {
-    return (p as TokenMatchPattern).match !== undefined;
+    return (p as TokenMatchPattern).match != null;
 }
 
 export function isRepoPattern(p: TokenPattern): p is TokenRepoPattern {
-    return !isRangePattern(p) && (p as TokenRepoPattern).patterns !== undefined;
+    return !isRangePattern(p) && (p as TokenRepoPattern).patterns != null;
 }
 
 export class TreeNode {
@@ -213,7 +213,7 @@ export class TreeNode {
     }
 
     public isEmpty(): boolean {
-        return this.token === null && !this.hasChildren();
+        return this.token == null && !this.hasChildren();
     }
 
     public clear() {

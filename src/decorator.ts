@@ -49,7 +49,7 @@ export function injectCustomTextmateTokens(rules: ValueEqualsSet<TextMateRule>) 
 
     // If the config didn't exist yet, push the default tokens
     let tokenColorCustomizations = tokensConfig.get<TextMateRules>("tokenColorCustomizations");
-    if (tokenColorCustomizations === undefined || tokenColorCustomizations.textMateRules === undefined) {
+    if (tokenColorCustomizations == null || tokenColorCustomizations.textMateRules == null) {
         tokenColorCustomizations = { textMateRules: customFontStyleRules.toArray() };
     }
 

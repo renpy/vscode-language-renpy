@@ -143,7 +143,7 @@ export function getSemanticTokens(document: TextDocument): SemanticTokens {
                 }
                 if (matches[1] === "def") {
                     const context = i - 1 < 0 ? undefined : getCurrentContext(document, new Position(i - 1, indentLevel));
-                    if (context === undefined) {
+                    if (context == null) {
                         updateNavigationData("callable", matches[2], filename, i);
                     } else if (context.startsWith("store.")) {
                         updateNavigationData("callable", `${context.split(".")[1]}.${matches[2]}`, filename, i);
@@ -163,7 +163,7 @@ export function getSemanticTokens(document: TextDocument): SemanticTokens {
 
                 if (matches[1] === "def") {
                     const context = i - 1 < 0 ? undefined : getCurrentContext(document, new Position(i - 1, indentLevel));
-                    if (context === undefined) {
+                    if (context == null) {
                         updateNavigationData("callable", matches[2], filename, i);
                     } else if (context.startsWith("store.")) {
                         updateNavigationData("callable", `${context.split(".")[1]}.${matches[2]}`, filename, i);
@@ -174,13 +174,13 @@ export function getSemanticTokens(document: TextDocument): SemanticTokens {
             } else if (matches[4] === "label") {
                 indentLevel = line.length - line.trimStart().length;
                 const context = i - 1 < 0 ? undefined : getCurrentContext(document, new Position(i - 1, indentLevel));
-                if (context === undefined) {
+                if (context == null) {
                     updateNavigationData("label", matches[5], filename, i);
                 }
-            } else if ((matches[6] === "init" && matches[8] !== undefined) || (matches[9] === "python" && matches[10] !== undefined)) {
+            } else if ((matches[6] === "init" && matches[8] != null) || (matches[9] === "python" && matches[10] != null)) {
                 // named store (init python in storename)
                 indentLevel = line.length - line.trimStart().length;
-                if (matches[10] !== undefined) {
+                if (matches[10] != null) {
                     parent = matches[10];
                 } else {
                     parent = matches[8];
@@ -202,7 +202,7 @@ export function getSemanticTokens(document: TextDocument): SemanticTokens {
                         const token = escapeRegExp(a);
                         const rx = RegExp(`[^a-zA-Z_](${token})($|[^a-zA-Z_])`, "g");
                         let matches;
-                        while ((matches = rx.exec(line)) !== null) {
+                        while ((matches = rx.exec(line)) != null) {
                             const offset = matches[0].indexOf(matches[1]);
                             const length = matches[1].length;
                             if (NavigationData.positionIsCleanForCompletion(line, new Position(i, matches.index + offset))) {
@@ -242,7 +242,7 @@ export function getSemanticTokens(document: TextDocument): SemanticTokens {
                         const token = escapeRegExp(a[0]);
                         const rx = RegExp(`[^a-zA-Z_](${token})($|[^a-zA-Z_])`, "g");
                         let matches;
-                        while ((matches = rx.exec(line)) !== null) {
+                        while ((matches = rx.exec(line)) != null) {
                             const offset = matches[0].indexOf(matches[1]);
                             const length = matches[1].length;
                             if (NavigationData.positionIsCleanForCompletion(line, new Position(i, matches.index + offset))) {
@@ -252,7 +252,7 @@ export function getSemanticTokens(document: TextDocument): SemanticTokens {
                                 // create a Navigation dictionary entry for this token range
                                 const key = rangeAsString(filename, range);
                                 const parentNav = parentDefaults[`${parentType}.${parent}.${matches[1]}`];
-                                if (parentNav === undefined) {
+                                if (parentNav == null) {
                                     continue;
                                 }
                                 let navSource = "variable";
@@ -304,7 +304,7 @@ export function getSemanticTokens(document: TextDocument): SemanticTokens {
                 const rxPatterns = [/^\s*(global)\s+(\w*)/g, /\s*(for)\s+([a-zA-Z0-9_]+)\s+in\s+/g, /(\s*)([a-zA-Z0-9_,]+)\s*=\s*[a-zA-Z0-9_"]+/g];
                 for (const rx of rxPatterns) {
                     let matches;
-                    while ((matches = rx.exec(line)) !== null) {
+                    while ((matches = rx.exec(line)) != null) {
                         try {
                             let start = line.indexOf(matches[2]);
                             const split = matches[2].split(",");
@@ -349,7 +349,7 @@ export function getSemanticTokens(document: TextDocument): SemanticTokens {
                                     const objKey = `${parent}.${m.substring(offset)}`;
                                     const navigation = new Navigation(source, objKey, filename, i + 1, docs, "", parentType, start + offset);
 
-                                    if (NavigationData.gameObjects["fields"][pKey] === undefined) {
+                                    if (NavigationData.gameObjects["fields"][pKey] == null) {
                                         NavigationData.gameObjects["fields"][pKey] = [];
                                     }
                                     NavigationData.gameObjects["fields"][pKey] = NavigationData.gameObjects["fields"][pKey].filter(

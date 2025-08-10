@@ -1,15 +1,17 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { assert } from "console";
 import { performance } from "perf_hooks";
-import { LogLevel, TextDocument, Uri, Range as VSRange, workspace } from "vscode";
-import { Token, isRangePattern, isMatchPattern, isRepoPattern, TokenPosition, TokenTree, TreeNode, Range } from "./token-definitions";
-import { RenpyPatterns } from "./token-patterns.g";
-import { Stack } from "../utilities/stack";
-import { Vector } from "../utilities/vector";
-import { TokenPatternCapture, TokenCapturePattern, TokenRepoPattern, TokenRangePattern, TokenMatchPattern } from "./token-pattern-types";
-import { LogCategory, logCatMessage } from "../logger";
-import { escapeRegExpCharacters } from "../utilities/utils";
+import { LogLevel, Range as VSRange, TextDocument, Uri, workspace } from "vscode";
+
 import { isShippingBuild } from "../extension";
+import { LogCategory, logCatMessage } from "../logger";
+import { Stack } from "../utilities/stack";
+import { escapeRegExpCharacters } from "../utilities/utils";
+import { Vector } from "../utilities/vector";
+
+import { isMatchPattern, isRangePattern, isRepoPattern, Range, Token, TokenPosition, TokenTree, TreeNode } from "./token-definitions";
+import { TokenCapturePattern, TokenMatchPattern, TokenPatternCapture, TokenRangePattern, TokenRepoPattern } from "./token-pattern-types";
+import { RenpyPatterns } from "./token-patterns.g";
 
 interface MatchScanResult {
     pattern: ExTokenPattern;

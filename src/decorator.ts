@@ -1,5 +1,6 @@
-import { ConfigurationTarget, workspace, LogLevel } from "vscode";
 import * as util from "util";
+import { ConfigurationTarget, LogLevel, workspace } from "vscode";
+
 import { IEquatable, ValueEqualsSet } from "./utilities/hashset";
 import { logMessage } from "./logger";
 

@@ -1,4 +1,4 @@
-import { ConfigurationTarget, ExtensionContext, WorkspaceConfiguration, workspace } from "vscode";
+import { ConfigurationTarget, ExtensionContext, workspace, WorkspaceConfiguration } from "vscode";
 
 export class Configuration {
     public static initialize(context: ExtensionContext) {

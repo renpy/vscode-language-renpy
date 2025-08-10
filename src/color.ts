@@ -5,15 +5,16 @@ import {
     ColorInformation,
     ColorPresentation,
     DocumentColorProvider,
+    languages,
     Range,
     TextDocument,
     TextEdit,
-    languages,
 } from "vscode";
-import { ValueEqualsSet } from "./utilities/hashset";
-import { Tokenizer } from "./tokenizer/tokenizer";
+
 import { LiteralTokenType } from "./tokenizer/renpy-tokens";
-import { TextMateRule, injectCustomTextmateTokens } from "./decorator";
+import { Tokenizer } from "./tokenizer/tokenizer";
+import { ValueEqualsSet } from "./utilities/hashset";
+import { injectCustomTextmateTokens, TextMateRule } from "./decorator";
 
 export type DocumentColorContext = {
     document: TextDocument;

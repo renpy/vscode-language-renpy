@@ -1,16 +1,17 @@
 // Completion Provider
 import {
-    TextDocument,
-    Position,
+    CancellationToken,
     CompletionContext,
     CompletionItem,
-    CompletionTriggerKind,
     CompletionItemKind,
-    workspace,
+    CompletionTriggerKind,
     languages,
-    CancellationToken,
+    Position,
     ProviderResult,
+    TextDocument,
+    workspace,
 } from "vscode";
+
 import { Displayable } from "./displayable";
 import { getDefinitionFromFile } from "./hover";
 import { getCurrentContext } from "./navigation";

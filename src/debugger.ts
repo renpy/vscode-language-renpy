@@ -1,9 +1,10 @@
-import * as vscode from "vscode";
 import { DebugSession, ExitedEvent, InitializedEvent, TerminatedEvent } from "@vscode/debugadapter";
-import { ExecuteRunpyRun } from "./extension";
 import { DebugProtocol } from "@vscode/debugprotocol";
-import { logMessage } from "./logger";
 import { ChildProcessWithoutNullStreams } from "child_process";
+import * as vscode from "vscode";
+
+import { ExecuteRunpyRun } from "./extension";
+import { logMessage } from "./logger";
 
 export class RenpyAdapterDescriptorFactory implements vscode.DebugAdapterDescriptorFactory {
     createDebugAdapterDescriptor(session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {

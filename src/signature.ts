@@ -1,5 +1,6 @@
 // Signature Provider for Method Signature Help
-import { TextDocument, Position, SignatureHelp, SignatureHelpContext, languages, CancellationToken, ProviderResult } from "vscode";
+import { CancellationToken, languages, Position, ProviderResult, SignatureHelp, SignatureHelpContext, TextDocument } from "vscode";
+
 import { getKeywordPrefix } from "./extension";
 import { getArgumentParameterInfo } from "./navigation";
 import { NavigationData } from "./navigation-data";

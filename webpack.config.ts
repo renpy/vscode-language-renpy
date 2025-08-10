@@ -1,7 +1,7 @@
-import * as path from "path";
-import { Compiler, Configuration, WebpackPluginInstance } from "webpack";
 import CopyWebpackPlugin from "copy-webpack-plugin";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
+import * as path from "path";
+import { Compiler, Configuration, WebpackPluginInstance } from "webpack";
 
 const PATHS = {
     src: path.join(__dirname, "src"),

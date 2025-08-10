@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { LogLevel, Position, TextDocument, Range as VSRange } from "vscode";
+import { LogLevel, Position, Range as VSRange, TextDocument } from "vscode";
+
+import { logMessage } from "../logger";
+import { EnumToString } from "../utilities/utils";
+import { Vector } from "../utilities/vector";
+
 import {
     CharacterTokenType,
     EntityTokenType,
@@ -12,10 +17,7 @@ import {
     TokenTypeIndex,
     TypeOfTokenType,
 } from "./renpy-tokens";
-import { TokenPattern, TokenRangePattern, TokenMatchPattern, TokenRepoPattern } from "./token-pattern-types";
-import { Vector } from "../utilities/vector";
-import { logMessage } from "../logger";
-import { EnumToString } from "../utilities/utils";
+import { TokenMatchPattern, TokenPattern, TokenRangePattern, TokenRepoPattern } from "./token-pattern-types";
 
 export class Range {
     start: number;

@@ -1,5 +1,6 @@
 // Find all References Provider
-import { TextDocument, Position, ReferenceContext, Location, workspace, languages, CancellationToken } from "vscode";
+import { CancellationToken, languages, Location, Position, ReferenceContext, TextDocument, workspace } from "vscode";
+
 import { getKeywordPrefix } from "./extension";
 import { NavigationData } from "./navigation-data";
 

@@ -1,8 +1,8 @@
 // Workspace and file functions
 "use strict";
 
-import { workspace } from "vscode";
 import * as fs from "fs";
+import { workspace } from "vscode";
 
 /**
  * Returns the filename.extension for the given fully qualified path

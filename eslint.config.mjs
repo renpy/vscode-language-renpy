@@ -17,8 +17,13 @@ const compat = new FlatCompat({
 
 export default defineConfig([
     {
-        extends: compat.extends("eslint:recommended", "plugin:@typescript-eslint/recommended"),
-
+        ignores: [
+            // Ignore all generated typescript files
+            "**/*.g.ts",
+        ],
+    },
+    ...compat.extends("eslint:recommended", "plugin:@typescript-eslint/recommended"),
+    {
         plugins: {
             "@typescript-eslint": typescriptEslint,
         },

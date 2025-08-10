@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import * as fs from "fs";
 import {
     commands,
@@ -44,8 +43,10 @@ interface RenpyFunctions {
 }
 
 export class NavigationData {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static data: any = {};
     static renpyFunctions: RenpyFunctions;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static autoCompleteKeywords: any;
     static renpyAutoComplete: CompletionItem[];
     static configAutoComplete: CompletionItem[];
@@ -53,6 +54,7 @@ export class NavigationData {
     static internalAutoComplete: CompletionItem[];
     static displayableAutoComplete: CompletionItem[];
     static displayableQuotedAutoComplete: CompletionItem[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     static gameObjects: any = {};
     static isImporting = false;
     static isCompiling = false;
@@ -663,7 +665,7 @@ export class NavigationData {
         }
     }
 
-    static getNavigationObject(source: string, keyword: string, array: any): Navigation {
+    static getNavigationObject(source: string, keyword: string, array: string | string[]): Navigation {
         /*
 		0 base file,
 		1 kind,

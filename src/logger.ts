@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { ExtensionContext, LogLevel, StatusBarAlignment, window } from "vscode";
 
 import { isShippingBuild } from "./extension";
@@ -27,7 +26,6 @@ export function updateStatusBar(text: string) {
     statusBar.show();
 }
 
-// eslint-disable-next-line no-shadow
 export const enum LogCategory {
     Default,
     Status,

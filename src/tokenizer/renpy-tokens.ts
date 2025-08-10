@@ -1,4 +1,3 @@
-/* eslint-disable no-shadow */
 // This index is used to make it easier to detect what type of token is currently used.
 // This also makes sure that token types wont have overlapping ID's.
 export const enum TokenTypeIndex {

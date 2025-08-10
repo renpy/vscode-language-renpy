@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { LogLevel, Position, Range as VSRange, TextDocument } from "vscode";
 
 import { logMessage } from "../logger";

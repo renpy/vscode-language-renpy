@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { assert } from "console";
 import { performance } from "perf_hooks";
 import { LogLevel, Range as VSRange, TextDocument, Uri, workspace } from "vscode";
@@ -253,7 +252,6 @@ export class Tokenizer {
     }
 }
 
-// eslint-disable-next-line no-shadow
 const enum CaptureSource {
     MatchCaptures = 0,
     BeginCaptures = 1,
@@ -810,7 +808,6 @@ class DocumentTokenizer {
     }
 }
 
-// eslint-disable-next-line no-shadow
 const enum TokenPatternType {
     RepoPattern = 0,
     RangePattern = 1,

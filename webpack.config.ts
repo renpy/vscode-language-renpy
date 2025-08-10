@@ -101,6 +101,10 @@ export const nodeConfig: Configuration = {
         // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
         mainFields: ["module", "main"],
         extensions: [".ts", ".js"], // support ts-files and js-files
+        alias: {
+            // Map the 'src' path to the actual src directory
+            src: path.resolve(__dirname, "src"),
+        },
     },
     ...baseConfig,
 };

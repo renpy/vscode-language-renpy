@@ -1,11 +1,4 @@
 /**
- * Converts an `enum` type to an array of objects with name and value properties.
- */
-export type EnumToString<Type> = {
-    [P in keyof Type]: { name: P; value: Type[P] };
-};
-
-/**
  * Escapes characters in a string that have a special meaning in regular expressions.
  * This allows the string to be used as a literal part of a regular expression pattern.
  *

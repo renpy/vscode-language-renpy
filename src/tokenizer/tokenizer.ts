@@ -8,9 +8,9 @@ import { escapeRegExpCharacters } from "src/utilities";
 import { isShippingBuild } from "../extension";
 import { LogCategory, logCatMessage } from "../logger";
 
+import { RenpyPatterns } from "./generated";
 import { isMatchPattern, isRangePattern, isRepoPattern, Range, Token, TokenPosition, TokenTree, TreeNode } from "./token-definitions";
 import { TokenCapturePattern, TokenMatchPattern, TokenPatternCapture, TokenRangePattern, TokenRepoPattern } from "./token-pattern-types";
-import { RenpyPatterns } from "./token-patterns.g";
 
 interface MatchScanResult {
     pattern: ExTokenPattern;

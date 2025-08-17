@@ -5,7 +5,7 @@
     "target": "ESNext",
     "lib": ["ESNext"],
     "baseUrl": ".", // Base directory to resolve non-absolute module names.
-    "rootDir": "src",
+    "rootDir": ".",
     "outDir": "out",
 
     /* Strict Type-Checking Option */
@@ -67,5 +67,5 @@
     "forceConsistentCasingInFileNames": true // Disallow inconsistently-cased references to the same file.
   },
   "exclude": ["node_modules", ".vscode-test", "dist", "out"],
-  "include": ["src/**/*.ts"]
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
 }

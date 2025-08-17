@@ -99,7 +99,11 @@ export class HashSet<T> implements Iterable<T> {
         return {
             next: () => {
                 while (bucket == null || index >= bucket.length) {
-                    bucket = this._buckets[++bucketIndex];
+                    bucketIndex++;
+                    if (bucketIndex >= this._buckets.length) {
+                        return { value: undefined!, done: true };
+                    }
+                    bucket = this._buckets[bucketIndex];
                     index = 0;
                 }
                 return { value: bucket[index++], done: false };

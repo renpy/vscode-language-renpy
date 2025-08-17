@@ -27,6 +27,10 @@ export function extractFilenameWithoutExtension(str: string) {
         const normalizedStr = str.replace(/\\/g, "/");
         const filename = normalizedStr.split("/").pop();
         if (filename) {
+            // Handle dotfiles
+            if (filename.startsWith(".") && filename.indexOf(".", 1) === -1) {
+                return filename;
+            }
             return filename.replace(/\.[^/.]+$/, "");
         }
     }

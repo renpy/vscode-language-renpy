@@ -3,7 +3,7 @@ import { performance } from "perf_hooks";
 import { LogLevel, Range as VSRange, TextDocument, Uri, workspace } from "vscode";
 
 import { Stack, Vector } from "src/types";
-import { escapeRegExpCharacters } from "src/utilities/utils";
+import { escapeRegExpCharacters } from "src/utilities";
 
 import { isShippingBuild } from "../extension";
 import { LogCategory, logCatMessage } from "../logger";

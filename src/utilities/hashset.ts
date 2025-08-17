@@ -56,14 +56,15 @@ export class HashSet<T> implements Iterable<T> {
 
     add(value: T) {
         const hash = this._hash(value);
-        const bucket = this._buckets[hash];
-        if (bucket == null) {
-            this._buckets[hash] = [value];
-        } else {
-            if (!bucket.includes(value)) {
-                bucket.push(value);
-            }
+        // Early exit if the value is already present
+        if (this._buckets[hash]?.includes(value)) {
+            return;
         }
+        // Initialize the bucket if it doesn't exist
+        if (this._buckets[hash] == null) {
+            this._buckets[hash] = [];
+        }
+        this._buckets[hash].push(value);
         this._size++;
     }
 

@@ -49,7 +49,9 @@ export function getHoverContent(document: TextDocument, position: Position): Hov
         if (navigation && navigation instanceof Navigation) {
             const args = [{ uri: document.uri, range: navigation.toRange() }];
             const commandUri = Uri.parse(`command:renpy.jumpToFileLocation?${encodeURIComponent(JSON.stringify(args))}`);
-            contents.appendMarkdown(`(${navigation.source}) **${document.getText(range)}** [${extractFilename(filename)}:${navigation.location}](${commandUri})`);
+            contents.appendMarkdown(
+                `(${navigation.source}) **${document.getText(range)}** [${extractFilename(filename)}:${navigation.location}](${commandUri})`
+            );
             if (navigation.documentation.length > 0) {
                 contents.appendMarkdown("\n\n---\n\n");
                 contents.appendCodeblock(navigation.documentation);

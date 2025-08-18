@@ -1,5 +1,16 @@
 // Semantic Token Provider
-import { LogLevel, CancellationToken, Position, ProviderResult, Range, SemanticTokens, SemanticTokensBuilder, SemanticTokensLegend, TextDocument, languages } from "vscode";
+import {
+    LogLevel,
+    CancellationToken,
+    Position,
+    ProviderResult,
+    Range,
+    SemanticTokens,
+    SemanticTokensBuilder,
+    SemanticTokensLegend,
+    TextDocument,
+    languages,
+} from "vscode";
 import { Navigation, splitParameters, rangeAsString, getCurrentContext, DataType } from "./navigation";
 import { NavigationData, updateNavigationData } from "./navigation-data";
 import { stripWorkspaceFromFile } from "./workspace";
@@ -26,7 +37,7 @@ export const semanticTokensProvider = languages.registerDocumentSemanticTokensPr
             });
         },
     },
-    legend,
+    legend
 );
 
 export function getSemanticTokens(document: TextDocument): SemanticTokens {
@@ -112,7 +123,16 @@ export function getSemanticTokens(document: TextDocument): SemanticTokens {
                     }
                     const range = new Range(i, start + offset, i, start + length);
                     parentArgs.push(line.substring(start + offset, length - offset));
-                    parentDefaults[m.substring(offset, length)] = new Navigation("parameter", m.substring(offset, length), filename, i + 1, "", m.trim(), "", start + offset);
+                    parentDefaults[m.substring(offset, length)] = new Navigation(
+                        "parameter",
+                        m.substring(offset, length),
+                        filename,
+                        i + 1,
+                        "",
+                        m.trim(),
+                        "",
+                        start + offset
+                    );
                     // create a Navigation dictionary entry for this token range
                     const key = rangeAsString(filename, range);
                     const docs = `${parentType} ${parent}()`;
@@ -196,7 +216,16 @@ export function getSemanticTokens(document: TextDocument): SemanticTokens {
                                 const key = rangeAsString(filename, range);
                                 const docs = `${parentType} ${parent}()`;
                                 const parentNav = parentDefaults[matches[1]];
-                                const navigation = new Navigation("parameter", matches[1], filename, parentLine, docs, "", parentType, parentNav.character);
+                                const navigation = new Navigation(
+                                    "parameter",
+                                    matches[1],
+                                    filename,
+                                    parentLine,
+                                    docs,
+                                    "",
+                                    parentType,
+                                    parentNav.character
+                                );
                                 NavigationData.gameObjects["semantic"][key] = navigation;
                             }
                         }
@@ -231,7 +260,16 @@ export function getSemanticTokens(document: TextDocument): SemanticTokens {
                                 } else if (a[1] === "g") {
                                     navSource = "global variable";
                                 }
-                                const navigation = new Navigation(navSource, matches[1], filename, parentNav.location, parentNav.documentation, "", parentNav.type, parentNav.character);
+                                const navigation = new Navigation(
+                                    navSource,
+                                    matches[1],
+                                    filename,
+                                    parentNav.location,
+                                    parentNav.documentation,
+                                    "",
+                                    parentNav.type,
+                                    parentNav.character
+                                );
                                 NavigationData.gameObjects["semantic"][key] = navigation;
                             }
                         }
@@ -313,7 +351,9 @@ export function getSemanticTokens(document: TextDocument): SemanticTokens {
                                     if (NavigationData.gameObjects["fields"][pKey] === undefined) {
                                         NavigationData.gameObjects["fields"][pKey] = [];
                                     }
-                                    NavigationData.gameObjects["fields"][pKey] = NavigationData.gameObjects["fields"][pKey].filter((e: { keyword: string }) => e.keyword !== objKey);
+                                    NavigationData.gameObjects["fields"][pKey] = NavigationData.gameObjects["fields"][pKey].filter(
+                                        (e: { keyword: string }) => e.keyword !== objKey
+                                    );
                                     NavigationData.gameObjects["fields"][pKey].push(navigation);
                                 }
 

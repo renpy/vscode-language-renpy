@@ -4,7 +4,24 @@
 
 import * as cp from "child_process";
 import * as fs from "fs";
-import { ExtensionContext, languages, commands, window, TextDocument, Position, debug, Range, workspace, Uri, DebugConfiguration, ProviderResult, DebugConfigurationProviderTriggerKind, tasks, LogLevel, ExtensionMode } from "vscode";
+import {
+    ExtensionContext,
+    languages,
+    commands,
+    window,
+    TextDocument,
+    Position,
+    debug,
+    Range,
+    workspace,
+    Uri,
+    DebugConfiguration,
+    ProviderResult,
+    DebugConfigurationProviderTriggerKind,
+    tasks,
+    LogLevel,
+    ExtensionMode,
+} from "vscode";
 import { colorProvider } from "./color";
 import { getStatusBarText, NavigationData } from "./navigation-data";
 import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
@@ -81,7 +98,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
                     logMessage(LogLevel.Error, error as string);
                 }
             }
-        }),
+        })
     );
 
     // diagnostics (errors and warnings)
@@ -272,8 +289,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
                     ];
                 },
             },
-            DebugConfigurationProviderTriggerKind.Dynamic,
-        ),
+            DebugConfigurationProviderTriggerKind.Dynamic
+        )
     );
 
     const taskProvider = new RenpyTaskProvider();

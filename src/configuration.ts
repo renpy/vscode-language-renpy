@@ -16,7 +16,7 @@ export class Configuration {
                         this.excludeCompiledFilesConfig();
                     }
                 }
-            }),
+            })
         );
     }
 

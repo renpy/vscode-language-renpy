@@ -20,7 +20,11 @@ export const referencesProvider = languages.registerReferenceProvider("renpy", {
  * @param context - The current context
  * @returns An array of Locations that match the word at the current position in the current document
  */
-export async function findAllReferences(document: TextDocument, position: Position, context: ReferenceContext): Promise<Location[] | null | undefined> {
+export async function findAllReferences(
+    document: TextDocument,
+    position: Position,
+    context: ReferenceContext
+): Promise<Location[] | null | undefined> {
     const range = document.getWordRangeAtPosition(position);
     let keyword = document.getText(range);
     if (!keyword) {

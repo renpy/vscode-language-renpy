@@ -1,6 +1,17 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import { LogLevel, Position, TextDocument, Range as VSRange } from "vscode";
-import { CharacterTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, LiteralTokenType, MetaTokenType, OperatorTokenType, TokenType, TokenTypeIndex, TypeOfTokenType } from "./renpy-tokens";
+import {
+    CharacterTokenType,
+    EntityTokenType,
+    EscapedCharacterTokenType,
+    KeywordTokenType,
+    LiteralTokenType,
+    MetaTokenType,
+    OperatorTokenType,
+    TokenType,
+    TokenTypeIndex,
+    TypeOfTokenType,
+} from "./renpy-tokens";
 import { TokenPattern, TokenRangePattern, TokenMatchPattern, TokenRepoPattern } from "./token-pattern-types";
 import { Vector } from "../utilities/vector";
 import { logMessage } from "../logger";

@@ -1,5 +1,16 @@
 // Completion Provider
-import { TextDocument, Position, CompletionContext, CompletionItem, CompletionTriggerKind, CompletionItemKind, workspace, languages, CancellationToken, ProviderResult } from "vscode";
+import {
+    TextDocument,
+    Position,
+    CompletionContext,
+    CompletionItem,
+    CompletionTriggerKind,
+    CompletionItemKind,
+    workspace,
+    languages,
+    CancellationToken,
+    ProviderResult,
+} from "vscode";
 import { Displayable } from "./displayable";
 import { getDefinitionFromFile } from "./hover";
 import { getCurrentContext } from "./navigation";
@@ -8,7 +19,12 @@ import { NavigationData } from "./navigation-data";
 export const completionProvider = languages.registerCompletionItemProvider(
     "renpy",
     {
-        provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): ProviderResult<CompletionItem[]> {
+        provideCompletionItems(
+            document: TextDocument,
+            position: Position,
+            token: CancellationToken,
+            context: CompletionContext
+        ): ProviderResult<CompletionItem[]> {
             if (token.isCancellationRequested) {
                 return;
             }
@@ -22,7 +38,7 @@ export const completionProvider = languages.registerCompletionItemProvider(
     " ",
     "@",
     "-",
-    "(",
+    "("
 );
 
 /**
@@ -59,7 +75,12 @@ export function getCompletionList(document: TextDocument, position: Position, co
                 const parent = document.getText(document.getWordRangeAtPosition(parentPosition));
                 const kwPrefix = document.getText(range);
                 return getAutoCompleteList(kwPrefix, parent, parentContext);
-            } else if (context.triggerCharacter === "-" || context.triggerCharacter === "@" || context.triggerCharacter === "=" || context.triggerCharacter === " ") {
+            } else if (
+                context.triggerCharacter === "-" ||
+                context.triggerCharacter === "@" ||
+                context.triggerCharacter === "=" ||
+                context.triggerCharacter === " "
+            ) {
                 const parentPosition = new Position(position.line, line.length - line.trimStart().length);
                 const parent = document.getText(document.getWordRangeAtPosition(parentPosition));
                 if (parent) {

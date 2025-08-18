@@ -1,7 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { commands, CompletionItem, CompletionItemKind, CompletionItemTag, LogLevel, MarkdownString, Position, SnippetString, TextDocument, window, workspace } from "vscode";
+import {
+    commands,
+    CompletionItem,
+    CompletionItemKind,
+    CompletionItemTag,
+    LogLevel,
+    MarkdownString,
+    Position,
+    SnippetString,
+    TextDocument,
+    window,
+    workspace,
+} from "vscode";
 import { getDefinitionFromFile } from "./hover";
-import { DataType, getBaseTypeFromDefine, getNamedParameter, getPyDocsFromTextDocumentAtLine, Navigation, splitParameters, stripQuotes } from "./navigation";
+import {
+    DataType,
+    getBaseTypeFromDefine,
+    getNamedParameter,
+    getPyDocsFromTextDocumentAtLine,
+    Navigation,
+    splitParameters,
+    stripQuotes,
+} from "./navigation";
 import { cleanUpPath, extractFilenameWithoutExtension, getFileWithPath, getNavigationJsonFilepath, stripWorkspaceFromFile } from "./workspace";
 import * as fs from "fs";
 import { Displayable } from "./displayable";
@@ -131,7 +151,10 @@ export class NavigationData {
             NavigationData.data = readNavigationJson();
 
             if (NavigationData.data.error) {
-                logToast(LogLevel.Warning, "Navigation data is empty. Ren'Py could not compile your project. Please check your project can start successfully.");
+                logToast(
+                    LogLevel.Warning,
+                    "Navigation data is empty. Ren'Py could not compile your project. Please check your project can start successfully."
+                );
             }
             if (NavigationData.data.location === undefined) {
                 NavigationData.data.location = {};
@@ -664,7 +687,7 @@ export class NavigationData {
             0, //location
             array[5], //documentation
             array[2], //args
-            array[4], //type
+            array[4] //type
         );
     }
 
@@ -995,7 +1018,11 @@ export class NavigationData {
                 if (displayable) {
                     // find layered image attributes
                     if (displayable.image_type === "layeredimage") {
-                        const liAttributes = await NavigationData.getLayeredImageAttributes(displayable.name, displayable.filename, displayable.location);
+                        const liAttributes = await NavigationData.getLayeredImageAttributes(
+                            displayable.name,
+                            displayable.filename,
+                            displayable.location
+                        );
                         if (liAttributes) {
                             for (const attr of liAttributes) {
                                 if (!attributes.includes(attr)) {

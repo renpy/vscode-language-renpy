@@ -460,5 +460,18 @@ export const enum MetaTokenType {
     ModifierFlagStorageType,
 }
 
-export type TypeOfTokenType = typeof KeywordTokenType & typeof EntityTokenType & typeof MetaTokenType & typeof LiteralTokenType & typeof OperatorTokenType & typeof CharacterTokenType & typeof EscapedCharacterTokenType;
-export type TokenType = KeywordTokenType | EntityTokenType | MetaTokenType | LiteralTokenType | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;
+export type TypeOfTokenType = typeof KeywordTokenType &
+    typeof EntityTokenType &
+    typeof MetaTokenType &
+    typeof LiteralTokenType &
+    typeof OperatorTokenType &
+    typeof CharacterTokenType &
+    typeof EscapedCharacterTokenType;
+export type TokenType =
+    | KeywordTokenType
+    | EntityTokenType
+    | MetaTokenType
+    | LiteralTokenType
+    | OperatorTokenType
+    | CharacterTokenType
+    | EscapedCharacterTokenType;

@@ -1,5 +1,15 @@
 // Color conversion methods for Color provider
-import { CancellationToken, Color, ColorInformation, ColorPresentation, DocumentColorProvider, Range, TextDocument, TextEdit, languages } from "vscode";
+import {
+    CancellationToken,
+    Color,
+    ColorInformation,
+    ColorPresentation,
+    DocumentColorProvider,
+    Range,
+    TextDocument,
+    TextEdit,
+    languages,
+} from "vscode";
 import { ValueEqualsSet } from "./utilities/hashset";
 import { Tokenizer } from "./tokenizer/tokenizer";
 import { LiteralTokenType } from "./tokenizer/renpy-tokens";

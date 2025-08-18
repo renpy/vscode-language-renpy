@@ -38,7 +38,13 @@ export function getDocumentSymbols(document: TextDocument): DocumentSymbol[] | u
             if (category[key] instanceof Navigation) {
                 if (category[key].filename === documentFilename) {
                     const childRange = new Range(category[key].location - 1, 0, category[key].location - 1, 0);
-                    const classParent = new DocumentSymbol(key, `:${category[key].location}`, getDocumentSymbolKind(type, true), childRange, childRange);
+                    const classParent = new DocumentSymbol(
+                        key,
+                        `:${category[key].location}`,
+                        getDocumentSymbolKind(type, true),
+                        childRange,
+                        childRange
+                    );
                     if (type === "class") {
                         getClassDocumentSymbols(classParent, key);
                     }

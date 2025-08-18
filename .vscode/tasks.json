@@ -61,7 +61,7 @@
             "regexp": "^Type-checking in progress|[Cc]ompiled (?:.*?successfully|with .*?(?:error|warning))"
           },
           "endsPattern": {
-            "regexp": "^Found \\d+ (?:error|warning)|^No errors found"
+            "regexp": "^Found \\d+ (?:error|warning)|^No typescript errors found"
           }
         }
       },

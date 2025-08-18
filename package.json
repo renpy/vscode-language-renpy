@@ -322,7 +322,32 @@
     "test": "npm run test-compile && node ./node_modules/vscode/bin/test",
     "lint": "eslint -c eslint.config.mjs --ext .ts ./src/",
     "vsce-package": "vsce package -o language-renpy.vsix",
-    "format-check": "prettier --check 'src/**/*.ts' '.github/**/*.yml'"
+    "format": "prettier --write '**/*.{ts,js}' '.github/**/*.yml'",
+    "format-check": "prettier --check '**/*.{ts,js}' '.github/**/*.yml'"
+  },
+  "prettier": {
+    "printWidth": 150,
+    "tabWidth": 4,
+    "useTabs": false,
+    "semi": true,
+    "singleQuote": false,
+    "quoteProps": "as-needed",
+    "trailingComma": "es5",
+    "bracketSpacing": true,
+    "bracketSameLine": false,
+    "arrowParens": "always",
+    "endOfLine": "lf",
+    "overrides": [
+      {
+        "files": [
+          "*.yml",
+          "*.yaml"
+        ],
+        "options": {
+          "tabWidth": 2
+        }
+      }
+    ]
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",

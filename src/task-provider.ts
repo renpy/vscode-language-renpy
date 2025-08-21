@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
-import { getWorkspaceFolder } from "./workspace";
+
 import { Configuration } from "./configuration";
+import { getWorkspaceFolder } from "./workspace";
 
 interface RenpyTaskDefinition extends vscode.TaskDefinition {
     command: string;
@@ -24,7 +25,7 @@ export class RenpyTaskProvider implements vscode.TaskProvider {
     }
 
     private getTasks(): vscode.Task[] {
-        if (this.tasks !== undefined) {
+        if (this.tasks != null) {
             return this.tasks;
         }
         this.tasks = [];

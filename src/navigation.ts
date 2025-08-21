@@ -2,6 +2,7 @@
 "use strict";
 
 import { MarkdownString, ParameterInformation, Position, Range, SignatureInformation, TextDocument } from "vscode";
+
 import { NavigationData } from "./navigation-data";
 
 export class Navigation {
@@ -158,8 +159,8 @@ export function getPyDocsFromTextDocumentAtLine(document: TextDocument, line: nu
 
 export function getBaseTypeFromDefine(keyword: string, line: string): string | undefined {
     const rx = /^(default|define)\s+(\w*)\s*=\s*(\w*)\(/;
-    line = line.trim();
-    const matches = line.match(rx);
+    const trimmedLine = line.trim();
+    const matches = trimmedLine.match(rx);
     if (matches && matches.length >= 4) {
         const cls = matches[3];
         return cls;
@@ -250,10 +251,10 @@ export function getArgumentParameterInfo(location: Navigation, line: string, pos
             }
 
             for (const arg of argsList) {
-                const split = arg.trim().split("=");
-                let argDocs = "`" + split[0].trim() + "` parameter";
-                if (split.length > 1) {
-                    argDocs = argDocs + " (optional). Default is `" + split[1].trim() + "`.";
+                const argSplit = arg.trim().split("=");
+                let argDocs = "`" + argSplit[0].trim() + "` parameter";
+                if (argSplit.length > 1) {
+                    argDocs = argDocs + " (optional). Default is `" + argSplit[1].trim() + "`.";
                 } else {
                     argDocs = argDocs + ".";
                 }
@@ -282,9 +283,9 @@ export function getArgumentParameterInfo(location: Navigation, line: string, pos
 }
 
 export function formatDocumentationAsMarkdown(documentation: string): string {
-    documentation = documentation.replace(/\\/g, '"');
-    documentation = documentation.replace("```", "\n\n```");
-    documentation = documentation
+    let formattedDocs = documentation.replace(/\\/g, '"');
+    formattedDocs = formattedDocs.replace("```", "\n\n```");
+    formattedDocs = formattedDocs
         .replace(/:other:/g, "")
         .replace(/:func:/g, "")
         .replace(/:var:/g, "")
@@ -292,7 +293,7 @@ export function formatDocumentationAsMarkdown(documentation: string): string {
         .replace(/:class:/g, "")
         .replace(/:tpref:/g, "")
         .replace(/:propref:/g, "");
-    return documentation.trim();
+    return formattedDocs.trim();
 }
 
 export function splitParameters(line: string, trim = false): string[] {
@@ -363,17 +364,18 @@ export function getNamedParameter(strings: string[], named: string): string {
 }
 
 export function stripQuotes(value: string): string {
-    if (value.startsWith('"') && value.endsWith('"')) {
-        value = value.substring(1);
-        value = value.substring(0, value.length - 1);
-    } else if (value.startsWith("'") && value.endsWith("'")) {
-        value = value.substring(1);
-        value = value.substring(0, value.length - 1);
-    } else if (value.startsWith("`") && value.endsWith("`")) {
-        value = value.substring(1);
-        value = value.substring(0, value.length - 1);
+    let strippedValue = value;
+    if (strippedValue.startsWith('"') && strippedValue.endsWith('"')) {
+        strippedValue = strippedValue.substring(1);
+        strippedValue = strippedValue.substring(0, strippedValue.length - 1);
+    } else if (strippedValue.startsWith("'") && strippedValue.endsWith("'")) {
+        strippedValue = strippedValue.substring(1);
+        strippedValue = strippedValue.substring(0, strippedValue.length - 1);
+    } else if (strippedValue.startsWith("`") && strippedValue.endsWith("`")) {
+        strippedValue = strippedValue.substring(1);
+        strippedValue = strippedValue.substring(0, strippedValue.length - 1);
     }
-    return value;
+    return strippedValue;
 }
 
 export function rangeAsString(filename: string, range: Range): string {

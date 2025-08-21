@@ -1,9 +1,19 @@
 import { performance } from "perf_hooks";
-import { LogLevel, DecorationOptions, Disposable, ExtensionContext, MarkdownString, Uri, window, workspace } from "vscode";
-import { CharacterTokenType, LiteralTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType } from "./renpy-tokens";
+import { DecorationOptions, Disposable, ExtensionContext, LogLevel, MarkdownString, Uri, window, workspace } from "vscode";
+
+import { logMessage, logToast } from "../logger";
+
+import {
+    CharacterTokenType,
+    EntityTokenType,
+    EscapedCharacterTokenType,
+    KeywordTokenType,
+    LiteralTokenType,
+    MetaTokenType,
+    OperatorTokenType,
+} from "./renpy-tokens";
 import { TokenTree, tokenTypeToStringMap } from "./token-definitions";
 import { Tokenizer } from "./tokenizer";
-import { logMessage, logToast } from "../logger";
 
 let timeout: NodeJS.Timeout | undefined = undefined;
 
@@ -161,14 +171,14 @@ export async function registerDebugDecorator(context: ExtensionContext) {
             if (activeEditor && event.document === activeEditor.document) {
                 await triggerUpdateDecorations(true);
             }
-        })),
+        }))
     );
 
     // The active text editor was changed
     context.subscriptions.push(
         (activeEditorChangedEvent = window.onDidChangeActiveTextEditor(async () => {
             await triggerUpdateDecorations();
-        })),
+        }))
     );
 }
 
@@ -256,7 +266,7 @@ Content: {${content?.replaceAll("\n", "\\n")}}`,
             logMessage(
                 LogLevel.Error,
                 `Start line number is incorrect!. Got: ${range.start.line + 1}, expected: ${start.line + 1}. On token:
-${(decoration.hoverMessage as MarkdownString).value}`,
+${(decoration.hoverMessage as MarkdownString).value}`
             );
         }
 
@@ -264,7 +274,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             logMessage(
                 LogLevel.Error,
                 `End line number is incorrect!. Got: ${range.end.line + 1}, expected: ${end.line + 1}. On token:
-${(decoration.hoverMessage as MarkdownString).value}`,
+${(decoration.hoverMessage as MarkdownString).value}`
             );
         }
 
@@ -273,7 +283,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             logMessage(
                 LogLevel.Error,
                 `Start char number is incorrect!. Got: ${range.start.character + 1}, expected: ${start.character + 1}. On token:
-${(decoration.hoverMessage as MarkdownString).value}`,
+${(decoration.hoverMessage as MarkdownString).value}`
             );
         }
 
@@ -281,7 +291,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`,
             logMessage(
                 LogLevel.Error,
                 `End char number is incorrect!. Got: ${range.end.character + 1}, expected: ${end.character + 1}. On token:
-${(decoration.hoverMessage as MarkdownString).value}`,
+${(decoration.hoverMessage as MarkdownString).value}`
             );
         }
 

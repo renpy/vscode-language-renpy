@@ -1,4 +1,3 @@
-/* eslint-disable no-shadow */
 // This index is used to make it easier to detect what type of token is currently used.
 // This also makes sure that token types wont have overlapping ID's.
 export const enum TokenTypeIndex {
@@ -460,5 +459,18 @@ export const enum MetaTokenType {
     ModifierFlagStorageType,
 }
 
-export type TypeOfTokenType = typeof KeywordTokenType & typeof EntityTokenType & typeof MetaTokenType & typeof LiteralTokenType & typeof OperatorTokenType & typeof CharacterTokenType & typeof EscapedCharacterTokenType;
-export type TokenType = KeywordTokenType | EntityTokenType | MetaTokenType | LiteralTokenType | OperatorTokenType | CharacterTokenType | EscapedCharacterTokenType;
+export type TypeOfTokenType = typeof KeywordTokenType &
+    typeof EntityTokenType &
+    typeof MetaTokenType &
+    typeof LiteralTokenType &
+    typeof OperatorTokenType &
+    typeof CharacterTokenType &
+    typeof EscapedCharacterTokenType;
+export type TokenType =
+    | KeywordTokenType
+    | EntityTokenType
+    | MetaTokenType
+    | LiteralTokenType
+    | OperatorTokenType
+    | CharacterTokenType
+    | EscapedCharacterTokenType;

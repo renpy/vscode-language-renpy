@@ -1,5 +1,6 @@
-import { ConfigurationTarget, workspace, LogLevel } from "vscode";
 import * as util from "util";
+import { ConfigurationTarget, LogLevel, workspace } from "vscode";
+
 import { IEquatable, ValueEqualsSet } from "./utilities/hashset";
 import { logMessage } from "./logger";
 
@@ -48,7 +49,7 @@ export function injectCustomTextmateTokens(rules: ValueEqualsSet<TextMateRule>) 
 
     // If the config didn't exist yet, push the default tokens
     let tokenColorCustomizations = tokensConfig.get<TextMateRules>("tokenColorCustomizations");
-    if (tokenColorCustomizations === undefined || tokenColorCustomizations.textMateRules === undefined) {
+    if (tokenColorCustomizations == null || tokenColorCustomizations.textMateRules == null) {
         tokenColorCustomizations = { textMateRules: customFontStyleRules.toArray() };
     }
 
@@ -68,7 +69,7 @@ export function injectCustomTextmateTokens(rules: ValueEqualsSet<TextMateRule>) 
             },
             (reason) => {
                 logMessage(LogLevel.Error, "Failed to update the tokenColorCustomizations config! : " + reason);
-            },
+            }
         );
     }
 }

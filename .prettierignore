@@ -1,9 +1,33 @@
-# Ignore artifacts:
+# Build outputs
 **/out
 **/dist
+coverage/
+*.vsix
+
+# Generated files
+**/*.g.ts
+syntaxes/
+grammars/
+
+# Node modules
+node_modules/
+
+# VS Code configuration
+.vscode/
+
+# Logs
+*.log
+
+# Compiled Ren'Py files
+**/*.rpyc
+**/*.rpa
+**/*.rpymc
+
+# Cache directories
+cache/
+
+# Examples and test files that might need specific formatting
+examples/
 
 # Ignore all markdown files:
 *.md
-
-# Ignore all generated typescript files:
-*.g.ts

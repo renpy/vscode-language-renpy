@@ -1,8 +1,8 @@
 // Workspace and file functions
 "use strict";
 
-import { workspace } from "vscode";
 import * as fs from "fs";
+import { workspace } from "vscode";
 
 /**
  * Returns the filename.extension for the given fully qualified path
@@ -11,8 +11,8 @@ import * as fs from "fs";
  */
 export function extractFilename(str: string) {
     if (str) {
-        str = str.replace(/\\/g, "/");
-        return str.split("/").pop();
+        const normalizedStr = str.replace(/\\/g, "/");
+        return normalizedStr.split("/").pop();
     }
     return null;
 }
@@ -24,8 +24,8 @@ export function extractFilename(str: string) {
  */
 export function extractFilenameWithoutExtension(str: string) {
     if (str) {
-        str = str.replace(/\\/g, "/");
-        const filename = str.split("/").pop();
+        const normalizedStr = str.replace(/\\/g, "/");
+        const filename = normalizedStr.split("/").pop();
         if (filename) {
             return filename.replace(/\.[^/.]+$/, "");
         }
@@ -75,7 +75,7 @@ export function getWorkspaceFolder() {
 export function cleanUpPath(path: string): string {
     if (path.startsWith("/") && path.startsWith(":/", 2)) {
         // windows is reporting the path as "/c:/xxx"
-        path = path.substring(1);
+        return path.substring(1);
     }
     return path;
 }

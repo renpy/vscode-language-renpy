@@ -32,6 +32,32 @@ If you want to add new features, please make sure to discuss it in an issue.
 5. Make your changes and submit a pull request with `develop` as your target branch
 6. Happy coding! 🚀
 
+## Code Formatting
+
+This project uses [Prettier](https://prettier.io/) for code formatting and [ESLint](https://eslint.org/) for linting. Please ensure your code is properly formatted before submitting a pull request.
+
+### Available Scripts
+
+- `npm run format` - Format all files using Prettier
+- `npm run format-check` - Check if files are formatted correctly
+- `npm run lint` - Run ESLint to check for code quality issues
+
+### Editor Integration
+
+If you're using VS Code (recommended), Prettier is already configured as the default formatter for TypeScript files. The workspace settings enable "format on save", so your code will be automatically formatted when you save files.
+
+For other editors, install the Prettier extension/plugin and configure it to use the project's `.prettierrc.json` configuration file.
+
+### Before Submitting
+
+Before submitting a pull request, please run:
+
+```bash
+npm run format        # Format your code
+npm run format-check  # Verify formatting is correct
+npm run lint          # Check for linting issues
+```
+
 Tips:
 
 If you're working on syntax features, add the following textmate rule to your vscode `settings.json` file:

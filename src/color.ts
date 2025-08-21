@@ -1,9 +1,20 @@
 // Color conversion methods for Color provider
-import { CancellationToken, Color, ColorInformation, ColorPresentation, DocumentColorProvider, Range, TextDocument, TextEdit, languages } from "vscode";
-import { ValueEqualsSet } from "./utilities/hashset";
-import { Tokenizer } from "./tokenizer/tokenizer";
+import {
+    CancellationToken,
+    Color,
+    ColorInformation,
+    ColorPresentation,
+    DocumentColorProvider,
+    languages,
+    Range,
+    TextDocument,
+    TextEdit,
+} from "vscode";
+
 import { LiteralTokenType } from "./tokenizer/renpy-tokens";
-import { TextMateRule, injectCustomTextmateTokens } from "./decorator";
+import { Tokenizer } from "./tokenizer/tokenizer";
+import { ValueEqualsSet } from "./utilities/hashset";
+import { injectCustomTextmateTokens, TextMateRule } from "./decorator";
 
 export type DocumentColorContext = {
     document: TextDocument;
@@ -170,7 +181,7 @@ export function convertRgbToHex(r: number, g: number, b: number, a?: number): st
         return null;
     }
 
-    if (a === undefined) {
+    if (a == null) {
         return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
     } else {
         return "#" + (256 + r).toString(16).substring(1) + ((1 << 24) + (g << 16) + (b << 8) + a).toString(16).substring(1);
@@ -217,7 +228,6 @@ export function convertHtmlToColor(htmlHex: string): Color | null {
         hex = hex.replace(/([a-f\d])/gi, "$1$1");
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const result = hex.match(/[a-f\d]{2}/gi)!;
     return new Color(parseInt(result[0], 16) / 255, parseInt(result[1], 16) / 255, parseInt(result[2], 16) / 255, parseInt(result[3], 16) / 255);
 }

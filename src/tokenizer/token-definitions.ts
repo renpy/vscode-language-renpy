@@ -1,10 +1,22 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { LogLevel, Position, TextDocument, Range as VSRange } from "vscode";
-import { CharacterTokenType, EntityTokenType, EscapedCharacterTokenType, KeywordTokenType, LiteralTokenType, MetaTokenType, OperatorTokenType, TokenType, TokenTypeIndex, TypeOfTokenType } from "./renpy-tokens";
-import { TokenPattern, TokenRangePattern, TokenMatchPattern, TokenRepoPattern } from "./token-pattern-types";
-import { Vector } from "../utilities/vector";
+import { LogLevel, Position, Range as VSRange, TextDocument } from "vscode";
+
 import { logMessage } from "../logger";
 import { EnumToString } from "../utilities/utils";
+import { Vector } from "../utilities/vector";
+
+import {
+    CharacterTokenType,
+    EntityTokenType,
+    EscapedCharacterTokenType,
+    KeywordTokenType,
+    LiteralTokenType,
+    MetaTokenType,
+    OperatorTokenType,
+    TokenType,
+    TokenTypeIndex,
+    TypeOfTokenType,
+} from "./renpy-tokens";
+import { TokenMatchPattern, TokenPattern, TokenRangePattern, TokenRepoPattern } from "./token-pattern-types";
 
 export class Range {
     start: number;
@@ -168,15 +180,15 @@ export class Token {
 }
 
 export function isRangePattern(p: TokenPattern): p is TokenRangePattern {
-    return (p as TokenRangePattern).begin !== undefined;
+    return (p as TokenRangePattern).begin != null;
 }
 
 export function isMatchPattern(p: TokenPattern): p is TokenMatchPattern {
-    return (p as TokenMatchPattern).match !== undefined;
+    return (p as TokenMatchPattern).match != null;
 }
 
 export function isRepoPattern(p: TokenPattern): p is TokenRepoPattern {
-    return !isRangePattern(p) && (p as TokenRepoPattern).patterns !== undefined;
+    return !isRangePattern(p) && (p as TokenRepoPattern).patterns != null;
 }
 
 export class TreeNode {
@@ -200,7 +212,7 @@ export class TreeNode {
     }
 
     public isEmpty(): boolean {
-        return this.token === null && !this.hasChildren();
+        return this.token == null && !this.hasChildren();
     }
 
     public clear() {

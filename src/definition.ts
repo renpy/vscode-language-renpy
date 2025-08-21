@@ -1,5 +1,6 @@
 // Provider for Go To Definition
-import { CancellationToken, Definition, Location, Position, ProviderResult, TextDocument, Uri, languages } from "vscode";
+import { CancellationToken, Definition, languages, Location, Position, ProviderResult, TextDocument, Uri } from "vscode";
+
 import { getKeywordPrefix } from "./extension";
 import { rangeAsString } from "./navigation";
 import { NavigationData } from "./navigation-data";

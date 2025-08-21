@@ -1,5 +1,17 @@
 // Completion Provider
-import { TextDocument, Position, CompletionContext, CompletionItem, CompletionTriggerKind, CompletionItemKind, workspace, languages, CancellationToken, ProviderResult } from "vscode";
+import {
+    CancellationToken,
+    CompletionContext,
+    CompletionItem,
+    CompletionItemKind,
+    CompletionTriggerKind,
+    languages,
+    Position,
+    ProviderResult,
+    TextDocument,
+    workspace,
+} from "vscode";
+
 import { Displayable } from "./displayable";
 import { getDefinitionFromFile } from "./hover";
 import { getCurrentContext } from "./navigation";
@@ -8,7 +20,12 @@ import { NavigationData } from "./navigation-data";
 export const completionProvider = languages.registerCompletionItemProvider(
     "renpy",
     {
-        provideCompletionItems(document: TextDocument, position: Position, token: CancellationToken, context: CompletionContext): ProviderResult<CompletionItem[]> {
+        provideCompletionItems(
+            document: TextDocument,
+            position: Position,
+            token: CancellationToken,
+            context: CompletionContext
+        ): ProviderResult<CompletionItem[]> {
             if (token.isCancellationRequested) {
                 return;
             }
@@ -22,7 +39,7 @@ export const completionProvider = languages.registerCompletionItemProvider(
     " ",
     "@",
     "-",
-    "(",
+    "("
 );
 
 /**
@@ -59,7 +76,12 @@ export function getCompletionList(document: TextDocument, position: Position, co
                 const parent = document.getText(document.getWordRangeAtPosition(parentPosition));
                 const kwPrefix = document.getText(range);
                 return getAutoCompleteList(kwPrefix, parent, parentContext);
-            } else if (context.triggerCharacter === "-" || context.triggerCharacter === "@" || context.triggerCharacter === "=" || context.triggerCharacter === " ") {
+            } else if (
+                context.triggerCharacter === "-" ||
+                context.triggerCharacter === "@" ||
+                context.triggerCharacter === "=" ||
+                context.triggerCharacter === " "
+            ) {
                 const parentPosition = new Position(position.line, line.length - line.trimStart().length);
                 const parent = document.getText(document.getWordRangeAtPosition(parentPosition));
                 if (parent) {
@@ -88,15 +110,15 @@ export function getAutoCompleteList(prefix: string, parent = "", context = ""): 
     const characters = Object.keys(NavigationData.gameObjects["characters"]);
 
     if (prefix === "renpy.music." || prefix === "renpy.audio.") {
-        prefix = prefix.replace("renpy.", "").trim();
+        const cleanPrefix = prefix.replace("renpy.", "").trim();
         const list = NavigationData.renpyAutoComplete.filter((item) => {
             if (typeof item.label === "string") {
-                item.label.startsWith(prefix);
+                item.label.startsWith(cleanPrefix);
             }
         });
         for (const item of list) {
             if (typeof item.label === "string") {
-                newList.push(new CompletionItem(item.label.replace(prefix, ""), item.kind));
+                newList.push(new CompletionItem(item.label.replace(cleanPrefix, ""), item.kind));
             }
         }
         return newList;
@@ -473,9 +495,9 @@ function getLayerConfiguration(quoted = false): CompletionItem[] | undefined {
 
 function getDisplayableAutoComplete(quoted = false): CompletionItem[] {
     if (
-        NavigationData.displayableAutoComplete === undefined ||
+        NavigationData.displayableAutoComplete == null ||
         NavigationData.displayableAutoComplete.length === 0 ||
-        NavigationData.displayableQuotedAutoComplete === undefined ||
+        NavigationData.displayableQuotedAutoComplete == null ||
         NavigationData.displayableQuotedAutoComplete.length === 0
     ) {
         NavigationData.displayableAutoComplete = [];
@@ -603,7 +625,7 @@ function getNamedStoreAutoComplete(keyword: string): CompletionItem[] | undefine
     }
 
     const objKey = `store.${keyword}`;
-    if (NavigationData.gameObjects["fields"][objKey] !== undefined) {
+    if (NavigationData.gameObjects["fields"][objKey] != null) {
         const fields = NavigationData.gameObjects["fields"][objKey];
         for (const field of fields) {
             const split = field.keyword.split(".");

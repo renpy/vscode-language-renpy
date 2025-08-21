@@ -4,24 +4,42 @@
 
 import * as cp from "child_process";
 import * as fs from "fs";
-import { ExtensionContext, languages, commands, window, TextDocument, Position, debug, Range, workspace, Uri, DebugConfiguration, ProviderResult, DebugConfigurationProviderTriggerKind, tasks, LogLevel, ExtensionMode } from "vscode";
-import { colorProvider } from "./color";
-import { getStatusBarText, NavigationData } from "./navigation-data";
-import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
-import { diagnosticsInit } from "./diagnostics";
-import { semanticTokensProvider } from "./semantics";
-import { hoverProvider } from "./hover";
-import { completionProvider } from "./completion";
-import { definitionProvider } from "./definition";
-import { symbolProvider } from "./outline";
-import { referencesProvider } from "./references";
+import {
+    commands,
+    debug,
+    DebugConfiguration,
+    DebugConfigurationProviderTriggerKind,
+    ExtensionContext,
+    ExtensionMode,
+    languages,
+    LogLevel,
+    Position,
+    ProviderResult,
+    Range,
+    tasks,
+    TextDocument,
+    Uri,
+    window,
+    workspace,
+} from "vscode";
+
 import { registerDebugDecorator, unregisterDebugDecorator } from "./tokenizer/debug-decorator";
 import { Tokenizer } from "./tokenizer/tokenizer";
-import { signatureProvider } from "./signature";
-import { initializeLoggingSystems, logMessage, logToast, updateStatusBar } from "./logger";
+import { colorProvider } from "./color";
+import { completionProvider } from "./completion";
 import { Configuration } from "./configuration";
 import { RenpyAdapterDescriptorFactory, RenpyConfigurationProvider } from "./debugger";
+import { definitionProvider } from "./definition";
+import { diagnosticsInit } from "./diagnostics";
+import { hoverProvider } from "./hover";
+import { initializeLoggingSystems, logMessage, logToast, updateStatusBar } from "./logger";
+import { getStatusBarText, NavigationData } from "./navigation-data";
+import { symbolProvider } from "./outline";
+import { referencesProvider } from "./references";
+import { semanticTokensProvider } from "./semantics";
+import { signatureProvider } from "./signature";
 import { RenpyTaskProvider } from "./task-provider";
+import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
 
 let extensionMode: ExtensionMode = null!;
 
@@ -81,7 +99,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
                     logMessage(LogLevel.Error, error as string);
                 }
             }
-        }),
+        })
     );
 
     // diagnostics (errors and warnings)
@@ -113,7 +131,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
     context.subscriptions.push(gotoFileLocationCommand);
 
     const migrateOldFilesCommand = commands.registerCommand("renpy.migrateOldFiles", async () => {
-        if (workspace !== null) {
+        if (workspace != null) {
             const altURIs = await workspace.findFiles("**/*.rpyc", null, 50);
             altURIs.forEach(async (uri) => {
                 const sourceFile = Uri.parse(uri.toString().replace(".rpyc", ".rpy"));
@@ -272,8 +290,8 @@ export async function activate(context: ExtensionContext): Promise<void> {
                     ];
                 },
             },
-            DebugConfigurationProviderTriggerKind.Dynamic,
-        ),
+            DebugConfigurationProviderTriggerKind.Dynamic
+        )
     );
 
     const taskProvider = new RenpyTaskProvider();
@@ -322,7 +340,7 @@ export function isValidExecutable(renpyExecutableLocation: string): boolean {
 // Attempts to run renpy executable through console commands.
 export function RunWorkspaceFolder(): boolean {
     const childProcess = ExecuteRunpyRun();
-    if (childProcess === null) {
+    if (childProcess == null) {
         logToast(LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
         return false;
     }

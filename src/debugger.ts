@@ -1,9 +1,10 @@
-import * as vscode from "vscode";
 import { DebugSession, ExitedEvent, InitializedEvent, TerminatedEvent } from "@vscode/debugadapter";
-import { ExecuteRunpyRun } from "./extension";
 import { DebugProtocol } from "@vscode/debugprotocol";
-import { logMessage } from "./logger";
 import { ChildProcessWithoutNullStreams } from "child_process";
+import * as vscode from "vscode";
+
+import { ExecuteRunpyRun } from "./extension";
+import { logMessage } from "./logger";
 
 export class RenpyAdapterDescriptorFactory implements vscode.DebugAdapterDescriptorFactory {
     createDebugAdapterDescriptor(session: vscode.DebugSession): vscode.ProviderResult<vscode.DebugAdapterDescriptor> {
@@ -20,7 +21,7 @@ class RenpyDebugSession extends DebugSession {
         response.body = { supportTerminateDebuggee: true };
 
         const childProcess = ExecuteRunpyRun();
-        if (childProcess === null) {
+        if (childProcess == null) {
             logMessage(vscode.LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
             return;
         }
@@ -38,7 +39,7 @@ class RenpyDebugSession extends DebugSession {
                     seq: 0,
                     type: "event",
                 };
-                if (childProcess.pid !== undefined) {
+                if (childProcess.pid != null) {
                     processEvent.body.systemProcessId = childProcess.pid;
                 }
                 this.sendEvent(processEvent);
@@ -70,7 +71,7 @@ class RenpyDebugSession extends DebugSession {
     }
 
     private terminate() {
-        if (this.childProcess === null) {
+        if (this.childProcess == null) {
             return;
         }
         this.childProcess.kill();
@@ -78,7 +79,7 @@ class RenpyDebugSession extends DebugSession {
     }
 
     private disconnect() {
-        if (this.childProcess === null) {
+        if (this.childProcess == null) {
             return;
         }
         this.childProcess.disconnect();
@@ -87,7 +88,10 @@ class RenpyDebugSession extends DebugSession {
 }
 
 export class RenpyConfigurationProvider implements vscode.DebugConfigurationProvider {
-    resolveDebugConfiguration(folder: vscode.WorkspaceFolder | undefined, config: vscode.DebugConfiguration): vscode.ProviderResult<vscode.DebugConfiguration> {
+    resolveDebugConfiguration(
+        folder: vscode.WorkspaceFolder | undefined,
+        config: vscode.DebugConfiguration
+    ): vscode.ProviderResult<vscode.DebugConfiguration> {
         if (!config.type && !config.request && !config.name) {
             const editor = vscode.window.activeTextEditor;
             if (editor && editor.document.languageId === "renpy") {

@@ -322,8 +322,8 @@
     "test": "npm run test-compile && node ./node_modules/vscode/bin/test",
     "lint": "eslint -c eslint.config.mjs --ext .ts ./src/",
     "vsce-package": "vsce package -o language-renpy.vsix",
-    "format": "prettier --write \"**/*.{ts,js}\" \".github/**/*.yml\"",
-    "format-check": "prettier --check \"**/*.{ts,js}\" \".github/**/*.yml\""
+    "format": "prettier --write \"**/*.{ts,js}\" \".github/**/*.yml\" \"**/*.json\"",
+    "format-check": "prettier --check \"**/*.{ts,js}\" \".github/**/*.yml\" \"**/*.json\""
   },
   "prettier": {
     "printWidth": 150,
@@ -345,6 +345,15 @@
         ],
         "options": {
           "tabWidth": 2
+        }
+      },
+      {
+        "files": [
+          "*.json"
+        ],
+        "options": {
+          "tabWidth": 2,
+          "printWidth": 80
         }
       }
     ]

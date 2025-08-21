@@ -39,7 +39,7 @@ This project uses [Prettier](https://prettier.io/) for code formatting and [ESLi
 ### Available Scripts
 
 - `npm run format` - Format all files using Prettier
-- `npm run format-check` - Check if files are formatted correctly
+- `npm run format:check` - Check if files are formatted correctly
 - `npm run lint` - Run ESLint to check for code quality issues
 
 ### Editor Integration
@@ -54,7 +54,7 @@ Before submitting a pull request, please run:
 
 ```bash
 npm run format        # Format your code
-npm run format-check  # Verify formatting is correct
+npm run format:check  # Verify formatting is correct
 npm run lint          # Check for linting issues
 ```
 

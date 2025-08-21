@@ -225,14 +225,14 @@ export class NavigationData {
         for (const key in NavigationData.data.location) {
             const type = NavigationData.data.location[key];
             if (type[keyword]) {
-                const data = type[keyword];
-                if (data instanceof Navigation) {
-                    //!data.length
-                    locations.push(data);
-                } else if (data instanceof Displayable) {
-                    locations.push(new Navigation(key, keyword, data.filename, data.location));
+                const locationData = type[keyword];
+                if (locationData instanceof Navigation) {
+                    //!locationData.length
+                    locations.push(locationData);
+                } else if (locationData instanceof Displayable) {
+                    locations.push(new Navigation(key, keyword, locationData.filename, locationData.location));
                 } else {
-                    locations.push(new Navigation(key, keyword, data[0], data[1]));
+                    locations.push(new Navigation(key, keyword, locationData[0], locationData[1]));
                 }
             }
         }
@@ -299,9 +299,9 @@ export class NavigationData {
     }
 
     static getNavigationDumpEntry(keyword: string): Navigation | undefined {
-        const data = NavigationData.getNavigationDumpEntries(keyword);
-        if (data) {
-            return data[0];
+        const entries = NavigationData.getNavigationDumpEntries(keyword);
+        if (entries) {
+            return entries[0];
         }
         return undefined;
     }
@@ -600,14 +600,23 @@ export class NavigationData {
                 }
 
                 if (line2.startsWith("@property")) {
-                    const matches = document
+                    const propertyMatches = document
                         .lineAt(index + 1)
                         .text.trim()
                         .match(rxDef);
-                    if (matches) {
+                    if (propertyMatches) {
                         const pyDocs = getPyDocsFromTextDocumentAtLine(document, index + 2);
-                        const documentation = `${pyDocs}::class ${keyword}:\n    @property\n    def ${matches[1]}(self):`;
-                        const nav = new Navigation("property", matches[1], filename, index + 2, documentation, "", keyword, matches.index);
+                        const documentation = `${pyDocs}::class ${keyword}:\n    @property\n    def ${propertyMatches[1]}(self):`;
+                        const nav = new Navigation(
+                            "property",
+                            propertyMatches[1],
+                            filename,
+                            index + 2,
+                            documentation,
+                            "",
+                            keyword,
+                            propertyMatches.index
+                        );
                         props.push(nav);
                     }
                     index++;
@@ -642,13 +651,13 @@ export class NavigationData {
             }
             let finished = false;
             while (!finished && index < document.lineCount) {
-                let line = document.lineAt(index).text.replace(/[\n\r]/g, "");
-                if (line.length > 0 && line.length - line.trimStart().length <= spacing) {
+                let currentLine = document.lineAt(index).text.replace(/[\n\r]/g, "");
+                if (currentLine.length > 0 && currentLine.length - currentLine.trimStart().length <= spacing) {
                     finished = true;
                     break;
                 }
-                line = line.trim();
-                const matches = line.match(rxDef);
+                currentLine = currentLine.trim();
+                const matches = currentLine.match(rxDef);
                 if (matches) {
                     const pyDocs = getPyDocsFromTextDocumentAtLine(document, index);
                     const documentation = `${pyDocs}::class ${keyword}:\n    def __init__(self):\n        self.${matches[2]} = ...`;
@@ -675,16 +684,17 @@ export class NavigationData {
 		5 docs
 		*/
 
+        let actualSource = source;
         if (typeof array[0] === "string" && (array[0] === "obsolete" || array[0] === "transitions")) {
-            source = array[0];
+            actualSource = array[0];
         } else if (typeof array[4] === "string" && array[4] === "Action") {
-            source = array[4].toLowerCase();
+            actualSource = array[4].toLowerCase();
         } else if (source === "equivalent") {
-            source = array[0];
+            actualSource = array[0];
         }
 
         return new Navigation(
-            source,
+            actualSource,
             keyword,
             "", //filename
             0, //location
@@ -717,8 +727,8 @@ export class NavigationData {
         if (files && files.length > 0) {
             for (const file of files) {
                 const filename = stripWorkspaceFromFile(file.path);
-                const displayable = NavigationData.getPythonName(filename);
-                if (displayable) {
+                const isDisplayable = NavigationData.getPythonName(filename);
+                if (isDisplayable) {
                     const key = extractFilenameWithoutExtension(filename);
                     if (key) {
                         const path = stripWorkspaceFromFile(cleanUpPath(file.path));
@@ -767,9 +777,9 @@ export class NavigationData {
                 if (filename.startsWith("game/audio/")) {
                     const pythonName = NavigationData.getPythonName(filename);
                     if (pythonName) {
-                        const key = "audio." + extractFilenameWithoutExtension(filename);
-                        if (key && !NavigationData.gameObjects["audio"][key]) {
-                            NavigationData.gameObjects["audio"][key] = key;
+                        const audioKey = "audio." + extractFilenameWithoutExtension(filename);
+                        if (audioKey && !NavigationData.gameObjects["audio"][audioKey]) {
+                            NavigationData.gameObjects["audio"][audioKey] = audioKey;
                         }
                     }
                 }
@@ -1035,11 +1045,11 @@ export class NavigationData {
                         }
                     }
                     // find defined image attributes
-                    const filtered = Object.keys(displayables).filter((key) => displayables[key].tag === char.image);
+                    const filtered = Object.keys(displayables).filter((imageKey) => displayables[imageKey].tag === char.image);
                     if (filtered) {
-                        for (const key of filtered) {
-                            if (key !== char.image) {
-                                const attr = key.substring(char.image.length + 1);
+                        for (const imageKey of filtered) {
+                            if (imageKey !== char.image) {
+                                const attr = imageKey.substring(char.image.length + 1);
                                 if (!attributes.includes(attr)) {
                                     attributes.push(attr);
                                 }
@@ -1065,23 +1075,23 @@ export class NavigationData {
             const spacing = line.indexOf("layeredimage " + keyword);
             let finished = false;
             while (!finished && index < document.lineCount) {
-                let line = document.lineAt(index).text.replace(/[\n\r]/g, "");
-                if (line.length > 0 && line.length - line.trimLeft().length <= spacing) {
+                let currentLine = document.lineAt(index).text.replace(/[\n\r]/g, "");
+                if (currentLine.length > 0 && currentLine.length - currentLine.trimLeft().length <= spacing) {
                     finished = true;
                     break;
                 }
-                line = line.trim();
-                if (line.startsWith("attribute")) {
+                currentLine = currentLine.trim();
+                if (currentLine.startsWith("attribute")) {
                     // specific attribute
-                    const match = line.match(rxAttr);
+                    const match = currentLine.match(rxAttr);
                     if (match) {
                         if (!attributes.includes(match[1])) {
                             attributes.push(match[1]);
                         }
                     }
-                } else if (line.startsWith("group") && line.indexOf("auto") > 0) {
+                } else if (currentLine.startsWith("group") && currentLine.indexOf("auto") > 0) {
                     // auto attributes
-                    const match = line.match(/^\s*group\s+(\w*)/);
+                    const match = currentLine.match(/^\s*group\s+(\w*)/);
                     if (match) {
                         const imageKey = `${keyword}_${match[1]}_`;
                         const filtered = Object.keys(displayables).filter((key) => key.startsWith(imageKey));

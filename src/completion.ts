@@ -110,15 +110,15 @@ export function getAutoCompleteList(prefix: string, parent = "", context = ""): 
     const characters = Object.keys(NavigationData.gameObjects["characters"]);
 
     if (prefix === "renpy.music." || prefix === "renpy.audio.") {
-        prefix = prefix.replace("renpy.", "").trim();
+        const cleanPrefix = prefix.replace("renpy.", "").trim();
         const list = NavigationData.renpyAutoComplete.filter((item) => {
             if (typeof item.label === "string") {
-                item.label.startsWith(prefix);
+                item.label.startsWith(cleanPrefix);
             }
         });
         for (const item of list) {
             if (typeof item.label === "string") {
-                newList.push(new CompletionItem(item.label.replace(prefix, ""), item.kind));
+                newList.push(new CompletionItem(item.label.replace(cleanPrefix, ""), item.kind));
             }
         }
         return newList;
@@ -494,7 +494,12 @@ function getLayerConfiguration(quoted = false): CompletionItem[] | undefined {
 }
 
 function getDisplayableAutoComplete(quoted = false): CompletionItem[] {
-    if (NavigationData.displayableAutoComplete == null || NavigationData.displayableAutoComplete.length === 0 || NavigationData.displayableQuotedAutoComplete == null || NavigationData.displayableQuotedAutoComplete.length === 0) {
+    if (
+        NavigationData.displayableAutoComplete == null ||
+        NavigationData.displayableAutoComplete.length === 0 ||
+        NavigationData.displayableQuotedAutoComplete == null ||
+        NavigationData.displayableQuotedAutoComplete.length === 0
+    ) {
         NavigationData.displayableAutoComplete = [];
         NavigationData.displayableQuotedAutoComplete = [];
 

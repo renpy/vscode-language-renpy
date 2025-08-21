@@ -39,6 +39,6 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
-          preRelease: ${{ env.IS_PRE_RELEASE }}
+          prerelease: ${{ env.IS_PRE_RELEASE }}
           generateReleaseNotes: true
           artifacts: "${{ steps.publishToVSM.outputs.vsixPath }}"

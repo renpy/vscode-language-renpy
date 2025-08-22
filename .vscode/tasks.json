@@ -78,7 +78,7 @@
     },
     {
       "type": "npm",
-      "script": "watch-release",
+      "script": "watch:release",
       "problemMatcher": {
         "owner": "typescript",
         "fileLocation": "relative",

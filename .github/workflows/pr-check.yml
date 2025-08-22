@@ -35,7 +35,7 @@ jobs:
         with:
           node_version: ${{ env.NODE_VERSION }}
       - name: Format
-        run: npm run format-check
+        run: npm run format:check
 
   build_extension:
     name: Build Extension
@@ -48,7 +48,7 @@ jobs:
         with:
           node_version: ${{ env.NODE_VERSION }}
       - name: Build Extension
-        run: npm run vsce-package
+        run: npm run vsce:package
       - name: Upload Extension
         uses: actions/upload-artifact@v4
         with:

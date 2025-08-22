@@ -1,22 +1,10 @@
-# Build outputs
-**/out
-**/dist
-coverage/
-*.vsix
-
 # Generated files
 **/*.g.ts
 syntaxes/
 grammars/
 
-# Node modules
-node_modules/
-
 # VS Code configuration
 .vscode/
-
-# Logs
-*.log
 
 # Compiled Ren'Py files
 **/*.rpyc

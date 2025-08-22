@@ -28,7 +28,7 @@
         "${workspaceFolder}/examples" // open examples directory
       ],
       "outFiles": [ "${workspaceFolder}/dist/**/*.js" ],
-      "preLaunchTask": "npm: watch-release",
+      "preLaunchTask": "npm: watch:release",
       "skipFiles": [ "<node_internals>/**", "**/extensions/git*/**", "**/node_modules/prettier/**" ]
     },
     {
@@ -38,7 +38,7 @@
       "runtimeExecutable": "${execPath}",
       "args": [ "--extensionDevelopmentPath=${workspaceFolder}", "--extensionTestsPath=${workspaceFolder}/out/test" ],
       "outFiles": [ "${workspaceFolder}/out/test/**/*.js" ],
-      "preLaunchTask": "npm: test-compile",
+      "preLaunchTask": "npm: test:compile",
       "skipFiles": [ "<node_internals>/**", "**/extensions/git*/**", "**/node_modules/prettier/**" ]
     }
   ]

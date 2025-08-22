@@ -223,6 +223,7 @@ export class Vector<T> implements Iterable<T> {
         const temp = this.back();
         this.buffer[this.headPtr] = this.buffer[index];
         this.buffer[index] = temp;
+        this.headRef = this.buffer[this.headPtr]; // Update the headRef
     }
 
     /**

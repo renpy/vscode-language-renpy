@@ -1,6 +1,7 @@
 import NodePolyfillPlugin from "node-polyfill-webpack-plugin";
 import { Configuration, DefinePlugin } from "webpack";
-import { basePlugins, baseConfig } from "./webpack.config";
+
+import { baseConfig, basePlugins } from "./webpack.config";
 
 export const browserConfig: Configuration = {
     target: "webworker", // extensions run in a webworker context

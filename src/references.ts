@@ -4,15 +4,17 @@ import { CancellationToken, languages, Location, Position, ReferenceContext, Tex
 import { getKeywordPrefix } from "./extension";
 import { NavigationData } from "./navigation-data";
 
-export const referencesProvider = languages.registerReferenceProvider("renpy", {
-    async provideReferences(document: TextDocument, position: Position, context: ReferenceContext, token: CancellationToken) {
-        if (token.isCancellationRequested) {
-            return;
-        }
+export function registerReferencesProvider() {
+    return languages.registerReferenceProvider("renpy", {
+        async provideReferences(document: TextDocument, position: Position, context: ReferenceContext, token: CancellationToken) {
+            if (token.isCancellationRequested) {
+                return;
+            }
 
-        return await findAllReferences(document, position, context);
-    },
-});
+            return await findAllReferences(document, position, context);
+        },
+    });
+}
 
 /**
  * Returns an array of Locations that describe all matches for the keyword at the current position

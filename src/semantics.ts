@@ -21,25 +21,25 @@ const tokenTypes = ["class", "parameter", "variable", "keyword"];
 const tokenModifiers = ["declaration", "defaultLibrary"];
 const legend = new SemanticTokensLegend(tokenTypes, tokenModifiers);
 
-export const semanticTokensProvider = languages.registerDocumentSemanticTokensProvider(
-    "renpy",
-    {
-        provideDocumentSemanticTokens(document: TextDocument, token: CancellationToken): ProviderResult<SemanticTokens> {
-            if (token.isCancellationRequested) {
-                return;
-            }
+export function registerSemanticTokensProvider() {
+    return languages.registerDocumentSemanticTokensProvider(
+        "renpy",
+        {
+            provideDocumentSemanticTokens(document: TextDocument, token: CancellationToken): ProviderResult<SemanticTokens> {
+                if (token.isCancellationRequested) {
+                    return;
+                }
 
-            if (document.languageId !== "renpy") {
-                return;
-            }
+                if (document.languageId !== "renpy") {
+                    return;
+                }
 
-            return new Promise((resolve) => {
-                resolve(getSemanticTokens(document));
-            });
+                return Promise.resolve(getSemanticTokens(document));
+            },
         },
-    },
-    legend
-);
+        legend
+    );
+}
 
 export function getSemanticTokens(document: TextDocument): SemanticTokens {
     const tokensBuilder = new SemanticTokensBuilder(legend);

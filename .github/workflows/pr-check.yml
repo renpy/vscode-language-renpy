@@ -18,10 +18,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
       - name: Setup
         uses: ./.github/actions/setup
         with:
           node_version: ${{ env.NODE_VERSION }}
+
       - name: Lint
         run: npm run lint
 
@@ -31,10 +33,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
       - name: Setup
         uses: ./.github/actions/setup
         with:
           node_version: ${{ env.NODE_VERSION }}
+
       - name: Format
         run: npm run format:check
 
@@ -44,12 +48,15 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+
       - name: Setup
         uses: ./.github/actions/setup
         with:
           node_version: ${{ env.NODE_VERSION }}
+
       - name: Build Extension
         run: npm run vsce:package
+
       - name: Upload Extension
         uses: actions/upload-artifact@v4
         with:

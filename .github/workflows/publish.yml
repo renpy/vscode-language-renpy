@@ -17,10 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+
       - uses: actions/setup-node@v3
         with:
           node-version: 16
       - run: npm ci
+
       - name: Publish to Visual Studio Marketplace
         id: publishToVSM
         uses: HaaLeo/publish-vscode-extension@v1
@@ -28,6 +30,7 @@ jobs:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
           preRelease: ${{ env.IS_PRE_RELEASE }}
+
       - name: Publish to Open VSX Registry
         if: ${{ ! fromJSON(env.IS_PRE_RELEASE) }}
         uses: HaaLeo/publish-vscode-extension@v1
@@ -35,6 +38,7 @@ jobs:
           pat: ${{ secrets.OVSX_TOKEN }}
           registryUrl: https://open-vsx.org
           extensionFile: ${{ steps.publishToVSM.outputs.vsixPath }}
+
       - name: Create draft GitHub Release
         uses: ncipollo/release-action@v1
         with:

@@ -1,16 +1,18 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
-import { LogLevel, TextDocument, Uri, Location as VSLocation, Range as VSRange, workspace } from "vscode";
+ 
+import { Location as VSLocation, LogLevel, Range as VSRange, TextDocument, Uri, workspace } from "vscode";
+
+import { RpyProgram } from "../interpreter/program";
+import { LogCategory, logCatMessage } from "../logger";
+import { CharacterTokenType, MetaTokenType, TokenType } from "../tokenizer/renpy-tokens";
+import { Range,Token, TokenListIterator, TokenPosition, tokenTypeToStringMap } from "../tokenizer/token-definitions";
+import { Tokenizer } from "../tokenizer/tokenizer";
+import { Vector } from "../types/vector";
+
 import { AST, ASTNode } from "./ast-nodes";
 import { GrammarRule } from "./grammar-rule";
-import { Tokenizer } from "../tokenizer/tokenizer";
-import { CharacterTokenType, MetaTokenType, TokenType } from "../tokenizer/renpy-tokens";
-import { Token, TokenPosition, TokenListIterator, tokenTypeToStringMap, Range } from "../tokenizer/token-definitions";
-import { Vector } from "../utilities/vector";
-import { LogCategory, logCatMessage } from "../logger";
-import { RpyProgram } from "../interpreter/program";
 import { RenpyStatementRule } from "./renpy-grammar-rules";
 
-// eslint-disable-next-line no-shadow
+ 
 export const enum ParseErrorType {
     UnexpectedToken,
     ExpectedEndOfLine,

@@ -1,8 +1,10 @@
-import { tokenTypeToString } from "../tokenizer/token-definitions";
-import { TokenType } from "../tokenizer/renpy-tokens";
-import { Vector } from "../utilities/vector";
 import { Location as VSLocation, Range as VSRange } from "vscode";
+
 import { RpyProgram } from "src/interpreter/program";
+
+import { TokenType } from "../tokenizer/renpy-tokens";
+import { tokenTypeToString } from "../tokenizer/token-definitions";
+import { Vector } from "../types/vector";
 
 VSRange.prototype.toString = function () {
     return `[L${this.start.line + 1}:C${this.start.character + 1}, L${this.end.line + 1}:C${this.end.character + 1}]`;
@@ -614,7 +616,12 @@ export class SceneStatementNode extends StatementNode {
     public onlayer: ExpressionNode | null;
     public block: StatementNode[] | null;
 
-    constructor(imageSpecifier: ImageSpecifierNode | null, withExpr: ExpressionNode | null, onlayer: ExpressionNode | null, block: StatementNode[] | null) {
+    constructor(
+        imageSpecifier: ImageSpecifierNode | null,
+        withExpr: ExpressionNode | null,
+        onlayer: ExpressionNode | null,
+        block: StatementNode[] | null
+    ) {
         super();
         this.imageSpecifier = imageSpecifier;
         this.withExpr = withExpr;

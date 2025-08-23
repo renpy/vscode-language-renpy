@@ -1,6 +1,9 @@
 import { CharacterTokenType, EntityTokenType, KeywordTokenType, LiteralTokenType, MetaTokenType, OperatorTokenType } from "../tokenizer/renpy-tokens";
+import { Range } from "../tokenizer/token-definitions";
+
 import {
     AssignmentOperationNode,
+    CallStatementNode,
     CameraStatementNode,
     DefaultStatementNode,
     DefineStatementNode,
@@ -29,27 +32,25 @@ import {
     ShowLayerStatementNode,
     ShowStatementNode,
     StatementNode,
-    CallStatementNode,
     TransformStatementNode,
     WithStatementNode,
 } from "./ast-nodes";
 import { GrammarRule } from "./grammar-rule";
+import { DocumentParser, ParseErrorType } from "./parser";
 import {
-    AssignmentOperationRule,
-    IntegerLiteralRule,
-    IdentifierRule,
-    StringLiteralRule,
-    ParametersRule,
     ArgumentsRule,
+    AssignmentOperationRule,
     GuardExpressionRule,
+    IdentifierRule,
     IfStatementRule,
-    WhileStatementRule,
-    PythonExpressionRule,
+    IntegerLiteralRule,
     LiteralRule,
     MemberAccessExpressionRule,
+    ParametersRule,
+    PythonExpressionRule,
+    StringLiteralRule,
+    WhileStatementRule,
 } from "./rpy-python-grammar-rules";
-import { DocumentParser, ParseErrorType } from "./parser";
-import { Range } from "../tokenizer/token-definitions";
 
 const integerParser = new IntegerLiteralRule();
 const stringParser = new StringLiteralRule();
@@ -719,7 +720,12 @@ export class MenuBlockRule extends GrammarRule<StatementNode[]> {
     private menuItemChoiceParser = new MenuItemChoiceRule();
 
     public test(parser: DocumentParser): boolean {
-        return this.menuItemSetParser.test(parser) || this.withParser.test(parser) || this.menuItemCaptionParser.test(parser) || this.menuItemChoiceParser.test(parser);
+        return (
+            this.menuItemSetParser.test(parser) ||
+            this.withParser.test(parser) ||
+            this.menuItemCaptionParser.test(parser) ||
+            this.menuItemChoiceParser.test(parser)
+        );
     }
 
     public parse(parser: DocumentParser): StatementNode[] | null {
@@ -1010,7 +1016,13 @@ export class ImageSpecifierRule extends GrammarRule<ImageSpecifierNode> {
     }
 
     private isImageSpecifierClause(parser: DocumentParser): boolean {
-        return this.asExpressionParser.test(parser) || this.atExpressionParser.test(parser) || this.onlayerExpressionParser.test(parser) || this.zorderExpressionParser.test(parser) || this.behindExpressionParser.test(parser);
+        return (
+            this.asExpressionParser.test(parser) ||
+            this.atExpressionParser.test(parser) ||
+            this.onlayerExpressionParser.test(parser) ||
+            this.zorderExpressionParser.test(parser) ||
+            this.behindExpressionParser.test(parser)
+        );
     }
 }
 

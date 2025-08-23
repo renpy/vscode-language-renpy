@@ -1,5 +1,6 @@
-import { ExpressionNode, IdentifierNode } from "./ast-nodes";
 import { Location as VSLocation } from "vscode";
+
+import { ExpressionNode, IdentifierNode } from "./ast-nodes";
 
 export class AssignmentExpressionNode extends ExpressionNode {
     public readonly srcLocation: VSLocation;

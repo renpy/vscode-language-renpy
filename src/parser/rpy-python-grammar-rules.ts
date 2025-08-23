@@ -1,9 +1,30 @@
-import { CharacterTokenType, MetaTokenType, EntityTokenType, KeywordTokenType, LiteralTokenType, OperatorTokenType, TokenType } from "../tokenizer/renpy-tokens";
-import { MemberAccessNode, AssignmentOperationNode, ExpressionNode, LiteralNode, IdentifierNode, ParameterNode, ArgumentNode, WhileStatementNode, IfStatementNode, IfClauseNode, ElseClauseNode } from "./ast-nodes";
+import {
+    CharacterTokenType,
+    EntityTokenType,
+    KeywordTokenType,
+    LiteralTokenType,
+    MetaTokenType,
+    OperatorTokenType,
+    TokenType,
+} from "../tokenizer/renpy-tokens";
+
+import {
+    ArgumentNode,
+    AssignmentOperationNode,
+    ElseClauseNode,
+    ExpressionNode,
+    IdentifierNode,
+    IfClauseNode,
+    IfStatementNode,
+    LiteralNode,
+    MemberAccessNode,
+    ParameterNode,
+    WhileStatementNode,
+} from "./ast-nodes";
 import { GrammarRule } from "./grammar-rule";
 import { DocumentParser } from "./parser";
-import { RenpyBlockRule } from "./renpy-grammar-rules";
 import { PythonExpressionRule as FullPythonExpressionRule } from "./python-grammar-rules";
+import { RenpyBlockRule } from "./renpy-grammar-rules";
 
 /** TODO: Allow other expressions than just identifiers
  * MemberAccessExpression

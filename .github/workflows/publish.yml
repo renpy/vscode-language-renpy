@@ -33,6 +33,7 @@ jobs:
           preRelease: ${{ env.IS_PRE_RELEASE }}
 
       - name: Publish to Open VSX Registry
+        id: publishToOVSX
         uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.OVSX_TOKEN }}

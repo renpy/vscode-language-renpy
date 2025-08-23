@@ -14,19 +14,12 @@
   "editor.formatOnPaste": false,
   "editor.formatOnSave": true,
 
-  "json.format.enable": true,
-  "json.format.keepLines": true,
-
-  "[jsonc]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
-  },
-  "[json]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
-  },
-  "[python]": {
+  "editor.tabSize": 4,
+  "[github-actions-workflow][json][jsonc][yaml]": {
+    "editor.tabSize": 2,
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "[typescript]": {
+  "[javascript][typescript]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
 

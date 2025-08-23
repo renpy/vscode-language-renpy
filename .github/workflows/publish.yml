@@ -33,12 +33,12 @@ jobs:
           preRelease: ${{ env.IS_PRE_RELEASE }}
 
       - name: Publish to Open VSX Registry
-        if: ${{ ! fromJSON(env.IS_PRE_RELEASE) }}
         uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.OVSX_TOKEN }}
           registryUrl: https://open-vsx.org
           extensionFile: ${{ steps.publishToVSM.outputs.vsixPath }}
+          preRelease: ${{ env.IS_PRE_RELEASE }}
 
       - name: Create draft GitHub Release
         uses: ncipollo/release-action@v1

@@ -18,14 +18,14 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v4
         with:
-          node-version: 16
+          node-version: 21
       - run: npm ci
 
       - name: Publish to Visual Studio Marketplace
         id: publishToVSM
-        uses: HaaLeo/publish-vscode-extension@v1
+        uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
@@ -33,7 +33,7 @@ jobs:
 
       - name: Publish to Open VSX Registry
         if: ${{ ! fromJSON(env.IS_PRE_RELEASE) }}
-        uses: HaaLeo/publish-vscode-extension@v1
+        uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ secrets.OVSX_TOKEN }}
           registryUrl: https://open-vsx.org

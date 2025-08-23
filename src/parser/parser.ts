@@ -5,7 +5,7 @@ import { GrammarRule } from "./grammar-rule";
 import { Tokenizer } from "../tokenizer/tokenizer";
 import { CharacterTokenType, MetaTokenType, TokenType } from "../tokenizer/renpy-tokens";
 import { Token, TokenPosition, TokenListIterator, tokenTypeToStringMap, Range } from "../tokenizer/token-definitions";
-import { Vector } from "../utilities/vector";
+import { Vector } from "../types/vector";
 import { LogCategory, logCatMessage } from "../logger";
 import { RpyProgram } from "../interpreter/program";
 import { RenpyStatementRule } from "./renpy-grammar-rules";

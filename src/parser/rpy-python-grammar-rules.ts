@@ -1,5 +1,25 @@
-import { CharacterTokenType, MetaTokenType, EntityTokenType, KeywordTokenType, LiteralTokenType, OperatorTokenType, TokenType } from "../tokenizer/renpy-tokens";
-import { MemberAccessNode, AssignmentOperationNode, ExpressionNode, LiteralNode, IdentifierNode, ParameterNode, ArgumentNode, WhileStatementNode, IfStatementNode, IfClauseNode, ElseClauseNode } from "./ast-nodes";
+import {
+    CharacterTokenType,
+    MetaTokenType,
+    EntityTokenType,
+    KeywordTokenType,
+    LiteralTokenType,
+    OperatorTokenType,
+    TokenType,
+} from "../tokenizer/renpy-tokens";
+import {
+    MemberAccessNode,
+    AssignmentOperationNode,
+    ExpressionNode,
+    LiteralNode,
+    IdentifierNode,
+    ParameterNode,
+    ArgumentNode,
+    WhileStatementNode,
+    IfStatementNode,
+    IfClauseNode,
+    ElseClauseNode,
+} from "./ast-nodes";
 import { GrammarRule } from "./grammar-rule";
 import { DocumentParser } from "./parser";
 import { RenpyBlockRule } from "./renpy-grammar-rules";

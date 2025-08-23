@@ -1,4 +1,4 @@
-import { CharacterTokenType, EntityTokenType, KeywordTokenType, OperatorTokenType, TokenType } from "../tokenizer/renpy-tokens";
+import { CharacterTokenType, EntityTokenType, KeywordTokenType, MetaTokenType, OperatorTokenType, TokenType } from "../tokenizer/renpy-tokens";
 import { AssignmentOperationNode, ExpressionNode, IdentifierNode, UnaryOperationNode, BinaryOperationNode, StatementNode } from "./ast-nodes";
 import { AssignmentExpressionNode, LambdaExpressionNode, PythonClassDefinitionNode } from "./python-ast-nodes";
 import { GrammarRule } from "./grammar-rule";
@@ -48,7 +48,7 @@ export class PythonExpressionRule extends GrammarRule<ExpressionNode> {
                 return new BinaryOperationNode(
                     test,
                     KeywordTokenType.If, // Using 'if' as the operator
-                    new BinaryOperationNode(condition, KeywordTokenType.Else, elseExpr),
+                    new BinaryOperationNode(condition, KeywordTokenType.Else, elseExpr)
                 );
             }
 
@@ -342,7 +342,9 @@ export class ShiftExprRule extends GrammarRule<ExpressionNode> {
         }
 
         while (parser.peekAnyOf([OperatorTokenType.BitwiseLeftShift, OperatorTokenType.BitwiseRightShift])) {
-            const operator = parser.peek(OperatorTokenType.BitwiseLeftShift) ? OperatorTokenType.BitwiseLeftShift : OperatorTokenType.BitwiseRightShift;
+            const operator = parser.peek(OperatorTokenType.BitwiseLeftShift)
+                ? OperatorTokenType.BitwiseLeftShift
+                : OperatorTokenType.BitwiseRightShift;
             parser.optionalToken(operator);
 
             const right = parser.require(this.sumParser);
@@ -414,7 +416,15 @@ export class TermRule extends GrammarRule<ExpressionNode> {
             return null;
         }
 
-        while (parser.peekAnyOf([OperatorTokenType.Multiply, OperatorTokenType.Divide, OperatorTokenType.FloorDivide, OperatorTokenType.Modulo, CharacterTokenType.AtSymbol])) {
+        while (
+            parser.peekAnyOf([
+                OperatorTokenType.Multiply,
+                OperatorTokenType.Divide,
+                OperatorTokenType.FloorDivide,
+                OperatorTokenType.Modulo,
+                CharacterTokenType.AtSymbol,
+            ])
+        ) {
             let operator: TokenType;
             if (parser.optionalToken(OperatorTokenType.Multiply)) {
                 operator = OperatorTokenType.Multiply;
@@ -948,7 +958,12 @@ export class PythonArgumentsRule extends GrammarRule<ExpressionNode[]> {
     private pythonKwargsRule = new PythonKwargsRule();
 
     public test(parser: DocumentParser): boolean {
-        return this.pythonStarredExpressionRule.test(parser) || this.assignmentExpressionRule.test(parser) || this.expressionRule.test(parser) || this.pythonKwargsRule.test(parser);
+        return (
+            this.pythonStarredExpressionRule.test(parser) ||
+            this.assignmentExpressionRule.test(parser) ||
+            this.expressionRule.test(parser) ||
+            this.pythonKwargsRule.test(parser)
+        );
     }
 
     public parse(parser: DocumentParser): ExpressionNode[] | null {

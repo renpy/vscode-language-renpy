@@ -1,6 +1,6 @@
 import { tokenTypeToString } from "../tokenizer/token-definitions";
 import { TokenType } from "../tokenizer/renpy-tokens";
-import { Vector } from "../utilities/vector";
+import { Vector } from "../types/vector";
 import { Location as VSLocation, Range as VSRange } from "vscode";
 import { RpyProgram } from "src/interpreter/program";
 
@@ -614,7 +614,12 @@ export class SceneStatementNode extends StatementNode {
     public onlayer: ExpressionNode | null;
     public block: StatementNode[] | null;
 
-    constructor(imageSpecifier: ImageSpecifierNode | null, withExpr: ExpressionNode | null, onlayer: ExpressionNode | null, block: StatementNode[] | null) {
+    constructor(
+        imageSpecifier: ImageSpecifierNode | null,
+        withExpr: ExpressionNode | null,
+        onlayer: ExpressionNode | null,
+        block: StatementNode[] | null
+    ) {
         super();
         this.imageSpecifier = imageSpecifier;
         this.withExpr = withExpr;

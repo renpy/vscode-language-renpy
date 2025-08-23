@@ -897,7 +897,7 @@ export const classInheritance: TokenPattern = {
         {
             debugName: "classInheritance.patterns![3]",
 
-            token: KeywordTokenType.Metaclass, /*support.type.metaclass.python*/
+            token: MetaTokenType.Metaclass, /*support.type.metaclass.python*/
             match: /\bmetaclass\b/g,
         },
         placeholderPattern, // Placeholder for illegalNames

@@ -359,7 +359,6 @@ ${(decoration.hoverMessage as MarkdownString).value}`
             case KeywordTokenType.Function:
             case KeywordTokenType.Import: // Python keywords
             case KeywordTokenType.Class:
-            case KeywordTokenType.Metaclass:
             case KeywordTokenType.Lambda:
             case KeywordTokenType.Async:
             case KeywordTokenType.Def:
@@ -583,6 +582,7 @@ ${(decoration.hoverMessage as MarkdownString).value}`
             case MetaTokenType.CharacterSet:
             case MetaTokenType.Named:
             case MetaTokenType.ModifierFlagStorageType:
+            case MetaTokenType.Metaclass:
                 otherMeta.push(decoration);
                 break;
 

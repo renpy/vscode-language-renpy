@@ -1,6 +1,8 @@
 import { LogLevel, Position, Range as VSRange, TextDocument } from "vscode";
+
 import { Vector } from "src/types";
 import { EnumToString } from "src/utilities";
+
 import { LogCategory, logCatMessage, logMessage } from "../logger";
 
 import {
@@ -873,6 +875,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     CharacterSet: { name: "CharacterSet", value: MetaTokenType.CharacterSet },
     Named: { name: "Named", value: MetaTokenType.Named },
     ModifierFlagStorageType: { name: "ModifierFlagStorageType", value: MetaTokenType.ModifierFlagStorageType },
+    Metaclass: { name: "Metaclass", value: MetaTokenType.Metaclass },
 };
 
 export const tokenTypeToStringMap = Object.fromEntries(Object.entries(tokenTypeDefinitions).map(([, v]) => [v.value, v.name]));

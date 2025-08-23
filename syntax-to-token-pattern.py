@@ -229,7 +229,7 @@ def convert_token_type_split(name: str) -> str:
             elif get_part(2) == "namespace":
                 return "EntityTokenType.NamespaceName"
             elif get_part(2) == "metaclass":
-                return "KeywordTokenType.Metaclass"
+                return "MetaTokenType.Metaclass"
             elif get_part(2) == "exception":
                 return "MetaTokenType.BuiltinExceptionType"
             else:

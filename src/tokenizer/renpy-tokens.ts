@@ -469,6 +469,7 @@ export const enum MetaTokenType {
     ImaginaryNumberStorageType,
     NumberStorageType,
     ClassStorageType,
+    Metaclass,
 
     // Regex
     CommentBegin,

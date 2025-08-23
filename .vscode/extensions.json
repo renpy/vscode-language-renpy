@@ -3,7 +3,11 @@
   // for the documentation about the extensions.json format
   "recommendations": [
     "dbaeumer.vscode-eslint",
+    "EditorConfig.EditorConfig",
     "esbenp.prettier-vscode",
+    "github.vscode-github-actions",
+    "GitHub.vscode-pull-request-github",
+    "iulian-radu-at.find-unused-exports",
     "ms-vscode.vscode-js-profile-flame"
   ]
 }

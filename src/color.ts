@@ -21,23 +21,25 @@ export type DocumentColorContext = {
     range: Range;
 };
 
-export const colorProvider = languages.registerColorProvider("renpy", {
-    provideDocumentColors(document: TextDocument, token: CancellationToken) {
-        if (token.isCancellationRequested) {
-            return;
-        }
+export function registerColorProvider() {
+    return languages.registerColorProvider("renpy", {
+        provideDocumentColors(document: TextDocument, token: CancellationToken) {
+            if (token.isCancellationRequested) {
+                return;
+            }
 
-        return Promise.resolve(getColorInformation(document));
-    },
+            return Promise.resolve(getColorInformation(document));
+        },
 
-    provideColorPresentations(color: Color, context: DocumentColorContext, token: CancellationToken) {
-        if (token.isCancellationRequested) {
-            return;
-        }
+        provideColorPresentations(color: Color, context: DocumentColorContext, token: CancellationToken) {
+            if (token.isCancellationRequested) {
+                return;
+            }
 
-        return Promise.resolve(getColorPresentations(color, context));
-    },
-} as DocumentColorProvider);
+            return Promise.resolve(getColorPresentations(color, context));
+        },
+    } as DocumentColorProvider);
+}
 
 /**
  * Finds all colors in the given document and returns their ranges and color

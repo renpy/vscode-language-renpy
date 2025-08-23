@@ -9,17 +9,17 @@ import { formatDocumentationAsMarkdown, getPyDocsAtLine, Navigation, rangeAsStri
 import { NavigationData } from "./navigation-data";
 import { extractFilename, getFileWithPath, stripWorkspaceFromFile } from "./workspace";
 
-export const hoverProvider = languages.registerHoverProvider("renpy", {
-    provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
-        if (token.isCancellationRequested) {
-            return;
-        }
+export function registerHoverProvider() {
+    return languages.registerHoverProvider("renpy", {
+        provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
+            if (token.isCancellationRequested) {
+                return;
+            }
 
-        return new Promise((resolve) => {
-            resolve(getHoverContent(document, position));
-        });
-    },
-});
+            return Promise.resolve(getHoverContent(document, position));
+        },
+    });
+}
 
 export function getHoverContent(document: TextDocument, position: Position): Hover | null | undefined {
     let range = document.getWordRangeAtPosition(position);

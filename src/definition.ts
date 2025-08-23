@@ -1,22 +1,22 @@
 // Provider for Go To Definition
-import { CancellationToken, Definition, languages, Location, Position, ProviderResult, TextDocument, Uri } from "vscode";
+import { CancellationToken, Definition, languages, Location, Position, TextDocument, Uri } from "vscode";
 
 import { getKeywordPrefix } from "./extension";
 import { rangeAsString } from "./navigation";
 import { NavigationData } from "./navigation-data";
 import { getFileWithPath, stripWorkspaceFromFile } from "./workspace";
 
-export const definitionProvider = languages.registerDefinitionProvider("renpy", {
-    provideDefinition(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Definition> {
-        if (token.isCancellationRequested) {
-            return;
-        }
+export function registerDefinitionProvider() {
+    return languages.registerDefinitionProvider("renpy", {
+        async provideDefinition(document: TextDocument, position: Position, token: CancellationToken) {
+            if (token.isCancellationRequested) {
+                return;
+            }
 
-        return new Promise((resolve) => {
-            resolve(getDefinition(document, position));
-        });
-    },
-});
+            return Promise.resolve(getDefinition(document, position));
+        },
+    });
+}
 
 export function getDefinition(document: TextDocument, position: Position): Definition | undefined {
     const range = document.getWordRangeAtPosition(position);

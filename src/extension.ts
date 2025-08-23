@@ -25,19 +25,19 @@ import {
 
 import { registerDebugDecorator, unregisterDebugDecorator } from "./tokenizer/debug-decorator";
 import { Tokenizer } from "./tokenizer/tokenizer";
-import { colorProvider } from "./color";
-import { completionProvider } from "./completion";
+import { registerColorProvider } from "./color";
+import { registerCompletionProvider } from "./completion";
 import { Configuration } from "./configuration";
 import { RenpyAdapterDescriptorFactory, RenpyConfigurationProvider } from "./debugger";
-import { definitionProvider } from "./definition";
+import { registerDefinitionProvider } from "./definition";
 import { diagnosticsInit } from "./diagnostics";
-import { hoverProvider } from "./hover";
+import { registerHoverProvider } from "./hover";
 import { initializeLoggingSystems, logMessage, logToast, updateStatusBar } from "./logger";
 import { getStatusBarText, NavigationData } from "./navigation-data";
-import { symbolProvider } from "./outline";
-import { referencesProvider } from "./references";
-import { semanticTokensProvider } from "./semantics";
-import { signatureProvider } from "./signature";
+import { registerSymbolProvider } from "./outline";
+import { registerReferencesProvider } from "./references";
+import { registerSemanticTokensProvider } from "./semantics";
+import { registerSignatureProvider } from "./signature";
 import { RenpyTaskProvider } from "./task-provider";
 import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
 
@@ -55,14 +55,14 @@ export async function activate(context: ExtensionContext): Promise<void> {
     Configuration.initialize(context);
 
     // Subscribe to supported language features
-    context.subscriptions.push(hoverProvider);
-    context.subscriptions.push(definitionProvider);
-    context.subscriptions.push(symbolProvider);
-    context.subscriptions.push(signatureProvider);
-    context.subscriptions.push(completionProvider);
-    context.subscriptions.push(colorProvider);
-    context.subscriptions.push(referencesProvider);
-    context.subscriptions.push(semanticTokensProvider);
+    context.subscriptions.push(registerHoverProvider());
+    context.subscriptions.push(registerDefinitionProvider());
+    context.subscriptions.push(registerSymbolProvider());
+    context.subscriptions.push(registerSignatureProvider());
+    context.subscriptions.push(registerCompletionProvider());
+    context.subscriptions.push(registerColorProvider());
+    context.subscriptions.push(registerReferencesProvider());
+    context.subscriptions.push(registerSemanticTokensProvider());
 
     // diagnostics (errors and warnings)
     const diagnostics = languages.createDiagnosticCollection("renpy");

@@ -30,15 +30,8 @@
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
 
-  "eslint.validate": [
-    "javascript",
-    "typescript"
-  ],
-  "cSpell.words": [
-    "Ren'Py",
-    "rpyc",
-    "Uncompiled"
-  ],
+  "eslint.validate": ["javascript", "typescript"],
+  "cSpell.words": ["Ren'Py", "rpyc", "Uncompiled"],
 
   "editor.tokenColorCustomizations": {
     "[*Light*]": {
@@ -81,10 +74,7 @@
         }
       },
       {
-        "scope": [
-          "renpy.meta.u",
-          "renpy.meta.a"
-        ],
+        "scope": ["renpy.meta.u", "renpy.meta.a"],
         "settings": {
           "fontStyle": "underline"
         }

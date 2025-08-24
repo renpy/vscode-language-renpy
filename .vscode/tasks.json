@@ -120,7 +120,7 @@
       "type": "npm",
       "script": "lint",
       "group": "build",
-      "problemMatcher": [ "$eslint-stylish" ]
+      "problemMatcher": ["$eslint-stylish"]
     }
   ]
 }

@@ -8,7 +8,11 @@ on:
       - "v*"
 
 env:
+  HUSKY: 0
+  NODE_VERSION: 21
   IS_PRE_RELEASE: ${{ endsWith(github.ref_name, 'pre-release') }}
+  VS_MARKETPLACE_TOKEN: ${{ secrets.VS_MARKETPLACE_TOKEN }}
+  OVSX_TOKEN: ${{ secrets.OVSX_TOKEN }}
 
 jobs:
   publish:
@@ -16,24 +20,31 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: actions/setup-node@v3
+
+      - name: Setup
+        uses: ./.github/actions/setup
         with:
-          node-version: 16
-      - run: npm ci
+          node_version: ${{ env.NODE_VERSION }}
+
       - name: Publish to Visual Studio Marketplace
         id: publishToVSM
-        uses: HaaLeo/publish-vscode-extension@v1
+        if: env.VS_MARKETPLACE_TOKEN != ''
+        uses: HaaLeo/publish-vscode-extension@v2
         with:
-          pat: ${{ secrets.VS_MARKETPLACE_TOKEN }}
+          pat: ${{ env.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
           preRelease: ${{ env.IS_PRE_RELEASE }}
+
       - name: Publish to Open VSX Registry
-        if: ${{ ! fromJSON(env.IS_PRE_RELEASE) }}
-        uses: HaaLeo/publish-vscode-extension@v1
+        id: publishToOVSX
+        if: env.OVSX_TOKEN != ''
+        uses: HaaLeo/publish-vscode-extension@v2
         with:
-          pat: ${{ secrets.OVSX_TOKEN }}
+          pat: ${{ env.OVSX_TOKEN }}
           registryUrl: https://open-vsx.org
           extensionFile: ${{ steps.publishToVSM.outputs.vsixPath }}
+          preRelease: ${{ env.IS_PRE_RELEASE }}
+
       - name: Create draft GitHub Release
         uses: ncipollo/release-action@v1
         with:

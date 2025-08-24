@@ -315,6 +315,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
+    "prepare": "husky install",
     "package": "webpack --mode production --devtool hidden-source-map",
     "build": "webpack --mode development",
     "build:release": "webpack --mode production",
@@ -326,6 +327,14 @@
     "vsce:package": "vsce package -o language-renpy.vsix",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint -c eslint.config.mjs --fix --silent"
+    ],
+    "*.{js,ts,json,jsonc,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "prettier": {
     "printWidth": 150,
@@ -379,6 +388,8 @@
     "eslint-plugin-unused-imports": "^4.1.4",
     "fork-ts-checker-webpack-plugin": "^9.1.0",
     "globals": "^16.3.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.5",
     "node-polyfill-webpack-plugin": "^4.1.0",
     "prettier": "^3.6.2",
     "ts-loader": "^9.5.2",

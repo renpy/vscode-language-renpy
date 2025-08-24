@@ -8,6 +8,7 @@ on:
       - develop
 
 env:
+  HUSKY: 0
   NODE_VERSION: 21
 
 jobs:

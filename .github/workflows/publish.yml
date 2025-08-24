@@ -8,6 +8,7 @@ on:
       - "v*"
 
 env:
+  HUSKY: 0
   IS_PRE_RELEASE: ${{ endsWith(github.ref_name, 'pre-release') }}
 
 jobs:

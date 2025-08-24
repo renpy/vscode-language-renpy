@@ -5,9 +5,13 @@ import * as fs from "fs";
 import { workspace } from "vscode";
 
 /**
- * Returns the filename.extension for the given fully qualified path
- * @param str - The full path and filename of the file
- * @returns The filename.ext of the filepath
+ * Extracts the filename (including extension) from a file path.
+ * @param pathStr The full file system path.
+ * @returns The filename with its extension.
+ * @example
+ * ```ts
+ * extractFilename("/foo/bar/baz.txt"); // "baz.txt"
+ * ```
  */
 export function extractFilename(str: string) {
     if (str) {
@@ -18,9 +22,13 @@ export function extractFilename(str: string) {
 }
 
 /**
- * Returns the filename without the path and extension for the given fully qualified path
- * @param str - The full path and filename of the file
- * @returns The filename of the filepath
+ * Extracts the filename without its extension from a file path.
+ * @param pathStr The full file system path.
+ * @returns The filename without its extension.
+ * @example
+ * ```ts
+ * extractFilenameWithoutExtension("/foo/bar/baz.txt"); // "baz"
+ * ```
  */
 export function extractFilenameWithoutExtension(str: string) {
     if (str) {
@@ -38,9 +46,13 @@ export function extractFilenameWithoutExtension(str: string) {
 }
 
 /**
- * Strips the workspace path from the file, leaving the path relative to the workspace plus filename (e.g., `game/script.rpy`)
- * @param str - The full path and filename of the file
- * @returns The filename of the filepath (e.g., `game/script.rpy`)
+ * Computes a path relative to the workspace folder.
+ * @param pathStr The absolute or relative path to convert.
+ * @returns The path relative to the workspace root.
+ * @example
+ * ```ts
+ * stripWorkspaceFromFile("/C:/ws/game/script.rpy"); // "game/script.rpy"
+ * ```
  */
 export function stripWorkspaceFromFile(str: string) {
     const wf = getWorkspaceFolder();
@@ -57,8 +69,8 @@ export function stripWorkspaceFromFile(str: string) {
 }
 
 /**
- * Gets the workspace folder path (i.e., the Ren'Py base folder)
- * @returns The path of the workspace (i.e., the Ren'Py base folder)
+ * Retrieves the root path of the first VSCode workspace folder.
+ * @returns The cleaned workspace folder path, or an empty string if none is open.
  */
 export function getWorkspaceFolder() {
     if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
@@ -70,11 +82,13 @@ export function getWorkspaceFolder() {
 }
 
 /**
- * Gets the full path and filename of the file with invalid characters removed
- * @remarks
- * This removes the leading `/` character that appears before the path on Windows systems (e.g., `/c:/user/Documents/renpy/game/script.rpy`)
- * @param path - The full path and filename of the file
- * @returns The full path and filename of the file with invalid characters removed
+ * Removes a leading slash from a Windows drive-letter path.
+ * @param pathStr The path string to normalize.
+ * @returns The normalized path without a leading slash on Windows drives.
+ * @example
+ * ```ts
+ * cleanUpPath("/C:/projects"); // "C:/projects"
+ * ```
  */
 export function cleanUpPath(path: string): string {
     if (path.startsWith("/") && path.startsWith(":/", 2)) {
@@ -85,9 +99,15 @@ export function cleanUpPath(path: string): string {
 }
 
 /**
- * Returns the filename path including the workspace folder
- * @param filename - The filename
- * @returns The filename path including the workspace folder
+ * Resolves a project-relative path to an absolute filesystem path.
+ * Searches in `game/` first, then the workspace root.
+ * @param relativePath The path relative to the project root or `game` subfolder.
+ * @returns The absolute path, or `""` if `relativePath` is empty.
+ * @throws `Error` if the file cannot be found.
+ * @example
+ * ```ts
+ * getFileWithPath("script.rpy"); // e.g. "C:/ws/game/script.rpy"
+ * ```
  */
 export function getFileWithPath(filename: string) {
     const wf = getWorkspaceFolder();
@@ -106,8 +126,9 @@ export function getFileWithPath(filename: string) {
 }
 
 /**
- * Returns the path to the images folder including the workspace folder
- * @returns The full path to the game/images folder
+ * Returns the path to the images folder in the project.
+ * Prefers `game/images`, otherwise falls back to `images` at the workspace root.
+ * @returns The existing images folder path.
  */
 export function getImagesFolder() {
     const workspaceFolder = getWorkspaceFolder();
@@ -119,8 +140,9 @@ export function getImagesFolder() {
 }
 
 /**
- * Returns the path to the audio folder including the workspace folder
- * @returns The full path to the game/audio folder
+ * Returns the path to the audio folder in the project.
+ * Prefers `game/audio`, otherwise falls back to `audio` at the workspace root.
+ * @returns The existing audio folder path.
  */
 export function getAudioFolder() {
     const workspaceFolder = getWorkspaceFolder();
@@ -132,8 +154,8 @@ export function getAudioFolder() {
 }
 
 /**
- * Returns the path to the game/saves/navigation.json file including the workspace folder
- * @returns The full path to the navigation.json file
+ * Gets the absolute path for the `saves/navigation.json` file.
+ * @returns The absolute path to `saves/navigation.json` in the project.
  */
 export function getNavigationJsonFilepath() {
     const filename = "saves/navigation.json";

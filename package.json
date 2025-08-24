@@ -315,6 +315,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
+    "prepare": "husky install",
     "package": "webpack --mode production --devtool hidden-source-map",
     "build": "webpack --mode development",
     "build:release": "webpack --mode production",
@@ -326,6 +327,14 @@
     "vsce:package": "vsce package -o language-renpy.vsix",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
+  },
+  "lint-staged": {
+    "*.{js,ts}": [
+      "eslint -c eslint.config.mjs --fix --silent"
+    ],
+    "*.{js,ts,json,jsonc,yml,yaml}": [
+      "prettier --write"
+    ]
   },
   "prettier": {
     "printWidth": 150,

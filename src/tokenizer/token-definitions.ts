@@ -3,7 +3,7 @@ import { LogLevel, Position, Range as VSRange, TextDocument } from "vscode";
 import { Vector } from "src/types";
 import { EnumToString } from "src/utilities";
 
-import { logMessage } from "../logger";
+import { LogCategory, logCatMessage, logMessage } from "../logger";
 
 import {
     CharacterTokenType,
@@ -28,12 +28,18 @@ export class Range {
         this.end = end;
     }
 
-    overlaps(other: Range): boolean {
+    public overlaps(other: Range): boolean {
         return this.start <= other.end && other.start <= this.end;
     }
 
-    contains(position: number): boolean {
+    public contains(position: number): boolean {
         return position >= this.start && position <= this.end;
+    }
+
+    public toVSRange(document: TextDocument): VSRange {
+        const start = document.positionAt(this.start);
+        const end = document.positionAt(this.end);
+        return new VSRange(start, end);
     }
 }
 
@@ -82,6 +88,10 @@ export class TokenPosition {
         this.charStartOffset = newValue.charStartOffset;
     }
 
+    public isEqual(other: TokenPosition) {
+        return this.line === other.line && this.character === other.character;
+    }
+
     public toString() {
         return `L${this.line + 1}:C${this.character + 1}`;
     }
@@ -100,14 +110,13 @@ export class Token {
         this.metaTokens = new Vector<TokenType>();
     }
 
-    public getVSCodeRange() {
-        const start = new Position(this.startPos.line, this.startPos.character);
-        const end = new Position(this.endPos.line, this.endPos.character);
-
-        if (start.isEqual(end)) {
-            logMessage(LogLevel.Warning, `Empty token detected at L: ${start.line + 1}, C: ${start.character + 1} !`);
+    public getVSRange() {
+        if (this.startPos.isEqual(this.endPos)) {
+            logMessage(LogLevel.Warning, `Empty token detected at: ${this.startPos.toString()}!`);
         }
 
+        const start = new Position(this.startPos.line, this.startPos.character);
+        const end = new Position(this.endPos.line, this.endPos.character);
         return new VSRange(start, end);
     }
 
@@ -164,7 +173,7 @@ export class Token {
     }
 
     public getValue(document: TextDocument) {
-        return document.getText(this.getVSCodeRange());
+        return document.getText(this.getVSRange());
     }
 
     public toString() {
@@ -201,6 +210,10 @@ export class TreeNode {
         this.token = token;
         this.children = new Vector<TreeNode>();
         this.parent = null;
+    }
+
+    public reserve(size: number) {
+        this.children.reserve(size);
     }
 
     public addChild(child: TreeNode): void {
@@ -256,12 +269,12 @@ export class TreeNode {
      * We should ensure the entire range of the current token is covered.
      * If it's not covered by all children, we should create a new token filling the gaps and assigning the current token type
      */
-    public flatten(): Vector<Token> {
+    public flatten(document: TextDocument): Vector<Token> {
         const tokens = new Vector<Token>();
 
         // Step 2: Recursively flatten each child node and add its tokens to the vector
         this.children.forEach((child) => {
-            const childTokens = child.flatten();
+            const childTokens = child.flatten(document);
             childTokens.forEach((token) => {
                 tokens.pushBack(token);
             });
@@ -285,8 +298,24 @@ export class TreeNode {
             const start = token.startPos;
             if (start.charStartOffset > currentEnd.charStartOffset) {
                 // There is a gap between the current end position and the start of the next token range
+
                 const gapToken = new Token(this.token.type, currentEnd, start);
-                tokens.pushBack(gapToken);
+
+                const value = gapToken.getValue(document);
+                // Check if the gap is just whitespace and ignore it
+                if (value.trim().length === 0) {
+                    tokens.pushBack(new Token(CharacterTokenType.Whitespace, currentEnd, start));
+                } else {
+                    if (gapToken.isMetaToken()) {
+                        logCatMessage(
+                            LogLevel.Error,
+                            LogCategory.Parser,
+                            `Attempting to assign meta token "${tokenTypeToString(gapToken.type)}" to token gap @ (${gapToken.startPos}) -> (${gapToken.endPos}). Update the token pattern to assign a value token to this gap!"`
+                        );
+                    }
+
+                    tokens.pushBack(gapToken);
+                }
             }
             currentEnd = currentEnd.charStartOffset > token.endPos.charStartOffset ? currentEnd : token.endPos;
         }
@@ -302,9 +331,12 @@ export class TreeNode {
 
 export class TokenTree {
     public root: TreeNode;
+    public document: TextDocument;
 
-    constructor() {
+    constructor(document: TextDocument) {
         this.root = new TreeNode();
+        this.root.reserve(128);
+        this.document = document;
     }
 
     public clear() {
@@ -332,7 +364,7 @@ export class TokenTree {
     }
 
     public flatten(): Vector<Token> {
-        return this.root.flatten();
+        return this.root.flatten(this.document);
     }
 }
 
@@ -341,39 +373,23 @@ export class TokenTree {
  * This will allow us to advance based on conditions
  */
 export class TokenListIterator {
+    public readonly EOF_TOKEN = new Token(MetaTokenType.EOF, new TokenPosition(0, 0, -1), new TokenPosition(0, 0, -1));
     private readonly _tokens: Vector<Token>;
     private _index = 0;
-    private _blacklist: Set<TokenType> = new Set<TokenType>();
 
-    constructor(tokens: Vector<Token>) {
+    constructor(tokens: Vector<Token>, startIndex = 0) {
         this._tokens = tokens;
+        this._index = startIndex;
     }
 
-    /**
-     * Advances the iterator to the next node that has a valid token that is not blacklisted
-     */
-    public next() {
-        if (!this.hasNext()) {
-            throw new Error("next() was called on an iterator that has no more nodes to visit.");
-        }
-
-        // Move to the next node
-        this._index++;
-
-        // We should skip any nodes with blacklisted tokens
-        while (this.isBlacklisted() && this.hasNext()) {
-            this._index++;
-        }
-    }
-
-    public clone() {
-        const newIterator = new TokenListIterator(this._tokens);
-        newIterator._index = this._index;
-        newIterator._blacklist = new Set(this._blacklist);
-        return newIterator;
+    public get index() {
+        return this._index;
     }
 
     public get token() {
+        if (this._index >= this._tokens.size) {
+            return this.EOF_TOKEN;
+        }
         return this._tokens.at(this._index);
     }
 
@@ -386,37 +402,53 @@ export class TokenListIterator {
     }
 
     /**
-     * Check is the current token is blacklisted
+     * Advances the iterator to the next node that has a valid token that is not blacklisted
      */
-    private isBlacklisted() {
-        if (this._blacklist.has(this.tokenType)) {
-            return true;
+    public next() {
+        if (!this.hasNext()) {
+            throw new Error("next() was called on an iterator that has no more nodes to visit.");
         }
 
-        return this.metaTokens.any((token) => {
-            return this._blacklist.has(token);
-        });
+        // Move to the next node
+        this._index++;
     }
 
     /**
-     * Add a filter to the iterator. This will prevent the iterator from visiting nodes that match the filter.
+     * Advances the iterator to the next node that has a valid token that is not blacklisted
      */
-    public setFilter(blacklist: Set<TokenType>) {
-        this._blacklist = blacklist;
+    public previous() {
+        if (!this.hasPrevious()) {
+            throw new Error("previous() was called on an iterator that has no more nodes to visit.");
+        }
+
+        // Move to the previous node
+        this._index--;
     }
 
     /**
-     * Returns the current filter
+     * Seek to a specific index
+     * @param index The new index of the iterator
      */
-    public getFilter() {
-        return this._blacklist;
+    public seek(index: number) {
+        if (index < 0 || index >= this._tokens.size) {
+            throw new Error(`Index out of bounds: ${index}`);
+        }
+
+        this._index = index;
     }
 
     /**
      * Returns true if there are more nodes to visit
      */
     public hasNext() {
-        return this._index < this._tokens.size - 1;
+        return this._index < this._tokens.size;
+    }
+
+    /**
+     * Returns true if there are more nodes to visit
+     */
+    public hasPrevious() {
+        return this._index > 0;
     }
 }
 
@@ -481,6 +513,11 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     Hbox: { name: "Hbox", value: KeywordTokenType.Hbox },
     Fixed: { name: "Fixed", value: KeywordTokenType.Fixed },
 
+    Rpy: { name: "Rpy", value: KeywordTokenType.Rpy },
+    Monologue: { name: "Monologue", value: KeywordTokenType.Monologue },
+    Double: { name: "Double", value: KeywordTokenType.Double },
+    Single: { name: "Single", value: KeywordTokenType.Single },
+
     At: { name: "At", value: KeywordTokenType.At },
     As: { name: "As", value: KeywordTokenType.As },
     With: { name: "With", value: KeywordTokenType.With },
@@ -512,14 +549,26 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     On: { name: "On", value: KeywordTokenType.On },
     Function: { name: "Function", value: KeywordTokenType.Function },
 
-    Import: { name: "Import", value: KeywordTokenType.Import },
-    Class: { name: "Class", value: KeywordTokenType.Class },
-    Metaclass: { name: "Metaclass", value: KeywordTokenType.Metaclass },
-    Lambda: { name: "Lambda", value: KeywordTokenType.Lambda },
-    Async: { name: "Async", value: KeywordTokenType.Async },
-    Def: { name: "Def", value: KeywordTokenType.Def },
+    True: { name: "True", value: KeywordTokenType.True },
+    False: { name: "False", value: KeywordTokenType.False },
+    None: { name: "None", value: KeywordTokenType.None },
+    Raise: { name: "Raise", value: KeywordTokenType.Raise },
+    Except: { name: "Except", value: KeywordTokenType.Except },
     Global: { name: "Global", value: KeywordTokenType.Global },
     Nonlocal: { name: "Nonlocal", value: KeywordTokenType.Nonlocal },
+    Async: { name: "Async", value: KeywordTokenType.Async },
+    Await: { name: "Await", value: KeywordTokenType.Await },
+    Def: { name: "Def", value: KeywordTokenType.Def },
+    Class: { name: "Class", value: KeywordTokenType.Class },
+    Lambda: { name: "Lambda", value: KeywordTokenType.Lambda },
+    Import: { name: "Import", value: KeywordTokenType.Import },
+    Assert: { name: "Assert", value: KeywordTokenType.Assert },
+
+    Continue: { name: "Continue", value: KeywordTokenType.Continue },
+    Yield: { name: "Yield", value: KeywordTokenType.Yield },
+    Break: { name: "Break", value: KeywordTokenType.Break },
+    Try: { name: "Try", value: KeywordTokenType.Try },
+    Finally: { name: "Finally", value: KeywordTokenType.Finally },
 
     ClassName: { name: "ClassName", value: EntityTokenType.ClassName },
     InheritedClassName: { name: "InheritedClassName", value: EntityTokenType.InheritedClassName },
@@ -567,6 +616,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     BitwiseRightShift: { name: "BitwiseRightShift", value: OperatorTokenType.BitwiseRightShift },
 
     Assignment: { name: "Assignment", value: OperatorTokenType.Assignment },
+    ColonAssignment: { name: "ColonAssignment", value: OperatorTokenType.ColonAssignment },
     PlusAssign: { name: "PlusAssign", value: OperatorTokenType.PlusAssign },
     MinusAssign: { name: "MinusAssign", value: OperatorTokenType.MinusAssign },
     MultiplyAssign: { name: "MultiplyAssign", value: OperatorTokenType.MultiplyAssign },
@@ -653,6 +703,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
 
     Invalid: { name: "Invalid", value: MetaTokenType.Invalid },
     Deprecated: { name: "Deprecated", value: MetaTokenType.Deprecated },
+    EOF: { name: "EOF", value: MetaTokenType.EOF },
 
     Comment: { name: "Comment", value: MetaTokenType.Comment },
     CommentCodeTag: { name: "CommentCodeTag", value: MetaTokenType.CommentCodeTag },
@@ -824,6 +875,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     CharacterSet: { name: "CharacterSet", value: MetaTokenType.CharacterSet },
     Named: { name: "Named", value: MetaTokenType.Named },
     ModifierFlagStorageType: { name: "ModifierFlagStorageType", value: MetaTokenType.ModifierFlagStorageType },
+    Metaclass: { name: "Metaclass", value: MetaTokenType.Metaclass },
 };
 
 export const tokenTypeToStringMap = Object.fromEntries(Object.entries(tokenTypeDefinitions).map(([, v]) => [v.value, v.name]));

@@ -9,6 +9,7 @@ export const enum TokenTypeIndex {
     CharactersStart = 4001,
     EscapedCharacterStart = 5001,
     MetaStart = 6001,
+    EOFTokenID = 9996,
     DeprecatedTokenID = 9997,
     UnknownCharacterID = 9998,
     InvalidTokenID = 9999,
@@ -81,6 +82,12 @@ export const enum KeywordTokenType {
     Hbox,
     Fixed,
 
+    // Renpy sub-expression keywords
+    Rpy,
+    Monologue,
+    Double,
+    Single,
+
     // Renpy control flow keywords
     At,
     As,
@@ -117,14 +124,27 @@ export const enum KeywordTokenType {
     Function,
 
     // Python keywords
-    Import,
-    Class,
-    Metaclass,
-    Lambda,
-    Async,
-    Def,
+    None,
+    True,
+    False,
+
+    Raise,
+    Except,
     Global,
     Nonlocal,
+    Async,
+    Await,
+    Def,
+    Class,
+    Lambda,
+    Import,
+    Assert,
+
+    Continue,
+    Yield,
+    Break,
+    Try,
+    Finally,
 }
 
 export const enum EntityTokenType {
@@ -183,6 +203,7 @@ export const enum OperatorTokenType {
 
     // Assignment operators
     Assignment, // =
+    ColonAssignment, // :=
     PlusAssign, // +=
     MinusAssign, // -=
     MultiplyAssign, // *=
@@ -279,6 +300,7 @@ export const enum EscapedCharacterTokenType {
 export const enum MetaTokenType {
     Invalid = TokenTypeIndex.InvalidTokenID,
     Deprecated = TokenTypeIndex.DeprecatedTokenID,
+    EOF = TokenTypeIndex.EOFTokenID,
 
     Comment = TokenTypeIndex.MetaStart,
     CommentCodeTag,
@@ -447,6 +469,7 @@ export const enum MetaTokenType {
     ImaginaryNumberStorageType,
     NumberStorageType,
     ClassStorageType,
+    Metaclass,
 
     // Regex
     CommentBegin,

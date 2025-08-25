@@ -215,7 +215,7 @@ export const statementKeyword: TokenPattern = {
 
             // if `as` is eventually followed by `:` or line continuation, it's probably control flow like:    with foo as bar, \
             //          Foo as Bar:      try:        do_stuff()      except Exception as e:        pass
-            token: MetaTokenType.ControlFlowKeyword, /*keyword.control.flow.python*/
+            token: KeywordTokenType.As, /*keyword.control.flow.as.python*/
             match: /\b(?<!\.)as\b(?=.*[:\\])/g,
         },
         {
@@ -897,7 +897,7 @@ export const classInheritance: TokenPattern = {
         {
             debugName: "classInheritance.patterns![3]",
 
-            token: KeywordTokenType.Metaclass, /*support.type.metaclass.python*/
+            token: MetaTokenType.Metaclass, /*support.type.metaclass.python*/
             match: /\bmetaclass\b/g,
         },
         placeholderPattern, // Placeholder for illegalNames
@@ -1037,11 +1037,11 @@ export const generator: TokenPattern = {
     // Match "for ... in" construct used in generators and for loops to correctly identify the "in" as a control flow keyword.
     begin: /\bfor\b/dg,
     beginCaptures: {
-        0: { token: MetaTokenType.ControlFlowKeyword, /*keyword.control.flow.python*/ },
+        0: { token: KeywordTokenType.For, /*keyword.control.flow.for.python*/ },
     },
     end: /\bin\b/dg,
     endCaptures: {
-        0: { token: MetaTokenType.ControlFlowKeyword, /*keyword.control.flow.python*/ },
+        0: { token: KeywordTokenType.In, /*keyword.control.flow.in.python*/ },
     },
     patterns: [expression]
 };

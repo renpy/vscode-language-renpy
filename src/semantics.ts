@@ -12,10 +12,11 @@ import {
     TextDocument,
 } from "vscode";
 
+import { stripWorkspaceFromFile } from "src/utilities";
+
 import { logMessage } from "./logger";
 import { DataType, getCurrentContext, Navigation, rangeAsString, splitParameters } from "./navigation";
 import { NavigationData, updateNavigationData } from "./navigation-data";
-import { stripWorkspaceFromFile } from "./workspace";
 
 const tokenTypes = ["class", "parameter", "variable", "keyword"];
 const tokenModifiers = ["declaration", "defaultLibrary"];

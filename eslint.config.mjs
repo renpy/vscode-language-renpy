@@ -94,4 +94,12 @@ export default defineConfig([
             "import/order": "off", // Using simple-import-sort instead
         },
     },
+    {
+        files: ["tests/**/*.ts"],
+        rules: {
+            "no-unused-expressions": "off",
+            "@typescript-eslint/no-unused-expressions": "off",
+            "@typescript-eslint/no-explicit-any": "off",
+        },
+    },
 ]);

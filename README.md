@@ -59,6 +59,37 @@ To build and run the extension locally, see [this section](https://github.com/re
 
 > Document Symbols are displayed in the Outline window in the sidebar.
 
+## Testing
+
+### Test Framework
+
+The tests use **VS Code Test CLI** (`@vscode/test-cli`) which provides:
+
+- Real VS Code API access during testing
+- Automatic VS Code instance management
+- Built-in coverage reporting
+- Mocha test runner in VS Code environment
+- Extension testing capabilities
+
+### Running Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run tests with UI (interactive)
+npm run test:ui
+
+# Run specific test pattern
+npx vscode-test --grep "HashSet"
+
+# Run with watch mode
+npx vscode-test --watch
+```
+
 ## Thanks To
 
 - [language-renpy](https://github.com/renpy/language-renpy). All contributors

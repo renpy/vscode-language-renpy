@@ -13,6 +13,8 @@ import {
     workspace,
 } from "vscode";
 
+import { cleanUpPath, extractFilenameWithoutExtension, getFileWithPath, getNavigationJsonFilepath, stripWorkspaceFromFile } from "src/utilities";
+
 import { Character } from "./character";
 import { Displayable } from "./displayable";
 import { getDefinitionFromFile } from "./hover";
@@ -28,7 +30,6 @@ import {
 } from "./navigation";
 import data from "./renpy.json";
 import kwData from "./renpyauto.json";
-import { cleanUpPath, extractFilenameWithoutExtension, getFileWithPath, getNavigationJsonFilepath, stripWorkspaceFromFile } from "./workspace";
 
 const filterCharacter = "\u2588";
 

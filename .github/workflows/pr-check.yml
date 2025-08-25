@@ -64,3 +64,34 @@ jobs:
           path: "**/*.vsix"
           if-no-files-found: error
           retention-days: 7
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node_version: ${{ env.NODE_VERSION }}
+
+      - name: Start Xvfb
+        if: success()
+        run: |
+          /usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+          echo ">>> Started xvfb"
+
+      - name: Run tests (with coverage)
+        if: success()
+        id: run_tests
+        run: npm run test:coverage
+        shell: bash
+
+      - name: Process test output for Codecov
+        if: success()
+        uses: codecov/basic-test-results@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          file: .vscode-test/**/test-results.xml

@@ -1,10 +1,11 @@
 // Provider for Go To Definition
 import { CancellationToken, Definition, languages, Location, Position, TextDocument, Uri } from "vscode";
 
+import { getFileWithPath, stripWorkspaceFromFile } from "src/utilities";
+
 import { getKeywordPrefix } from "./extension";
 import { rangeAsString } from "./navigation";
 import { NavigationData } from "./navigation-data";
-import { getFileWithPath, stripWorkspaceFromFile } from "./workspace";
 
 export function registerDefinitionProvider() {
     return languages.registerDefinitionProvider("renpy", {

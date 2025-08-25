@@ -1,10 +1,11 @@
 // Document Symbol (Outline) Provider
 import { CancellationToken, DocumentSymbol, languages, LogLevel, ProviderResult, Range, SymbolKind, TextDocument, Uri } from "vscode";
 
+import { stripWorkspaceFromFile } from "src/utilities";
+
 import { logMessage } from "./logger";
 import { Navigation } from "./navigation";
 import { NavigationData } from "./navigation-data";
-import { stripWorkspaceFromFile } from "./workspace";
 
 export function registerSymbolProvider() {
     return languages.registerDocumentSymbolProvider("renpy", {

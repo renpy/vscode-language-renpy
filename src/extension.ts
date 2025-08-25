@@ -23,6 +23,8 @@ import {
     workspace,
 } from "vscode";
 
+import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "src/utilities";
+
 import { registerDebugDecorator, unregisterDebugDecorator } from "./tokenizer/debug-decorator";
 import { Tokenizer } from "./tokenizer/tokenizer";
 import { registerColorProvider } from "./color";
@@ -39,7 +41,6 @@ import { registerReferencesProvider } from "./references";
 import { registerSemanticTokensProvider } from "./semantics";
 import { registerSignatureProvider } from "./signature";
 import { RenpyTaskProvider } from "./task-provider";
-import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "./workspace";
 
 let extensionMode: ExtensionMode = null!;
 

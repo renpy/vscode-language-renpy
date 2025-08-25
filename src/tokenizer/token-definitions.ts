@@ -1,8 +1,9 @@
 import { LogLevel, Position, Range as VSRange, TextDocument } from "vscode";
 
+import { Vector } from "src/types";
+import { EnumToString } from "src/utilities";
+
 import { logMessage } from "../logger";
-import { EnumToString } from "../utilities/utils";
-import { Vector } from "../utilities/vector";
 
 import {
     CharacterTokenType,

@@ -11,9 +11,10 @@ import {
     TextEdit,
 } from "vscode";
 
+import { ValueEqualsSet } from "src/types";
+
 import { LiteralTokenType } from "./tokenizer/renpy-tokens";
 import { Tokenizer } from "./tokenizer/tokenizer";
-import { ValueEqualsSet } from "./utilities/hashset";
 import { injectCustomTextmateTokens, TextMateRule } from "./decorator";
 
 export type DocumentColorContext = {

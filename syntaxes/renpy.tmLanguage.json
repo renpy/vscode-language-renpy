@@ -928,9 +928,13 @@
     },
 
     "conditionals": {
-      "begin": "(?<=^[ \\t]*)(if|elif|else|while|for)\\b",
+      "begin": "(?<=^[ \\t]*)(?:(if)|(elif)|(else)|(while)|(for))\\b",
       "beginCaptures": {
-        "1": { "name": "keyword.control.flow.renpy" }
+        "1": { "name": "keyword.control.flow.if.renpy" },
+        "2": { "name": "keyword.control.flow.elif.renpy" },
+        "3": { "name": "keyword.control.flow.else.renpy" },
+        "4": { "name": "keyword.control.flow.while.renpy" },
+        "5": { "name": "keyword.control.flow.for.renpy" }
       },
       "end": "(?=#|:)|$",
       "patterns": [

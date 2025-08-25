@@ -1173,9 +1173,13 @@ export const renpyBlockTester: TokenPattern = {
 export const conditionals: TokenPattern = {
     debugName: "conditionals",
 
-    begin: /(?<=^[ \t]*)(if|elif|else|while|for)\b/dgm,
+    begin: /(?<=^[ \t]*)(?:(if)|(elif)|(else)|(while)|(for))\b/dgm,
     beginCaptures: {
-        1: { token: MetaTokenType.ControlFlowKeyword, /*keyword.control.flow.renpy*/ },
+        1: { token: KeywordTokenType.If, /*keyword.control.flow.if.renpy*/ },
+        2: { token: KeywordTokenType.Elif, /*keyword.control.flow.elif.renpy*/ },
+        3: { token: KeywordTokenType.Else, /*keyword.control.flow.else.renpy*/ },
+        4: { token: KeywordTokenType.While, /*keyword.control.flow.while.renpy*/ },
+        5: { token: KeywordTokenType.For, /*keyword.control.flow.for.renpy*/ },
     },
     end: /(?=#|:)|$/gm,
     patterns: [

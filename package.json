@@ -330,7 +330,7 @@
   },
   "lint-staged": {
     "*.{js,ts}": [
-      "eslint -c eslint.config.mjs --fix --silent"
+      "eslint -c eslint.config.mjs --fix --quiet"
     ],
     "*.{js,ts,json,jsonc,yml,yaml}": [
       "prettier --write"

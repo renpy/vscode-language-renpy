@@ -25,6 +25,14 @@ export class Stack<T> implements Iterable<T> {
     }
 
     /**
+     * Reserves space for a specified number of elements in the stack.
+     * @param capacity The new capacity to reserve.
+     */
+    public reserve(capacity: number) {
+        this.buffer.reserve(capacity);
+    }
+
+    /**
      * Creates a shallow copy of the current stack.
      * @returns A new `Stack` containing the same elements and capacity.
      * @example

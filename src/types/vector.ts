@@ -88,11 +88,36 @@ export class Vector<T> implements Iterable<T> {
      * const vec2 = new Vector<string>(10);
      */
     constructor(capacity = 0) {
+        this.reserve(capacity);
+    }
+
+    /**
+     * Ensures that the vector has at least the specified capacity.
+     * If the current capacity is less than the requested capacity,
+     * the internal buffer is resized to accommodate the new capacity.
+     *
+     * @param capacity The minimum capacity that the vector should have.
+     * @throws If the capacity is a negative number.
+     * @returns This method does not return a value.
+     * @sideeffect This method may modify the internal buffer of the vector.
+     * @example
+     * ```typescript
+     * const vec = new Vector<number>();
+     * console.log(vec.capacity); // Outputs: 0
+     *
+     * vec.reserve(10);
+     * console.log(vec.capacity); // Outputs: 10
+     *
+     * vec.reserve(5);
+     * console.log(vec.capacity); // Outputs: 10 (no change, as current capacity is already sufficient)
+     * ```
+     */
+    public reserve(capacity: number) {
         if (capacity < 0) {
             throw new RangeError("Vector capacity must be a non-negative number.");
         }
 
-        this.buffer = new Array<T | null>(capacity).fill(null);
+        this.buffer = this.buffer.concat(new Array<T | null>(capacity - this.capacity).fill(null));
     }
 
     /**

@@ -18,9 +18,8 @@
       "preLaunchTask": "npm: watch",
       "skipFiles": [
         "<node_internals>/**",
-        "**/extensions/git*/**",
         "**/node_modules/prettier/**",
-        "**/node/extensionHostProcess.js"
+        "**/resources/app/extensions/**"
       ]
     },
     {

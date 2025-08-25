@@ -24,7 +24,20 @@ export function registerDefinitionProvider() {
 
                 const symbol = program.globalScope.resolve(word);
                 if (symbol) {
-                    return new Location(document.uri, symbol.definitionLocation.range);
+                    return symbol.definitionLocation;
+                }
+
+                // Test parser version if active document
+                const activeEditor = window.activeTextEditor;
+                if (activeEditor?.document === document) {
+                    const program = await Parser.parseDocument(document);
+
+                    const word = document.getText(document.getWordRangeAtPosition(position));
+
+                    const symbol = program.globalScope.resolve(word);
+                    if (symbol) {
+                        return new Location(document.uri, symbol.definitionLocation.range);
+                    }
                 }
             }
 

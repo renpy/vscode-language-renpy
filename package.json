@@ -330,10 +330,10 @@
     "format:check": "prettier --check ."
   },
   "lint-staged": {
-    "*.{js,ts}": [
+    "*.{mjs,js,mts,ts}": [
       "eslint -c eslint.config.mjs --fix --quiet"
     ],
-    "*.{js,ts,json,jsonc,yml,yaml}": [
+    "*.{mjs,js,mts,ts,json,jsonc,yml,yaml}": [
       "prettier --write"
     ]
   },

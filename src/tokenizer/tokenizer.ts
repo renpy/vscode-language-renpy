@@ -2,15 +2,15 @@ import { assert } from "console";
 import { performance } from "perf_hooks";
 import { LogLevel, Range as VSRange, TextDocument, Uri, workspace } from "vscode";
 
+import { Stack, Vector } from "src/types";
+import { escapeRegExpCharacters } from "src/utilities";
+
 import { isShippingBuild } from "../extension";
 import { LogCategory, logCatMessage } from "../logger";
-import { Stack } from "../utilities/stack";
-import { escapeRegExpCharacters } from "../utilities/utils";
-import { Vector } from "../utilities/vector";
 
+import { RenpyPatterns } from "./generated";
 import { isMatchPattern, isRangePattern, isRepoPattern, Range, Token, TokenPosition, TokenTree, TreeNode } from "./token-definitions";
 import { TokenCapturePattern, TokenMatchPattern, TokenPatternCapture, TokenRangePattern, TokenRepoPattern } from "./token-pattern-types";
-import { RenpyPatterns } from "./token-patterns.g";
 
 interface MatchScanResult {
     pattern: ExTokenPattern;

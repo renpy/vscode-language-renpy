@@ -3,8 +3,8 @@
 // ANY MANUAL EDITS MADE TO THIS FILE WILL BE OVERWRITTEN. YOU HAVE BEEN WARNED.
 // Last generated: 15/03/2025 08:08:45 (UTC+0)
 
-import { MetaTokenType, CharacterTokenType, LiteralTokenType, EntityTokenType, KeywordTokenType, EscapedCharacterTokenType, OperatorTokenType } from "./renpy-tokens";
-import { placeholderPattern, TokenPattern } from "./token-pattern-types";
+import { MetaTokenType, CharacterTokenType, LiteralTokenType, EntityTokenType, KeywordTokenType, EscapedCharacterTokenType, OperatorTokenType } from "src/tokenizer/renpy-tokens";
+import { placeholderPattern, TokenPattern } from "src/tokenizer/token-pattern-types";
 
 export const statements: TokenPattern = {
     patterns: [

@@ -3,8 +3,8 @@
 // ANY MANUAL EDITS MADE TO THIS FILE WILL BE OVERWRITTEN. YOU HAVE BEEN WARNED.
 // Last generated: 15/03/2025 08:08:45 (UTC+0)
 
-import { EntityTokenType, CharacterTokenType, KeywordTokenType, MetaTokenType } from "./renpy-tokens";
-import { placeholderPattern, TokenPattern } from "./token-pattern-types";
+import { EntityTokenType, CharacterTokenType, KeywordTokenType, MetaTokenType } from "src/tokenizer/renpy-tokens";
+import { placeholderPattern, TokenPattern } from "src/tokenizer/token-pattern-types";
 
 export const builtinScreens: TokenPattern = {
     debugName: "builtinScreens",

@@ -48,3 +48,6 @@ export class PythonClassDefinitionNode extends ExpressionNode {
         this.baseClasses = baseClasses;
     }
 }
+
+/** Call expression: callee(args...) */
+// Python expression classes are defined in ast-nodes.ts

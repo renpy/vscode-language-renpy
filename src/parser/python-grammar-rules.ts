@@ -15,6 +15,9 @@ import {
     IdentifierNode,
     LiteralNode,
     MemberAccessNode,
+    PythonCallExpressionNode,
+    PythonSliceExpressionNode,
+    PythonSubscriptExpressionNode,
     StatementNode,
     UnaryOperationNode,
 } from "./ast-nodes";
@@ -477,7 +480,13 @@ export class TermRule extends GrammarRule<ExpressionNode> {
  *   | power;
  */
 export class FactorRule extends GrammarRule<ExpressionNode> {
-    private powerParser = new PowerRule();
+    private _powerParser: PowerRule | null = null;
+    private get powerParser(): PowerRule {
+        if (this._powerParser === null) {
+            this._powerParser = new PowerRule();
+        }
+        return this._powerParser;
+    }
 
     public test(parser: DocumentParser): boolean {
         return parser.peekAnyOf([OperatorTokenType.Plus, OperatorTokenType.Minus, OperatorTokenType.BitwiseNot]) || this.powerParser.test(parser);
@@ -516,7 +525,13 @@ export class FactorRule extends GrammarRule<ExpressionNode> {
  */
 export class PowerRule extends GrammarRule<ExpressionNode> {
     private awaitPrimaryParser = new AwaitPrimaryRule();
-    private factorParser = new FactorRule();
+    private _factorParser: FactorRule | null = null;
+    private get factorParser(): FactorRule {
+        if (this._factorParser === null) {
+            this._factorParser = new FactorRule();
+        }
+        return this._factorParser;
+    }
 
     public test(parser: DocumentParser): boolean {
         return this.awaitPrimaryParser.test(parser);
@@ -577,19 +592,78 @@ export class AwaitPrimaryRule extends GrammarRule<ExpressionNode> {
  */
 export class PrimaryRule extends GrammarRule<ExpressionNode> {
     private atomParser = new AtomRule();
+    private argumentsParser = new PythonArgumentsRule();
+    private slicesParser = new SlicesRule();
+    private identifierRule = new IdentifierRule();
 
     public test(parser: DocumentParser): boolean {
         return this.atomParser.test(parser);
     }
 
     public parse(parser: DocumentParser): ExpressionNode | null {
-        const left = parser.require(this.atomParser);
-        if (left === null) {
+        const base = parser.require(this.atomParser);
+        if (base === null) {
             return null;
         }
+        let left: ExpressionNode = base;
 
-        // TODO: Implement full primary expression parsing with attribute access,
-        // function calls, and subscript operations
+        // Parse trailers: attribute access, calls, subscripts, and (optionally) genexp (omitted)
+        let progressed = true;
+        while (progressed) {
+            progressed = false;
+
+            // primary '.' NAME
+            if (parser.peek(CharacterTokenType.Dot)) {
+                if (!parser.requireToken(CharacterTokenType.Dot)) {
+                    return null;
+                }
+                const name = parser.require(this.identifierRule);
+                if (name === null) {
+                    return null;
+                }
+                left = new MemberAccessNode(left, name);
+                progressed = true;
+                continue;
+            }
+
+            // primary '(' [arguments] ')'
+            if (parser.peek(CharacterTokenType.OpenParentheses)) {
+                if (!parser.requireToken(CharacterTokenType.OpenParentheses)) {
+                    return null;
+                }
+                let args: ExpressionNode[] = [];
+                if (!parser.peek(CharacterTokenType.CloseParentheses)) {
+                    const parsedArgs = parser.optional(this.argumentsParser);
+                    if (parsedArgs === null) {
+                        return null;
+                    }
+                    args = parsedArgs;
+                }
+                if (!parser.requireToken(CharacterTokenType.CloseParentheses)) {
+                    return null;
+                }
+                left = new PythonCallExpressionNode(parser.locationFromCurrent(), left, args);
+                progressed = true;
+                continue;
+            }
+
+            // primary '[' slices ']'
+            if (parser.peek(CharacterTokenType.OpenSquareBracket)) {
+                if (!parser.requireToken(CharacterTokenType.OpenSquareBracket)) {
+                    return null;
+                }
+                const slices = parser.require(this.slicesParser);
+                if (slices === null) {
+                    return null;
+                }
+                if (!parser.requireToken(CharacterTokenType.CloseSquareBracket)) {
+                    return null;
+                }
+                left = new PythonSubscriptExpressionNode(parser.locationFromCurrent(), left, slices);
+                progressed = true;
+                continue;
+            }
+        }
 
         return left;
     }
@@ -610,6 +684,7 @@ export class PrimaryRule extends GrammarRule<ExpressionNode> {
  */
 export class AtomRule extends GrammarRule<ExpressionNode> {
     private identifierParser = new IdentifierRule();
+    private namedExpressionRule = new NamedExpressionRule();
 
     public test(parser: DocumentParser): boolean {
         return (
@@ -618,19 +693,195 @@ export class AtomRule extends GrammarRule<ExpressionNode> {
                 KeywordTokenType.True,
                 KeywordTokenType.False,
                 KeywordTokenType.None,
-                // TODO: Add more atom types
+                CharacterTokenType.OpenParentheses,
+                CharacterTokenType.OpenSquareBracket,
+                LiteralTokenType.String,
+                LiteralTokenType.Integer,
+                LiteralTokenType.Float,
             ])
         );
     }
 
     public parse(parser: DocumentParser): ExpressionNode | null {
+        // NAME
         if (this.identifierParser.test(parser)) {
             return parser.require(this.identifierParser);
         }
 
-        // TODO: Implement full atom parsing
+        // True / False / None
+        if (parser.optionalToken(KeywordTokenType.True)) {
+            return new LiteralNode(true);
+        }
+        if (parser.optionalToken(KeywordTokenType.False)) {
+            return new LiteralNode(false);
+        }
+        if (parser.optionalToken(KeywordTokenType.None)) {
+            return new LiteralNode("None");
+        }
+
+        // strings (consume a single STRING token for now)
+        if (parser.optionalToken(LiteralTokenType.String)) {
+            return new LiteralNode(parser.currentValue());
+        }
+
+        // NUMBER (integer or float)
+        if (parser.optionalToken(LiteralTokenType.Integer)) {
+            const v = Number(parser.currentValue());
+            return new LiteralNode(v);
+        }
+        if (parser.optionalToken(LiteralTokenType.Float)) {
+            const v = Number(parser.currentValue());
+            return new LiteralNode(v);
+        }
+
+        // group = '(' (yield_expr | named_expression) ')'
+        if (parser.optionalToken(CharacterTokenType.OpenParentheses)) {
+            // We don't implement yield_expr yet; parse named_expression
+            const inner = parser.require(this.namedExpressionRule);
+            if (inner === null) {
+                return null;
+            }
+            if (!parser.requireToken(CharacterTokenType.CloseParentheses)) {
+                return null;
+            }
+            return inner;
+        }
+
+        // list = '[' [star_named_expressions] ']'
+        if (parser.optionalToken(CharacterTokenType.OpenSquareBracket)) {
+            // For now, consume until matching ']'
+            // Try to parse zero or more named expressions separated by commas
+            const elements: ExpressionNode[] = [];
+            if (!parser.peek(CharacterTokenType.CloseSquareBracket)) {
+                const first = parser.optional(this.namedExpressionRule);
+                if (first !== null) {
+                    elements.push(first);
+                    while (parser.optionalToken(CharacterTokenType.Comma)) {
+                        const next = parser.optional(this.namedExpressionRule);
+                        if (next === null) {
+                            break;
+                        }
+                        elements.push(next);
+                    }
+                }
+            }
+            if (!parser.requireToken(CharacterTokenType.CloseSquareBracket)) {
+                return null;
+            }
+            // Represent list literal as a subscript of a pseudo name "list" with slice payload
+            const listNode = new IdentifierNode(parser.locationFromCurrent(), "list");
+            return new PythonCallExpressionNode(parser.locationFromCurrent(), listNode, elements);
+        }
 
         return null;
+    }
+}
+
+/**
+ * slices =
+ *   | slice !','
+ *   | ','.(slice | starred_expression)+ [','];
+ */
+export class SlicesRule extends GrammarRule<ExpressionNode[]> {
+    private sliceRule = new SliceRule();
+    private starredRule = new PythonStarredExpressionRule();
+
+    public test(parser: DocumentParser): boolean {
+        return this.sliceRule.test(parser) || this.starredRule.test(parser);
+    }
+
+    public parse(parser: DocumentParser): ExpressionNode[] | null {
+        const startIndex = parser.index;
+        const first = parser.require(this.sliceRule);
+        if (first === null) {
+            return null;
+        }
+        // If no comma follows, it's the single-slice case
+        if (!parser.peek(CharacterTokenType.Comma)) {
+            return [first];
+        }
+        // Otherwise, parse ','.(slice | starred_expression)+ [',']
+        // rewind to start to include first as part of comma-separated sequence
+        parser.seek(startIndex);
+
+        const items: ExpressionNode[] = [];
+        do {
+            let node: ExpressionNode | null = null;
+            if (this.sliceRule.test(parser)) {
+                node = parser.require(this.sliceRule);
+            } else if (this.starredRule.test(parser)) {
+                node = parser.require(this.starredRule);
+            }
+            if (node === null) {
+                return null;
+            }
+            items.push(node);
+        } while (parser.optionalToken(CharacterTokenType.Comma) && (this.sliceRule.test(parser) || this.starredRule.test(parser)));
+
+        // Optional trailing comma already consumed if present
+        return items;
+    }
+}
+
+/**
+ * slice =
+ *   | [expression] ':' [expression] [':' [expression] ]
+ *   | named_expression;
+ */
+export class SliceRule extends GrammarRule<ExpressionNode> {
+    private _exprRule: PythonExpressionRule | null = null;
+    private get exprRule(): PythonExpressionRule {
+        if (this._exprRule === null) {
+            this._exprRule = new PythonExpressionRule();
+        }
+        return this._exprRule;
+    }
+    private namedExprRule = new NamedExpressionRule();
+
+    public test(parser: DocumentParser): boolean {
+        // If there's an immediate ':' it's a slice
+        if (parser.peek(CharacterTokenType.Colon)) {
+            return true;
+        }
+        // Otherwise, it can start like an expression or named_expression
+        return this.namedExprRule.test(parser);
+    }
+
+    public parse(parser: DocumentParser): ExpressionNode | null {
+        // Case 1: starts with ':' -> slice with no start
+        if (parser.peek(CharacterTokenType.Colon)) {
+            // start : stop? ( : step? )?
+            parser.requireToken(CharacterTokenType.Colon);
+            const stop = parser.peekAnyOf([CharacterTokenType.Colon, CharacterTokenType.CloseSquareBracket, CharacterTokenType.Comma])
+                ? null
+                : parser.optional(this.exprRule);
+            let step: ExpressionNode | null = null;
+            if (parser.optionalToken(CharacterTokenType.Colon)) {
+                step = parser.peekAnyOf([CharacterTokenType.CloseSquareBracket, CharacterTokenType.Comma]) ? null : parser.optional(this.exprRule);
+            }
+            return new PythonSliceExpressionNode(null, stop ?? null, step ?? null);
+        }
+
+        const startIndex = parser.index;
+        const startExpr = parser.require(this.exprRule);
+        if (startExpr === null) {
+            return null;
+        }
+        if (parser.optionalToken(CharacterTokenType.Colon)) {
+            // It's a slice with explicit start
+            const stop = parser.peekAnyOf([CharacterTokenType.Colon, CharacterTokenType.CloseSquareBracket, CharacterTokenType.Comma])
+                ? null
+                : parser.optional(this.exprRule);
+            let step: ExpressionNode | null = null;
+            if (parser.optionalToken(CharacterTokenType.Colon)) {
+                step = parser.peekAnyOf([CharacterTokenType.CloseSquareBracket, CharacterTokenType.Comma]) ? null : parser.optional(this.exprRule);
+            }
+            return new PythonSliceExpressionNode(startExpr, stop ?? null, step ?? null);
+        }
+
+        // Not a ':' after expression -> it's a named_expression
+        parser.seek(startIndex);
+        return parser.require(this.namedExprRule);
     }
 }
 
@@ -640,12 +891,12 @@ export class AtomRule extends GrammarRule<ExpressionNode> {
  */
 export class LambdefRule extends GrammarRule<ExpressionNode> {
     private lambdaParamsParser = new LambdaParamsRule();
-    private expressionParser: PythonExpressionRule;
-
-    constructor() {
-        super();
-        // To avoid circular dependency
-        this.expressionParser = new PythonExpressionRule();
+    private _expressionParser: PythonExpressionRule | null = null;
+    private get expressionParser(): PythonExpressionRule {
+        if (this._expressionParser === null) {
+            this._expressionParser = new PythonExpressionRule();
+        }
+        return this._expressionParser;
     }
 
     public test(parser: DocumentParser): boolean {
@@ -780,7 +1031,13 @@ export class AssignmentOperationRule extends GrammarRule<AssignmentOperationNode
  * guard_expression = "if", PYTHON_EXPRESSION;
  */
 export class GuardExpressionRule extends GrammarRule<ExpressionNode> {
-    private pythonExpressionParser = new PythonExpressionRule();
+    private _pythonExpressionParser: PythonExpressionRule | null = null;
+    private get pythonExpressionParser(): PythonExpressionRule {
+        if (this._pythonExpressionParser === null) {
+            this._pythonExpressionParser = new PythonExpressionRule();
+        }
+        return this._pythonExpressionParser;
+    }
 
     public test(parser: DocumentParser): boolean {
         return parser.peek(KeywordTokenType.If);
@@ -803,19 +1060,26 @@ export class GuardExpressionRule extends GrammarRule<ExpressionNode> {
  */
 export class AssignmentExpressionRule extends GrammarRule<AssignmentExpressionNode> {
     private identifierParser = new IdentifierRule();
-    private expressionParser = new PythonExpressionRule();
+    private _expressionParser: PythonExpressionRule | null = null;
+    private get expressionParser(): PythonExpressionRule {
+        if (this._expressionParser === null) {
+            this._expressionParser = new PythonExpressionRule();
+        }
+        return this._expressionParser;
+    }
 
     public test(parser: DocumentParser): boolean {
         if (!this.identifierParser.test(parser)) {
             return false;
         }
 
-        parser.next(); // Skip past the identifier
-
-        // Check for ':='
+        const startIndex = parser.index;
+        const id = parser.optional(this.identifierParser);
+        if (id === null) {
+            return false;
+        }
         const hasWalrusOperator = parser.peek(OperatorTokenType.ColonAssignment);
-
-        parser.previous();
+        parser.seek(startIndex);
         return hasWalrusOperator;
     }
 
@@ -845,10 +1109,21 @@ export class AssignmentExpressionRule extends GrammarRule<AssignmentExpressionNo
  */
 export class NamedExpressionRule extends GrammarRule<ExpressionNode> {
     private assignmentExpressionParser = new AssignmentExpressionRule();
-    private expressionParser = new PythonExpressionRule();
+    private _expressionParser: PythonExpressionRule | null = null;
+
+    private get expressionParser(): PythonExpressionRule {
+        if (this._expressionParser === null) {
+            this._expressionParser = new PythonExpressionRule();
+        }
+        return this._expressionParser;
+    }
 
     public test(parser: DocumentParser): boolean {
-        return this.assignmentExpressionParser.test(parser) || this.expressionParser.test(parser);
+        if (this.assignmentExpressionParser.test(parser)) {
+            return true;
+        }
+        // Lazily create and test to avoid constructor cycles
+        return this.expressionParser.test(parser);
     }
 
     public parse(parser: DocumentParser): ExpressionNode | null {
@@ -972,7 +1247,13 @@ export class DecoratorsRule extends GrammarRule<ExpressionNode[]> {
 export class PythonArgumentsRule extends GrammarRule<ExpressionNode[]> {
     private pythonStarredExpressionRule = new PythonStarredExpressionRule();
     private assignmentExpressionRule = new AssignmentExpressionRule();
-    private expressionRule = new PythonExpressionRule();
+    private _expressionRule: PythonExpressionRule | null = null;
+    private get expressionRule(): PythonExpressionRule {
+        if (this._expressionRule === null) {
+            this._expressionRule = new PythonExpressionRule();
+        }
+        return this._expressionRule;
+    }
     private pythonKwargsRule = new PythonKwargsRule();
 
     public test(parser: DocumentParser): boolean {
@@ -1041,7 +1322,13 @@ export class PythonArgumentsRule extends GrammarRule<ExpressionNode[]> {
  * PythonStarredExpressionRule handles the '*expression' syntax in argument lists
  */
 export class PythonStarredExpressionRule extends GrammarRule<ExpressionNode> {
-    private expressionRule = new PythonExpressionRule();
+    private _expressionRule: PythonExpressionRule | null = null;
+    private get expressionRule(): PythonExpressionRule {
+        if (this._expressionRule === null) {
+            this._expressionRule = new PythonExpressionRule();
+        }
+        return this._expressionRule;
+    }
 
     public test(parser: DocumentParser): boolean {
         return parser.peek(OperatorTokenType.Multiply);
@@ -1124,7 +1411,13 @@ export class PythonKwargsRule extends GrammarRule<ExpressionNode[]> {
  */
 export class PythonKwargOrStarredRule extends GrammarRule<ExpressionNode> {
     private identifierRule = new IdentifierRule();
-    private expressionRule = new PythonExpressionRule();
+    private _expressionRule: PythonExpressionRule | null = null;
+    private get expressionRule(): PythonExpressionRule {
+        if (this._expressionRule === null) {
+            this._expressionRule = new PythonExpressionRule();
+        }
+        return this._expressionRule;
+    }
     private starredExpressionRule = new PythonStarredExpressionRule();
 
     public test(parser: DocumentParser): boolean {
@@ -1176,7 +1469,13 @@ export class PythonKwargOrStarredRule extends GrammarRule<ExpressionNode> {
  */
 export class PythonKwargOrDoubleStarredRule extends GrammarRule<ExpressionNode> {
     private identifierRule = new IdentifierRule();
-    private expressionRule = new PythonExpressionRule();
+    private _expressionRule: PythonExpressionRule | null = null;
+    private get expressionRule(): PythonExpressionRule {
+        if (this._expressionRule === null) {
+            this._expressionRule = new PythonExpressionRule();
+        }
+        return this._expressionRule;
+    }
 
     public test(parser: DocumentParser): boolean {
         return parser.peek(OperatorTokenType.Exponentiate) || this.identifierRule.test(parser);
@@ -1359,7 +1658,13 @@ export class PythonParamRule extends GrammarRule<ExpressionNode> {
  * default = '=' expression;
  */
 export class PythonDefaultRule extends GrammarRule<ExpressionNode> {
-    private expressionRule = new PythonExpressionRule();
+    private _expressionRule: PythonExpressionRule | null = null;
+    private get expressionRule(): PythonExpressionRule {
+        if (this._expressionRule === null) {
+            this._expressionRule = new PythonExpressionRule();
+        }
+        return this._expressionRule;
+    }
 
     public test(parser: DocumentParser): boolean {
         return parser.peek(OperatorTokenType.Assignment);

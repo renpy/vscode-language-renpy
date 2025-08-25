@@ -262,13 +262,53 @@ export class IdentifierNode extends ExpressionNode {
  * Represents a member access operation, such as `foo.bar`, `get_foo().bar` or `foo.get_bar()`.
  */
 export class MemberAccessNode extends ExpressionNode {
-    public left: IdentifierNode | MemberAccessNode;
+    public left: ExpressionNode;
     public right: IdentifierNode | MemberAccessNode;
 
-    constructor(left: IdentifierNode | MemberAccessNode, right: IdentifierNode | MemberAccessNode) {
+    constructor(left: ExpressionNode, right: IdentifierNode | MemberAccessNode) {
         super();
         this.left = left;
         this.right = right;
+    }
+}
+
+// Python expression AST helpers
+export class PythonCallExpressionNode extends ExpressionNode {
+    public readonly srcLocation: VSLocation;
+    public callee: ExpressionNode;
+    public args: ExpressionNode[];
+
+    constructor(srcLocation: VSLocation, callee: ExpressionNode, args: ExpressionNode[]) {
+        super();
+        this.srcLocation = srcLocation;
+        this.callee = callee;
+        this.args = args;
+    }
+}
+
+export class PythonSliceExpressionNode extends ExpressionNode {
+    public start: ExpressionNode | null;
+    public stop: ExpressionNode | null;
+    public step: ExpressionNode | null;
+
+    constructor(start: ExpressionNode | null, stop: ExpressionNode | null, step: ExpressionNode | null) {
+        super();
+        this.start = start;
+        this.stop = stop;
+        this.step = step;
+    }
+}
+
+export class PythonSubscriptExpressionNode extends ExpressionNode {
+    public readonly srcLocation: VSLocation;
+    public value: ExpressionNode;
+    public slices: ExpressionNode[];
+
+    constructor(srcLocation: VSLocation, value: ExpressionNode, slices: ExpressionNode[]) {
+        super();
+        this.srcLocation = srcLocation;
+        this.value = value;
+        this.slices = slices;
     }
 }
 

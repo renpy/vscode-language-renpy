@@ -64,3 +64,56 @@ jobs:
           path: "**/*.vsix"
           if-no-files-found: error
           retention-days: 7
+
+  tests:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup
+        uses: ./.github/actions/setup
+        with:
+          node_version: ${{ env.NODE_VERSION }}
+
+      - name: Run tests with coverage
+        id: run_tests_linux
+        run: xvfb-run -a npm run test:coverage
+        if: runner.os == 'Linux' && success()
+
+      - name: Run tests with coverage
+        id: run_tests_non_linux
+        run: npm run test:coverage
+        if: runner.os != 'Linux' && success()
+
+      - name: Process test output for Codecov
+        if: success()
+        uses: codecov/basic-test-results@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          file: "vscode-language-renpy-test-results.xml"
+
+      - name: Test Report
+        uses: dorny/test-reporter@v2
+        if: ${{ !cancelled() }}
+        with:
+          name: vscode-test
+          path: "vscode-language-renpy-test-results.json"
+          reporter: mocha-json
+
+      - name: Upload JSON Test Results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results.json
+          path: vscode-language-renpy-test-results.json
+          retention-days: 7
+
+      - name: Upload JUnit Test Results
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results.xml
+          path: vscode-language-renpy-test-results.xml
+          retention-days: 7

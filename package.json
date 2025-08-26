@@ -321,8 +321,9 @@
     "build:release": "webpack --mode production",
     "watch": "npm run build -- --watch",
     "watch:release": "npm run build:release -- --watch",
-    "test:compile": "tsc -p ./",
-    "test": "npm run test:compile && node ./node_modules/vscode/bin/test",
+    "pretest": "webpack --mode development",
+    "test": "vscode-test",
+    "test:coverage": "npm run test -- --coverage",
     "lint": "eslint -c eslint.config.mjs",
     "vsce:package": "vsce package -o language-renpy.vsix",
     "format": "prettier --write .",
@@ -330,10 +331,10 @@
     "precommit": "lint-staged"
   },
   "lint-staged": {
-    "*.{js,ts}": [
+    "*.{mjs,js,mts,ts}": [
       "eslint -c eslint.config.mjs --fix --quiet"
     ],
-    "*.{js,ts,json,jsonc,yml,yaml}": [
+    "*.{mjs,js,mts,ts,json,jsonc,yml,yaml}": [
       "prettier --write"
     ]
   },
@@ -374,14 +375,20 @@
     "@eslint/compat": "^1.3.2",
     "@eslint/eslintrc": "^3.3.1",
     "@eslint/js": "^9.33.0",
+    "@types/chai": "^5.2.2",
     "@types/mocha": "^10.0.10",
+    "@types/mock-fs": "^4.13.4",
     "@types/node": "^24.3.0",
+    "@types/sinon": "^17.0.4",
     "@types/vscode": "1.103",
     "@types/webpack": "^5.28.5",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
     "@typescript-eslint/parser": "^8.39.1",
     "@vscode/debugadapter": "^1.68.0",
+    "@vscode/test-cli": "^0.0.11",
+    "@vscode/test-electron": "^2.5.2",
     "@vscode/vsce": "^3.6.0",
+    "chai": "^5.2.1",
     "copy-webpack-plugin": "^13.0.1",
     "eslint": "^9.33.0",
     "eslint-plugin-import": "^2.32.0",
@@ -391,10 +398,15 @@
     "globals": "^16.3.0",
     "husky": "^9.1.7",
     "lint-staged": "^16.1.5",
+    "mocha-junit-reporter": "^2.2.1",
+    "mocha-multi-reporters": "^1.5.1",
+    "mock-fs": "^5.5.0",
     "node-polyfill-webpack-plugin": "^4.1.0",
     "prettier": "^3.6.2",
+    "sinon": "^21.0.0",
     "ts-loader": "^9.5.2",
     "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
     "typescript": "^5.9.2",
     "vscode-test": "^1.6.1",
     "webpack": "^5.101.2",

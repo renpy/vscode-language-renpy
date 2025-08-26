@@ -516,3 +516,6 @@ $RECYCLE.BIN/
 /examples/**/*.rpyc
 /examples/errors.txt
 /examples/log.txt
+
+# Test result files
+vscode-language-renpy-test-results.*

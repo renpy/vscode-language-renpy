@@ -326,7 +326,8 @@
     "lint": "eslint -c eslint.config.mjs",
     "vsce:package": "vsce package -o language-renpy.vsix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "precommit": "lint-staged"
   },
   "lint-staged": {
     "*.{js,ts}": [

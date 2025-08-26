@@ -315,7 +315,7 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
-    "prepare": "husky install",
+    "prepare": "husky",
     "package": "webpack --mode production --devtool hidden-source-map",
     "build": "webpack --mode development",
     "build:release": "webpack --mode production",
@@ -326,7 +326,8 @@
     "lint": "eslint -c eslint.config.mjs",
     "vsce:package": "vsce package -o language-renpy.vsix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "precommit": "lint-staged"
   },
   "lint-staged": {
     "*.{js,ts}": [

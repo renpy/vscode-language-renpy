@@ -320,7 +320,7 @@
     "@types/vscode": "1.103",
     "@types/webpack": "^5.28.5",
     "@typescript-eslint/eslint-plugin": "^8.39.1",
-    "@typescript-eslint/parser": "^8.39.1",
+    "@typescript-eslint/parser": "^8.41.0",
     "@vscode/debugadapter": "^1.68.0",
     "@vscode/vsce": "^3.6.0",
     "copy-webpack-plugin": "^13.0.1",

@@ -324,7 +324,7 @@
     "@vscode/debugadapter": "^1.68.0",
     "@vscode/vsce": "^3.6.0",
     "copy-webpack-plugin": "^13.0.1",
-    "eslint": "^9.33.0",
+    "eslint": "^9.34.0",
     "eslint-plugin-import": "^2.32.0",
     "fork-ts-checker-webpack-plugin": "^9.1.0",
     "node-polyfill-webpack-plugin": "^4.1.0",

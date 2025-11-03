@@ -1,10 +1,10 @@
 # Changelog
 
-## 2.6.x
+## 8.5.0
 
-* Update to match Ren'Py 8.4.
-* Ren'Py injection for _renpy.py and markdown files.
-* Use Child process for debugging instead of a termina.
+* Update to match Ren'Py 8.5.
+* Ren'Py injection for _ren.py and markdown files.
+* Use Child process for debugging instead of a terminal.
 
 ## 2.4.x
 

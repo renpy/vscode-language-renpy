@@ -2,8 +2,6 @@
 
 :sparkles: Welcome, and thank you for your interest in contributing! :sparkles:
 
-Please note we have a [code of conduct](https://github.com/renpy/vscode-language-renpy/blob/master/CODE_OF_CONDUCT.md), please follow it in all your interactions with the project.
-
 ## Reporting bugs or proposing features
 
 Open a new issue for each bug or feature you want to propose.
@@ -21,6 +19,8 @@ If you want to add new features, please make sure to discuss it in an issue.
 1. Clone the project
 2. Start VSCode and select `Open Folder...`
 3. Now select the folder of your newly cloned project. (Eg. `../vscode-language-renpy/`)
+4. Choose the correct target branch to base your work off of. That should be `master` for new features, and
+   `fix` for changes to the current version.
 
 <details><summary>If done correctly your folder view should look like this.</summary>
 
@@ -29,7 +29,7 @@ If you want to add new features, please make sure to discuss it in an issue.
 </details>
 
 4. Install the recommended extensions (A popup should appear). This will make sure you get the best developer experience in our workflow and it will format the code as intended.
-5. Make your changes and submit a pull request with `develop` as your target branch
+5. Make your changes and submit a pull request with the appropriate target branch ('master' and 'fix').
 6. Happy coding! 🚀
 
 ## Code Formatting
@@ -84,7 +84,5 @@ https://regexr.com will be your new best friend.
 
 ### Extension Versions
 
-There are two versions: **release** and **pre-release**. Because [VS Code only supports](https://code.visualstudio.com/api/working-with-extensions/publishing-extension#prerelease-extensions) `major.minor.patch` and not the additional [semver](https://semver.org/) labels for pre-releases, to know if a version is a pre-release or final release, check its `minor` number:
-
-* `major.EVEN_NUMBER.patch` for final releases.
-* `major.ODD_NUMBER.patch` for pre-releases.
+The version of the extensions matches the major release of Ren'Py that the extension contains support for. For
+example, version 8.5.x is intended to support Ren'Py 8.5 and later releases.

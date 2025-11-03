@@ -70,7 +70,7 @@
       "= [ ... ]",
       "",
       "var",
-      "A list of functions that are called (with no arguments) when a load\noccurs.\n\nIf these callbacks change data (for example, migrating data from an\nold version of the game), renpy.block_rollback should be\ncalled to prevent the player from rolling back and reverting\nthe changes.\n\n"
+      "A list of functions that are called (with no arguments) after a load\noccurs.\n\nIf these callbacks change data (for example, migrating data from an\nold version of the game), renpy.block_rollback should be\ncalled to prevent the player from rolling back and reverting\nthe changes.\n\n"
     ],
     "config.after_load_transition": [
       "renpy",
@@ -248,6 +248,14 @@
       "var",
       "The number of slots used by autosaves.\n\n"
     ],
+    "config.before_load_callbacks": [
+      "renpy",
+      "var",
+      "= [ ... ]",
+      "",
+      "var",
+      "A list of functions that are called (with no arguments) before a load\noccurs.\n\nThis can stop or change music before the load happens, but state changes\nwill be forgotten when the load occurs.\n\n"
+    ],
     "config.bottom_layers": [
       "renpy",
       "var",
@@ -344,13 +352,13 @@
       "var",
       "This enables the console in the case config.developer is not true.\n\n"
     ],
-    "config.context_callback": [
+    "config.context_callbacks": [
       "renpy",
       "var",
-      "= None",
+      "= [ ]",
       "",
       "var",
-      "This is a callback that is called with no arguments when Ren'Py enters a\nnew context, such as a menu context.\n\n"
+      "These are callbacks that are called wioh no arguments when Ren'Py enters\na new context, such as a at the start of the game, when entering the game\nor main menus, or when beginning a replay.\n\n"
     ],
     "config.context_clear_layers": [
       "renpy",
@@ -550,7 +558,7 @@
       "= False",
       "",
       "var",
-      "If true, Ren'Py will attempt to determine the name of the language\nto use based on the locale of the player's system. If successful,\nthis language will be used as the default language.\n\n"
+      "If true, Ren'Py will attempt to determine the name of the language\nto use based on the locale of the player's system. If successful,\nthis language will be used as the default language.\n\nThis can be customized with config.locale_to_language_function\nbelow, the default implementation of which uses config.locale_to_language_map.\n\n"
     ],
     "config.end_game_transition": [
       "renpy",
@@ -822,7 +830,7 @@
       "= True",
       "",
       "var",
-      "If true, the \"music\" mixer is enabled. The default GUI will hide the music mixer if this is false. When this,\nconfig.has_sound, and config.has_voice are all false, the default GUI will hide the main mixer as well.\n\n"
+      "If true, the \"music\" mixer is enabled. Audio channels will not be assigned the \"music\" mixer when this is false. The\ndefault GUI will hide the music mixer if this is false. When this, config.has_sound, and config.has_voice are all\nfalse, the default GUI will hide the main mixer as well.\n\n"
     ],
     "config.has_sound": [
       "renpy",
@@ -830,7 +838,7 @@
       "= True",
       "",
       "var",
-      "If true, the \"sfx\" mixer is enabled. The default GUI will hide the sound mixer if this is false.\n\n"
+      "If true, the \"sfx\" mixer is enabled. Audio channels will not be assigned the \"sfx\" mixer when this is false.\nThe default GUI will hide the sound mixer if this is false.\n\n"
     ],
     "config.has_voice": [
       "renpy",
@@ -838,7 +846,7 @@
       "= True",
       "",
       "var",
-      "If true, the \"voice\" mixer is enabled. The default GUI will hide the voice mixer if this is false. Ren'Py will\ndisable the voice system if this is false.\n\n"
+      "If true, the \"voice\" mixer is enabled. Ren'Py's voice statement and other voice-related functionality will be\ndisabled when this is false. Audio channels will not be assigned the \"voice\" mixer when this is  false. The default\nGUI will hide the voice mixer if this is false.\n\n"
     ],
     "config.help": [
       "renpy",
@@ -927,6 +935,22 @@
       "",
       "var",
       "This is used to set the size of the image cache, in\nmegabytes. If config.cache_surfaces is False, an image takes\n4 bytes per pixel, otherwise it takes 8 bytes per pixel.\n\nIf set too large, this can waste memory. If set too small, images\ncan be repeatedly loaded, hurting performance. If not none,\nconfig.image_cache_size is used instead of this variable.\n\n"
+    ],
+    "config.image_directories": [
+      "renpy",
+      "var",
+      "= [ \"images\" ]",
+      "",
+      "var",
+      "A list of one or more directories that Ren'Py searches for images, as described in the images-directory section.\nThe directories are searched in order, and the first directory that contains the image is used.\n\n"
+    ],
+    "config.image_extensions": [
+      "renpy",
+      "var",
+      "=  [ \".jpg\", \".jpeg\", \".png\", \".webp\", \".avif\", \".svg\" ]",
+      "",
+      "var",
+      "A list of of file extensions that Ren'Py will use when searching for images, as described in the images-directory section.\n\n\n"
     ],
     "config.imagemap_auto_function": [
       "renpy",
@@ -1110,7 +1134,15 @@
       ": Callable",
       "",
       "var",
-      "A function that determines the language the game should use,\nbased on the user's locale.\nIt takes 2 string arguments that give the ISO code of the locale\nand the ISO code of the region.\n\nIt should return a string giving the name of a translation to use, or\nNone to use the default translation.\n\n"
+      "A function that determines the language the game should use,\nbased on the user's locale.\nIt takes 2 string arguments that give the ISO code of the locale\nand the ISO code of the region. These are normalized to lower case\nbefore this function is called.\n\nIt should return a string giving the name of a translation to use, or\nNone to use the default translation.\n\nconfig.enable_language_autodetect must be True for this function\nto be called.\n\n"
+    ],
+    "config.locale_to_language_map": [
+      "renpy",
+      "var",
+      "= { ... }",
+      "",
+      "var",
+      "This is a table used by the default implementation of locale_to_language_function.\nIt maps (locale, region) pairs to language names. The default value of this table\ncan be found in the locale symbol of `renpy/translation/__init__.py <https://github.com/renpy/renpy/blob/master/renpy/translation/__init__.py#L959>`_\n\nThe following things are looked up in this table, in order, until a match is found:\n\n1. language_region (en_us)\n2. language (en)\n3. region (us)\n\n"
     ],
     "config.log": [
       "renpy",
@@ -1494,7 +1526,7 @@
       "= None",
       "",
       "var",
-      "When not None, a function that's called with a persistent store whenever\na persistent save file is loaded. It should make any alterations in-place.\n\nThis must be set with either the define statement, or inside a ``python\nearly`` block. It should only reference other things typically available\nto ``python early`` blocks.\n\n"
+      "When not None, a function that's called with a persistent store whenever\na persistent save file is loaded. It should make any alterations in-place.\n\nThis must be set with either the define statement, or inside a ``python\nearly`` block. It should only reference other things typically available\nto ``python early`` blocks.\n\nThe callback can make use of persistent._version to determine when\nthe data was originated and, if managed properly, when it was last\nmigrated. A value of None implies that the data predates this feature being\nadded in Ren'Py 8.4.\n\nA extremely basic callback may look something like\n\n```\ndef migrate_persistent(data):\n    if data._version is None:\n        # Update values in data to be suitable for current version.\n        ...\n        \n        # Update originating version.\n        data._version = config.version\n        \n```\n\n"
     ],
     "config.physical_height": [
       "renpy",
@@ -1878,7 +1910,7 @@
       "= \"screenshot%04d.png\"",
       "",
       "var",
-      "The pattern used to create screenshot files. This pattern is applied (using\nPython's %-formatting rules) to the natural numbers to generate a sequence\nof filenames. The filenames may be absolute, or relative to\nconfig.renpy_base. The first filename that does not exist is used as the\nname of the screenshot.\n\nDirectories are created if they do not exist.\n\nSee also _screenshot_pattern, which is used in preference to this\nvariable if not None.\n\n\n"
+      "The pattern used to create screenshot files. This pattern is applied (using\nPython's %-formatting rules) to the natural numbers to generate a sequence\nof filenames. The filenames may be absolute, or relative to\nconfig.renpy_base. The first filename that does not exist is used as the\nname of the screenshot.\n\nDirectories are created if they do not exist.\n\nSee also _screenshot_pattern, which is used in preference to this\nvariable if not None.\n\n"
     ],
     "config.script_version": [
       "renpy",
@@ -1894,15 +1926,7 @@
       "= [ \"\", ... ]",
       "",
       "var",
-      "A list of prefixes that are prepended to filenames that are searched\nfor.\n\n"
-    ],
-    "config.searchpath": [
-      "renpy",
-      "var",
-      "= [ 'common', 'game', ... ]",
-      "",
-      "var",
-      "A list of directories that are searched for images, music,\narchives, and other media, but not scripts. This is initialized to\na list containing \"common\" and the name of the game directory.\n\n\n"
+      "A list of prefixes that are prepended to filenames that are loaded. This\nis only used when a file is loaded or checked for being loadable. It does\nnot affect scans of files used to automatically define images or namespace\nvariables.\n\n"
     ],
     "config.shader_part_filter": [
       "renpy",
@@ -2063,6 +2087,14 @@
       "",
       "var",
       "This is a list of names of layers that are displayed above all\nother layers, and do not participate in a transition that is\napplied to all layers. If a layer name is listed here, it should\nnot be listed in config.layers` or config.bottom_layers.\n\n"
+    ],
+    "config.tracesave_screenshot": [
+      "renpy",
+      "var",
+      "= True",
+      "",
+      "var",
+      "If True, a screenshot is taken when a traceback save is made. If False, no\nscreenshot is taken.\n\n\n"
     ],
     "config.transform_uses_child_position": [
       "renpy",
@@ -2349,7 +2381,7 @@
     "renpy.audio.filter.Comb": [
       "renpy",
       "class",
-      "(delay, filter=None, multiplier=1.0, wet=True)",
+      "(*args, **kwargs)",
       "",
       "class",
       "A comb filter. A comb filter consists of a delay that is filtered and\nmutiplied, mixed with its input, and then fed back into the delay,\ncausing the filter to be applied multiple times.\n\n`delay`\nThe delay, in seconds. If a list of delays is provided, each subchannel\nwill be delayed by the corresponding amount. Each delay must be at least\n0.01 seconds.\n\n`filter`\nThe filter to apply to the delayed signal. If None, the Null filter\nis used.\n\n`multiplier`\nThe amount to multiply the filtered signal by.\n\n`wet`\nIf True, the output of the filter is the sum of the input and the\nfiltered and multiplied signal.  If False, the output is just the filtered\nand muliplied signal.\n\n"
@@ -2357,7 +2389,7 @@
     "renpy.audio.filter.Delay": [
       "renpy",
       "class",
-      "(delay)",
+      "(*args, **kwargs)",
       "",
       "class",
       "This filter implements a delay. Samples that are provided to the input\nemerge from the output after `delay` seconds.\n\n`delay`\nThe delay, in seconds. If a list of delays is provided, each subchannel\nwill be delayed by the corresponding amount. Each delay must be at least\n0.01 seconds.\n\n"
@@ -2397,7 +2429,7 @@
     "renpy.audio.filter.Mix": [
       "renpy",
       "class",
-      "(*filters)",
+      "(*args, **kwargs)",
       "",
       "class",
       "An audio filter that splits its input into multiple streams, applies\neach of its arguments to a stream, and mixes those streams by summing\nthem together.\n\nFor example\n\n```\ninit python:\n\n    import renpy.audio.filter as af\n    \n    # This mixes the unchanged input with a delay.\n    $ echo = af.Mix(af.Null(), af.Delay(.3))\n    \n```\n\n"
@@ -2405,7 +2437,7 @@
     "renpy.audio.filter.Multiply": [
       "renpy",
       "class",
-      "(multiplier)",
+      "(*args, **kwargs)",
       "",
       "class",
       "An audio filter that multiplies its input by `multiplier`.\n\n"
@@ -2445,7 +2477,7 @@
     "renpy.audio.filter.Sequence": [
       "renpy",
       "class",
-      "(*filters)",
+      "(*args, **kwargs)",
       "",
       "class",
       "An AudioFilter that applies its input to a sequence of filters, in order.\nThis is used internally when a list of audiofilters is given, so it should\nbe rare to use this directly.\n\n"
@@ -2453,7 +2485,7 @@
     "renpy.audio.filter.WetDry": [
       "renpy",
       "class",
-      "(filter, wet=1.0, dry=1.0)",
+      "(*args, **kwargs)",
       "",
       "class",
       "A filter that mixes its input with the output of a filter.\n\n`filter`\nThe filter to apply to the input.\n\n`wet`\nA multiplier, generally between 0.0 and 1.0, that controls the amount\nof the filter that is mixed in.\n\n`dry`\nA multiplier, generally between 0.0 and 1.0, that controls the amount\nof the input that is mixed in.\n\n"
@@ -2557,10 +2589,10 @@
     "renpy.change_language": [
       "renpy",
       "function",
-      "(language, force=False)",
+      "(language, force: bool = False, rebuild: bool = False)",
       "",
       "function",
-      "Changes the current language to `language`, which can be a string or\nNone to use the default language.\n\n"
+      "Changes the current language to `language`, which can be a string or\nNone to use the default language.\n\n`force`\nIf true, ensure the Python code is re-executed even if the language\nhasn't changed.\n\n`rebuild`\nThis forces the styles to be rebuilt even if the language hasn't changed.\n\n"
     ],
     "renpy.change_zorder": [
       "renpy",
@@ -2765,7 +2797,7 @@
     "renpy.displayable": [
       "renpy",
       "function",
-      "(d, scope=None)",
+      "(d: DisplayableLike, scope: dict[str, typing.Any] | None = None) -> Displayable",
       "",
       "function",
       "This takes `d`, which may be a displayable object or a string. If it's\na string, it converts that string into a displayable using the usual\nrules.\n\n"
@@ -2857,6 +2889,14 @@
       "",
       "function",
       "An alias for renpy.open_file, for compatibility with older\nversions of Ren'Py.\n\n"
+    ],
+    "renpy.filename_line_override": [
+      "renpy",
+      "function",
+      "(filename: str, line: int)",
+      "",
+      "function",
+      "Temporarily overrides the filename and line number. This is a context manager,\nuse it like\n\n```\nwith renpy.filename_line_override(\"myfile.rpy\", 42):\n    # ...\n    \n```\n\n"
     ],
     "renpy.filter_text_tags": [
       "renpy",
@@ -3128,7 +3168,7 @@
       "() -> renpy.display.core.RendererInfo",
       "",
       "function",
-      "Returns a dictionary, giving information about the renderer Ren'Py is\ncurrently using. Defined keys are:\n``\"renderer\"``\nA string giving the name of the renderer that is in use.\n\n``\"resizable\"``\nTrue if and only if the window is resizable.\n\n``\"additive\"``\nTrue if and only if the renderer supports additive blending.\n\n``\"model\"``\nPresent and true if model-based rendering is supported.\n\nWhen using the GL2 renderer, the following keys are also defined:\n``\"gpu_vendor\"``\nA string giving the GPU vendor.\n\n``\"gpu_name\"``\nA string giving the GPU name.\n\n``\"gpu_driver_version\"``\nA string giving the driver version.\n\nOther, renderer-specific, keys may also exist.\n\nThe dictionary should be treated as immutable.\n\nThis should only be called once the display has been started (that is,\nnot sooner than first interaction).\n\n"
+      "Returns a dictionary, giving information about the renderer Ren'Py is\ncurrently using. Defined keys are:\n\n``\"renderer\"``\nA string giving the name of the renderer that is in use.\n\n``\"resizable\"``\nTrue if and only if the window is resizable.\n\n``\"additive\"``\nTrue if and only if the renderer supports additive blending.\n\n``\"model\"``\nPresent and true if model-based rendering is supported.\n\nWhen using the GL2 renderer, the following keys are also defined:\n\n``\"gpu_vendor\"``\nA string giving the GPU vendor.\n\n``\"gpu_name\"``\nA string giving the GPU name.\n\n``\"gpu_driver_version\"``\nA string giving the driver version.\n\nOther, renderer-specific, keys may also exist.\n\nThe dictionary should be treated as immutable.\n\nThis should only be called once the display has been started (that is,\nnot sooner than first interaction).\n\n"
     ],
     "renpy.get_return_stack": [
       "renpy",
@@ -3394,6 +3434,14 @@
       "var",
       "Has a true value when running on iOS.\n\n"
     ],
+    "renpy.is_in_test": [
+      "renpy",
+      "function",
+      "()",
+      "",
+      "function",
+      "Returns True if Ren'py is currently executing a test.\nThis always returns False at init time.\n\n"
+    ],
     "renpy.is_init_phase": [
       "renpy",
       "function",
@@ -3565,7 +3613,7 @@
     "renpy.load_image": [
       "renpy",
       "function",
-      "(im)",
+      "(im) -> 'renpy.display.render.Render'",
       "",
       "function",
       "Loads the image manipulator `im` using the image cache, and returns a render.\n\n"
@@ -3581,7 +3629,7 @@
     "renpy.load_rgba": [
       "renpy",
       "function",
-      "(data, size)",
+      "(data: bytes, size: tuple[int, int]) -> Any",
       "",
       "function",
       "Loads the image data `bytes` into a texture of size `size`, and return it.\n\n`data`\nShould be a bytes object containing the image data in RGBA8888 order.\n\n"
@@ -3597,7 +3645,7 @@
     "renpy.load_surface": [
       "renpy",
       "function",
-      "(im)",
+      "(im) -> Surface",
       "",
       "function",
       "Loads the image manipulator `im` using the image cache, and returns a pygame Surface.\n\n"
@@ -4064,7 +4112,7 @@
       "(name, displayable, style, nchildren=0, scope=False, *, replaces=False, default_keywords={}, default_properties=True, unique=False)",
       "",
       "class",
-      "Registers a screen language statement that creates a displayable.\n\n`name`\nThe name of the screen language statement, a string containing a Ren'Py\nkeyword. This keyword is used to introduce the new statement.\n\n`displayable`\nThis is a function that, when called, returns a displayable\nobject. All position arguments, properties, and style properties\nare passed as arguments to this function. Other keyword arguments\nare also given to this function, a described below.\n\nThis must return a Displayable. If it returns multiple displayables,\nthe _main attribute of the outermost displayable should be set to\nthe \"main\" displayable - the one that children should be added\nto.\n\n`style`\nThe base name of the style of this displayable. If the style property\nis not given, this will have the style prefix added to it. The\ncomputed style is passed to the `displayable` function as the\n``style`` keyword argument.\n\n`nchildren`\nThe number of children of this displayable. One of:\n\n0\nThe displayable takes no children.\n1\nThe displayable takes 1 child. If more than one child is given,\nthe children are placed in a Fixed.\n\"many\"\nThe displayable takes more than one child.\n\n\n`unique`\nThis should be set to true if the function returns a  displayable with\nno other references to it.\n\nThe following arguments should be passed in using keyword arguments:\n\n`replaces`\nIf true, and the displayable replaces a prior displayable, that displayable\nis passed as a parameter to the new displayable.\n\n`default_keywords`\nThe default set of keyword arguments to supply to the displayable.\n\n`default_properties`\nIf true, the ui and position properties are added by default.\n\nReturns an object that can have positional arguments and properties\nadded to it by calling the following methods. Each of these methods\nreturns the object it is called on, allowing methods to be chained\ntogether.\n\n.. method:: add_positional(name)\n\nAdds a positional argument with `name`\n\n.. method:: add_property(name)\n\nAdds a property with `name`. Properties are passed as keyword\narguments.\n\n.. method:: add_style_property(name)\n\nAdds a family of properties, ending with `name` and prefixed with\nthe various style property prefixes. For example, if called with\n(\"size\"), this will define size, idle_size, hover_size, etc.\n\n.. method:: add_prefix_style_property(prefix, name)\n\nAdds a family of properties with names consisting of `prefix`,\na style property prefix, and `name`. For example, if called\nwith a prefix of `text_` and a name of `size`, this will\ncreate text_size, text_idle_size, text_hover_size, etc.\n\n.. method:: add_property_group(group, prefix='')\n\nAdds a group of properties, prefixed with `prefix`. `Group` may\nbe one of the strings:\n\n* \"bar\"\n* \"box\"\n* \"button\"\n* \"position\"\n* \"text\"\n* \"window\"\n\nThese correspond to groups of style_properties. Group can\nalso be \"ui\", in which case it adds the common ui properties.\n\n.. method:: copy_properties(name)\n\nAdds all styles and positional/keyword arguments that can be passed to the `name` screen statement.\n\n"
+      "Registers a screen language statement that creates a displayable.\n\n`name`\nThe name of the screen language statement, a string containing a Ren'Py\nkeyword. This keyword is used to introduce the new statement.\n\n`displayable`\nThis is a function that, when called, returns a displayable\nobject. All position arguments, properties, and style properties\nare passed as arguments to this function. Other keyword arguments\nare also given to this function, a described below.\n\nThis must return a Displayable. If it returns multiple displayables,\nthe _main attribute of the outermost displayable should be set to\nthe \"main\" displayable - the one that children should be added\nto.\n\n`style`\nThe base name of the style of this displayable. If the style property\nis not given, this will have the style prefix added to it. The\ncomputed style is passed to the `displayable` function as the\n``style`` keyword argument.\n\n`nchildren`\nThe number of children of this displayable. One of:\n\n0\nThe displayable takes no children.\n1\nThe displayable takes 1 child. If more than one child is given,\nthe children are placed in a Fixed.\n\"many\"\nThe displayable takes more than one child.\n\n\n`unique`\nThis should be set to true if the function returns a displayable with\nno other references to it.\n\nThe following arguments should be passed in using keyword arguments:\n\n`replaces`\nIf true, and the displayable replaces a prior displayable, that displayable\nis passed as a parameter to the new displayable.\n\n`default_keywords`\nThe default set of keyword arguments to supply to the displayable.\n\n`default_properties`\nIf true, the ui and position properties are added by default.\n\nReturns an object that can have positional arguments and properties\nadded to it by calling the following methods. Each of these methods\nreturns the object it is called on, allowing methods to be chained\ntogether.\n\n.. method:: add_positional(name)\n\nAdds a positional argument with `name`\n\n.. method:: add_property(name)\n\nAdds a property with `name`. Properties are passed as keyword\narguments.\n\n.. method:: add_style_property(name)\n\nAdds a family of properties, ending with `name` and prefixed with\nthe various style property prefixes. For example, if called with\n(\"size\"), this will define size, idle_size, hover_size, etc.\n\n.. method:: add_prefix_style_property(prefix, name)\n\nAdds a family of properties with names consisting of `prefix`,\na style property prefix, and `name`. For example, if called\nwith a prefix of `text_` and a name of `size`, this will\ncreate text_size, text_idle_size, text_hover_size, etc.\n\n.. method:: add_property_group(group, prefix='')\n\nAdds a group of properties, prefixed with `prefix`. `Group` may\nbe one of the strings:\n\n* \"bar\"\n* \"box\"\n* \"button\"\n* \"position\"\n* \"text\"\n* \"window\"\n\nThese correspond to groups of style_properties. Group can\nalso be \"ui\", in which case it adds the common ui properties.\n\n.. method:: copy_properties(name)\n\nAdds all styles and positional/keyword arguments that can be passed to the `name` screen statement.\n\n"
     ],
     "renpy.register_sl_statement": [
       "renpy",
@@ -4080,7 +4128,7 @@
       "(name, parse=None, lint=None, execute=None, predict=None, next=None, scry=None, block=False, init=False, translatable=False, execute_init=None, init_priority=0, label=None, warp=None, translation_strings=None, force_begin_rollback=False, post_execute=None, post_label=None, predict_all=True, predict_next=None, execute_default=None, reachable=None)",
       "",
       "function",
-      "This registers a user-defined statement.\n\n`name`\nThis is either a space-separated list of names that begin the statement, or the\nempty string to define a new default statement (the default statement will\nreplace the say statement).\n\n`block`\nThis may be one of:\n\n* False, to indicate that the satement does not expect a block.\n* True, to indicate that the statement expects a block and will\nparse that block.\n* \"possible\", to indicate that the statement may or may not take\na block.\n* \"script\" to indicate that the block should be interpreted as a\nblock of Ren'Py script language statements. See `next` for how\nto implement control flow using this.\n* \"script-possible\" is treated like \"script\" if a block is present,\nand False otherwise.\n* \"atl\" to indicate that the block should be interpreted as an ATL\ntranssform. This is passed as an additional argument to `execute`.\n* \"atl-possible\" is treated like \"atl\" if a block is present, and\nand False otherwise.\n\n`parse`\nThis is a function that takes a Lexer object. This function should parse the\nstatement, and return an object. This object is passed as an argument to all the\nother functions.\n\n`lint`\nThis is called to check the statement. It is passed a single argument, the\nobject returned from parse. It should call renpy.error to report errors.\n\n`execute`\nThis is a function that is called when the statement executes. It is passed a\nsingle argument, the object returned from parse. If there is an ATL block,\nthe keyword argument `atl` is passed with an ATL transform.\n\n`execute_init`\nThis is a function that is called at init time, at priority 0. It is passed a\nsingle argument, the object returned from parse.\n\n`predict`\nThis is a function that is called to predict the images used by the statement.\nIt is passed a single argument, the object returned from parse. It should return\na list of displayables used by the statement.\n\n`next`\nThis is a function that is called to determine the next statement.\n\nIf `block` is not \"script\", this is passed a single argument, the object\nreturned from the parse function. If `block` is \"script\", an additional\nargument is passed, an object that names the first statement in the block.\n\nThe function should return either a string giving a label to jump to,\nthe second argument to transfer control into the block, or None to\ncontinue to the statement after this one. It can also return the result\nof Lexer.renpy_statement or Lexer.renpy_block when\ncalled in the `parse` function.\n\n`label`\nThis is a function that is called to determine the label of this\nstatement. If it returns a string, that string is used as the statement\nlabel, which can be called and jumped to like any other label.\n\n`warp`\nThis is a function that is called to determine if this statement\nshould execute during warping. If the function exists and returns\ntrue, it's run during warp, otherwise the statement is not run\nduring warp.\n\n`scry`\nUsed internally by Ren'Py.\n\n`init`\nTrue if this statement should be run at init-time. (If the statement\nis not already inside an init block, it's automatically placed inside\nan init block.)\n\nYou probably don't want this if you have an `execute_init` function,\nas wrapping the statement in an init block will cause the `execute_init`\nand `execute` functions to be called at the same time.\n\n`translatable`\nIf set to true, the statement will be included in a translation\nblock, generally the block containing the succeding say statement.\nThis may only be set to true for one-line statements. It's used\nfor statements like ``nvl clear`` and ``voice``, which may need\nto be changed with dialogue.\n\n`init_priority`\nAn integer that determines the priority of initialization of the\ninit block created by `init` and `execute_init` function.\n\n`translation_strings`\nA function that is called with the parsed block. It's expected to\nreturn a list of strings or tuples of (string line number, string),\nwhich are then reported as being available to be translated.\n\n`force_begin_rollback`\nThis should be set to true on statements that are likely to cause the\nend of a fast skip, similar to ``menu`` or ``call screen``.\n\n`post_execute`\nA function that is executed as part the next statement after this\none. (Adding a post_execute function changes the contents of the RPYC\nfile, meaning a Force Compile is necessary.)\n\n`post_label`\nThis is a function that is called to determine the label of this\nthe post execute statement. If it returns a string, that string is used\nas the statement label, which can be called and jumped to like any other\nlabel. This can be used to create a unique return point.\n\n`predict_all`\nIf True, then this predicts all sub-parses of this statement and\nthe statement after this statement.\n\n`predict_next`\nThis is called with a single argument, the label of the statement\nthat would run after this statement.\n\nThis should be called to predict the statements that can run after\nthis one. It's expected to return a list of of labels or SubParse\nobjects. This is not called if `predict_all` is true.\n\n`execute_default`\nThis is a function that is called at the same time the default\nstatements are run - after the init phase, but before the game starts; when the\na save is loaded; after rollback; before lint; and potentially at\nother times.\n\nThis is called with a single argument, the object returned from parse.\n\n`reachable`\nThis is a function that is called to allow this statement to\ncustomize how it participates in lint's reachability analysis.\n\nBy default, a statement's custom block, sub-parse blocks created\nwith Lexer.renpy_block(), and the statement after the statement\nare reachable if the statement itself is reachable. The statement\nis also reachable if it has a label function.\n\nThis can be customized by providing a reachable function. This is\na function that takes five arguments (in the following, a \"label\"\nmay be a string or an opaque object):\n\n* The object returned by the parse function.\n* A boolean that is true if the statement is reachable.\n* The label of the statement.\n* The label of the next statement, or None if there is no next statement.\n* If `block` is set to \"script\", the label of the first statement in the block,\nor None if there is no block.\n\nIt's expected to return a set that may contain:\n\n* A label or subparse object of a statement that is reachable.\n* True, to indicate that this statement should not be reported by lint,\nbut is not intrinsically reachable. (It will become reachable if it\nis reported reachable by another statement.)\n* None, which is ignored.\n\nThis function may be called multiple times with both value of is_reachable,\nto allow the statement to customize its behavior based on whether it's\nreachable or not. (For example, the next statement may only be reachable\nif this statement is.)\n\n**Warning:**\n\nUsing the empty string as the name to redefine the say statement is\nusually a bad idea. That is because when replacing a Ren'Py native\nstatement, its behavior depends on the statement_equivalents. In\nthe case of the say statement, these equivalents do not support the `id`\nand translation systems. As a result, a game redefining the default\nstatement will not be able to use these features (short of\nreimplementing them entirely).\n\n"
+      "This registers a user-defined statement.\n\n`name`\nThis is either a space-separated list of names that begin the statement, or the\nempty string to define a new default statement (the default statement will\nreplace the say statement).\n\n`block`\nThis may be one of:\n\n* False, to indicate that the satement does not expect a block.\n* True, to indicate that the statement expects a block and will\nparse that block.\n* \"possible\", to indicate that the statement may or may not take\na block.\n* \"script\" to indicate that the block should be interpreted as a\nblock of Ren'Py script language statements. See `next` for how\nto implement control flow using this.\n* \"script-possible\" is treated like \"script\" if a block is present,\nand False otherwise.\n* \"atl\" to indicate that the block should be interpreted as an ATL\ntranssform. This is passed as an additional argument to `execute`.\n* \"atl-possible\" is treated like \"atl\" if a block is present, and\nand False otherwise.\n\n`parse`\nThis is a function that takes a Lexer object. This function should parse the\nstatement, and return an object. This object is passed as an argument to all the\nother functions.\n\n`lint`\nThis is called to check the statement. It is passed a single argument, the\nobject returned from parse. It should call renpy.error to report errors.\n\n`execute`\nThis is a function that is called when the statement executes. It is passed a\nsingle argument, the object returned from parse. If there is an ATL block,\nthe keyword argument `atl` is passed with an ATL transform.\n\n`execute_init`\nThis is a function that is called at init time, at priority 0. It is passed a\nsingle argument, the object returned from parse.\n\n`predict`\nThis is a function that is called to predict the images used by the statement.\nIt is passed a single argument, the object returned from parse. It should return\na list of displayables used by the statement.\n\n`next`\nThis is a function that is called to determine the next statement.\n\nIf `block` is not \"script\", this is passed a single argument, the object\nreturned from the parse function. If `block` is \"script\", an additional\nargument is passed, an object that names the first statement in the block.\n\nThe function should return either a string giving a label to jump to,\nthe second argument to transfer control into the block, or None to\ncontinue to the statement after this one. It can also return the result\nof Lexer.renpy_statement or Lexer.renpy_block when\ncalled in the `parse` function.\n\n`label`\nThis is a function that is called to determine the label of this\nstatement. If it returns a string, that string is used as the statement\nlabel, which can be called and jumped to like any other label.\n\n`warp`\nThis is a function that is called to determine if this statement\nshould execute during warping. If the function exists and returns\ntrue, it's run during warp, otherwise the statement is not run\nduring warp.\n\n`scry`\nUsed internally by Ren'Py.\n\n`init`\nTrue if this statement should be run at init-time. (If the statement\nis not already inside an init block, it's automatically placed inside\nan init block.)\n\nYou probably don't want this if you have an `execute_init` function,\nas wrapping the statement in an init block will cause the `execute_init`\nand `execute` functions to be called at the same time.\n\n`translatable`\nIf set to true, the statement will be included in a translation\nblock, generally the block containing the succeding say statement.\nThis may only be set to true for one-line statements. It's used\nfor statements like ``nvl clear`` and ``voice``, which may need\nto be changed with dialogue.\n\n`init_priority`\nAn integer that determines the priority of initialization of the\ninit block created by `init` and `execute_init` function. This can\nalso be a function that is called with the parsed block, and should\nreturn an integer.\n\n`translation_strings`\nA function that is called with the parsed block. It's expected to\nreturn a list of strings or tuples of (string line number, string),\nwhich are then reported as being available to be translated.\n\n`force_begin_rollback`\nThis should be set to true on statements that are likely to cause the\nend of a fast skip, similar to ``menu`` or ``call screen``.\n\n`post_execute`\nA function that is executed as part the next statement after this\none. (Adding a post_execute function changes the contents of the RPYC\nfile, meaning a Force Compile is necessary.)\n\n`post_label`\nThis is a function that is called to determine the label of this\nthe post execute statement. If it returns a string, that string is used\nas the statement label, which can be called and jumped to like any other\nlabel. This can be used to create a unique return point.\n\n`predict_all`\nIf True, then this predicts all sub-parses of this statement and\nthe statement after this statement.\n\n`predict_next`\nThis is called with a single argument, the label of the statement\nthat would run after this statement.\n\nThis should be called to predict the statements that can run after\nthis one. It's expected to return a list of of labels or SubParse\nobjects. This is not called if `predict_all` is true.\n\n`execute_default`\nThis is a function that is called at the same time the default\nstatements are run - after the init phase, but before the game starts; when the\na save is loaded; after rollback; before lint; and potentially at\nother times.\n\nThis is called with a single argument, the object returned from parse.\n\n`reachable`\nThis is a function that is called to allow this statement to\ncustomize how it participates in lint's reachability analysis.\n\nBy default, a statement's custom block, sub-parse blocks created\nwith Lexer.renpy_block(), and the statement after the statement\nare reachable if the statement itself is reachable. The statement\nis also reachable if it has a label function.\n\nThis can be customized by providing a reachable function. This is\na function that takes five arguments (in the following, a \"label\"\nmay be a string or an opaque object):\n\n* The object returned by the parse function.\n* A boolean that is true if the statement is reachable.\n* The label of the statement.\n* The label of the next statement, or None if there is no next statement.\n* If `block` is set to \"script\", the label of the first statement in the block,\nor None if there is no block.\n\nIt's expected to return a set that may contain:\n\n* A label or subparse object of a statement that is reachable.\n* True, to indicate that this statement should not be reported by lint,\nbut is not intrinsically reachable. (It will become reachable if it\nis reported reachable by another statement.)\n* None, which is ignored.\n\nThis function may be called multiple times with both value of is_reachable,\nto allow the statement to customize its behavior based on whether it's\nreachable or not. (For example, the next statement may only be reachable\nif this statement is.)\n\n**Warning:**\n\nUsing the empty string as the name to redefine the say statement is\nusually a bad idea. That is because when replacing a Ren'Py native\nstatement, its behavior depends on the statement_equivalents. In\nthe case of the say statement, these equivalents do not support the `id`\nand translation systems. As a result, a game redefining the default\nstatement will not be able to use these features (short of\nreimplementing them entirely).\n\n"
     ],
     "renpy.register_style_preference": [
       "renpy",
@@ -4136,7 +4184,7 @@
       "(d, width=None, height=None, st=0.0, at=None, resize=False)",
       "",
       "function",
-      "This takes a displayable or Render, and returns a pygame_sdl2 surface. The render is performed by\nRen'Py's display system, such that if the window is upscaled the render will be upscaled as well.\n\n`d`\nThe displayable or Render to render. If a Render, `width`, `height`, `st`, and `at` are ignored.\n\n`width`\nThe width to offer `d`, in virtual pixels. If None, config.screen_width.\n\n`height`\nThe height to offer `d`, in virtual pixels. If None, config.screen_height.\n\n`st`\nThe time of the render, in the shown timebase.\n\n`at`\nThe time of the render in the animation timebase. If None, `st` is used.\n\n`resize`\nIf True, the surface will be resized to the virtual size of the displayable or render. This\nmay lower the quality of the result.\n\nThis function may only be called after the Ren'Py display system has started, so it can't be\ncalled during the init phase or before the first interaction.\n\n"
+      "This takes a displayable or Render, and returns a pygame Surface. The render is performed by\nRen'Py's display system, such that if the window is upscaled the render will be upscaled as well.\n\n`d`\nThe displayable or Render to render. If a Render, `width`, `height`, `st`, and `at` are ignored.\n\n`width`\nThe width to offer `d`, in virtual pixels. If None, config.screen_width.\n\n`height`\nThe height to offer `d`, in virtual pixels. If None, config.screen_height.\n\n`st`\nThe time of the render, in the shown timebase.\n\n`at`\nThe time of the render in the animation timebase. If None, `st` is used.\n\n`resize`\nIf True, the surface will be resized to the virtual size of the displayable or render. This\nmay lower the quality of the result.\n\nThis function may only be called after the Ren'Py display system has started, so it can't be\ncalled during the init phase or before the first interaction.\n\n"
     ],
     "renpy.request_permission": [
       "renpy",
@@ -4421,7 +4469,7 @@
     "renpy.split_properties": [
       "renpy",
       "function",
-      "(properties, *prefixes)",
+      "(properties: dict[str, typing.Any], *prefixes: str) -> list[dict[str, typing.Any]]",
       "",
       "function",
       "Splits up `properties` into multiple dictionaries, one per `prefix`. This\nfunction checks each key in properties against each prefix, in turn.\nWhen a prefix matches, the prefix is stripped from the key, and the\nresulting key is mapped to the value in the corresponding dictionary.\n\nIf no prefix matches, an exception is thrown. (The empty string, \"\",\ncan be used as the last prefix to create a catch-all dictionary.)\n\nFor example, this splits properties beginning with text from\nthose that do not\n\n```\ntext_properties, button_properties = renpy.split_properties(properties, \"text_\", \"\")\n\n```\n\n"
@@ -4517,7 +4565,7 @@
     "renpy.translate_string": [
       "renpy",
       "function",
-      "(s, language=<renpy.object.Sentinel object at 0x789177bc25a0>)",
+      "(s, language=<renpy.object.Sentinel object at 0x71ec6a83a9f0>)",
       "",
       "function",
       "Returns `s` immediately translated into `language`. If `language`\nis Default, uses the language set in the preferences.\nStrings enclosed in this function will **not** be added\nto the list of translatable strings. Note that the string may be\ndouble-translated, if it matches a string translation when it\nis displayed.\n\n\n"
@@ -4802,7 +4850,7 @@
       "(color=None, hls=None, hsv=None, rgb=None, alpha=1.0)",
       "",
       "class",
-      "The Color class is used to represent and manipulate colors and convert\nbetween various color spaces. It also represents opacity in the form\nof an alpha.\n\nWhen creating a Color, at most one of the `color`, `hls`, `hsv`, or\n`rgb` arguments should be supplied. (If all are None, None is returned.)\n\n`color`\nThe color, in one of the standard formats Ren'Py understands. These\nare:\n\n* A Color object.\n* An (r, g, b) or (r, g, b, a) tuple, in which all the numbers are\nbetween 0 and 255.\n* A string giving a hexadecimal color, in the form \"#rgb\", \"#rgba\",\n\"#rrggbb\", or \"#rrggbbaa\".\n\n`hls`\nA color in the hue-lightness-saturation color space. This should\nbe supplied a three-component tuple, where each component is between\n0.0 and 1.0.\n\n`hsv`\nA color in the hue-saturation-value color space. This should\nbe supplied a three-component tuple, where each component is between\n0.0 and 1.0.\n\n`rgb`\nA color in the red-green-blue color space. This should\nbe supplied a three-component tuple, where each component is between\n0.0 and 1.0.\n\nIf the supplied color does not contain an alpha value, `alpha` is used.\n`alpha` must be between 0.0 and 1.0.\n\nColor objects can be used as 4-component tuples, where the components\nare (red, green, blue, and alpha). When used as a tuple, the value\nof each component is between 0 and 255.\n\nColor objects support the +, -, and * operators, representing\ncomponent-wise addition, subtraction, and multiplication. Some uses\nof these operators can cause the creation of colors with components\nthat are not in the supported range. Such colors should not be passed\nto other parts of Ren'Py. (The normalize method can be called to return\na new color with the components limited to the proper range.)\n\nA Color object has the following properties:\n\nattribute hls\n\nReturns the color as a tuple of three floating point numbers giving\nhue, lightness, and saturation. Each component ranges between 0.0 and 1.0.\n\nattribute hsv\n\nReturns the color as a tuple of three floating point numbers giving\nhue, saturation, and value. Each component ranges between 0.0 and 1.0.\n\nattribute rgb\n\nReturns the color as a tuple of three floating point numbers giving\nthe red, green, and blue components. Each component ranges between 0.0\nand 1.0.\n\nattribute rgba\n\nReturns the color as a tuple of four floating point numbers giving\nthe red, green, blue and alpha components as 0.0 to 1.0 values.\n\nattribute premultiplied\n\nReturns the color as a tuple of four floating point numbers giving\nthe red, green, blue and alpha components as 0.0 to 1.0 values, with\nthe red, green, and blue components premultiplied by the alpha.\n\nattribute alpha\n\nReturns the alpha (opacity) of this Color as a number between 0.0 and\n1.0, where 0.0 is transparent and 1.0 is opaque.\n\nattribute hexcode\n\nReturns a string containing a hex color code of the form #rrggbbaa\nor #rrggbb.\n\nColor objects have the following methods. Since Colors are immutable,\nthese methods always return a new Color object.\n\n.. method:: interpolate(other, fraction)\n\nInterpolates between this Color and `other` in the RGB color\nspace, returning a new Color as the result. If `fraction` is 0.0, the\nresult is the same as this color, if 1.0, it is the same as `other`.\n\n.. method:: interpolate_hls(other, fraction)\n\nInterpolates between this Color and `other` in the HLS color\nspace, returning a new Color as the result. If `fraction` is 0.0, the\nresult is the same as this color, if 1.0, it is the same as `other`.\n\n`other` may be a string, Color or an HLS tuple.\n\n.. method:: interpolate_hsv(other, fraction)\n\nInterpolates between this Color and `other` in the HSV color\nspace, returning a new Color as the result. If `fraction` is 0.0, the\nresult is the same as this color, if 1.0, it is the same as `other`.\n\n`other` may be a string, Color or an HSV tuple.\n\n.. method:: multiply_hls_saturation(saturation)\n\nMultiplies this color's saturation by `saturation`, and returns\nthe result as a new Color. This is performed in the HLS color space.\n\n.. method:: multiply_hsv_saturation(saturation)\n\nMultiplies this color's saturation by `saturation`, and returns\nthe result as a new Color. This is performed in the HSV color space.\n\n.. method:: multiply_value(value)\n\nMultiples this color's value by `value` and returns the result as a\nnew Color. This is performed in the HSV color space.\n\n.. method:: normalize()\n\nReturns a normalized version of this Color where all components fall\nbetween 0 and 255.\n\n.. method:: opacity(opacity)\n\nMultiplies the alpha channel of this color by `opacity`, and returns\nthe new color.\n\n.. method:: replace_hls_saturation(saturation)\n\nReplaces this color's saturation with `saturation`, and returns\nthe result as a new Color. This is performed in the HLS color space.\n\n.. method:: replace_hsv_saturation(saturation)\n\nReplace this color's saturation with `saturation`, and returns\nthe result as a new Color. This is performed in the HSV color space.\n\n.. method:: replace_hue(hue)\n\nReplaces this color's hue with `hue`, which should be between 0.0 and\n1.0. Returns the new Color.\n\n.. method:: replace_lightness(lightness)\n\nReplaces this color's lightness with `lightness`, and returns\nthe result as a new Color. This is performed in the HLS color space.\n\n.. method:: replace_opacity(opacity)\n\nReplaces this color's alpha channel with `opacity`, and\nreturns the result as a new Color.\n\n.. method:: replace_value(value)\n\nReplaces this color's value with `value` and returns the result as a\nnew Color. This is performed in the HSV color space.\n\n.. method:: rotate_hue(rotation)\n\nRotates this color's hue by `rotation`, and returns the new Color. `rotation`\nis a fraction of a full rotation (between 0.0 and 1.0). Divide by 360.0 to\nconvert to degrees.\n\n.. method:: shade(fraction)\n\nCreates a shade of this color by mixing it with black. `fraction` is\nthe fraction of this color that is in the new color. If `fraction` is\n1.0, the color is unchanged, if 0.0, black is returned.\n\nThe alpha channel is unchanged.\n\n.. method:: tint(fraction)\n\nCreates a tint of this color by mixing it with white. `fraction` is\nthe fraction of this color that is in the new color. If `fraction` is\n1.0, the color is unchanged, if 0.0, white is returned.\n\nThe alpha channel is unchanged.\n\n"
+      "The Color class is used to represent and manipulate colors and convert\nbetween various color spaces. It also represents opacity in the form\nof an alpha.\n\nWhen creating a Color, at most one of the `color`, `hls`, `hsv`, or\n`rgb` arguments should be supplied. (If all are None, None is returned.)\n\n`color`\nThe color, in one of the standard formats Ren'Py understands. These\nare:\n\n* A Color object.\n* An (r, g, b) or (r, g, b, a) tuple, in which all the numbers are\nbetween 0 and 255.\n* A string giving a hexadecimal color, in the form \"#rgb\", \"#rgba\",\n\"#rrggbb\", or \"#rrggbbaa\".\n\n`hls`\nA color in the hue-lightness-saturation color space. This should\nbe supplied a three-component tuple, where each component is between\n0.0 and 1.0.\n\n`hsv`\nA color in the hue-saturation-value color space. This should\nbe supplied a three-component tuple, where each component is between\n0.0 and 1.0.\n\n`rgb`\nA color in the red-green-blue color space. This should\nbe supplied a three-component tuple, where each component is between\n0.0 and 1.0.\n\nIf the supplied color does not contain an alpha value, `alpha` is used.\n`alpha` must be between 0.0 and 1.0.\n\nColor objects can be used as 4-component tuples, where the components\nare (red, green, blue, and alpha). When used as a tuple, the value\nof each component is between 0 and 255.\n\nColor objects support the +, -, and * operators, representing\ncomponent-wise addition, subtraction, and multiplication. Some uses\nof these operators can cause the creation of colors with components\nthat are not in the supported range. Such colors should not be passed\nto other parts of Ren'Py. (The normalize method can be called to return\na new color with the components limited to the proper range.)\n\nA Color object has the following properties:\n\nattribute hls\n\nReturns the color as a tuple of three floating point numbers giving\nhue, lightness, and saturation. Each component ranges between 0.0 and 1.0.\n\nattribute hsv\n\nReturns the color as a tuple of three floating point numbers giving\nhue, saturation, and value. Each component ranges between 0.0 and 1.0.\n\nattribute rgb\n\nReturns the color as a tuple of three floating point numbers giving\nthe red, green, and blue components. Each component ranges between 0.0\nand 1.0.\n\nattribute rgba\n\nReturns the color as a tuple of four floating point numbers giving\nthe red, green, blue and alpha components as 0.0 to 1.0 values.\n\nattribute premultiplied\n\nReturns the color as a tuple of four floating point numbers giving\nthe red, green, blue and alpha components as 0.0 to 1.0 values, with\nthe red, green, and blue components premultiplied by the alpha.\n\nattribute alpha\n\nReturns the alpha (opacity) of this Color as a number between 0.0 and\n1.0, where 0.0 is transparent and 1.0 is opaque.\n\nattribute hexcode\n\nReturns a string containing a hex color code of the form #rrggbbaa\nor #rrggbb.\n\nColor objects have the following methods. Since Colors are immutable,\nthese methods always return a new Color object.\n\n.. method:: interpolate(other: ColorLike, fraction: float) -> 'Color'\n\nInterpolates between this Color and `other` in the RGB color\nspace, returning a new Color as the result. If `fraction` is 0.0, the\nresult is the same as this color, if 1.0, it is the same as `other`.\n\n.. method:: interpolate_hls(other: 'str | Color | tuple[float, float, float]', fraction: float) -> 'Color'\n\nInterpolates between this Color and `other` in the HLS color\nspace, returning a new Color as the result. If `fraction` is 0.0, the\nresult is the same as this color, if 1.0, it is the same as `other`.\n\n`other` may be a string, Color or an HLS tuple.\n\n.. method:: interpolate_hsv(other: 'str | Color | tuple[float, float, float]', fraction: float) -> 'Color'\n\nInterpolates between this Color and `other` in the HSV color\nspace, returning a new Color as the result. If `fraction` is 0.0, the\nresult is the same as this color, if 1.0, it is the same as `other`.\n\n`other` may be a string, Color or an HSV tuple.\n\n.. method:: multiply_hls_saturation(saturation: float) -> 'Color'\n\nMultiplies this color's saturation by `saturation`, and returns\nthe result as a new Color. This is performed in the HLS color space.\n\n.. method:: multiply_hsv_saturation(saturation: float) -> 'Color'\n\nMultiplies this color's saturation by `saturation`, and returns\nthe result as a new Color. This is performed in the HSV color space.\n\n.. method:: multiply_value(value: float) -> 'Color'\n\nMultiples this color's value by `value` and returns the result as a\nnew Color. This is performed in the HSV color space.\n\n.. method:: normalize()\n\nReturns a normalized version of this Color where all components fall\nbetween 0 and 255.\n\n.. method:: opacity(opacity: float) -> 'Color'\n\nMultiplies the alpha channel of this color by `opacity`, and returns\nthe new color.\n\n.. method:: replace_hls_saturation(saturation: float) -> 'Color'\n\nReplaces this color's saturation with `saturation`, and returns\nthe result as a new Color. This is performed in the HLS color space.\n\n.. method:: replace_hsv_saturation(saturation: float) -> 'Color'\n\nReplace this color's saturation with `saturation`, and returns\nthe result as a new Color. This is performed in the HSV color space.\n\n.. method:: replace_hue(hue: float) -> 'Color'\n\nReplaces this color's hue with `hue`, which should be between 0.0 and\n1.0. Returns the new Color.\n\n.. method:: replace_lightness(lightness: float) -> 'Color'\n\nReplaces this color's lightness with `lightness`, and returns\nthe result as a new Color. This is performed in the HLS color space.\n\n.. method:: replace_opacity(opacity: float) -> 'Color'\n\nReplaces this color's alpha channel with `opacity`, and\nreturns the result as a new Color.\n\n.. method:: replace_value(value: float) -> 'Color'\n\nReplaces this color's value with `value` and returns the result as a\nnew Color. This is performed in the HSV color space.\n\n.. method:: rotate_hue(rotation: float) -> 'Color'\n\nRotates this color's hue by `rotation`, and returns the new Color. `rotation`\nis a fraction of a full rotation (between 0.0 and 1.0). Divide by 360.0 to\nconvert to degrees.\n\n.. method:: shade(fraction: float) -> 'Color'\n\nCreates a shade of this color by mixing it with black. `fraction` is\nthe fraction of this color that is in the new color. If `fraction` is\n1.0, the color is unchanged, if 0.0, black is returned.\n\nThe alpha channel is unchanged.\n\n.. method:: tint(fraction: float) -> 'Color'\n\nCreates a tint of this color by mixing it with white. `fraction` is\nthe fraction of this color that is in the new color. If `fraction` is\n1.0, the color is unchanged, if 0.0, white is returned.\n\nThe alpha channel is unchanged.\n\n"
     ],
     "ColorizeMatrix": [
       "renpy",
@@ -4994,7 +5042,7 @@
       "(d=None, drag_name=None, draggable=True, droppable=True, drag_raise=True, dragging=None, dragged=None, dropped=None, drag_handle=(0.0, 0.0, 1.0, 1.0), drag_joined=..., clicked=None, hovered=None, unhovered=None, mouse_drop=False, **properties)",
       "",
       "class",
-      "A displayable that represents an object that can be dragged around\nits enclosing area. A Drag can also represent an area that\nother Drags can be dropped on.\n\nA Drag can be moved around inside is parent. Generally, its parent\nshould be either a Fixed or DragGroup.\n\nA Drag has one child. The child's state reflects the status\nof the drag and drop operation:\n\n* ``selected_hover`` - when it is being dragged.\n* ``selected_idle`` - when it can be dropped on.\n* ``hover`` - when the draggable will be dragged when the mouse is\nclicked.\n* ``idle`` - otherwise.\n\nThe drag handle is a rectangle inside the child. The mouse must be over\na pixel inside the drag handle for dragging or clicking to occur. If the\nfocus_mask property is True, that pixel must not be transparent.\n\nA newly-created draggable is added to the default DragGroup. A draggable\ncan only be in a single DragGroup - if it's added to a second group,\nit's removed from the first.\n\nWhen a Drag is first rendered, if it's position cannot be determined\nfrom the DragGroup it is in, the position of its upper-left corner\nis computed using the standard layout algorithm. Once that position\nhas been computed, the layout properties are ignored in favor of the\nposition stored inside the Drag.\n\nTransforms should not be applied to a Drag directly. Instead, apply\nthe transform to the child of the Drag.\n\n`d`\nIf present, the child of this Drag. Drags use the child style\nin preference to this, if it's not None.\n\n`drag_name`\nIf not None, the name of this draggable. This is available\nas the `name` property of draggable objects. If a Drag\nwith the same name is or was in the DragGroup, the starting\nposition of this Drag is taken from that Draggable.\n\n`draggable`\nIf true, the Drag can be dragged around the screen with\nthe mouse.\n\n`droppable`\nIf true, other Drags can be dropped on this Drag.\n\n`drag_raise`\nIf true, this Drag is raised to the top when it is dragged. If\nit is joined to other Drags, all joined drags are raised.\n\n`activated`\nA callback (or list of callbacks) that is called when the mouse\nis pressed down on the drag. It is called with one argument, a\nlist of Drags that are being dragged. The return value of this\ncallback is ignored.\n\n`dragging`\nA callback (or list of callbacks) that is called when the Drag is being\ndragged. It is called with one argument, a list of Drags that are\nbeing dragged. If the callback returns a value other than None, that\nvalue is returned as the result of the interaction.\n\n`dragged`\nA callback (or list of callbacks) that is called when the Drag\nhas been dragged. It is called with two arguments. The first is\na list of Drags that are being dragged. The second is either\na Drag that is being dropped onto, or None of a drop did not\noccur. If the callback returns a value other than None, that\nvalue is returned as the result of the interaction.\n\n`dropped`\nA callback (or list of callbacks) that is called when this Drag\nis dropped onto. It is called with two arguments. The first\nis the Drag being dropped onto. The second is a list of Drags that\nare being dragged.  If the callback returns a value other than None,\nthat value is returned as the result of the interaction.\n\nWhen a dragged and dropped callback are triggered for the same\nevent, the dropped callback is only called if dragged returns\nNone.\n\n`clicked`\nA callback that is called when the Drag is clicked without being moved.\nIt is called with one argument, the Drag being clicked on. A droppable\ncan also be focused and clicked. If the callback returns a value other\nthan None, that value is returned as the result of the interaction.\n\n`alternate`\nAn action that is run when the Drag is right-clicked (on the\ndesktop) or long-pressed without moving (on mobile). It may\nbe necessary to increase config.longpress_duration if\nthis triggers to early on mobile platforms.\n\n`hovered`\nAn action to run when the drag gains focus.\n\n`unhovered`\nAn action to run when the drag loses focus.\n\n`tooltip`\nA tooltip to display when the drag is hovered over.\n\n`drag_handle`\nA (x, y, width, height) tuple, giving the position of the drag\nhandle within the child. This tuple takes positions.\n\n`drag_joined`\nThis is called with the current Drag as an argument. It's\nexpected to return a list of [ (drag, x, y) ] tuples, giving\nthe draggables to drag as a unit. `x` and `y` are the offsets\nof the drags relative to each other, they are not relative\nto the corner of this drag. `drag` is either the Drag object\nto be joined or the drag_name of such a Drag.\n\n`drag_offscreen`\nDetermines the conditions under which the drag is allowed\nto be dragged offscreen. Allowing offscreen dragging can be\ndangerous to use with drag_joined or drags that can change\nsize, as the drags can leave the screen entirely, with no\nway to get them back on the screen.\n\nThis should be one of:\n\nFalse\nTo disallow dragging the drag offscreen. (The default)\n\nTrue\nTo allow dragging offscreen, in any direction.\n\n\"horizontal\"\nTo allow dragging offscreen in the horizontal direction only.\n\n\"vertical\"\nTo allow dragging offscreen in the vertical direction only.\n\n(width, height)\nBoth width and height must be integers. The drag can be\ndragged offscreen as long as a (width, height)-sized part\nof it remains on-screen. So, (100, 100) will ensure that\nat least a 100x100 pixel area of the displayable will\nremain on-screen even while the rest of the displayable\ncan be dragged offscreen. Setting this to the width and\nheight of the displayable being dragged is equivalent to\nnot allowing the drag to go offscreen at all.\n\n(min_x, max_x, min_y, max_y)\nWhere each of min_x, max_x, min_y, and max_y are integers.\nmin_x is the number of pixels away from the left border,\nand max_x is the number of pixels away from the right\nborder. The same goes for min_y and max_y on the top and\nbottom borders respectively. The drag can be moved until\none of its edges hit the specified border. (0, 0, 0, 0)\nis equivalent to not allowing dragging offscreen at all.\n\nFor example, (-100, 200, 0, 0) would allow the drag to be\ndragged 100 pixels off the left edge of the screen and 200\npixels off the right edge of the screen, but does not\nallow it to be dragged offscreen at the top nor bottom.\n\nThis can also be used to constrain the drag within the\nscreen bounds. (200, -200, 200, -200) would only allow\nthe drag within 200 pixels of the edges of the screen.\n\nYou can envision this as an additional \"border\" around\nthe drag, which may go outside the bounds of the screen,\nthat constrains the drag to remain within it.\n\ncallable\nA callable can be provided to drag_offscreen. It must\ntake two arguments: an x and a y position which\nrepresents the dragged position of the top left corner of\nthe drag, and it must return an (x, y) tuple which is the\nnew (x, y) position the drag should be in. This callable\nis called frequently, whenever the drag is moved. For\nexample, the following function snaps the drag into place\nevery 300 pixels\n\n```\ndef drag_snap(x, y):\n\n    if y < 300:\n        y = 0\n    elif y < 600:\n        y = 300\n    else:\n        y = 600\n        \n    return 200, y\n    \n```\n\n`mouse_drop`\nIf true, the drag is dropped on the first droppable under the cursor.\nIf false, the default, the drag is dropped onto the droppable with\nthe largest degree of overlap.\n\n`drop_allowable`\nA callback that is called to determine whether this drop will allow\nthe current drags to be dropped onto it. It is called with two arguments.\nThe first is the Drag which determines its sensitivity.\nThe second is a list of Drags that are being dragged.\n\n`snapped`\nA callback (or list of callbacks) that is called when the Drag completes\na snap animation. It is called with four arguments. The first is the\nDrag which was undergoing the snap animation. The second and third are\nthe x and y coordinates where the Drag was set to snap to. The fourth\nis a boolean which is True if the snap animation was successfully\ncompleted, and False if it was interrupted (e.g. from being grabbed in\nthe middle of snapping). For example, the following function sets\nthe drag's start_x and start_y position to its intended end position\nif the snap animation was interrupted\n\n```\ndef snapped_callback(drag, x, y, completed):\n    if not completed:\n        drag.start_x = x\n        drag.start_y = y\n        \n        \n```\n\nExcept for `d`, all of the parameters are available as fields (with\nthe same name) on the Drag object. In addition, after the drag has\nbeen rendered, the following fields become available:\n\n`x`, `y`\nThe position of the Drag relative to its parent, in pixels.\n\n`start_x`, `start_y`\nThe drag start position of the Drag relative to its parent, in pixels.\n\n`grab_x`, `grab_y`\nThe x and y positions, relative to its parent, where the drag was\npicked up, in pixels.\n\n`last_drop`\nThe last Drag that the current Drag can be dropped on if released,\nor None if no valid Drag currently exists.\n\n`snapping`\nTrue if this Drag is in the middle of a snapping animation.\n\n`w`, `h`\nThe width and height of the Drag's child, in pixels.\n\n.. method:: bottom()\n\nLowers this displayable to the bottom of its drag_group.\n\n.. method:: set_child(d)\n\nChanges the child of this drag to `d`.\n\n.. method:: snap(x, y, delay=0, warper=None)\n\nChanges the position of the drag. If the drag is not showing,\nthen the position change is instantaneous. Otherwise, the\nposition change takes `delay` seconds and an optional warper. If no\nwarper is provided, the transition is linear.\n\n.. method:: top()\n\nRaises this displayable to the top of its drag_group.\n\n"
+      "A displayable that represents an object that can be dragged around\nits enclosing area. A Drag can also represent an area that\nother Drags can be dropped on.\n\nA Drag can be moved around inside is parent. Generally, its parent\nshould be either a Fixed or DragGroup.\n\nA Drag has one child. The child's state reflects the status\nof the drag and drop operation:\n\n* ``selected_hover`` - when it is being dragged.\n* ``selected_idle`` - when it can be dropped on.\n* ``hover`` - when the draggable will be dragged when the mouse is\nclicked.\n* ``idle`` - otherwise.\n\nThe drag handle is a rectangle inside the child. The mouse must be over\na pixel inside the drag handle for dragging or clicking to occur. If the\nfocus_mask property is True, that pixel must not be transparent.\n\nA newly-created draggable is added to the default DragGroup. A draggable\ncan only be in a single DragGroup - if it's added to a second group,\nit's removed from the first.\n\nWhen a Drag is first rendered, if it's position cannot be determined\nfrom the DragGroup it is in, the position of its upper-left corner\nis computed using the standard layout algorithm. Once that position\nhas been computed, the layout properties are ignored in favor of the\nposition stored inside the Drag.\n\nTransforms should not be applied to a Drag directly. Instead, apply\nthe transform to the child of the Drag.\n\n`d`\nIf present, the child of this Drag. Drags use the child style\nin preference to this, if it's not None.\n\n`drag_name`\nIf not None, the name of this draggable. This is available\nas the `drag_name` property of draggable objects. If a Drag\nwith the same name is or was in the DragGroup, the starting\nposition of this Drag is taken from that Draggable.\n\n`draggable`\nIf true, the Drag can be dragged around the screen with\nthe mouse.\n\n`droppable`\nIf true, other Drags can be dropped on this Drag.\n\n`drag_raise`\nIf true, this Drag is raised to the top when it is dragged. If\nit is joined to other Drags, all joined drags are raised.\n\n`activated`\nA callback (or list of callbacks) that is called when the mouse\nis pressed down on the drag. It is called with one argument, a\nlist of Drags that are being dragged. The return value of this\ncallback is ignored.\n\n`dragging`\nA callback (or list of callbacks) that is called when the Drag is being\ndragged. It is called with one argument, a list of Drags that are\nbeing dragged. If the callback returns a value other than None, that\nvalue is returned as the result of the interaction.\n\n`dragged`\nA callback (or list of callbacks) that is called when the Drag\nhas been dragged. It is called with two arguments. The first is\na list of Drags that are being dragged. The second is either\na Drag that is being dropped onto, or None of a drop did not\noccur. If the callback returns a value other than None, that\nvalue is returned as the result of the interaction.\n\n`dropped`\nA callback (or list of callbacks) that is called when this Drag\nis dropped onto. It is called with two arguments. The first\nis the Drag being dropped onto. The second is a list of Drags that\nare being dragged.  If the callback returns a value other than None,\nthat value is returned as the result of the interaction.\n\nWhen a dragged and dropped callback are triggered for the same\nevent, the dropped callback is only called if dragged returns\nNone.\n\n`clicked`\nA callback that is called when the Drag is clicked without being moved.\nIt is called with one argument, the Drag being clicked on. A droppable\ncan also be focused and clicked. If the callback returns a value other\nthan None, that value is returned as the result of the interaction.\n\n`alternate`\nAn action that is run when the Drag is right-clicked (on the\ndesktop) or long-pressed without moving (on mobile). It may\nbe necessary to increase config.longpress_duration if\nthis triggers to early on mobile platforms.\n\n`hovered`\nAn action to run when the drag gains focus.\n\n`unhovered`\nAn action to run when the drag loses focus.\n\n`tooltip`\nA tooltip to display when the drag is hovered over.\n\n`drag_handle`\nA (x, y, width, height) tuple, giving the position of the drag\nhandle within the child. This tuple takes positions.\n\n`drag_joined`\nThis is called with the current Drag as an argument. It's\nexpected to return a list of [ (drag, x, y) ] tuples, giving\nthe draggables to drag as a unit. `x` and `y` are the offsets\nof the drags relative to each other, they are not relative\nto the corner of this drag. `drag` is either the Drag object\nto be joined or the drag_name of such a Drag.\n\n`drag_offscreen`\nDetermines the conditions under which the drag is allowed\nto be dragged offscreen. Allowing offscreen dragging can be\ndangerous to use with drag_joined or drags that can change\nsize, as the drags can leave the screen entirely, with no\nway to get them back on the screen.\n\nThis should be one of:\n\nFalse\nTo disallow dragging the drag offscreen. (The default)\n\nTrue\nTo allow dragging offscreen, in any direction.\n\n\"horizontal\"\nTo allow dragging offscreen in the horizontal direction only.\n\n\"vertical\"\nTo allow dragging offscreen in the vertical direction only.\n\n(width, height)\nBoth width and height must be integers. The drag can be\ndragged offscreen as long as a (width, height)-sized part\nof it remains on-screen. So, (100, 100) will ensure that\nat least a 100x100 pixel area of the displayable will\nremain on-screen even while the rest of the displayable\ncan be dragged offscreen. Setting this to the width and\nheight of the displayable being dragged is equivalent to\nnot allowing the drag to go offscreen at all.\n\n(min_x, max_x, min_y, max_y)\nWhere each of min_x, max_x, min_y, and max_y are integers.\nmin_x is the number of pixels away from the left border,\nand max_x is the number of pixels away from the right\nborder. The same goes for min_y and max_y on the top and\nbottom borders respectively. The drag can be moved until\none of its edges hit the specified border. (0, 0, 0, 0)\nis equivalent to not allowing dragging offscreen at all.\n\nFor example, (-100, 200, 0, 0) would allow the drag to be\ndragged 100 pixels off the left edge of the screen and 200\npixels off the right edge of the screen, but does not\nallow it to be dragged offscreen at the top nor bottom.\n\nThis can also be used to constrain the drag within the\nscreen bounds. (200, -200, 200, -200) would only allow\nthe drag within 200 pixels of the edges of the screen.\n\nYou can envision this as an additional \"border\" around\nthe drag, which may go outside the bounds of the screen,\nthat constrains the drag to remain within it.\n\ncallable\nA callable can be provided to drag_offscreen. It must\ntake two arguments: an x and a y position which\nrepresents the dragged position of the top left corner of\nthe drag, and it must return an (x, y) tuple which is the\nnew (x, y) position the drag should be in. This callable\nis called frequently, whenever the drag is moved. For\nexample, the following function snaps the drag into place\nevery 300 pixels\n\n```\ndef drag_snap(x, y):\n\n    if y < 300:\n        y = 0\n    elif y < 600:\n        y = 300\n    else:\n        y = 600\n        \n    return 200, y\n    \n```\n\n`mouse_drop`\nIf true, the drag is dropped on the first droppable under the cursor.\nIf false, the default, the drag is dropped onto the droppable with\nthe largest degree of overlap.\n\n`drop_allowable`\nA callback that is called to determine whether this drop will allow\nthe current drags to be dropped onto it. It is called with two arguments.\nThe first is the Drag which determines its sensitivity.\nThe second is a list of Drags that are being dragged.\n\n`snapped`\nA callback (or list of callbacks) that is called when the Drag completes\na snap animation. It is called with four arguments. The first is the\nDrag which was undergoing the snap animation. The second and third are\nthe x and y coordinates where the Drag was set to snap to. The fourth\nis a boolean which is True if the snap animation was successfully\ncompleted, and False if it was interrupted (e.g. from being grabbed in\nthe middle of snapping). For example, the following function sets\nthe drag's start_x and start_y position to its intended end position\nif the snap animation was interrupted\n\n```\ndef snapped_callback(drag, x, y, completed):\n    if not completed:\n        drag.start_x = x\n        drag.start_y = y\n        \n        \n```\n\nExcept for `d`, all of the parameters are available as fields (with\nthe same name) on the Drag object. In addition, after the drag has\nbeen rendered, the following fields become available:\n\n`x`, `y`\nThe position of the Drag relative to its parent, in pixels.\n\n`start_x`, `start_y`\nThe drag start position of the Drag relative to its parent, in pixels.\n\n`grab_x`, `grab_y`\nThe x and y positions, relative to its parent, where the drag was\npicked up, in pixels.\n\n`last_drop`\nThe last Drag that the current Drag can be dropped on if released,\nor None if no valid Drag currently exists.\n\n`snapping`\nTrue if this Drag is in the middle of a snapping animation.\n\n`w`, `h`\nThe width and height of the Drag's child, in pixels.\n\n.. method:: bottom()\n\nLowers this displayable to the bottom of its drag_group.\n\n.. method:: set_child(d)\n\nChanges the child of this drag to `d`.\n\n.. method:: snap(x, y, delay=0, warper=None)\n\nChanges the position of the drag. If the drag is not showing,\nthen the position change is instantaneous. Otherwise, the\nposition change takes `delay` seconds and an optional warper. If no\nwarper is provided, the transition is linear.\n\n.. method:: top()\n\nRaises this displayable to the top of its drag_group.\n\n"
     ],
     "DragGroup": [
       "renpy",
@@ -5266,7 +5314,7 @@
       "(image, left=0, top=0, right=None, bottom=None, *, tile=False, **properties)",
       "",
       "class",
-      "A displayable that resizes an image to fill the available area,\nwhile preserving the width and height of its borders. It is often\nused as the background of a window or button.\n\n.. figure:: frame_example.png\n\nUsing a frame to resize an image to double its size.\n\n`image`\nAn image manipulator that will be resized by this frame.\n\n`left`\nThe size of the border on the left side. This can also be a\nBorders object, in which case that object is used in place\nof the other parameters.\n\n`top`\nThe size of the border on the top.\n\n`right`\nThe size of the border on the right side. If None, defaults\nto `left`.\n\n`bottom`\nThe side of the border on the bottom. If None, defaults to `top`.\n\n`tile`\nIf set to True, tiling is used to resize sections of the image,\nrather than scaling. If set to the string \"integer\", the nearest\ninteger number of tiles will be used in each direction. That set of\nfull tiles will then be scaled up or down to fit the required area.\n\n\n\n```\n# Resize the background of the text window if it's too small.\ninit python:\n    style.window.background = Frame(\"frame.png\", 10, 10)\n    \n    \n```\n\n"
+      "A displayable that resizes an image to fill the available area,\nwhile preserving the width and height of its borders. It is often\nused as the background of a window or button.\n\n.. figure:: frame_example.png\n\nUsing a frame to resize an image to double its size.\n\n`image`\nAn image manipulator that will be resized by this frame.\n\n`left`\nThe size of the border on the left side. This can also be a\nBorders object, in which case that object is used in place\nof the other parameters.\n\n`top`\nThe size of the border on the top.\n\n`right`\nThe size of the border on the right side. If None, defaults\nto `left`.\n\n`bottom`\nThe side of the border on the bottom. If None, defaults to `top`.\n\n`tile`\nIf set to True, tiling is used to resize sections of the image,\nrather than scaling. If set to the string \"integer\", the nearest\ninteger number of tiles will be used in each direction. That set of\nfull tiles will then be scaled up or down to fit the required area.\n\n\n\n```\n# Resize the background of the text window if it's too small.\ninit python:\n    style.window.background = Frame(\"frame.png\", 10, 10)\n    \n```\n\n"
     ],
     "Function": [
       "renpy",
@@ -5535,7 +5583,7 @@
     "LayeredImage": [
       "renpy",
       "class",
-      "(attributes, at=[], name=None, image_format=None, format_function=<function format_function at 0x789166af5ee0>, attribute_function=None, offer_screen=None, **kwargs)",
+      "(attributes, at=[], name=None, image_format=None, format_function=<function format_function at 0x71ec69352f20>, attribute_function=None, offer_screen=None, **kwargs)",
       "",
       "class",
       "This is an image-like object that, when shown with the proper set of\nattributes, shows a displayable created by compositing together the\ndisplayables associated with those attribute.\n\n`attributes`\nThis must be a list of Attribute, Condition, ConditionGroup or\ndisplayable objects. Each one\nreflects a displayable that may or may not be displayed as part\nof the image. The items in this list are in back-to-front order,\nwith the first item further from the viewer and the last\nclosest.\nPassing a displayable directly is the equivalent of the `always`\nlayeredimage statement.\n\n`at`\nA transform or list of transforms that are applied to the displayable\nafter it is parameterized.\n\n`name`\nThe name of the layeredimage. This is used as part of the names\nof image components.\n\n`image_format`\nWhen a given image is a string, and this is supplied, the image name\nis interpolated into `image_format` to make an image file. For example,\n\"sprites/eileen/{image}.png\" will look for the image in a subdirectory\nof sprites. (This is not used by auto groups, which look for images and\nnot image files.)\n\n`format_function`\nA function that is used instead of `layeredimage.format_function` to format\nthe image information into a displayable.\n\n`attribute_function`\nIf not None, a function that's called with a set of attributes supplied to\nthe image, and returns the set of attributes used to select layers. This is\ncalled when determining the layers to display, after the attribute themselves\nhave been chosen. It can be used to express complex dependencies between attributes\nor select attributes at random.\n\n`offer_screen`\nSets whether or not the available area is taken into account as for how children\nare placed and how they are sized (when they have variable size). If False, the\navailable area is considered, and if True it is not. If None, defaults to\nconfig.layeredimage_offer_screen.\n\nAdditional keyword arguments may contain transform properties. If\nany are present, a transform is created that wraps the result image.\nRemaining keyword arguments are passed to a Fixed that is created to hold\nthe layer. Unless explicitly overridden, xfit and yfit are set to true on\nthe Fixed, which means it will shrink to the smallest size that fits all\nof the layer images it is showing.\n\nA LayeredImage is not a displayable, and can't be used in all the\nplaces a displayable can be used. This is because it requires an image\nname (generally including image attributes) to be provided. As such,\nit should either be displayed through a scene or show statement, or by\nan image name string used as a displayable.\n\n.. method:: add(a)\n\n`a`\nAn Attribute, Condition, ConditionGroup or displayable\nobject.\n\nThis method adds the provided layer to the list of layers of the layeredimage,\nas if it had been passed in the `attributes` argument to the constructor.\n\n"
@@ -5554,7 +5602,7 @@
       "",
       "",
       "class",
-      ".. method:: error(msg)\n\n:param str msg: Message to add to the list of detected parsing errors.\n\nAdd `msg` (with the current position) to the list of detected\nparsing errors. This interrupts the parsing of the current statement,\nbut does not prevent further parsing.\n\n.. method:: require(thing, name=None)\n\nTry to parse `thing` and report an error if it cannot be done.\n\nIf `thing` is a string, try to parse it using match.\n\nOtherwise, thing must be another method on this lexer object which is\ncalled without arguments.\n\nIf `name` is not specified, the name of the method will be used in the\nmessage (or `thing` if it's a string), otherwise `name` will be used.\n\n.. method:: eol()\n\n:return: True if the lexer is at the end of the line, else False.\n:rtype: bool\n\n.. method:: expect_eol()\n\nIf not at the end of the line, raise an error.\n\n.. method:: expect_noblock(stmt)\n\nCalled to indicate this statement does not expect a block.\nIf a block is found, raise an error. `stmt` should be a string,\nit will be added to the message with an error.\n\n.. method:: expect_block(stmt)\n\nCalled to indicate that the statement requires that a non-empty\nblock is present. `stmt` should be a string, it will be added\nto the message with an error.\n\n.. method:: has_block()\n\n:return: True if the current line has a non-empty block, else False.\n:rtype: bool\n\n.. method:: match(re)\n\nMatch an arbitrary regexp string.\n\nAll of the statements in the lexer that match things are implemented\nin terms of this function. They first skip whitespace, then attempt\nto match against the line. If the match succeeds, the matched text\nis returned. Otherwise, None is returned, and the state of the lexer\nis unchanged.\n\n.. method:: keyword(s)\n\nMatch `s` as a keyword.\n\n.. method:: name()\n\nMatch a name. This does not match built-in keywords.\n\n.. method:: word()\n\n:return: The text of the matched word.\n:rtype: str\n\nMatch any word, including keywords.\n\n.. method:: image_name_component()\n\nMatch an image name component. Unlike a word, an image name\ncomponent can begin with a number.\n\n.. method:: string()\n\nMatch a Ren'Py string.\n\n.. method:: integer()\n\n:return: String containing the found integer.\n:rtype: str\n\nMatch an integer.\n\n.. method:: float()\n\n:return: String containing the found floating point number.\n:rtype: str\n\nMatch a floating point number.\n\n.. method:: label_name(declare=False)\n\nMatch a label name, either absolute or relative. If `declare`\nis true, then the global label name is set. (Note that this does not\nactually declare the label - the statement is required to do that\nby returning it from the `label` function.)\n\n.. method:: simple_expression()\n\nMatch a simple Python expression, returns it as a string.\nThis is often used when you expect a variable name.\nIt is not recommended to change the result. The correct action is\nto evaluate the result in the future.\n\n.. method:: delimited_python(delim)\n\nMatch a Python expression that ends in a `delim`, for example ':'.\nThis is often used when you expect a condition until the delimiter.\nIt is not recommended to change the result. The correct action is\nto evaluate the result in the future. This raises an error if\nend of line is reached before the delimiter.\n\n.. method:: arguments()\n\nThis must be called before the parentheses with the arguments list,\nif they are not specified returns None, otherwise\nreturns an object representing the arguments to a function\ncall. This object has an ``evaluate`` method on it that\ntakes an optional `scope` dictionary, and returns a tuple\nin which the first component is a tuple of positional arguments,\nand the second component is a dictionary of keyword arguments.\n\n.. method:: rest()\n\nSkip whitespace, then return the rest of the line.\n\n.. method:: checkpoint()\n\nReturn an opaque object representing the current state of the lexer.\n\n.. method:: revert(o)\n\nWhen `o` is the object returned from checkpoint(), reverts the state\nof the lexer to what it was when checkpoint() was called. (This is\nused for backtracking.)\n\n.. method:: subblock_lexer()\n\n:return: A Lexer for the block associated with the current line.\n\n.. method:: advance()\n\nIn a subblock lexer, advance to the next line. This must be called\nbefore the first line, so the first line can be parsed. Return True\nif we've successfully advanced to a line in the block, or False\nif we have advanced beyond all lines in the block.\n\n.. method:: renpy_statement()\n\nWhen called, this parses the current line as a Ren'Py script statement,\ngenerating an error if this is not possible. This method returns\nan opaque object that can be returned from the `next` function passed to\nrenpy.register_statement, or passed\nto renpy.jump or renpy.call. This object should\nnot be stored except as part of the parse result of the statement.\n\nWhen the statement returned from this completes, control is\ntransferred to the statement after the creator-defined statement.\n(Which might be the statement created using post_execute).\n\n.. method:: renpy_block(empty=False)\n\nParse all of the remaining lines in the current block\nas Ren'Py script, and return a SubParse corresponding to the\nfirst statement in the block. The block is chained together such\nthat all statements in the block are run, and then control is\ntransferred to the statement after this creator-defined statement.\n\nNote that this parses the current block. In the more likely\ncase that you'd like to parse the subblock of the current\nstatement, the correct way to do that is\n\n```\ndef mystatement_parse(l):\n\n    l.require(':')\n    l.expect_eol()\n    l.expect_block(\"mystatement\")\n    \n    child = l.subblock_lexer().renpy_block()\n    \n    return { \"child\" : child }\n    \n```\n\n`empty`\nIf True, allows an empty block to be parsed. (An empty block\nis equivalent to a block with a single ``pass`` statement.)\n\nIf False, an empty block triggers an error.\n\n.. method:: catch_error()\n\nThis is a context decorator, used in conjunction with the with\nstatement, that catches and reports lexer errors inside its\ncontext block, then continues after the block.\n\nHere's an example of how it can be used to report multiple errors\nin a single subblock. \n\n```\ndef mystatement_parse(l):\n\n    l.require(':')\n    l.expect_eol()\n    l.expect_block(\"mystatement\")\n    \n    strings = [ ]\n    ll = l.subblock_lexer()\n    \n    while ll.advance():\n        with ll.catch_error():\n            strings.append(ll.require(ll.string))\n            ll.expect_noblock(\"string inside mystatement\")\n            ll.expect_eol()\n            \n    return { \"strings\" : strings }\n    \n```\n\n"
+      ".. property:: init\n\nThis is true if the lexer is inside an init statement, else false.\n\n.. property:: init_priority\n\nIf init is true, this is the priority of the init block.\n\n.. method:: error(msg)\n\n:param str msg: Message to add to the list of detected parsing errors.\n\nAdd `msg` (with the current position) to the list of detected\nparsing errors. This interrupts the parsing of the current statement,\nbut does not prevent further parsing.\n\n.. method:: require(thing, name=None)\n\nTry to parse `thing` and report an error if it cannot be done.\n\nIf `thing` is a string, try to parse it using match.\n\nOtherwise, thing must be another method on this lexer object which is\ncalled without arguments.\n\nIf `name` is not specified, the name of the method will be used in the\nmessage (or `thing` if it's a string), otherwise `name` will be used.\n\n.. method:: eol()\n\n:return: True if the lexer is at the end of the line, else False.\n:rtype: bool\n\n.. method:: expect_eol()\n\nIf not at the end of the line, raise an error.\n\n.. method:: expect_noblock(stmt)\n\nCalled to indicate this statement does not expect a block.\nIf a block is found, raise an error. `stmt` should be a string,\nit will be added to the message with an error.\n\n.. method:: expect_block(stmt)\n\nCalled to indicate that the statement requires that a non-empty\nblock is present. `stmt` should be a string, it will be added\nto the message with an error.\n\n.. method:: has_block()\n\n:return: True if the current line has a non-empty block, else False.\n:rtype: bool\n\n.. method:: match(re)\n\nMatch an arbitrary regexp string.\n\nAll of the statements in the lexer that match things are implemented\nin terms of this function. They first skip whitespace, then attempt\nto match against the line. If the match succeeds, the matched text\nis returned. Otherwise, None is returned, and the state of the lexer\nis unchanged.\n\n.. method:: keyword(s)\n\nMatch `s` as a keyword.\n\n.. method:: name()\n\nMatch a name. This does not match built-in keywords.\n\n.. method:: word()\n\n:return: The text of the matched word.\n:rtype: str\n\nMatch any word, including keywords.\n\n.. method:: image_name_component()\n\nMatch an image name component. Unlike a word, an image name\ncomponent can begin with a number.\n\n.. method:: string()\n\nMatch a Ren'Py string.\n\n.. method:: integer()\n\n:return: String containing the found integer.\n:rtype: str\n\nMatch an integer.\n\n.. method:: float()\n\n:return: String containing the found floating point number.\n:rtype: str\n\nMatch a floating point number.\n\n.. method:: label_name(declare=False)\n\nMatch a label name, either absolute or relative. If `declare`\nis true, then the global label name is set. (Note that this does not\nactually declare the label - the statement is required to do that\nby returning it from the `label` function.)\n\n.. method:: simple_expression()\n\nMatch a simple Python expression, returns it as a string.\nThis is often used when you expect a variable name.\nIt is not recommended to change the result. The correct action is\nto evaluate the result in the future.\n\n.. method:: delimited_python(delim)\n\nMatch a Python expression that ends in a `delim`, for example ':'.\nThis is often used when you expect a condition until the delimiter.\nIt is not recommended to change the result. The correct action is\nto evaluate the result in the future. This raises an error if\nend of line is reached before the delimiter.\n\n.. method:: arguments()\n\nThis must be called before the parentheses with the arguments list,\nif they are not specified returns None, otherwise\nreturns an object representing the arguments to a function\ncall. This object has an ``evaluate`` method on it that\ntakes an optional `scope` dictionary, and returns a tuple\nin which the first component is a tuple of positional arguments,\nand the second component is a dictionary of keyword arguments.\n\n.. method:: rest()\n\nSkip whitespace, then return the rest of the line.\n\n.. method:: checkpoint()\n\nReturn an opaque object representing the current state of the lexer.\n\n.. method:: revert(o)\n\nWhen `o` is the object returned from checkpoint(), reverts the state\nof the lexer to what it was when checkpoint() was called. (This is\nused for backtracking.)\n\n.. method:: subblock_lexer()\n\n:return: A Lexer for the block associated with the current line.\n\n.. method:: advance()\n\nIn a subblock lexer, advance to the next line. This must be called\nbefore the first line, so the first line can be parsed. Return True\nif we've successfully advanced to a line in the block, or False\nif we have advanced beyond all lines in the block.\n\n.. method:: renpy_statement()\n\nWhen called, this parses the current line as a Ren'Py script statement,\ngenerating an error if this is not possible. This method returns\nan opaque object that can be returned from the `next` function passed to\nrenpy.register_statement, or passed\nto renpy.jump or renpy.call. This object should\nnot be stored except as part of the parse result of the statement.\n\nWhen the statement returned from this completes, control is\ntransferred to the statement after the creator-defined statement.\n(Which might be the statement created using post_execute).\n\n.. method:: renpy_block(empty=False)\n\nParse all of the remaining lines in the current block\nas Ren'Py script, and return a SubParse corresponding to the\nfirst statement in the block. The block is chained together such\nthat all statements in the block are run, and then control is\ntransferred to the statement after this creator-defined statement.\n\nNote that this parses the current block. In the more likely\ncase that you'd like to parse the subblock of the current\nstatement, the correct way to do that is\n\n```\ndef mystatement_parse(l):\n\n    l.require(':')\n    l.expect_eol()\n    l.expect_block(\"mystatement\")\n    \n    child = l.subblock_lexer().renpy_block()\n    \n    return { \"child\" : child }\n    \n```\n\n`empty`\nIf True, allows an empty block to be parsed. (An empty block\nis equivalent to a block with a single ``pass`` statement.)\n\nIf False, an empty block triggers an error.\n\n.. method:: catch_error()\n\nThis is a context decorator, used in conjunction with the with\nstatement, that catches and reports lexer errors inside its\ncontext block, then continues after the block.\n\nHere's an example of how it can be used to report multiple errors\nin a single subblock. \n\n```\ndef mystatement_parse(l):\n\n    l.require(':')\n    l.expect_eol()\n    l.expect_block(\"mystatement\")\n    \n    strings = [ ]\n    ll = l.subblock_lexer()\n    \n    while ll.advance():\n        with ll.catch_error():\n            strings.append(ll.require(ll.string))\n            ll.expect_noblock(\"string inside mystatement\")\n            ll.expect_eol()\n            \n    return { \"strings\" : strings }\n    \n```\n\n"
     ],
     "Live2D": [
       "renpy",
@@ -5682,7 +5730,7 @@
       "(*, size=None, channel=\"movie\", play=None, side_mask=False, mask=None, mask_channel=None, start_image=None, image=None, play_callback=None, loop=True, group=None, **properties)",
       "",
       "class",
-      "This is a displayable that shows the current movie.\n\n`size`\nThis should be specified as either a tuple giving the width and\nheight of the movie, or None to automatically adjust to the size\nof the playing movie. (If None, the displayable will be (0, 0)\nwhen the movie is not playing.)\n\n`channel`\nThe audio channel associated with this movie. When a movie file\nis played on that channel, it will be displayed in this Movie\ndisplayable. If this is left at the default of \"movie\", and `play`\nis provided, a channel name is automatically selected, using\nconfig.single_movie_channel and config.auto_movie_channel.\n\n`play`\nIf given, this should be the path to a movie file, or a list\nof paths to movie files. These movie\nfiles will be automatically played on `channel` when the Movie is\nshown, and automatically stopped when the movie is hidden.\n\n`side_mask`\nIf true, this tells Ren'Py to use the side-by-side mask mode for\nthe Movie. In this case, the movie is divided in half. The left\nhalf is used for color information, while the right half is used\nfor alpha information. The width of the displayable is half the\nwidth of the movie file.\n\nWhere possible, `side_mask` should be used over `mask` as it has\nno chance of frames going out of sync.\n\n`mask`\nIf given, this should be the path to a movie file, or a list of paths\nto movie files, that are used as\nthe alpha channel of this displayable. The movie file will be\nautomatically played on `movie_channel` when the Movie is shown,\nand automatically stopped when the movie is hidden.\n\n`mask_channel`\nThe channel the alpha mask video is played on. If not given,\ndefaults to `channel`\\_mask. (For example, if `channel` is \"sprite\",\n`mask_channel` defaults to \"sprite_mask\".)\n\n`start_image`\nAn image that is displayed when playback has started, but the\nfirst frame has not yet been decoded.\n\n`image`\nAn image that is displayed when `play` has been given, but the\nfile it refers to does not exist. (For example, this can be used\nto create a slimmed-down mobile version that does not use movie\nsprites.) Users can also choose to fall back to this image as a\npreference if video is too taxing for their system. The image will\nalso be used if the video plays, and then the movie ends, unless\n`group` is given.\n\n`play_callback`\nIf not None, a function that's used to start the movies playing.\n(This may do things like queue a transition between sprites, if\ndesired.) It's called with the following arguments:\n\n`old`\nThe old Movie object, or None if the movie is not playing.\n`new`\nThe new Movie object.\n\nA movie object has the `play` parameter available as ``_play``,\nwhile the ``channel``, ``loop``, ``mask``, and ``mask_channel`` fields\ncorrespond to the given parameters.\n\nGenerally, this will want to use renpy.music.play to start\nthe movie playing on the given channel, with synchro_start=True.\nA minimal implementation is\n\n```\ndef play_callback(old, new):\n\n    renpy.music.play(new._play, channel=new.channel, loop=new.loop, synchro_start=True)\n    \n    if new.mask:\n        renpy.music.play(new.mask, channel=new.mask_channel, loop=new.loop, synchro_start=True)\n        \n```\n\n`loop`\nIf False, the movie will not loop. If `image` is defined, the image\nwill be displayed when the movie ends. Otherwise, the displayable will\nbecome transparent.\n\n`group`\nIf not None, this should be a string. If given, and if the movie has not\nyet started playing, and another movie in the same group has played in\nthe previous frame, the last frame from that movie will be used for\nthis movie. This can prevent flashes of transparency when switching\nbetween two movies.\n\n`keep_last_frame`\nIf true, and the movie has ended, the last frame will be displayed,\nrather than the movie being hidden. This only works if `loop` is\nfalse. (This behavior will also occur if `group` is set.)\n\n`oversample`\nIf this is greater than 1, the movieis considered to be oversampled,\nwith more pixels than its logical size would imply. For example, if\nan movie file is 1280x720 and oversample is 2, then the image will\nbe treated as a 640x360 movie for the purpose of layout.\n\nIf None, Ren'Py will automatically determine oversamping. If an @ followed\nby a number is found in the filename, that number will be used as the the\noversampling factor. Otherwise, Ren'Py will search for files and use those.\n\nSpecifically, if :file`launch.webm` is used, Ren'Py will search for launch@2.webm\nif the movie is scaled up more than 1x, and launch@4.webm and launch@3.webm\nif the movie is scaled up more than 2x.\n\nAutomatic oversampling of movies only happens when the movie begins playing.\n\n"
+      "This is a displayable that shows the current movie.\n\n`size`\nThis should be specified as either a tuple giving the width and\nheight of the movie, or None to automatically adjust to the size\nof the playing movie. (If None, the displayable will be (0, 0)\nwhen the movie is not playing.)\n\n`channel`\nThe audio channel associated with this movie. When a movie file\nis played on that channel, it will be displayed in this Movie\ndisplayable. If this is left at the default of \"movie\", and `play`\nis provided, a channel name is automatically selected, using\nconfig.single_movie_channel and config.auto_movie_channel.\n\n`play`\nIf given, this should be the path to a movie file, or a list\nof paths to movie files. These movie\nfiles will be automatically played on `channel` when the Movie is\nshown, and automatically stopped when the movie is hidden.\n\n`side_mask`\nIf true, this tells Ren'Py to use the side-by-side mask mode for\nthe Movie. In this case, the movie is divided in half. The left\nhalf is used for color information, while the right half is used\nfor alpha information. The width of the displayable is half the\nwidth of the movie file.\n\nWhere possible, `side_mask` should be used over `mask` as it has\nno chance of frames going out of sync.\n\n`mask`\nIf given, this should be the path to a movie file, or a list of paths\nto movie files, that are used as\nthe alpha channel of this displayable. The movie file will be\nautomatically played on `movie_channel` when the Movie is shown,\nand automatically stopped when the movie is hidden.\n\n`mask_channel`\nThe channel the alpha mask video is played on. If not given,\ndefaults to `channel`\\_mask. (For example, if `channel` is \"sprite\",\n`mask_channel` defaults to \"sprite_mask\".)\n\n`start_image`\nAn image that is displayed when playback has started, but the\nfirst frame has not yet been decoded.\n\n`image`\nAn image that is displayed when `play` has been given, but the\nfile it refers to does not exist. (For example, this can be used\nto create a slimmed-down mobile version that does not use movie\nsprites.) Users can also choose to fall back to this image as a\npreference if video is too taxing for their system. The image will\nalso be used if the video plays, and then the movie ends, unless\n`group` is given.\n\n`play_callback`\nIf not None, a function that's used to start the movies playing.\n(This may do things like queue a transition between sprites, if\ndesired.) It's called with the following arguments:\n\n`old`\nThe old Movie object, or None if the movie is not playing.\n`new`\nThe new Movie object.\n\nA movie object has the `play` parameter available as ``_play``,\nwhile the ``channel``, ``loop``, ``mask``, and ``mask_channel`` fields\ncorrespond to the given parameters.\n\nGenerally, this will want to use renpy.music.play to start\nthe movie playing on the given channel, with synchro_start=True.\nA minimal implementation is\n\n```\ndef play_callback(old, new):\n\n    renpy.music.play(new._play, channel=new.channel, loop=new.loop, synchro_start=True)\n    \n    if new.mask:\n        renpy.music.play(new.mask, channel=new.mask_channel, loop=new.loop, synchro_start=True)\n        \n```\n\n`loop`\nIf False, the movie will not loop. If `image` is defined, the image\nwill be displayed when the movie ends. Otherwise, the displayable will\nbecome transparent.\n\n`group`\nIf not None, this should be a string. If given, and if the movie has not\nyet started playing, and another movie in the same group has played in\nthe previous frame, the last frame from that movie will be used for\nthis movie. This can prevent flashes of transparency when switching\nbetween two movies.\n\n`keep_last_frame`\nIf true, and the movie has ended, the last frame will be displayed,\nrather than the movie being hidden. This only works if `loop` is\nfalse. (This behavior will also occur if `group` is set.)\n\n`oversample`\nIf this is greater than 1, the movie is considered to be oversampled,\nwith more pixels than its logical size would imply. For example, if\nan movie file is 1280x720 and oversample is 2, then the image will\nbe treated as a 640x360 movie for the purpose of layout.\n\nIf None, Ren'Py will automatically determine oversamping. If an @ followed\nby a number is found in the filename, that number will be used as the the\noversampling factor. Otherwise, Ren'Py will search for files and use those.\n\nSpecifically, if :file`launch.webm` is used, Ren'Py will search for launch@2.webm\nif the movie is scaled up more than 1x, and launch@4.webm and launch@3.webm\nif the movie is scaled up more than 2x.\n\nAutomatic oversampling of movies only happens when the movie begins playing.\n\n"
     ],
     "MultiPersistent": [
       "renpy",
@@ -5834,7 +5882,7 @@
       "(voice_tag, sample, selected=False)",
       "",
       "Action",
-      "This plays `sample` on the voice channel, as if said by a\ncharacter with `voice_tag`.\n\n`sample`\nThe full path to a sound file. No voice-related handling\nof this file is done.\n\n`selected`\nIf True, buttons using this action will be marked as selected\nwhile the sample is playing.\n\n"
+      "This plays `sample` on the voice channel, as if said by a\ncharacter with `voice_tag`. This will set the volume, but will\nnot perform and other voice-related handling of the file - it's\nintended for use in menus to help the user determine the\ncharacter volume.\n\n`voice_tag`\nThe voice tag of the character that is speaking. This is used\nto determine the volume that will be used.\n\n`sample`\nThe full path to a sound file.\n\n`selected`\nIf True, buttons using this action will be marked as selected\nwhile the sample is playing.\n\n"
     ],
     "Preference": [
       "renpy",
@@ -6186,7 +6234,7 @@
       "()",
       "",
       "class",
-      "This represents a sprite that is managed by the SpriteManager. It contains\nfields that control the placement of the sprite on the screen. Sprites\nshould not be created directly. Instead, they should be created by\ncalling SpriteManager.create.\n\nThe fields of a sprite object are:\n\n`x`, `y`\nThe x and y coordinates of the upper-left corner of the sprite,\nrelative to the SpriteManager.\n\n`zorder`\nAn integer that's used to control the order of this sprite in the\nrelative to the other sprites in the SpriteManager. The larger the\nnumber is, the closer to the viewer the sprite is.\n\n`events`\nIf True, then events are passed to child. If False, the default,\nthe children ignore events (and hence don't spend time processing\nthem).\n\nThe methods of a Sprite object are:\n\n\n.. method:: destroy()\n\nDestroys this sprite, preventing it from being displayed and\nremoving it from the SpriteManager.\n\n.. method:: set_child(d)\n\nChanges the Displayable associated with this sprite to `d`.\n\n"
+      "This represents a sprite that is managed by the SpriteManager. It contains\nfields that control the placement of the sprite on the screen. Sprites\nshould not be created directly. Instead, they should be created by\ncalling SpriteManager.create.\n\nThe fields of a sprite object are:\n\n`x`, `y`\nThe x and y coordinates of the upper-left corner of the sprite,\nrelative to the SpriteManager.\n\n`zorder`\nAn integer that's used to control the order of this sprite in the\nrelative to the other sprites in the SpriteManager. The larger the\nnumber is, the closer to the viewer the sprite is.\n\n`events`\nIf True, then events are passed to child. If False, the default,\nthe children ignore events (and hence don't spend time processing\nthem).\n\nThe methods of a Sprite object are:\n\n.. method:: destroy()\n\nDestroys this sprite, preventing it from being displayed and\nremoving it from the SpriteManager.\n\n.. method:: set_child(d)\n\nChanges the Displayable associated with this sprite to `d`.\n\n"
     ],
     "SpriteManager": [
       "renpy",
@@ -6362,7 +6410,7 @@
       "(child=None, *, function=None, reset=False, **properties)",
       "",
       "class",
-      "Creates a transform which applies operations such as cropping, rotation,\nscaling or alpha-blending to its child. A transform object has fields\ncorresponding to the transform properties,\nwhich it applies to its child.\n\n`child`\nThe child the transform applies to.\n\n`reset`\nIf True, the transform will reset properties to their default values\nwhen it is shown, rather than inheriting those properties from the\ntransforms it replaces.\n\n.. function:: function(trans: Transform, st: float, at: float, /) -> int|None\n\nIf not None, this function will be called when the transform is\nrendered, with three positional arguments:\n\n* The transform object.\n* The shown timebase, in seconds.\n* The animation timebase, in seconds.\n\nThe function should return a delay, in seconds, after which it will be\ncalled again, or None to be called again at the start of the next\ninteraction.\n\nThis function should not have side effects other than changing the\nTransform object in the first argument, and may be called at any time\nwith any value as a part of prediction.\n\nAdditional keyword arguments are values that transform properties are set\nto. These particular transform properties will be set each time the\ntransform is drawn, and so may not be changed after the Transform object is\ncreated. Fields corresponding to other transform properties, however, can be\nset and changed afterwards, either within the function passed as the\n`function` parameter, or immediately before calling the update\nmethod.\n\nattribute hide_request\n\nThis attribute is set to true when the function is called, to indicate\nthat the transform is being hidden.\n\nattribute hide_response\n\nIf ``hide_request`` is true, this can be set to false to prevent the\ntransform from being hidden.\n\nattribute original_child\n\nThis is the child Displayable that was set when the transform was created,\nbefore any calls to set_child. This may be None if no child was during creation.\n\n.. method:: set_child(child)\n\nCall this method with a new `child` to change the child of this\ntransform.\n\n.. method:: update()\n\nThis should be called when a transform property field is updated outside\nof the function passed as the `function` argument, to ensure that the\nchange takes effect.\n\n"
+      "Creates a transform which applies operations such as cropping, rotation,\nscaling or alpha-blending to its child. A transform object has fields\ncorresponding to the transform properties,\nwhich it applies to its child.\n\n`child`\nThe child the transform applies to.\n\n`reset`\nIf True, the transform will reset properties to their default values\nwhen it is shown, rather than inheriting those properties from the\ntransforms it replaces.\n\n.. function:: function(trans: Transform, st: float, at: float, /) -> float|None\n\nIf not None, this function will be called when the transform is\nrendered, with three positional arguments:\n\n* The transform object.\n* The shown timebase, in seconds.\n* The animation timebase, in seconds.\n\nThe function should return a delay, in seconds, after which it will be\ncalled again, or None to be called again at the start of the next\ninteraction.\n\nThis function should not have side effects other than changing the\nTransform object in the first argument, and may be called at any time\nwith any value as a part of prediction.\n\nAdditional keyword arguments are values that transform properties are set\nto. These particular transform properties will be set each time the\ntransform is drawn, and so may not be changed after the Transform object is\ncreated. Fields corresponding to other transform properties, however, can be\nset and changed afterwards, either within the function passed as the\n`function` parameter, or immediately before calling the update\nmethod.\n\nattribute hide_request\n\nThis attribute is set to true when the function is called, to indicate\nthat the transform is being hidden.\n\nattribute hide_response\n\nIf ``hide_request`` is true, this can be set to false to prevent the\ntransform from being hidden.\n\nattribute original_child\n\nThis is the child Displayable that was set when the transform was created,\nbefore any calls to set_child. This may be None if no child was during creation.\n\n.. method:: set_child(child)\n\nCall this method with a new `child` to change the child of this\ntransform.\n\n.. method:: update()\n\nThis should be called when a transform property field is updated outside\nof the function passed as the `function` argument, to ensure that the\nchange takes effect.\n\n"
     ],
     "UploadSync": [
       "renpy",
@@ -6620,6 +6668,62 @@
       "var",
       "Controls if skipping is allowed.\n\n"
     ],
+    "_test.focus_trials": [
+      "renpy",
+      "var",
+      "",
+      "",
+      "var",
+      "An integer specifying how many times the test system should try to find\na valid spot to move the mouse when using a\nselector without a position. Defaults to ``100``.\n\n"
+    ],
+    "_test.force": [
+      "renpy",
+      "var",
+      "",
+      "",
+      "var",
+      "A boolean specifying whether to force the test to proceed even if\n``renpy.config.suppress_underlay`` is ``True``. Defaults to ``False``.\n\n"
+    ],
+    "_test.maximum_framerate": [
+      "renpy",
+      "var",
+      "",
+      "",
+      "var",
+      "A boolean specifying whether to use maximum framerate mode during tests.\nThis will unlock the framerate beyond your screens refresh rate if possible.\nDefaults to ``True``.\n\n"
+    ],
+    "_test.screenshot_directory": [
+      "renpy",
+      "var",
+      "",
+      "",
+      "var",
+      "A string specifying the directory to store screenshots in.\nDefaults to ``tests/screenshots``.\n\n"
+    ],
+    "_test.timeout": [
+      "renpy",
+      "var",
+      "",
+      "",
+      "var",
+      "A float specifying the maximum number of seconds a test statement\nshould wait for a condition to be met. Defaults to ``10.0``.\n\nThis can be overridden on a per-statement basis by providing a ``timeout``\nproperty to statements that support it (like ``assert`` and ``until``).\n\n"
+    ],
+    "_test.transition_timeout": [
+      "renpy",
+      "var",
+      "",
+      "",
+      "var",
+      "A float specifying the maximum number of seconds to wait for a transition\nto complete before skipping it and proceeding with the test.\nDefaults to ``5.0``.\n\n"
+    ],
+    "_test.vc_revision": [
+      "renpy",
+      "var",
+      "",
+      "",
+      "var",
+      "The version control (often git) revision of the current source tree, if available.\nDefaults to the RENPY_TEST_VC_REVISION environment variable, or an empty string if not set.\n\n\n"
+    ],
     "_version": [
       "renpy",
       "var",
@@ -6786,7 +6890,7 @@
       "(icon, title, description, priority=0, start_offset=0.0, duration=0.0, possible_clip=None)",
       "",
       "function",
-      "Adds an event to the timeline.\n\n`icon`\nThe icon to display for the event. This should be a string giving one of the standard steam icons,\nor one you uploaded to Steam.\n\n`title`\nThe title of the event.\n\n`description`\nThe description of the event.\n\n`priority`\nThe priority of the event, used to resolve conflicts. This should be an interger between 0 and 1000.\n\n`start_offset`\nThe offset of the start of the event from the current time, in seconds.\n\n`duration`\nThe duration of the event, in seconds.\n\n`possible_clip`\nThis determines if the event can be clipped. This should be one of the achievement.steam.CLIP_PRIORITY...\nconstants: CLIP_PRIORITY_NONE, CLIP_PRIORITY_STANDARD, or CLIP_PRIORITY_FEATURED.\n\n"
+      "Adds an event to the timeline. Note that the order of arguments here is different than in the Steam API.\n\n`icon`\nThe icon to display for the event. This should be a string giving one of the standard steam icons,\nor one you uploaded to Steam.\n\n`title`\nThe title of the event.\n\n`description`\nThe description of the event.\n\n`priority`\nThe priority of the event, used to resolve conflicts. This should be an interger between 0 and 1000.\n\n`start_offset`\nThe offset of the start of the event from the current time, in seconds.\n\n`duration`\nThe duration of the event, in seconds.\n\n`possible_clip`\nThis determines if the event can be clipped. This should be one of the achievement.steam.CLIP_PRIORITY...\nconstants: CLIP_PRIORITY_NONE, CLIP_PRIORITY_STANDARD, or CLIP_PRIORITY_FEATURED.\n\n"
     ],
     "achievement.steam.cancel_ticket": [
       "renpy",
@@ -6935,10 +7039,10 @@
     "achievement.steam.get_subscribed_items": [
       "renpy",
       "function",
-      "()",
+      "(include_disabled=False)",
       "",
       "function",
-      "Returns a list of the item ids the user has subscribed to in the steam\nworkshop.\n\n"
+      "Returns a list of the item ids the user has subscribed to in the steam\nworkshop.\n\n`include_disabled`\nIf true, include items that are disabled.\n\n"
     ],
     "achievement.steam.grant_achievement": [
       "renpy",
@@ -7426,7 +7530,7 @@
       "= True",
       "",
       "var",
-      "If true, when run under Steam, the game will automatically update the Steam Timeline.\n\nThis currently consists of:\n\n* Updating the state description to match save_name, if the variables is set.\n* Updating the game mode to reflect when the player is inside a menu.\n\n\n"
+      "If true, when run under Steam, the game will automatically update the Steam Timeline.\n\nThis currently consists of:\n\n* Updating the game phase to match save_name, if that variable is set.\n* Updating the game mode to reflect when the player is inside a menu.\n\n\n"
     ],
     "config.custom_text_tags": [
       "renpy",
@@ -7596,6 +7700,22 @@
       "function",
       "This defines a family of move transitions,\nsimilar to the move and ease transitions. For a given\n`prefix`, this defines the transitions:\n\n* *prefix* - A transition that takes `delay` seconds to move images that\nchanged positions to their new locations.\n\n* *prefix*\\ inleft, *prefix*\\ inright, *prefix*\\ intop, *prefix*\\ inbottom - Transitions\nthat take `delay` seconds to move images that changed positions to their\nnew locations, with newly shown images coming in from the appropriate\nside.\n\n* *prefix*\\ outleft, *prefix*\\ outright, *prefix*\\ outtop, *prefix*\\ outbottom -\nTransitions that take `delay` seconds to move images that changed\npositions to their new locations, with newly hidden images leaving via\nthe appropriate side.\n\nThe other parameters are as MoveTransition takes them:\n\n`time_warp`, `in_time_warp`, `out_time_warp`\nTime warp functions that are given a time from 0.0\nto 1.0 representing the fraction of the move that is complete, and\nreturn a value in the same range giving the fraction of a linear\nmove that is complete.\n\nThis can be used to define functions that ease the images around,\nrather than moving them at a constant speed.\n\nThe three arguments are used for images remaining on the screen,\nnewly shown images, and newly hidden images, respectively.\n\n`old`\nIf true, when a tag gets its image changed during the transition,\nthe old image will be used in preference to the new one. Otherwise,\nthe new images will be used.\n\n`layers`\nThe layers the transition will apply to.\n\n\n\n```\n# This defines all of the pre-defined transitions beginning\n# with \"move\".\ninit python:\n    define.move_transitions(\"move\", 0.5)\n    \n```\n\n"
     ],
+    "depth": [
+      "renpy",
+      "var",
+      "",
+      "",
+      "var",
+      "An integer specifying how deep the hook should apply.\n\nFor testcases, defaults to ``-1``, meaning it applies to all nested test suites and test cases.\n\nFor testsuites, defaults to ``0``, meaning it applies only to test suites directly\ncontained within the current suite.\n\nFor more information, see lifecycle-of-a-test-run.\n\n"
+    ],
+    "description": [
+      "renpy",
+      "var",
+      "",
+      "",
+      "var",
+      "A string describing the test case. This is used in the test report.\n\n"
+    ],
     "director": [
       "renpy",
       "var",
@@ -7731,6 +7851,14 @@
       "",
       "var",
       "Also: **easeinright, easeinleft, easeintop, easeinbottom, easeoutright, easeoutleft, easeouttop, easeoutbottom**\n\nThese are similar to the move- family of transitions, except that they use a\ncosine-based curve to slow down the start and end of the transition.\n\n"
+    ],
+    "enabled": [
+      "renpy",
+      "var",
+      "",
+      "",
+      "var",
+      "If this expression evaluates to ``False``, this test is skipped.\nDefaults to ``True``.\n\nThis can conditionally disable tests, for example on platforms\nwhere they are not supported. \n\n```\ntestcase windows:\n    enabled renpy.windows\n    ...\n    \ntestcase not_on_mobile:\n    enabled not renpy.mobile\n    ...\n    \n```\n\nSee skipping-testcases for more information.\n\n"
     ],
     "fade": [
       "renpy",
@@ -8103,7 +8231,7 @@
     "im.Data": [
       "renpy",
       "class",
-      "(data, filename, **properties)",
+      "(data: bytes, filename: str, **properties)",
       "",
       "class",
       "This image manipulator loads an image from binary data.\n\n`data`\nA string of bytes, giving the compressed image data in a standard\nfile format.\n\n`filename`\nA \"filename\" associated with the image. This is used to provide a\nhint to Ren'Py about the format of `data`. (It's not actually\nloaded from disk.)\n\n"
@@ -8394,7 +8522,23 @@
       "",
       "",
       "var",
-      "Places the displayable off the left side of the screen, aligned to the\nbottom of the screen.\n\n"
+      "Places the displayable off the right side of the screen, aligned to the\nbottom of the screen.\n\n"
+    ],
+    "only": [
+      "renpy",
+      "var",
+      "",
+      "",
+      "var",
+      "If this expression evaluates to ``True``, only this test case\n(and other tests with ``only True``) will be run. Defaults to ``False``.\n\nSee skipping-testcases for more information.\n\n"
+    ],
+    "parameter": [
+      "renpy",
+      "var",
+      "",
+      "",
+      "var",
+      "A variable name (or tuple of variable names) and a list of values (or\nlist of tuples of values). The test will run once for each value (or\ntuple of values) in the list.\n\nA test may have multiple ``parameter`` properties, in which case\nthe test will run for every possible combination of the values.\n\nSee parameterized-tests for more information.\n\n\n"
     ],
     "persistent": [
       "renpy",
@@ -8740,6 +8884,30 @@
       "var",
       "Also: **pushleft, pushup, pushdown**\n\nThese use the new scene to slide the old scene out the named side. Instances\nof the PushMove transition class.\n\n"
     ],
+    "python_dict": [
+      "renpy",
+      "class",
+      "",
+      "",
+      "class",
+      "The python_dict class is the Python built-in dict class.\n\n"
+    ],
+    "python_list": [
+      "renpy",
+      "class",
+      "",
+      "",
+      "class",
+      "The python_list class is the Python built-in list class.\n\n"
+    ],
+    "python_set": [
+      "renpy",
+      "class",
+      "",
+      "",
+      "class",
+      "The python_set class is the Python built-in set class.\n"
+    ],
     "renpy": [
       "renpy",
       "var",
@@ -8770,7 +8938,7 @@
       "= \"\"",
       "",
       "var",
-      "A save name that is included with saves.\n\n"
+      "A save name that is included with saves. This is also used by the steam timeline if\nconfig.automatic_steam_timeline is true, and is best considered to be a chapter\nname.\n\n"
     ],
     "say": [
       "renpy",
@@ -9027,6 +9195,14 @@
       "",
       "var",
       "Also: **wiperight, wipeup, wipedown**\n\nWipes the scene in the given direction. Instances of the CropMove\ntransition class.\n\n"
+    ],
+    "xfail": [
+      "renpy",
+      "var",
+      "",
+      "",
+      "var",
+      "If this expression evaluates to ``True``, the test is expected to fail.\nIf the test does fail, it will be marked as xfailed instead of failed.\nDefaults to ``False``.\n\n"
     ],
     "zoomin": [
       "renpy",

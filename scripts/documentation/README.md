@@ -1,1 +1,0 @@
-Copy these two scripts into renpy's `sphinx\game` folder and generate the documentation normally. It should now have created the `renpy.json` file in the `sphinx` folder.

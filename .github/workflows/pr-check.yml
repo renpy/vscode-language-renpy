@@ -58,7 +58,7 @@ jobs:
         run: npm run vsce:package
 
       - name: Upload Extension
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: languague-renpy-package
           path: "**/*.vsix"
@@ -104,7 +104,7 @@ jobs:
 
       - name: Upload JSON Test Results
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-results.json
           path: vscode-language-renpy-test-results.json
@@ -112,7 +112,7 @@ jobs:
 
       - name: Upload JUnit Test Results
         if: ${{ !cancelled() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: test-results.xml
           path: vscode-language-renpy-test-results.xml

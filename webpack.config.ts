@@ -13,14 +13,26 @@ const PATHS = {
 };
 
 const webpackShellPlugin = new WebpackShellPlugin({
-    onBuildStart: {
+    onBeforeCompile: {
         scripts: [`uv run --directory ${PATHS.scripts} tmlanguage_yaml_to_json.py`],
         blocking: true,
         parallel: false,
     },
 });
 
+class WatchYamlFilesPlugin {
+    apply(compiler: Compiler) {
+        compiler.hooks.afterCompile.tap("WatchYamlFilesPlugin", (compilation) => {
+            compilation.fileDependencies.add(path.join(__dirname, "syntaxes", "renpy.atl.tmLanguage.yaml"));
+            compilation.fileDependencies.add(path.join(__dirname, "syntaxes", "renpy.screen.tmLanguage.yaml"));
+            compilation.fileDependencies.add(path.join(__dirname, "syntaxes", "renpy.style.tmLanguage.yaml"));
+            compilation.fileDependencies.add(path.join(__dirname, "syntaxes", "renpy.tmLanguage.yaml"));
+        });
+    }
+}
+
 export const basePlugins: (((this: Compiler, compiler: Compiler) => void) | WebpackPluginInstance)[] = [
+    new WatchYamlFilesPlugin(),
     new CopyWebpackPlugin({
         patterns: [{ from: "src", to: ".", globOptions: { ignore: ["**/test/**", "**/*.ts"] }, noErrorOnMissing: true }],
     }),

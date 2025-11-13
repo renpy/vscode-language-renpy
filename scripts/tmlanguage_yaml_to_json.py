@@ -19,21 +19,32 @@ def convert_file(filename: pathlib.Path):
         f"This file is generated from syntaxes/{filename.name}. Please edit that file instead.",
     )
 
-    with open(destination, "w") as f:
-        json.dump(data, f, indent=2)
+    output = json.dumps(data, indent=2)
+
+    try:
+        old_text = destination.read_text()
+        if old_text == output:
+            return False
+    except FileNotFoundError:
+        pass
+
+    destination.write_text(output)
 
 
 def main():
 
     ROOT = pathlib.Path(__file__).parent.parent
+
+    generated = False
+
     for filename in ROOT.glob("syntaxes/*.tmLanguage.yaml"):
-        convert_file(filename)
+        generated = generated or convert_file(filename)
 
     print("Generated .tmLanguage.json files from .tmLanguage.yaml files.")
 
-    syntax_to_token_pattern.generate_token_patterns()
-
-    print("Generated token patterns.")
+    if generated:
+        syntax_to_token_pattern.generate_token_patterns()
+        print("Generated token patterns.")
 
 
 

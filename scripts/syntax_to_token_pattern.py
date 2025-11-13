@@ -1,9 +1,12 @@
 from datetime import datetime, timezone
 import json
+import pathlib
 import re
 from typing import Any
 
 from dataclasses import dataclass, field
+
+ROOT = pathlib.Path(__file__).parent.parent
 
 @dataclass
 class GeneratorState:
@@ -27,17 +30,17 @@ def convert_token_type_split(name: str) -> str:
     token_parts = name.split(".")
     if len(token_parts) <= 1:
         return "Error"
-    
+
     def get_part(index: int) -> str:
         if index >= len(token_parts):
             return ""
         return token_parts[index]
-    
+
     def get_parts(range: slice) -> str:
         if range.start >= len(token_parts):
             return ""
         return ".".join(token_parts[range])
-    
+
     if get_part(0) == "string":
         if get_part(1) == "quoted" and get_part(2) == "docstring":
             return "MetaTokenType.Docstring"
@@ -72,13 +75,13 @@ def convert_token_type_split(name: str) -> str:
                     return "KeywordTokenType.Label"
                 else:
                     return "KeywordTokenType.Def"
-                
+
         elif get_part(1) == "modifier":
             if get_part(2) == "declaration":
                 return "KeywordTokenType." + titleCase(get_parts(slice(3, -1)))
             elif get_part(2) == "flag":
                 return "MetaTokenType.ModifierFlagStorageType"
-            
+
     elif get_part(0) == "constant":
         if get_part(1) == "numeric":
             if get_part(2) == "integer":
@@ -93,10 +96,10 @@ def convert_token_type_split(name: str) -> str:
                 return "LiteralTokenType.Escape"
             else:
                 return "MetaTokenType.ConstantNumeric"
-            
+
         elif get_part(1) == "language":
             return "MetaTokenType.ConstantLiteral"
-        
+
         elif get_part(1) == "color":
             return "LiteralTokenType.Color"
 
@@ -106,17 +109,17 @@ def convert_token_type_split(name: str) -> str:
                     return "MetaTokenType.EscapeSequence"
                 else:
                     return "EscapedCharacterTokenType.Esc" + titleCase(get_parts(slice(3, -2)))
-            
+
             elif get_part(2) == "unicode":
                 return "MetaTokenType.EscapeSequence"
 
             elif get_part(2) == "set":
                 return "MetaTokenType.CharacterSet"
-            
+
             elif get_part(2) == "format" and get_part(3) == "placeholder":
                 return "MetaTokenType.Placeholder"
-                
-        
+
+
         elif get_part(1) == "other":
             return "MetaTokenType.ConstantCaps"
 
@@ -125,7 +128,7 @@ def convert_token_type_split(name: str) -> str:
             return "MetaTokenType.Deprecated"
         else:
             return "MetaTokenType.Invalid"
-        
+
     elif get_part(0) == "debug":
         return "MetaTokenType.Invalid"
 
@@ -138,13 +141,13 @@ def convert_token_type_split(name: str) -> str:
                     return "CharacterTokenType.CloseBracket"
                 elif get_part(3) == "region":
                     return "MetaTokenType.CommentRegionTag"
-                
+
             elif get_part(2) == "list":
                 if get_part(3) == "begin":
                     return "CharacterTokenType.OpenSquareBracket"
                 elif get_part(3) == "end":
                     return "CharacterTokenType.CloseSquareBracket"
-            
+
             elif get_part(2) == "arguments" or get_part(2) == "parameters":
                 if get_part(3) == "begin":
                     return "CharacterTokenType.OpenParentheses"
@@ -156,38 +159,38 @@ def convert_token_type_split(name: str) -> str:
                     return "MetaTokenType.StringBegin"
                 elif get_part(3) == "end":
                     return "MetaTokenType.StringEnd"
-            
+
             elif get_part(2) == "comment":
                 return "CharacterTokenType.Hashtag"
-            
+
             elif get_part(2) == "decorator":
                 return "CharacterTokenType.AtSymbol"
-            
+
             elif get_part(2) == "interpolate":
                 return "CharacterTokenType.ExclamationMark"
-        
+
         elif get_part(1) == "parenthesis":
             if get_part(2) == "begin":
                 return "CharacterTokenType.OpenParentheses"
             elif get_part(2) == "end":
                 return "CharacterTokenType.CloseParentheses"
-            
+
         elif get_part(1) == "bracket":
             if get_part(2) == "begin":
                 return "CharacterTokenType.OpenBracket"
             elif get_part(2) == "end":
                 return "CharacterTokenType.CloseBracket"
-            
+
         elif get_part(1) == "square-bracket":
             if get_part(2) == "begin":
                 return "CharacterTokenType.OpenSquareBracket"
             elif get_part(2) == "end":
                 return "CharacterTokenType.CloseSquareBracket"
-            
+
         elif get_part(1) == "section":
             if get_part(3) == "begin" or get_part(4) == "begin":
                 return "CharacterTokenType.Colon"
-                
+
         elif get_part(1) == "separator":
             if get_part(2) == "parameters" or get_part(2) == "arguments" or get_part(2) == "element" or get_part(2) == "inheritance":
                 return "CharacterTokenType.Comma"
@@ -199,23 +202,23 @@ def convert_token_type_split(name: str) -> str:
                 return "CharacterTokenType.EqualsSymbol"
             else:
                 return "CharacterTokenType." + titleCase(get_part(2))
-            
+
         elif get_part(1) == "character":
             if get_part(2) == "set":
                 if get_part(3) == "begin":
                     return "CharacterTokenType.OpenSquareBracket"
                 elif get_part(3) == "end":
                     return "CharacterTokenType.CloseSquareBracket"
-        
+
         elif get_part(1) == "comment":
             if get_part(2) == "begin":
                 return "MetaTokenType.CommentBegin"
             elif get_part(2) == "end":
                 return "MetaTokenType.CommentEnd"
-        
+
         else:
             return "CharacterTokenType." + titleCase(get_part(1))
-    
+
     elif get_part(0) == "support":
         if get_part(1) == "type":
             if get_part(2) == "property-name":
@@ -234,7 +237,7 @@ def convert_token_type_split(name: str) -> str:
                 return "MetaTokenType.BuiltinExceptionType"
             else:
                 return "MetaTokenType.BuiltinType"
-        
+
         elif get_part(1) == "variable":
             return "EntityTokenType.Identifier"
 
@@ -243,7 +246,7 @@ def convert_token_type_split(name: str) -> str:
                 return "EntityTokenType.EventName"
             else:
                 return "EntityTokenType.FunctionName"
-            
+
         elif get_part(1) == "other":
             if get_part(2) == "match":
                 if get_part(3) == "any":
@@ -252,7 +255,7 @@ def convert_token_type_split(name: str) -> str:
                     return "CharacterTokenType.Caret"
                 elif get_part(3) == "end":
                     return "CharacterTokenType.DollarSymbol"
-                
+
             elif get_part(2) == "escape":
                 return "MetaTokenType.EscapeSequence"
 
@@ -269,44 +272,44 @@ def convert_token_type_split(name: str) -> str:
                     return "MetaTokenType.ArithmeticOperator"
                 else:
                     return "OperatorTokenType." + titleCase(get_part(3))
-                
+
             elif get_part(2) == "logical":
                     if get_part(3) != "python" and get_part(3) != "renpy":
                         return "OperatorTokenType." + titleCase(get_part(3))
-                    
+
                     return "MetaTokenType.LogicalOperatorKeyword"
-            
+
             elif get_part(2) == "bitwise":
                     return "MetaTokenType.BitwiseOperatorKeyword"
-            
+
             elif get_part(2) == "comparison":
                     return "MetaTokenType.ComparisonOperatorKeyword"
-            
+
             elif get_part(2) == "python":
                     return "MetaTokenType.Operator"
-            
+
             elif get_part(2) == "unpacking":
                 return "OperatorTokenType." + titleCase(get_part(2))
-            
+
             else:
                 return "OperatorTokenType." + titleCase(get_parts(slice(2, -1)))
-        
+
         elif get_part(1) == "codetag":
             return "MetaTokenType.CommentCodeTag"
-        
+
         elif get_part(1) == "control":
             if get_part(2) == "flow":
                 if get_part(3) == "python" or get_part(3) == "renpy": # TODO
                     return "MetaTokenType.ControlFlowKeyword"
                 else:
                     return "KeywordTokenType." + titleCase(get_part(3))
-                
+
             elif get_part(2) == "import":
                 return "KeywordTokenType.Import"
-            
+
             elif get_part(2) == "conditional":
                 return "KeywordTokenType.If"
-        
+
         elif get_part(1) == "illegal" and get_part(2) == "name":
             return "MetaTokenType.Invalid"
         else:
@@ -318,7 +321,7 @@ def convert_token_type_split(name: str) -> str:
                 return "EntityTokenType." + titleCase(get_part(3)) + "Name"
             else:
                 return "EntityTokenType." + titleCase(get_part(2)) + "Name"
-        
+
         elif get_part(1) == "other":
             if get_part(2) == "inherited-class":
                 return "EntityTokenType.InheritedClassName"
@@ -329,29 +332,29 @@ def convert_token_type_split(name: str) -> str:
                 return "MetaTokenType.PythonBlock"
             elif get_part(2) == "line":
                 return "MetaTokenType.PythonLine"
-            
+
         elif get_part(1) == "arguments" or get_part(2) == "arguments" or get_part(3) == "arguments":
             return "MetaTokenType.Arguments"
-        
+
         elif get_part(1) == "function-call":
             if get_part(2) == "label":
                 return "MetaTokenType.LabelCall"
             else:
                 return "MetaTokenType.FunctionCall"
-            
+
         elif get_part(1) == "member":
             if get_part(2) == "access":
                 if get_part(3) == "label":
                     return "MetaTokenType.LabelAccess"
                 else:
                     return "MetaTokenType.MemberAccess"
-        
+
         elif get_part(1) == "string":
             if get_part(2) == "tag":
                 return "MetaTokenType.StringTag"
             elif get_part(2) == "character":
                 return "MetaTokenType.CharacterNameString"
-            
+
         elif (get_part(1) == "class" or get_part(1) == "function") and get_part(2) != "inheritance":
             return "MetaTokenType." + titleCase(get_part(1)) + "Definition"
 
@@ -372,7 +375,7 @@ def get_token_type(state: GeneratorState, name: str) -> str:
 
 def get_match_str(match: str, captures: dict[str, Any] | None) -> tuple[str, bool]:
     match = match.replace("/", "\\/") # Escape forward slashes
-    
+
     iFlagSet = False
     if "(?i)" in match:
         iFlagSet = True
@@ -382,7 +385,7 @@ def get_match_str(match: str, captures: dict[str, Any] | None) -> tuple[str, boo
     match = match.replace("[:alnum:]", "a-zA-Z0-9")
     match = match.replace("[:upper:]", "A-Z")
 
-    hasBackrefs: bool = re.search("(\\\\[1-9]\\d?)", match) != None 
+    hasBackrefs: bool = re.search("(\\\\[1-9]\\d?)", match) != None
 
     iFlag: str = "i" if iFlagSet else ""
     mFlag: str = "m" if re.search("(?<!\\[)[\\^$]", match) != None else ""
@@ -415,7 +418,7 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
     if "comment" in value:
         comment = value["comment"].replace("\n", f"\n{get_indent(indent)}// ")
         typescript_entry += f"{get_indent(indent)}// {comment}\n"
-    
+
     # Add token type
     if "name" in value:
         name = value["name"]
@@ -490,10 +493,10 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
                     include = language_accessor + language
                 else:
                     include = language_accessor + camelCase(reference)
-                
+
                 if language not in state.source_imports:
                     state.source_imports.append(language)
-                
+
                 external_includes.append((include, i))
             else:
                 include = camelCase(include)
@@ -531,7 +534,7 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
                 else:
                     typescript_entry += f"{get_indent(indent)}placeholderPattern, // Placeholder for {include}\n"
 
-                
+
                 continue
 
             typescript_entry += get_indent(indent)
@@ -547,9 +550,9 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
 
 def generate_file(state: GeneratorState, source_file: str, output_file: str):
     # load the input data from the file
-    with open(source_file, "r") as file:
+    with open(ROOT / source_file, "r") as file:
         data = json.load(file)
-    
+
     # get the repository value
     repository = data.get("repository", {})
 
@@ -564,14 +567,14 @@ def generate_file(state: GeneratorState, source_file: str, output_file: str):
         typescript_entry = f"export const {patternName}: TokenPattern = "
 
         typescript_entry += transform_pattern(state, 0, value, patternName)
-        
+
         typescript_entry += ";\n"
 
         # Add the typescript entry to the list of entries
         src_lines.append(typescript_entry)
 
     # Write the typescript entries to a file
-    with open(output_file, "w") as file:
+    with open(ROOT / output_file, "w") as file:
         contents: str = "// THIS FILE HAS BEEN GENERATED BY THE `syntax-to-token-pattern.py` GENERATOR\n"
         contents += "// DO NOT EDIT THIS FILE DIRECTLY! INSTEAD RUN THE PYTHON SCRIPT.\n"
         contents += "// ANY MANUAL EDITS MADE TO THIS FILE WILL BE OVERWRITTEN. YOU HAVE BEEN WARNED.\n"
@@ -609,9 +612,9 @@ def generate_token_patterns():
 
     # Write the typescript entries to a file
     output_file = "src/tokenizer/generated/token-patterns.g.ts"
-    with open(output_file, "w") as file:
-        contents = "// THIS FILE HAS BEEN GENERATED BY THE `syntax-to-token-pattern.py` GENERATOR\n"
-        contents += "// DO NOT EDIT THIS FILE DIRECTLY! INSTEAD RUN THE PYTHON SCRIPT.\n"
+    with open(ROOT / output_file, "w") as file:
+        contents = "// THIS FILE HAS BEEN GENERATED BY THE `syntax_to_token_pattern.py` GENERATOR\n"
+        contents += "// WHICH IS RUN BY BUILD PROCESS. DO NOT EDIT THIS FILE DIRECTLY!.\n"
         contents += "// ANY MANUAL EDITS MADE TO THIS FILE WILL BE OVERWRITTEN. YOU HAVE BEEN WARNED.\n"
         contents += f"// Last generated: {datetime.now(timezone.utc).strftime('%d/%m/%Y %H:%M:%S')} (UTC+0)\n"
         contents += "\n"
@@ -644,6 +647,3 @@ def generate_token_patterns():
         contents += f"\n\nexport {{ {', '.join(exports)} }};"
 
         file.write(contents)
-
-# main
-generate_token_patterns()

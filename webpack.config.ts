@@ -2,13 +2,23 @@ import CopyWebpackPlugin from "copy-webpack-plugin";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 import * as path from "path";
 import { Compiler, Configuration, WebpackPluginInstance } from "webpack";
+import WebpackShellPlugin from "webpack-shell-plugin-next";
 
 const PATHS = {
     src: path.join(__dirname, "src"),
     dist: path.join(__dirname, "dist"),
     cache: path.join(__dirname, "node_modules/.cache/webpack"),
     node: path.join(__dirname, "node_modules"),
+    scripts: path.join(__dirname, "scripts"),
 };
+
+const webpackShellPlugin = new WebpackShellPlugin({
+    onBuildStart: {
+        scripts: [`uv run --directory ${PATHS.scripts} tmlanguage_yaml_to_json.py`],
+        blocking: true,
+        parallel: false,
+    },
+});
 
 export const basePlugins: (((this: Compiler, compiler: Compiler) => void) | WebpackPluginInstance)[] = [
     new CopyWebpackPlugin({
@@ -74,7 +84,7 @@ export const baseConfig: Configuration = {
         cacheDirectory: PATHS.cache,
     },
 
-    plugins: [...basePlugins],
+    plugins: [webpackShellPlugin, ...basePlugins],
 
     watchOptions: {
         // for some systems, watching many files can result in a lot of CPU or memory usage

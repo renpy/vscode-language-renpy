@@ -519,3 +519,10 @@ $RECYCLE.BIN/
 
 # Test result files
 vscode-language-renpy-test-results.*
+
+
+# Generated Files
+src/tokenizer/generated
+!syntaxes/renpy.python.tmLanguage.json
+syntaxes/renpy.*.tmLanguage.json
+syntaxes/renpy.tmLanguage.json

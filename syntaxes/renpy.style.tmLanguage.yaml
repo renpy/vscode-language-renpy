@@ -1,0 +1,97 @@
+information_for_contributors:
+- Please remember to regenerate the ts token patterns using the 'syntax-to-token-pattern.py'
+  python script
+$schema: https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json
+name: Ren'Py Style
+scopeName: source.renpy.style
+patterns:
+- include: '#style'
+repository:
+  builtin-styles:
+    patterns:
+    - name: support.type.builtin.style.renpy
+      match: \b(?<!\.)(?:(alt)?ruby_style)\b
+  style-block-tester:
+    patterns:
+    - contentName: meta.style-block.renpy
+      begin: (?<=(^[ \t]*)(?:style)\b.*?)(:)
+      beginCaptures:
+        2:
+          name: punctuation.section.style.begin.renpy
+      end: ^(?=(?!\1)[ \t]*[^\s#]|\1[^\s#])
+      patterns:
+      - include: '#style-clause'
+      - include: source.renpy#fallback-patterns
+  style-property:
+    patterns:
+    - comment: 'ON EDIT: If you update this list, also update it in style-clause'
+      name: support.constant.property-key.test.renpy entity.name.tag.css.style.renpy
+      match: \b(?<!\.)(?:(?:selected_)?(?:hover_|idle_|insensitive_|activate_)?(?:activate_sound|adjust_spacing|aft_bar|aft_gutter|alt|antialias|axis|background|bar_invert|bar_resizing|unscrollable|bar_vertical|black_color|bold|bottom_margin|bottom_padding|box_layout|box_reverse|box_wrap|box_wrap_spacing|caret|child|clipping|color|debug|drop_shadow|drop_shadow_color|emoji_font|extra_alt|first_indent|first_spacing|fit_first|focus_mask|focus_rect|font|fore_bar|fore_gutter|foreground|group_alt|hinting|hover_sound|hyperlink_functions|italic|instance|justify|kerning|key_events|keyboard_focus|language|layout|line_leading|left_margin|line_overlap_split|left_padding|line_spacing|mouse|modal|min_width|mipmap|newline_indent|order_reverse|outlines|outline_scaling|prefer_emoji|rest_indent|right_margin|right_padding|ruby_line_leading|shaper|size|size_group|slow_abortable|slow_cps|slow_cps_multiplier|spacing|strikethrough|subtitle_width|subpixel|text_y_fudge|text_align|thumb|thumb_offset|thumb_shadow|time_policy|top_margin|top_padding|underline|vertical|xanchor|xfill|xfit|xmaximum|xminimum|xoffset|xpos|xspacing|yanchor|yfill|yfit|ymaximum|yminimum|yoffset|ypos|yspacing|margin|xmargin|ymargin|xalign|yalign|padding|xpadding|ypadding|minwidth|textalign|slow_speed|enable_hover|left_gutter|right_gutter|top_gutter|bottom_gutter|left_bar|right_bar|top_bar|bottom_bar|base_bar|box_spacing|box_first_spacing|pos|anchor|offset|align|maximum|minimum|xsize|ysize|xysize|area|xcenter|ycenter|xycenter))\b
+    - name: support.type.builtin.style.renpy
+      match: \b(?<!\.)(?:(alt)?ruby_style)\b
+    - name: support.constant.property-key.renpy entity.name.tag.css.style.renpy
+      match: \b(?<!\.)(?:properties)\b
+    - comment: Any other tokens are invalid
+      match: .+
+      name: invalid.illegal.style-property.name.renpy
+  style-clause:
+    patterns:
+    - comment: is statement
+      begin: \b(?<!\.)(is)\b
+      beginCaptures:
+        1:
+          name: keyword.operator.logical.python
+      end: (?!\G)(?<=[^ \t])|$
+      patterns:
+      - name: entity.name.type.style.base.renpy
+        match: \b[\p{XID_Start}_]\p{XID_Continue}*\b
+      - include: source.renpy#fallback-patterns
+    - match: \b(?<!\.)clear\b
+      name: keyword.clear.renpy
+    - begin: \b(?<!\.)(take)\b
+      beginCaptures:
+        1:
+          name: keyword.take.renpy
+      end: (?!\G)(?<=[^ \t])|$
+      patterns:
+      - include: source.renpy#name
+      - include: source.renpy#fallback-patterns
+    - match: \b(?<!\.)(del)\b[ \t]*(\w*)
+      captures:
+        1:
+          name: keyword.del.renpy
+        2:
+          patterns:
+          - include: '#style-property'
+    - begin: \b(?<!\.)(variant)\b
+      end: (?!\G)
+      beginCaptures:
+        1:
+          name: keyword.variant.renpy
+      patterns:
+      - include: source.renpy#simple-expression
+    - comment: 'ON EDIT: If you update this list, also update it in style-property'
+      begin: \b(?<!\.)(properties|(?:(?:selected_)?(?:hover_|idle_|insensitive_|activate_)?(?:activate_sound|adjust_spacing|aft_bar|aft_gutter|alt|altruby_style|antialias|axis|background|bar_invert|bar_resizing|unscrollable|bar_vertical|black_color|bold|bottom_margin|bottom_padding|box_layout|box_reverse|box_wrap|box_wrap_spacing|caret|child|clipping|color|debug|drop_shadow|drop_shadow_color|emoji_font|extra_alt|first_indent|first_spacing|fit_first|focus_mask|focus_rect|font|fore_bar|fore_gutter|foreground|group_alt|hinting|hover_sound|hyperlink_functions|italic|instance|justify|kerning|key_events|keyboard_focus|language|layout|line_leading|left_margin|line_overlap_split|left_padding|line_spacing|mouse|modal|min_width|mipmap|newline_indent|order_reverse|outlines|outline_scaling|prefer_emoji|rest_indent|right_margin|right_padding|ruby_line_leading|ruby_style|shaper|size|size_group|slow_abortable|slow_cps|slow_cps_multiplier|spacing|strikethrough|subtitle_width|subpixel|text_y_fudge|text_align|thumb|thumb_offset|thumb_shadow|time_policy|top_margin|top_padding|underline|vertical|xanchor|xfill|xfit|xmaximum|xminimum|xoffset|xpos|xspacing|yanchor|yfill|yfit|ymaximum|yminimum|yoffset|ypos|yspacing|margin|xmargin|ymargin|xalign|yalign|padding|xpadding|ypadding|minwidth|textalign|slow_speed|enable_hover|left_gutter|right_gutter|top_gutter|bottom_gutter|left_bar|right_bar|top_bar|bottom_bar|base_bar|box_spacing|box_first_spacing|pos|anchor|offset|align|maximum|minimum|xsize|ysize|xysize|area|xcenter|ycenter|xycenter)))\b
+      end: (?!\G)|$
+      beginCaptures:
+        1:
+          name: support.constant.property-key.renpy entity.name.tag.css.style.renpy
+      patterns:
+      - include: source.renpy#simple-expression
+  style:
+    comment: See https://www.renpy.org/doc/html/styles.html
+    name: meta.style.statement.renpy
+    contentName: meta.style.parameters.renpy
+    begin: (?<=^[ \t]*)(style)\b
+    beginCaptures:
+      1:
+        name: storage.type.style.renpy
+    end: $|^
+    patterns:
+    - include: '#builtin-styles'
+    - comment: Only the first identifier is a style name
+      name: entity.name.type.style.renpy
+      match: (?<=\bstyle[ \t]*)\b[\p{XID_Start}_]\p{XID_Continue}*\b
+    - include: '#style-clause'
+    - include: '#style-block-tester'
+    - include: source.renpy#fallback-patterns

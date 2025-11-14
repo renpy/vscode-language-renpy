@@ -14,7 +14,7 @@ const PATHS = {
 
 const webpackShellPlugin = new WebpackShellPlugin({
     onBeforeCompile: {
-        scripts: [`uv run --directory ${PATHS.scripts} tmlanguage_yaml_to_json.py`],
+        scripts: [`npx @manzt/uv run --directory ${PATHS.scripts} generate.py`],
         blocking: true,
         parallel: false,
     },

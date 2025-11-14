@@ -1,6 +1,6 @@
 # Changelog
 
-## 8.5.0
+## 8.5.0.0
 
 * Update to match Ren'Py 8.5.
 * Ren'Py injection for _ren.py and markdown files.

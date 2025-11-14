@@ -4,6 +4,25 @@ import json
 
 import syntax_to_token_pattern
 
+import keywords
+
+def apply_keywords(o):
+    """
+    Recursively apply keywords to a data structure.
+    """
+
+    if isinstance(o, dict):
+        return {k: apply_keywords(v) for k, v in o.items()}
+
+    elif isinstance(o, list):
+        return [apply_keywords(i) for i in o]
+
+    elif isinstance(o, str):
+        rv = o
+        rv = rv.replace("(?:STYLE_PROPERTIES)", keywords.style_property_regex)
+        return rv
+
+    return o
 
 def convert_file(filename: pathlib.Path):
     """
@@ -13,6 +32,8 @@ def convert_file(filename: pathlib.Path):
 
     with open(filename, "r") as f:
         data = yaml.safe_load(f)
+
+    data = apply_keywords(data)
 
     data["information_for_contributors"].insert(
         0,

@@ -140,4 +140,3 @@ init python hide early in Namespace:
             """Add an item to the inventory."""
             self.items.append(item);
             return
-

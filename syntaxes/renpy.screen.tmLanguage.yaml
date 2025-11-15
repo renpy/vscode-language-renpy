@@ -26,7 +26,7 @@ repository:
   screen-build-in-properties:
     patterns:
     - comment: Special ATL keywords.
-      match: \b(?<!\.)(?:(warp)|(circles)|(clockwise)|(counterclockwise))\b
+      match: \b(?<!\.)(?:(warp)|(circles)|(clockwise)|(counterclockwise)|(knot))\b
       captures:
         1:
           name: keyword.warp.renpy
@@ -36,6 +36,8 @@ repository:
           name: keyword.clockwise.renpy
         4:
           name: keyword.counterclockwise.renpy
+        5:
+          name: keyword.knot.renpy
     - comment: Special manipulation keywords
       name: keyword.control.flow.renpy
       match: \b(?<!\.)(?:action|at|(?:un)?hovered|alt|value|dragged|released)\b
@@ -47,8 +49,8 @@ repository:
 
     - include: '#screen-automatic-properties'
 
-    - comment: ATL properties.
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
+    - comment: Transform properties.
+      name: entity.other.attribute-name.transform.renpy support.type.property-name.transform.renpy
       match: \b(?<!\.)(?:ATL_PROPERTIES)\b
 
   screen-automatic-properties:

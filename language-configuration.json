@@ -63,7 +63,13 @@
       "beforeText": "^[ \\t]*(?:image|init|label|menu|python|scene|screen|transform)\\b.*?:[ \\t]*$",
       "action": { "indent": "indent" }
     },
-    // Outdent keywords
+
+    // Renpy.test keywords.
+    {
+      "beforeText": "^[ \\t]*(?:testcase|testsuite|setup|teardown|(?:before|after)\\s+(testcase|testsuite))\\b.*?:[ \\t]*$",
+      "action": { "indent": "indent" }
+    },
+
     {
       "beforeText": "^[ \\t]*(?:pass|return|repeat)\\b.*?$",
       "action": { "indent": "outdent" }

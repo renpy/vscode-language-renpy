@@ -83,6 +83,10 @@
         "path": "./syntaxes/renpy.atl.tmLanguage.json"
       },
       {
+        "scopeName": "source.renpy.test",
+        "path": "./syntaxes/renpy.test.tmLanguage.json"
+      },
+      {
         "scopeName": "source.renpy.python",
         "path": "./syntaxes/renpy.python.tmLanguage.json"
       },

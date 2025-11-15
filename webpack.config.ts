@@ -26,6 +26,7 @@ class WatchYamlFilesPlugin {
             compilation.fileDependencies.add(path.join(__dirname, "syntaxes", "renpy.atl.tmLanguage.yaml"));
             compilation.fileDependencies.add(path.join(__dirname, "syntaxes", "renpy.screen.tmLanguage.yaml"));
             compilation.fileDependencies.add(path.join(__dirname, "syntaxes", "renpy.style.tmLanguage.yaml"));
+            compilation.fileDependencies.add(path.join(__dirname, "syntaxes", "renpy.test.tmLanguage.yaml"));
             compilation.fileDependencies.add(path.join(__dirname, "syntaxes", "renpy.tmLanguage.yaml"));
         });
     }

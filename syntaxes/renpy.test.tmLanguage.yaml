@@ -1,0 +1,98 @@
+information_for_contributors:
+- Please remember to regenerate the ts token patterns using the 'syntax-to-token-pattern.py'
+  python script
+$schema: https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json
+name: Ren'Py Test
+scopeName: source.renpy.test
+patterns:
+- include: '#test'
+repository:
+  test:
+    patterns:
+    - include: '#testcase'
+    - include: '#testsuite'
+    - include: '#before-after-test'
+    - name: keyword.control.test.renpy
+      match: \b(?<!\.)(?:advance|exit|pass|pause|run|skip|click|drag|move|scroll|keysym|type|assert|screenshot)\b
+    - name: keyword.other.test.renpy
+      match: \b(?<!\.)(?:if|until|eval|screen|id|layer|not|and|or)\b
+    - name: support.type.property-name.test.renpy
+      match: \b(?<!\.)(?:time|fast|button|pos|to|steps|amount|raw|timeout|xfail|max_pixel_difference|crop)\b
+    - name: entity.other.attribute-name.test.renpy
+      match: \b(?<!\.)(?:description)\b
+    - include: source.renpy#python-statements
+    - include: "#test-simple-expression"
+    - include: source.renpy#base-patterns
+
+  test-simple-expression:
+    patterns:
+    - include: source.renpy#renpy-only-expressions
+    - include: source.renpy.python#member-access
+    - include: source.renpy.python#illegal-operator
+    - include: source.renpy.python#operator
+    - include: source.renpy.python#curly-braces
+    - include: source.renpy.python#item-access
+    - include: source.renpy.python#list
+    - include: source.renpy.python#odd-function-call
+    - include: source.renpy.python#round-braces
+    - include: source.renpy.python#function-call
+    - include: source.renpy.python#builtin-functions
+    - include: source.renpy.python#builtin-types
+    - include: source.renpy.python#builtin-exceptions
+    - include: source.renpy.python#magic-names
+    - include: source.renpy.python#special-names
+    - include: source.renpy.python#illegal-names
+    - include: source.renpy.python#special-variables
+    - include: source.renpy.python#ellipsis
+    - include: source.renpy.python#punctuation
+    - include: source.renpy.python#line-continuation
+    - comment: Tokenize identifiers
+      name: variable.name.python
+      match: \b([[:alpha:]_]\w*)\b
+    - include: source.renpy#whitespace
+
+  test-block-tester:
+    contentName: meta.test-block.renpy
+    begin: (?<=(^[ \t]*)(?:testcase|testsuite|setup|teardown|(?:before|after)\s+(?:testcase|testsuite))\b.*?)(:)
+    beginCaptures:
+      2:
+        name: punctuation.section.atl.begin.renpy
+    end: ^(?=(?!\1)[ \t]*[^\s#]|\1[^\s#])
+    patterns:
+    - include: '#test'
+
+  before-after-test:
+    name: meta.testcase.statement.renpy
+    begin: (?<=^[ \t]*)(setup|teardown|(?:before|after)\s+(?:testcase|testsuite))\b
+    beginCaptures:
+      1:
+        name: keyword.testcase.renpy
+    end: (?=#|:)|$
+
+  testcase:
+    name: meta.testcase.statement.renpy
+    contentName: meta.testcase.parameters.renpy
+    begin: (?<=^[ \t]*)(testcase)\b
+    beginCaptures:
+      1:
+        name: keyword.testcase.renpy
+    end: (?=#|:)|$
+    patterns:
+    - name: entity.name.type.testcase.renpy
+      match: \b([[:alpha:]_]\w*)\b
+    - include: source.renpy.python#parameters
+    - include: source.renpy#whitespace
+
+  testsuite:
+    name: meta.testsuite.statement.renpy
+    contentName: meta.testsuite.parameters.renpy
+    begin: (?<=^[ \t]*)(testsuite)\b
+    beginCaptures:
+      1:
+        name: keyword.testsuite.renpy
+    end: (?=#|:)|$
+    patterns:
+    - name: entity.name.type.testsuite.renpy
+      match: \b([[:alpha:]_]\w*)\b
+    - include: source.renpy.python#parameters
+    - include: source.renpy#whitespace

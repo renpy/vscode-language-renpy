@@ -1477,6 +1477,10 @@ repository:
     - include: '#with-statement'
     - include: source.renpy.screen#screen
     - include: source.renpy.style#style
+    - include: source.renpy.test#testcase
+    - include: source.renpy.test#testsuite
+    - include: source.renpy.test#test-block-tester
+    - include: source.renpy.python#python-block-tester
     - include: '#return-statements'
     - include: '#jump'
     - include: '#call'

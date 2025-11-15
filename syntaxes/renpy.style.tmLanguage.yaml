@@ -25,7 +25,7 @@ repository:
   style-property:
     patterns:
     - comment: 'ON EDIT: If you update this list, also update it in style-clause'
-      name: support.constant.property-key.test.renpy entity.name.tag.css.style.renpy
+      name: support.constant.property-key.renpy entity.name.tag.css.style.renpy
       match: \b(?<!\.)(?:(?:selected_)?(?:hover_|idle_|insensitive_|activate_)?(?:STYLE_PROPERTIES))\b
     - name: support.type.builtin.style.renpy
       match: \b(?<!\.)(?:(alt)?ruby_style)\b

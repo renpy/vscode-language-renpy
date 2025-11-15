@@ -24,9 +24,8 @@ repository:
         3:
           name: entity.name.function.renpy
   screen-build-in-properties:
-    comment: These are the ATL keywords, will need to fix this later
     patterns:
-    - comment: Special manipulation keywords
+    - comment: Special ATL keywords.
       match: \b(?<!\.)(?:(warp)|(circles)|(clockwise)|(counterclockwise))\b
       captures:
         1:
@@ -45,60 +44,17 @@ repository:
       captures:
         1:
           name: keyword.other.renpy
-    - comment: Random props
+
+    - include: '#screen-automatic-properties'
+
+    - comment: ATL properties.
       name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:(?:[xy]|top_|bottom_|left_|right_)padding|[xy]margin|background|width|height|area|draggable|droppable|drag_handle|mousewheel|scrollbars|cols|spacing|(?:text_|side_[xy])?align)\b
-    - comment: position props (int, absolute, or a float)
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:[xy]?pos|[xy]?anchor|[xy]?maximum|(?:x?y?)center|radius)\b
-    - comment: position pair props
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:around|alignaround|matrixanchor)\b
-    - comment: float props
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:[xy]align|[xy]?zoom|alpha|additive|angle|delay|events|zpos)\b
-    - comment: float pair props
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:align|knot)\b
-    - comment: int props
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:[xy]offset|[xy]tile|size)\b
-    - comment: int pair props
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:offset)\b
-    - comment: boolean props
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:rotate_pad|transform_anchor|nearest|crop_relative|subpixel|zzoom|transpose|[xy]fill)\b
-    - comment: ('#float' | None)
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:rotate|[xy]pan|blur)\b
-    - comment: ('#position' | None)
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:[xy]size)\b
-    - comment: ('\(int, int, int, int\)' | '\(float, float, float, float\)' | None)
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:crop)\b
-    - comment: ('\(int, int\)' | None)
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:corner1|corner2)\b
-    - comment: ('\(position, position\)' | None)
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:xysize)\b
-    - comment: ('#string' | None)
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:fit|drag_name|child)\b
-    - comment: ('\(int, int\)' | None)
-      name: invalid.deprecated.renpy
-      match: \b(?<!\.)(?:size|maxsize)\b
-    - comment: ('#Matrix' | '#MatrixColor' | None)
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:matrixcolor)\b
-    - comment: ('#Matrix' | '#TransformMatrix' | None)
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:matrixtransform)\b
-    - comment: ('#bool' | '#float' | '\(float, float, float\)')
-      name: entity.other.attribute-name.transform.renpy entity.name.tag.css.transform.renpy
-      match: \b(?<!\.)(?:perspective)\b
+      match: \b(?<!\.)(?:ATL_PROPERTIES)\b
+
+  screen-automatic-properties:
+    comment: Automatically replaced with a list of properties taken from keywords.py.
+    patterns: SCREEN_AUTOMATIC_PROPERTIES
+
   screen-simple-expression:
     patterns:
     - include: source.renpy#renpy-only-expressions

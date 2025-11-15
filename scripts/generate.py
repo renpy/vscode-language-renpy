@@ -6,10 +6,26 @@ import syntax_to_token_pattern
 
 import keywords
 
+def screen_automatic_properties():
+    """
+    Generate a list of patterns for screen automatic properties.
+    """
+
+    return [
+        {
+            "name": "support.constant.property-key.renpy entity.name.tag.css.style.renpy",
+            "match": rf"\b(?<!\.){prop}\b",
+        } for prop in keywords.property_regexes
+    ]
+
+
 def apply_keywords(o):
     """
     Recursively apply keywords to a data structure.
     """
+
+    if o == "SCREEN_AUTOMATIC_PROPERTIES":
+        return screen_automatic_properties()
 
     if isinstance(o, dict):
         return {k: apply_keywords(v) for k, v in o.items()}
@@ -20,6 +36,7 @@ def apply_keywords(o):
     elif isinstance(o, str):
         rv = o
         rv = rv.replace("(?:STYLE_PROPERTIES)", keywords.style_property_regex)
+        rv = rv.replace("(?:ATL_PROPERTIES)", keywords.atl_property_regex)
         return rv
 
     return o

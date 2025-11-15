@@ -1,8 +1,11 @@
 # Changelog
 
-## 8.5.0.0
+## 8.5.0
 
-* Update to match Ren'Py 8.5.
+* New versioning scheme. The first two digits match the Ren'Py release.
+* Update to match Ren'Py 8.5. This includes screen properties, ATL properties, and
+  the API.
+* Syntax highlighting for the test sub-language.
 * Ren'Py injection for _ren.py and markdown files.
 * Use Child process for debugging instead of a terminal.
 

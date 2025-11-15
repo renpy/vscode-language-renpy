@@ -16,10 +16,10 @@ repository:
       match: \b(?<!\.)(?:advance|exit|pass|pause|run|skip|click|drag|move|scroll|keysym|type|assert|screenshot)\b
     - name: keyword.other.test.renpy
       match: \b(?<!\.)(?:if|until|eval|screen|id|layer|not|and|or)\b
-    - name: support.type.property-name.test.renpy
+    - name: entity.name.tag.css.style.renpy support.constant.property-name.test.renpy
       match: \b(?<!\.)(?:time|fast|button|pos|to|steps|amount|raw|timeout|xfail|max_pixel_difference|crop)\b
-    - name: entity.other.attribute-name.test.renpy
-      match: \b(?<!\.)(?:description)\b
+    - name: entity.name.tag.css.style.renpy support.constant.property-name.test.renpy
+      match: \b(?<!\.)(?:description|enabled|only|xfail|parameter)\b
     - include: source.renpy#python-statements
     - include: "#test-simple-expression"
     - include: source.renpy#base-patterns

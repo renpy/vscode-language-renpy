@@ -1,9 +1,14 @@
 This directory contians scripts used to help maintain the project.
 
 
-update_renpy_json.sh
+update_from_renpy.sh
 --------------------
 
-Run this script to update the `renpy.json` file, by copying it from Ren'Py into this project. The file
-must first be updated in Ren'Py by building the spinx documentation. This takes a single argument, the
-path to the Ren'Py checkout.
+Run this is to copy files from Ren'Py into this project. Right now, both file are built
+as part of the documentation build process, so you need to run that before running this
+script. The files copied are:
+
+`keyword.py`
+    This contains regular expressions for keywords and properties.
+`renpy.json`
+    This contains information about the Ren'Py API.

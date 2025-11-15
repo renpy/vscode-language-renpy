@@ -19,3 +19,4 @@ if [ ! -e "$JSON" ]; then
 fi
 
 cp $JSON "src/renpy.json"
+cp $RENPY/tutorial/game/keywords.py scripts/keywords.py

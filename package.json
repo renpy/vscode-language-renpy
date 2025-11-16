@@ -416,5 +416,20 @@
     "webpack": "^5.101.2",
     "webpack-cli": "^6.0.1",
     "webpack-shell-plugin-next": "^2.3.3"
-  }
+  },
+  "files": [
+    "dist/*",
+    "package.json",
+    "examples/**/*.rpy",
+    "examples/**/*_ren.py",
+    "CHANGELOG.md",
+    "icon.png",
+    "language-configuration.json",
+    "LICENSE",
+    "package.json",
+    "README.md",
+    "renpy.svg",
+    "snippets/**/*",
+    "syntaxes/*.json"
+  ]
 }

@@ -3,21 +3,19 @@
 ## 805.1.0
 
 * Stable release.
-* New new versioning scheme. 805 means it's for Ren'Py 8.5. Odd minor versions
+* New versioning scheme. 805 means it's for Ren'Py 8.5. Odd minor versions
   represent stable releases, even minor versions represent development releases,
   and patches are an index in the series.
 
 ## 8.6.0
 
-* Mistakenly published release.
+* Mistakenly published stable release.
 * Arguments passed to the shell by tasks are now quoted by VS Code, allowing the
   commands to work even if spaces are in the directory names.
 
 ## 8.5.0
 
 * Prerelease.
-* New versioning scheme. The first two digits match the Ren'Py major/minor release,
-  while the last is the version of this plugin targeting that release.
 * Update to match Ren'Py 8.5. This includes screen properties, ATL properties, and
   the API.
 * Syntax highlighting for the test sub-language.

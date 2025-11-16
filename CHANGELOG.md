@@ -1,8 +1,15 @@
 # Changelog
 
-## 8.5.1
+## 805.1.0
 
 * Stable release.
+* New new versioning scheme. 805 means it's for Ren'Py 8.5. Odd minor versions
+  represent stable releases, even minor versions represent development releases,
+  and patches are an index in the series.
+
+## 8.6.0
+
+* Mistakenly published release.
 * Arguments passed to the shell by tasks are now quoted by VS Code, allowing the
   commands to work even if spaces are in the directory names.
 

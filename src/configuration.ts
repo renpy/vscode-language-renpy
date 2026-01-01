@@ -42,7 +42,7 @@ export class Configuration {
     }
 
     private static excludeCompiledFilesConfig() {
-        const renpyExclude = ["**/*.rpyc", "**/*.rpa", "**/*.rpymc", "**/cache/"];
+        const renpyExclude = ["**/*.rpyc", "**/*.rpa", "**/*.rpymc", "game/cache/"];
         const config = workspace.getConfiguration("files");
         const workspaceExclude = config.inspect<WorkspaceConfiguration>("exclude");
         const exclude = { ...workspaceExclude?.workspaceValue };

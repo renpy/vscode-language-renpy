@@ -33,7 +33,7 @@ import { Configuration } from "./configuration";
 import { RenpyAdapterDescriptorFactory, RenpyConfigurationProvider } from "./debugger";
 import { registerDefinitionProvider } from "./definition";
 import { diagnosticsInit } from "./diagnostics";
-import { registerHoverProvider } from "./hover";
+import { initializeSceneHover, registerHoverProvider } from "./hover";
 import { initializeLoggingSystems, logMessage, logToast, updateStatusBar } from "./logger";
 import { getStatusBarText, NavigationData } from "./navigation-data";
 import { registerSymbolProvider } from "./outline";
@@ -54,6 +54,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
     updateStatusBar("$(sync~spin) Loading Ren'Py extension...");
 
     Configuration.initialize(context);
+
+    // Initialize scene hover with the first workspace folder
+    const workspaceFolder = workspace.workspaceFolders?.[0];
+    initializeSceneHover(workspaceFolder);
 
     // Subscribe to supported language features
     context.subscriptions.push(registerHoverProvider());

@@ -312,6 +312,54 @@
             "type": "string",
             "default": "",
             "description": "Location of Ren'Py installation. Should be .exe on Windows and .sh on Mac/Linux."
+          },
+          "renpy.sceneHover.imageRoots": {
+            "type": "array",
+            "default": ["game/images"],
+            "description": "Workspace-relative folders scanned for implicit Ren'Py image files."
+          },
+          "renpy.sceneHover.scriptRoots": {
+            "type": "array",
+            "default": ["game"],
+            "description": "Workspace-relative folders scanned for .rpy files and explicit image declarations."
+          },
+          "renpy.sceneHover.maxPreviewBytes": {
+            "type": "number",
+            "default": 1572864,
+            "minimum": 16384,
+            "description": "Maximum file size embedded into a hover preview. Larger files show metadata only."
+          },
+          "renpy.sceneHover.previewWidth": {
+            "type": "number",
+            "default": 540,
+            "minimum": 120,
+            "description": "Preview width in pixels for hover images."
+          }
+        }
+      }
+    ]
+  },
+          "renpy.sceneHover.imageRoots": {
+            "type": "array",
+            "default": ["game/images"],
+            "description": "Workspace-relative folders scanned for implicit Ren'Py image files."
+          },
+          "renpy.sceneHover.scriptRoots": {
+            "type": "array",
+            "default": ["game"],
+            "description": "Workspace-relative folders scanned for .rpy files and explicit image declarations."
+          },
+          "renpy.sceneHover.maxPreviewBytes": {
+            "type": "number",
+            "default": 1572864,
+            "minimum": 16384,
+            "description": "Maximum file size embedded into a hover preview. Larger files show metadata only."
+          },
+          "renpy.sceneHover.previewWidth": {
+            "type": "number",
+            "default": 540,
+            "minimum": 120,
+            "description": "Preview width in pixels for hover images."
           }
         }
       }

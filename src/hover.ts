@@ -2,19 +2,36 @@
 "use strict";
 
 import * as fs from "fs";
-import { CancellationToken, Hover, languages, MarkdownString, Position, ProviderResult, Range, TextDocument, Uri } from "vscode";
+import { CancellationToken, Hover, languages, MarkdownString, Position, ProviderResult, Range, TextDocument, Uri, WorkspaceFolder } from "vscode";
 
 import { extractFilename, getFileWithPath, stripWorkspaceFromFile } from "src/utilities";
 
 import { getKeywordPrefix } from "./extension";
 import { formatDocumentationAsMarkdown, getPyDocsAtLine, Navigation, rangeAsString } from "./navigation";
 import { NavigationData } from "./navigation-data";
+import { SceneHoverImageIndex } from "./scene-hover";
+
+let sceneHoverIndex: SceneHoverImageIndex | undefined;
+
+export function initializeSceneHover(workspaceFolder: WorkspaceFolder | undefined): void {
+    if (workspaceFolder) {
+        sceneHoverIndex = new SceneHoverImageIndex(workspaceFolder);
+        sceneHoverIndex.requestRebuild();
+    }
+}
 
 export function registerHoverProvider() {
     return languages.registerHoverProvider("renpy", {
         provideHover(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Hover> {
             if (token.isCancellationRequested) {
                 return;
+            }
+
+            if (sceneHoverIndex) {
+                const sceneHover = sceneHoverIndex.provideSceneHover(document, position);
+                if (sceneHover) {
+                    return sceneHover;
+                }
             }
 
             return Promise.resolve(getHoverContent(document, position));

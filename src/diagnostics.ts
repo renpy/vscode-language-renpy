@@ -64,7 +64,7 @@ const rxObsoleteCheck =
 const rxVariableCheck = /^\s*(default|define)\s+([^a-zA-Z\s_][a-zA-Z0-9_]*)\s+=/g;
 const rxReservedVariableCheck = /\s*(default|define)\s+(_[a-zA-Z0-9]*)\s+=/g;
 const rxPersistentDefines = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*$)/g;
-const rxPersistentCheck = /\s+persistent\.(\w+)[^a-zA-Z]/g;
+const rxPersistentCheck = /\s+persistent\.(\w+)(?=[^a-zA-Z0-9_]|$)/g;
 const rxStoreCheck = /\s+store\.(\w+)[^a-zA-Z_]?/g;
 const rxTabCheck = /^(\t+)/g;
 const rsComparisonCheck = /\s+(if|while)\s+(\w+)\s*(=)\s*(\w+)\s*/g;

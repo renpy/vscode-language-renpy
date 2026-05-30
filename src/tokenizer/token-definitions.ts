@@ -545,6 +545,7 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     Circles: { name: "Circles", value: KeywordTokenType.Circles },
     Clockwise: { name: "Clockwise", value: KeywordTokenType.Clockwise },
     Counterclockwise: { name: "Counterclockwise", value: KeywordTokenType.Counterclockwise },
+    Knot: { name: "Knot", value: KeywordTokenType.Knot },
     Event: { name: "Event", value: KeywordTokenType.Event },
     On: { name: "On", value: KeywordTokenType.On },
     Function: { name: "Function", value: KeywordTokenType.Function },

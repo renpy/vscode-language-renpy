@@ -76,13 +76,9 @@ def main():
 
     generated = False
 
-    # Force pattern generation on fresh clones where build artifacts are absent.
-    generated_dir = ROOT / "src" / "tokenizer" / "generated"
-    if not generated_dir.exists() or not any(generated_dir.iterdir()):
-        generated = True
-
     for filename in ROOT.glob("syntaxes/*.tmLanguage.yaml"):
-        generated = generated or convert_file(filename)
+        file_changed = convert_file(filename)
+        generated = generated or file_changed
 
     print("Generated .tmLanguage.json files from .tmLanguage.yaml files.")
 

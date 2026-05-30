@@ -489,7 +489,9 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
                 language = source.split(".")[-1]
                 language_accessor = titleCase(language) + "Patterns."
 
-                if reference == None:
+                if language == "python" and reference == "python-block-tester":
+                    include = "RenpyPatterns.pythonBlockTester"
+                elif reference == None:
                     include = language_accessor + language
                 else:
                     include = language_accessor + camelCase(reference)
@@ -603,6 +605,9 @@ def generate_token_patterns():
     screen_state = GeneratorState()
     style_state = GeneratorState()
     python_state = GeneratorState()
+
+    generated_dir = ROOT / "src" / "tokenizer" / "generated"
+    generated_dir.mkdir(parents=True, exist_ok=True)
 
     generate_file(renpy_state, "./syntaxes/renpy.tmLanguage.json", "src/tokenizer/generated/renpy-token-patterns.g.ts")
     generate_file(atl_state, "./syntaxes/renpy.atl.tmLanguage.json", "src/tokenizer/generated/atl-token-patterns.g.ts")

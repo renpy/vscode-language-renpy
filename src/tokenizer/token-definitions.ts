@@ -540,6 +540,10 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     Parallel: { name: "Parallel", value: KeywordTokenType.Parallel },
     Block: { name: "Block", value: KeywordTokenType.Block },
     Choice: { name: "Choice", value: KeywordTokenType.Choice },
+    Test: { name: "Test", value: KeywordTokenType.Test },
+    OtherTest: { name: "OtherTest", value: KeywordTokenType.OtherTest },
+    Testcase: { name: "Testcase", value: KeywordTokenType.Testcase },
+    Testsuite: { name: "Testsuite", value: KeywordTokenType.Testsuite },
 
     Warp: { name: "Warp", value: KeywordTokenType.Warp },
     Circles: { name: "Circles", value: KeywordTokenType.Circles },
@@ -578,6 +582,8 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     FunctionName: { name: "FunctionName", value: EntityTokenType.FunctionName },
     TagName: { name: "TagName", value: EntityTokenType.TagName },
     Identifier: { name: "Identifier", value: EntityTokenType.Identifier },
+    TestcaseName: { name: "TestcaseName", value: EntityTokenType.TestcaseName },
+    TestsuiteName: { name: "TestsuiteName", value: EntityTokenType.TestsuiteName },
 
     StyleName: { name: "StyleName", value: EntityTokenType.StyleName },
     TransformName: { name: "TransformName", value: EntityTokenType.TransformName },
@@ -845,6 +851,11 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     FunctionDecorator: { name: "FunctionDecorator", value: MetaTokenType.FunctionDecorator },
     FunctionCall: { name: "FunctionCall", value: MetaTokenType.FunctionCall },
     FunctionCallGeneric: { name: "FunctionCallGeneric", value: MetaTokenType.FunctionCallGeneric },
+    TestBlock: { name: "TestBlock", value: MetaTokenType.TestBlock },
+    TestcaseStatement: { name: "TestcaseStatement", value: MetaTokenType.TestcaseStatement },
+    TestcaseParameters: { name: "TestcaseParameters", value: MetaTokenType.TestcaseParameters },
+    TestsuiteStatement: { name: "TestsuiteStatement", value: MetaTokenType.TestsuiteStatement },
+    TestsuiteParameters: { name: "TestsuiteParameters", value: MetaTokenType.TestsuiteParameters },
 
     Fstring: { name: "Fstring", value: MetaTokenType.Fstring },
     InterpolateFlags: { name: "InterpolateFlags", value: MetaTokenType.InterpolateFlags },

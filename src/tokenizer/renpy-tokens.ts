@@ -124,6 +124,12 @@ export const enum KeywordTokenType {
     On,
     Function,
 
+    // Test keywords
+    Test,
+    OtherTest,
+    Testcase,
+    Testsuite,
+
     // Python keywords
     None,
     True,
@@ -170,6 +176,10 @@ export const enum EntityTokenType {
     // ATL entities
     EventName,
     PropertyName,
+
+    // Test entities
+    TestcaseName,
+    TestsuiteName,
 }
 
 export const enum LiteralTokenType {
@@ -428,6 +438,12 @@ export const enum MetaTokenType {
     ATLContainsStatement,
     TransformStatement,
     TransformParameters,
+
+    TestBlock,
+    TestcaseStatement,
+    TestcaseParameters,
+    TestsuiteStatement,
+    TestsuiteParameters,
 
     MemberAccess,
     ItemAccess,

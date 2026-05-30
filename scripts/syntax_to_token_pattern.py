@@ -247,6 +247,9 @@ def convert_token_type_split(name: str) -> str:
             else:
                 return "EntityTokenType.FunctionName"
 
+        elif get_part(1) == "constant" and get_part(2) == "property-name":
+            return "EntityTokenType.PropertyName"
+
         elif get_part(1) == "other":
             if get_part(2) == "match":
                 if get_part(3) == "any":
@@ -303,6 +306,9 @@ def convert_token_type_split(name: str) -> str:
                     return "MetaTokenType.ControlFlowKeyword"
                 else:
                     return "KeywordTokenType." + titleCase(get_part(3))
+
+            elif get_part(2) == "test":
+                return "KeywordTokenType.Test"
 
             elif get_part(2) == "import":
                 return "KeywordTokenType.Import"
@@ -489,7 +495,9 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
                 language = source.split(".")[-1]
                 language_accessor = titleCase(language) + "Patterns."
 
-                if reference == None:
+                if language == "python" and reference == "python-block-tester":
+                    include = "RenpyPatterns.pythonBlockTester"
+                elif reference == None:
                     include = language_accessor + language
                 else:
                     include = language_accessor + camelCase(reference)
@@ -602,12 +610,17 @@ def generate_token_patterns():
     atl_state = GeneratorState()
     screen_state = GeneratorState()
     style_state = GeneratorState()
+    test_state = GeneratorState()
     python_state = GeneratorState()
+
+    generated_dir = ROOT / "src" / "tokenizer" / "generated"
+    generated_dir.mkdir(parents=True, exist_ok=True)
 
     generate_file(renpy_state, "./syntaxes/renpy.tmLanguage.json", "src/tokenizer/generated/renpy-token-patterns.g.ts")
     generate_file(atl_state, "./syntaxes/renpy.atl.tmLanguage.json", "src/tokenizer/generated/atl-token-patterns.g.ts")
     generate_file(screen_state, "./syntaxes/renpy.screen.tmLanguage.json", "src/tokenizer/generated/screen-token-patterns.g.ts")
     generate_file(style_state, "./syntaxes/renpy.style.tmLanguage.json", "src/tokenizer/generated/style-token-patterns.g.ts")
+    generate_file(test_state, "./syntaxes/renpy.test.tmLanguage.json", "src/tokenizer/generated/test-token-patterns.g.ts")
     generate_file(python_state, "./syntaxes/renpy.python.tmLanguage.json", "src/tokenizer/generated/python-token-patterns.g.ts")
 
     # Write the typescript entries to a file
@@ -620,7 +633,16 @@ def generate_token_patterns():
         contents += "\n"
 
         # Add all source import from all states, but only the unique ones
-        source_imports = list(dict.fromkeys(renpy_state.source_imports + atl_state.source_imports + screen_state.source_imports + style_state.source_imports + python_state.source_imports))
+        source_imports = list(
+            dict.fromkeys(
+                renpy_state.source_imports
+                + atl_state.source_imports
+                + screen_state.source_imports
+                + style_state.source_imports
+                + test_state.source_imports
+                + python_state.source_imports
+                )
+            )
 
         for source_import in source_imports:
             contents += f"import * as {titleCase(source_import)}Patterns from \"./{source_import}-token-patterns.g\";\n"
@@ -638,6 +660,7 @@ def generate_token_patterns():
         contents += add_entries(atl_state.external_pattern_include_entries, "AtlPatterns")
         contents += add_entries(screen_state.external_pattern_include_entries, "ScreenPatterns")
         contents += add_entries(style_state.external_pattern_include_entries, "StylePatterns")
+        contents += add_entries(test_state.external_pattern_include_entries, "TestPatterns")
         contents += add_entries(python_state.external_pattern_include_entries, "PythonPatterns")
 
         exports: list[str] = []

@@ -119,7 +119,7 @@ function refreshDiagnostics(doc: TextDocument, diagnosticCollection: DiagnosticC
 
     //Filenames must begin with a letter or number,
     //and may not begin with "00", as Ren'Py uses such files for its own purposes.
-    const ignoreThisFilename: string = !!doc.lineAt(0).text.match(rxIgnoreThisFilename);
+    const ignoreThisFilename: boolean = !!doc.lineAt(0).text.match(rxIgnoreThisFilename);
     const checkFilenames: string = config.warnOnInvalidFilenameIssues;
     if (checkFilenames.toLowerCase() !== "disabled" && !ignoreThisFilename) {
         let severity = DiagnosticSeverity.Error;

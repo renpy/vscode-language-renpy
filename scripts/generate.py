@@ -67,6 +67,7 @@ def convert_file(filename: pathlib.Path):
         pass
 
     destination.write_text(output)
+    return True
 
 
 def main():
@@ -76,7 +77,8 @@ def main():
     generated = False
 
     for filename in ROOT.glob("syntaxes/*.tmLanguage.yaml"):
-        generated = generated or convert_file(filename)
+        file_changed = convert_file(filename)
+        generated = generated or file_changed
 
     print("Generated .tmLanguage.json files from .tmLanguage.yaml files.")
 

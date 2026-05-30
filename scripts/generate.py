@@ -67,6 +67,7 @@ def convert_file(filename: pathlib.Path):
         pass
 
     destination.write_text(output)
+    return True
 
 
 def main():
@@ -74,6 +75,11 @@ def main():
     ROOT = pathlib.Path(__file__).parent.parent
 
     generated = False
+
+    # Force pattern generation on fresh clones where build artifacts are absent.
+    generated_dir = ROOT / "src" / "tokenizer" / "generated"
+    if not generated_dir.exists() or not any(generated_dir.iterdir()):
+        generated = True
 
     for filename in ROOT.glob("syntaxes/*.tmLanguage.yaml"):
         generated = generated or convert_file(filename)

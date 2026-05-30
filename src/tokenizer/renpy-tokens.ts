@@ -119,6 +119,7 @@ export const enum KeywordTokenType {
     Circles,
     Clockwise,
     Counterclockwise,
+    Knot,
     Event,
     On,
     Function,

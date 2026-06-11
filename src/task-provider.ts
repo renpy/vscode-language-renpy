@@ -3,6 +3,7 @@ import * as vscode from "vscode";
 import { getWorkspaceFolder } from "src/utilities";
 
 import { Configuration } from "./configuration";
+import { buildRenpySpawnConfiguration } from "./renpy-command";
 
 interface RenpyTaskDefinition extends vscode.TaskDefinition {
     command: string;
@@ -44,12 +45,17 @@ export class RenpyTaskProvider implements vscode.TaskProvider {
             args.push(...definition.args);
         }
 
+        const spawnConfig = buildRenpySpawnConfiguration(Configuration.getRenpyExecutablePath(), args);
+        const command = spawnConfig?.command ?? Configuration.getRenpyExecutablePath();
+        const finalArgs = spawnConfig?.args ?? args;
+        const options = spawnConfig?.cwd != null ? { cwd: spawnConfig.cwd } : undefined;
+
         return new vscode.Task(
             definition,
             vscode.TaskScope.Workspace,
             definition.command,
             "renpy",
-            new vscode.ShellExecution(Configuration.getRenpyExecutablePath(), args)
+            new vscode.ShellExecution(command, finalArgs, options)
         );
     }
 }

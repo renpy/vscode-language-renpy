@@ -14,12 +14,14 @@ repository:
     - include: '#before-after-test'
     - name: keyword.control.test.renpy
       match: \b(?<!\.)(?:advance|exit|pass|pause|run|skip|click|drag|move|scroll|keysym|type|assert|screenshot)\b
+    - name: keyword.control.test.renpy
+      match: \b(?<!\.)(?:if|elif|else|until|repeat)\b
     - name: keyword.other.test.renpy
-      match: \b(?<!\.)(?:if|until|eval|screen|id|layer|not|and|or)\b
+      match: \b(?<!\.)(?:eval|label|screen|id|layer|expression|not|and|or)\b
     - name: entity.name.tag.css.style.renpy support.constant.property-name.test.renpy
-      match: \b(?<!\.)(?:time|fast|button|pos|to|steps|amount|raw|timeout|xfail|max_pixel_difference|crop)\b
+      match: \b(?<!\.)(?:fast|button|pos|to|steps|amount|raw|timeout|xfail|max_pixel_difference|crop)\b
     - name: entity.name.tag.css.style.renpy support.constant.property-name.test.renpy
-      match: \b(?<!\.)(?:description|enabled|only|xfail|parameter)\b
+      match: (?<=^[ \t]*)(description|enabled|only|xfail|parameter|depth)\b
     - include: source.renpy#python-statements
     - include: "#test-simple-expression"
     - include: source.renpy#base-patterns

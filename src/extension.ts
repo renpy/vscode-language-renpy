@@ -25,6 +25,7 @@ import {
 
 import { cleanUpPath, getAudioFolder, getImagesFolder, getNavigationJsonFilepath, getWorkspaceFolder, stripWorkspaceFromFile } from "src/utilities";
 
+import { registerTestingController } from "./testing/controller";
 import { registerDebugDecorator, unregisterDebugDecorator } from "./tokenizer/debug-decorator";
 import { Tokenizer } from "./tokenizer/tokenizer";
 import { registerColorProvider } from "./color";
@@ -38,6 +39,7 @@ import { initializeLoggingSystems, logMessage, logToast, updateStatusBar } from 
 import { getStatusBarText, NavigationData } from "./navigation-data";
 import { registerSymbolProvider } from "./outline";
 import { registerReferencesProvider } from "./references";
+import { buildRenpySpawnConfiguration, isValidExecutable } from "./renpy-command";
 import { registerSemanticTokensProvider } from "./semantics";
 import { registerSignatureProvider } from "./signature";
 import { RenpyTaskProvider } from "./task-provider";
@@ -298,6 +300,9 @@ export async function activate(context: ExtensionContext): Promise<void> {
     const taskProvider = new RenpyTaskProvider();
     context.subscriptions.push(tasks.registerTaskProvider("renpy", taskProvider));
 
+    // Register Ren'Py Test Explorer controller.
+    registerTestingController(context);
+
     logMessage(LogLevel.Info, "Ren'Py extension activated!");
 }
 
@@ -332,12 +337,6 @@ export function getKeywordPrefix(document: TextDocument, position: Position, ran
     return;
 }
 
-export function isValidExecutable(renpyExecutableLocation: string): boolean {
-    if (!renpyExecutableLocation || renpyExecutableLocation === "") {
-        return false;
-    }
-    return fs.existsSync(renpyExecutableLocation);
-}
 // Attempts to run renpy executable through console commands.
 export function RunWorkspaceFolder(): boolean {
     const childProcess = ExecuteRunpyRun();
@@ -368,38 +367,37 @@ export function RunWorkspaceFolder(): boolean {
 export function ExecuteRunpyRun(): cp.ChildProcessWithoutNullStreams | null {
     const rpyPath = Configuration.getRenpyExecutablePath();
 
-    if (!isValidExecutable(rpyPath)) {
+    const workFolder = getWorkspaceFolder();
+    const spawnConfig = buildRenpySpawnConfiguration(rpyPath, [`${workFolder}`, "run"]);
+    if (spawnConfig == null || !isValidExecutable(rpyPath)) {
         return null;
     }
 
-    const renpyPath = cleanUpPath(Uri.file(rpyPath).path);
-    const cwd = renpyPath.substring(0, renpyPath.lastIndexOf("/"));
-    const workFolder = getWorkspaceFolder();
-    const args: string[] = [`${workFolder}`, "run"];
-    return cp.spawn(rpyPath, args, {
-        cwd: `${cwd}`,
+    return cp.spawn(spawnConfig.command, spawnConfig.args, {
+        cwd: spawnConfig.cwd,
         env: { PATH: process.env.PATH },
     });
 }
 
-function ExecuteRenpyCompile(): boolean {
-    const rpyPath = Configuration.getRenpyExecutablePath();
+export function ExecuteRenpyCompile(rpyPath: string = ""): boolean {
+    if (!rpyPath) {
+        rpyPath = Configuration.getRenpyExecutablePath();
+    }
     if (isValidExecutable(rpyPath)) {
-        const renpyPath = cleanUpPath(Uri.file(rpyPath).path);
-        const cwd = renpyPath.substring(0, renpyPath.lastIndexOf("/"));
-
         let wf = getWorkspaceFolder();
         if (wf.endsWith("/game")) {
             wf = wf.substring(0, wf.length - 5);
         }
         const navData = getNavigationJsonFilepath();
-        //const args = `${wf} compile --json-dump ${navData}`;
-        const args: string[] = [`${wf}`, "compile", "--json-dump", `${navData}`];
+        const spawnConfig = buildRenpySpawnConfiguration(rpyPath, [`${wf}`, "compile", "--json-dump", `${navData}`]);
+        if (spawnConfig == null) {
+            return false;
+        }
         try {
             NavigationData.isCompiling = true;
             updateStatusBar("$(sync~spin) Compiling Ren'Py navigation data...");
-            const result = cp.spawnSync(rpyPath, args, {
-                cwd: `${cwd}`,
+            const result = cp.spawnSync(spawnConfig.command, spawnConfig.args, {
+                cwd: spawnConfig.cwd,
                 env: { PATH: process.env.PATH },
                 encoding: "utf-8",
                 windowsHide: true,

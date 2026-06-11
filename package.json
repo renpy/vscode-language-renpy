@@ -37,7 +37,8 @@
   "activationEvents": [
     "workspaceContains:**/*.rpy",
     "workspaceContains:**/_ren.py",
-    "onDebugResolve:renpy"
+    "onDebugResolve:renpy",
+    "onStartupFinished"
   ],
   "main": "./dist/extension",
   "browser": "./dist/extension.js",
@@ -311,7 +312,65 @@
           "renpy.renpyExecutableLocation": {
             "type": "string",
             "default": "",
-            "description": "Location of Ren'Py installation. Should be .exe on Windows and .sh on Mac/Linux."
+            "description": "Ren'Py launch command. You can provide an executable path (renpy.exe on Windows, renpy.sh on Linux/macOS), or an executable plus startup args (for example: /path/lib/py3-windows-x86_64/python.exe renpy.py)."
+          },
+          "renpy.testing.renpyExecutableOverride": {
+            "type": "string",
+            "default": "",
+            "description": "Override Ren'Py launch command used for test runs. Supports executable plus startup args. If empty, 'renpy.renpyExecutableLocation' is used."
+          },
+          "renpy.testing.reporters": {
+            "type": "string",
+            "default": "console",
+            "description": "Comma-separated reporter list passed to --reporter for test runs. Use 'console' by default. `jsonl` is always included to allow the Test Explorer integration to function."
+          },
+          "renpy.testing.jsonlOutputPath": {
+            "type": "string",
+            "default": "",
+            "description": "Directory for per-run JSONL stream output files. Defaults to the system temp directory."
+          },
+          "renpy.testing.jsonlPollInterval": {
+            "type": "number",
+            "default": 500,
+            "minimum": 100,
+            "maximum": 5000,
+            "description": "Polling interval in milliseconds for reading JSONL stream events during test runs."
+          },
+          "renpy.testing.jsonlBatchSize": {
+            "type": "number",
+            "default": 50,
+            "minimum": 1,
+            "maximum": 500,
+            "description": "Number of test result events per batch emitted by the JSONL stream reporter."
+          },
+          "renpy.testing.jsonlFlushInterval": {
+            "type": "number",
+            "default": 1000,
+            "minimum": 100,
+            "maximum": 10000,
+            "description": "Reporter flush interval in milliseconds for JSONL stream output."
+          },
+          "renpy.testing.discoveryRefreshMode": {
+            "type": "string",
+            "default": "cache-first",
+            "enum": ["always-refresh", "cache-first"],
+            "enumDescriptions": [
+              "Always run Ren'Py compile/dump before discovery to get fresh metadata.",
+              "Use existing navigation.json if present and fresh; refresh only when stale."
+            ],
+            "description": "Controls when navigation.json is refreshed during test discovery."
+          },
+          "renpy.testing.jsonlStalledTimeout": {
+            "type": "number",
+            "default": 5000,
+            "minimum": 1000,
+            "maximum": 60000,
+            "description": "Stalled-run timeout in milliseconds. If no event is received within this period while the process is running, the run is marked as an infrastructure error."
+          },
+          "renpy.testing.showWindow": {
+            "type": "boolean",
+            "default": false,
+            "description": "Shows the game window during test runs. If false, the window will be hidden to allow tests to run without user interaction."
           }
         }
       }

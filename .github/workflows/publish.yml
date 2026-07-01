@@ -3,6 +3,17 @@
 name: Publish Extension
 
 on:
+  workflow_dispatch:
+    inputs:
+      registry:
+        description: "Registry to publish to"
+        required: true
+        default: "open-vsx"
+        type: choice
+        options:
+          - open-vsx
+          - marketplace
+          - both
   push:
     tags:
       - "v*"
@@ -13,6 +24,8 @@ env:
   IS_PRE_RELEASE: ${{ endsWith(github.ref_name, 'pre-release') }}
   VS_MARKETPLACE_TOKEN: ${{ secrets.VS_MARKETPLACE_TOKEN }}
   OVSX_TOKEN: ${{ secrets.OVSX_TOKEN }}
+  PUBLISH_MARKETPLACE: ${{ github.event_name == 'push' || github.event.inputs.registry == 'marketplace' || github.event.inputs.registry == 'both' }}
+  PUBLISH_OPEN_VSX: ${{ github.event_name == 'push' || github.event.inputs.registry == 'open-vsx' || github.event.inputs.registry == 'both' }}
 
 jobs:
   publish:
@@ -26,30 +39,40 @@ jobs:
         with:
           node_version: ${{ env.NODE_VERSION }}
 
+      - name: Package extension
+        id: packageExtension
+        uses: HaaLeo/publish-vscode-extension@v2
+        with:
+          pat: placeholder
+          dryRun: true
+          preRelease: ${{ env.IS_PRE_RELEASE }}
+
       - name: Publish to Visual Studio Marketplace
         id: publishToVSM
-        if: env.VS_MARKETPLACE_TOKEN != ''
+        if: env.PUBLISH_MARKETPLACE == 'true' && env.VS_MARKETPLACE_TOKEN != ''
         uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ env.VS_MARKETPLACE_TOKEN }}
           registryUrl: https://marketplace.visualstudio.com
+          extensionFile: ${{ steps.packageExtension.outputs.vsixPath }}
           preRelease: ${{ env.IS_PRE_RELEASE }}
 
       - name: Publish to Open VSX Registry
         id: publishToOVSX
-        if: env.OVSX_TOKEN != ''
+        if: env.PUBLISH_OPEN_VSX == 'true' && env.OVSX_TOKEN != ''
         uses: HaaLeo/publish-vscode-extension@v2
         with:
           pat: ${{ env.OVSX_TOKEN }}
           registryUrl: https://open-vsx.org
-          extensionFile: ${{ steps.publishToVSM.outputs.vsixPath }}
+          extensionFile: ${{ steps.packageExtension.outputs.vsixPath }}
           preRelease: ${{ env.IS_PRE_RELEASE }}
 
       - name: Create draft GitHub Release
+        if: github.event_name == 'push'
         uses: ncipollo/release-action@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           prerelease: ${{ env.IS_PRE_RELEASE }}
           generateReleaseNotes: true
-          artifacts: "${{ steps.publishToVSM.outputs.vsixPath }}"
+          artifacts: "${{ steps.packageExtension.outputs.vsixPath }}"

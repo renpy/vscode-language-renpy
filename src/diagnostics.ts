@@ -64,7 +64,7 @@ const rxObsoleteCheck =
 const rxVariableCheck = /^\s*(default|define)\s+([^a-zA-Z\s_][a-zA-Z0-9_]*)\s+=/g;
 const rxReservedVariableCheck = /\s*(default|define)\s+(_[a-zA-Z0-9]*)\s+=/g;
 const rxPersistentDefines = /^\s*(default|define)\s+persistent\.([a-zA-Z]+[a-zA-Z0-9_]*)\s*=\s*(.*$)/g;
-const rxPersistentCheck = /\s+persistent\.(\w+)[^a-zA-Z]/g;
+const rxPersistentCheck = /\s+persistent\.(\w+)(?=[\s=]|$)/g;
 const rxStoreCheck = /\s+store\.(\w+)[^a-zA-Z_]?/g;
 const rxTabCheck = /^(\t+)/g;
 const rsComparisonCheck = /\s+(if|while)\s+(\w+)\s*(=)\s*(\w+)\s*/g;
@@ -119,7 +119,7 @@ function refreshDiagnostics(doc: TextDocument, diagnosticCollection: DiagnosticC
 
     //Filenames must begin with a letter or number,
     //and may not begin with "00", as Ren'Py uses such files for its own purposes.
-    const ignoreThisFilename: string = !!doc.lineAt(0).text.match(rxIgnoreThisFilename);
+    const ignoreThisFilename: boolean = !!doc.lineAt(0).text.match(rxIgnoreThisFilename);
     const checkFilenames: string = config.warnOnInvalidFilenameIssues;
     if (checkFilenames.toLowerCase() !== "disabled" && !ignoreThisFilename) {
         let severity = DiagnosticSeverity.Error;

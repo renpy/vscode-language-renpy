@@ -1,4 +1,4 @@
-This directory contians scripts used to help maintain the project.
+This directory contains scripts used to help maintain the project.
 
 
 update_from_renpy.sh

@@ -3,10 +3,11 @@ import json
 import pathlib
 import re
 from typing import Any
-
 from dataclasses import dataclass, field
 
+
 ROOT = pathlib.Path(__file__).parent.parent
+
 
 @dataclass
 class GeneratorState:
@@ -16,15 +17,19 @@ class GeneratorState:
     external_pattern_include_entries: list[str] = field(default_factory=list[str])
     source_imports: list[str] = field(default_factory=list[str])
 
+
 def get_indent(indent: int) -> str:
     return " " * indent
+
 
 def camelCase(st: str):
     output = ''.join(x for x in st.title() if x.isalnum())
     return output[0].lower() + output[1:]
 
+
 def titleCase(st: str):
     return ''.join(x for x in st.title() if x.isalnum())
+
 
 def convert_token_type_split(name: str) -> str:
     token_parts = name.split(".")
@@ -247,6 +252,9 @@ def convert_token_type_split(name: str) -> str:
             else:
                 return "EntityTokenType.FunctionName"
 
+        elif get_part(1) == "constant" and get_part(2) == "property-name":
+            return "EntityTokenType.PropertyName"
+
         elif get_part(1) == "other":
             if get_part(2) == "match":
                 if get_part(3) == "any":
@@ -303,6 +311,8 @@ def convert_token_type_split(name: str) -> str:
                     return "MetaTokenType.ControlFlowKeyword"
                 else:
                     return "KeywordTokenType." + titleCase(get_part(3))
+            elif get_part(2) == "test":
+                return "KeywordTokenType.Test"
 
             elif get_part(2) == "import":
                 return "KeywordTokenType.Import"
@@ -363,6 +373,7 @@ def convert_token_type_split(name: str) -> str:
 
     return "Error" + " /*Error: Could not convert token type*/"
 
+
 def get_token_type(state: GeneratorState, name: str) -> str:
     token = name.split(" ")[-1] # Multi-tokens are not yet supported. For now assume the last token is the important one
     token = convert_token_type_split(token)
@@ -372,6 +383,7 @@ def get_token_type(state: GeneratorState, name: str) -> str:
         state.used_token_types.append(import_token_type)
 
     return token.replace("Atl", "ATL") # Upper case ATL
+
 
 def get_match_str(match: str, captures: dict[str, Any] | None) -> tuple[str, bool]:
     match = match.replace("/", "\\/") # Escape forward slashes
@@ -394,6 +406,7 @@ def get_match_str(match: str, captures: dict[str, Any] | None) -> tuple[str, boo
 
     return (f"/{match}/{dFlag}g{iFlag}{mFlag}{uFlag}", hasBackrefs)
 
+
 def transform_captures(state: GeneratorState, indent: int, captures: dict[str, Any], access_str: str) -> str:
     typescript_entry = "{\n"
     indent += 4
@@ -405,6 +418,7 @@ def transform_captures(state: GeneratorState, indent: int, captures: dict[str, A
     indent -= 4
     typescript_entry += f"{get_indent(indent)}}},\n"
     return typescript_entry
+
 
 def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any], access_str: str) -> str:
     typescript_entry = "{\n"
@@ -489,7 +503,9 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
                 language = source.split(".")[-1]
                 language_accessor = titleCase(language) + "Patterns."
 
-                if reference == None:
+                if language == "python" and reference == "python-block-tester":
+                    include = "RenpyPatterns.pythonBlockTester"
+                elif reference == None:
                     include = language_accessor + language
                 else:
                     include = language_accessor + camelCase(reference)
@@ -548,6 +564,7 @@ def transform_pattern(state: GeneratorState, indent: int, value: dict[str, Any],
     typescript_entry += f"{get_indent(indent)}}}"
     return typescript_entry
 
+
 def generate_file(state: GeneratorState, source_file: str, output_file: str):
     # load the input data from the file
     with open(ROOT / source_file, "r") as file:
@@ -597,18 +614,23 @@ def generate_file(state: GeneratorState, source_file: str, output_file: str):
 
         file.write(contents)
 
+
 def generate_token_patterns():
     renpy_state = GeneratorState()
     atl_state = GeneratorState()
     screen_state = GeneratorState()
     style_state = GeneratorState()
     python_state = GeneratorState()
+    test_state = GeneratorState()
 
-    generate_file(renpy_state, "./syntaxes/renpy.tmLanguage.json", "src/tokenizer/generated/renpy-token-patterns.g.ts")
-    generate_file(atl_state, "./syntaxes/renpy.atl.tmLanguage.json", "src/tokenizer/generated/atl-token-patterns.g.ts")
-    generate_file(screen_state, "./syntaxes/renpy.screen.tmLanguage.json", "src/tokenizer/generated/screen-token-patterns.g.ts")
-    generate_file(style_state, "./syntaxes/renpy.style.tmLanguage.json", "src/tokenizer/generated/style-token-patterns.g.ts")
-    generate_file(python_state, "./syntaxes/renpy.python.tmLanguage.json", "src/tokenizer/generated/python-token-patterns.g.ts")
+    pathlib.Path(ROOT, "src", "tokenizer", "generated").mkdir(parents = True, exist_ok = True)
+
+    generate_file(renpy_state, "syntaxes/renpy.tmLanguage.json", "src/tokenizer/generated/renpy-token-patterns.g.ts")
+    generate_file(atl_state, "syntaxes/renpy.atl.tmLanguage.json", "src/tokenizer/generated/atl-token-patterns.g.ts")
+    generate_file(screen_state, "syntaxes/renpy.screen.tmLanguage.json", "src/tokenizer/generated/screen-token-patterns.g.ts")
+    generate_file(style_state, "syntaxes/renpy.style.tmLanguage.json", "src/tokenizer/generated/style-token-patterns.g.ts")
+    generate_file(python_state, "syntaxes/renpy.python.tmLanguage.json", "src/tokenizer/generated/python-token-patterns.g.ts")
+    generate_file(test_state, "syntaxes/renpy.test.tmLanguage.json", "src/tokenizer/generated/test-token-patterns.g.ts")
 
     # Write the typescript entries to a file
     output_file = "src/tokenizer/generated/index.ts"
@@ -620,7 +642,7 @@ def generate_token_patterns():
         contents += "\n"
 
         # Add all source import from all states, but only the unique ones
-        source_imports = list(dict.fromkeys(renpy_state.source_imports + atl_state.source_imports + screen_state.source_imports + style_state.source_imports + python_state.source_imports))
+        source_imports = list(dict.fromkeys(renpy_state.source_imports + atl_state.source_imports + screen_state.source_imports + style_state.source_imports + python_state.source_imports + test_state.source_imports))
 
         for source_import in source_imports:
             contents += f"import * as {titleCase(source_import)}Patterns from \"./{source_import}-token-patterns.g\";\n"
@@ -639,6 +661,7 @@ def generate_token_patterns():
         contents += add_entries(screen_state.external_pattern_include_entries, "ScreenPatterns")
         contents += add_entries(style_state.external_pattern_include_entries, "StylePatterns")
         contents += add_entries(python_state.external_pattern_include_entries, "PythonPatterns")
+        contents += add_entries(test_state.external_pattern_include_entries, "TestPatterns")
 
         exports: list[str] = []
         for source_import in source_imports:
@@ -647,3 +670,8 @@ def generate_token_patterns():
         contents += f"\n\nexport {{ {', '.join(exports)} }};"
 
         file.write(contents)
+
+
+# Debug singular generation
+if __name__ == "__main__":
+    generate_token_patterns()

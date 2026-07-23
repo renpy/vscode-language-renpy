@@ -1,10 +1,9 @@
 import pathlib
 import yaml
 import json
-
 import syntax_to_token_pattern
-
 import keywords
+
 
 def screen_automatic_properties():
     """
@@ -41,6 +40,7 @@ def apply_keywords(o):
 
     return o
 
+
 def convert_file(filename: pathlib.Path):
     """
     Convert a .tmLanguage.yaml file to .tmLanguage.json
@@ -68,22 +68,20 @@ def convert_file(filename: pathlib.Path):
 
     destination.write_text(output)
 
+    return True
+
 
 def main():
 
     ROOT = pathlib.Path(__file__).parent.parent
 
-    generated = False
-
     for filename in ROOT.glob("syntaxes/*.tmLanguage.yaml"):
-        generated = generated or convert_file(filename)
+        convert_file(filename)
 
     print("Generated .tmLanguage.json files from .tmLanguage.yaml files.")
 
-    if generated:
-        syntax_to_token_pattern.generate_token_patterns()
-        print("Generated token patterns.")
-
+    syntax_to_token_pattern.generate_token_patterns()
+    print("Generated token patterns.")
 
 
 if __name__ == "__main__":

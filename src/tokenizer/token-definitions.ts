@@ -876,6 +876,19 @@ const tokenTypeDefinitions: EnumToString<TypeOfTokenType> = {
     Named: { name: "Named", value: MetaTokenType.Named },
     ModifierFlagStorageType: { name: "ModifierFlagStorageType", value: MetaTokenType.ModifierFlagStorageType },
     Metaclass: { name: "Metaclass", value: MetaTokenType.Metaclass },
+
+    Knot: { name: "Knot", value: KeywordTokenType.Knot },
+    Test: { name: "Test", value: KeywordTokenType.Test },
+    OtherTest: { name: "OtherTest", value: KeywordTokenType.OtherTest },
+    Testcase: { name: "Testcase", value: KeywordTokenType.Testcase },
+    Testsuite: { name: "Testsuite", value: KeywordTokenType.Testsuite },
+    TestBlock: { name: "TestBlock", value: MetaTokenType.TestBlock },
+    TestcaseStatement: { name: "TestcaseStatement", value: MetaTokenType.TestcaseStatement },
+    TestcaseParameters: { name: "TestcaseParameters", value: MetaTokenType.TestcaseParameters },
+    TestsuiteStatement: { name: "TestsuiteStatement", value: MetaTokenType.TestsuiteStatement },
+    TestsuiteParameters: { name: "TestsuiteParameters", value: MetaTokenType.TestsuiteParameters },
+    TestcaseName: { name: "TestcaseName", value: EntityTokenType.TestcaseName },
+    TestsuiteName: { name: "TestsuiteName", value: EntityTokenType.TestsuiteName },
 };
 
 export const tokenTypeToStringMap = Object.fromEntries(Object.entries(tokenTypeDefinitions).map(([, v]) => [v.value, v.name]));

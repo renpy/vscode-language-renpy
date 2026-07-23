@@ -145,6 +145,14 @@ export const enum KeywordTokenType {
     Break,
     Try,
     Finally,
+
+    // Knot
+    Knot,
+    // Test keywords
+    Test,
+    OtherTest,
+    Testcase,
+    Testsuite,
 }
 
 export const enum EntityTokenType {
@@ -169,6 +177,10 @@ export const enum EntityTokenType {
     // ATL entities
     EventName,
     PropertyName,
+
+    // Test entities
+    TestcaseName,
+    TestsuiteName,
 }
 
 export const enum LiteralTokenType {
@@ -480,7 +492,15 @@ export const enum MetaTokenType {
     CharacterSet,
     Named,
     ModifierFlagStorageType,
+
+    TestBlock,
+    TestcaseStatement,
+    TestcaseParameters,
+    TestsuiteStatement,
+    TestsuiteParameters,
 }
+
+export const enum Error {}
 
 export type TypeOfTokenType = typeof KeywordTokenType &
     typeof EntityTokenType &

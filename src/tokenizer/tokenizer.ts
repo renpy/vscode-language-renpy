@@ -1,3 +1,4 @@
+// // @ts-nocheck
 import { assert } from "console";
 import { performance } from "perf_hooks";
 import { LogLevel, Range as VSRange, TextDocument, Uri, workspace } from "vscode";
@@ -8,6 +9,7 @@ import { escapeRegExpCharacters } from "src/utilities";
 import { isShippingBuild } from "../extension";
 import { LogCategory, logCatMessage } from "../logger";
 
+// @ts-ignore -- generated at build time by scripts/syntax_to_token_pattern.py
 import { RenpyPatterns } from "./generated";
 import { isMatchPattern, isRangePattern, isRepoPattern, Range, Token, TokenPosition, TokenTree, TreeNode } from "./token-definitions";
 import { TokenCapturePattern, TokenMatchPattern, TokenPatternCapture, TokenRangePattern, TokenRepoPattern } from "./token-pattern-types";
@@ -344,11 +346,11 @@ class DocumentTokenizer {
         }
 
         for (let i = 1; i < match.indices!.length; i++) {
-            if (match.indices![i] === undefined) {
+            const indicies = match.indices[i];
+            if (!indicies) {
                 continue; // If the object at i is undefined, the capture is empty
             }
-
-            const [startPos, endPos] = match.indices![i];
+            const [startPos, endPos] = indicies;
 
             if (captures[i] === undefined) {
                 if (!isShippingBuild() && !RUN_BENCHMARKS) {

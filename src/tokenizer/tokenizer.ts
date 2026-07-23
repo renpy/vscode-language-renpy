@@ -1,4 +1,3 @@
-// // @ts-nocheck
 import { assert } from "console";
 import { performance } from "perf_hooks";
 import { LogLevel, Range as VSRange, TextDocument, Uri, workspace } from "vscode";

@@ -415,7 +415,8 @@
     "vscode-test": "^1.6.1",
     "webpack": "^5.101.2",
     "webpack-cli": "^6.0.1",
-    "webpack-shell-plugin-next": "^2.3.3"
+    "webpack-shell-plugin-next": "^2.3.3",
+    "@manzt/uv": "^0.6.14"
   },
   "files": [
     "dist/*",

@@ -15,7 +15,7 @@ import {
 import { Displayable } from "./displayable";
 import { getDefinitionFromFile } from "./hover";
 import { getCurrentContext } from "./navigation";
-import { NavigationData } from "./navigation-data";
+import { getDefaultStoreVariables,NavigationData } from "./navigation-data";
 
 export function registerCompletionProvider() {
     return languages.registerCompletionItemProvider(
@@ -59,6 +59,16 @@ export function getCompletionList(document: TextDocument, position: Position, co
             return;
         }
 
+        if (linePrefix.trim().startsWith("$")) {
+            // If user typed '$ ' or '$ myVar', get the default store variables
+            const defaultVars = getDefaultStoreVariables();
+
+            // If there is a dot after '$', e.g., '$ myVar.' or '$ store.', let standard logic handle it
+            const lastWord = linePrefix.trim().split(/\s+/).pop() || "";
+            if (!lastWord.includes(".")) {
+                return defaultVars;
+            }
+        }
         if (linePrefix.endsWith("renpy.")) {
             return NavigationData.renpyAutoComplete;
         } else if (linePrefix.endsWith("config.")) {
@@ -111,12 +121,14 @@ export function getAutoCompleteList(prefix: string, parent = "", context = ""): 
     const channels = getAudioChannels();
     const characters = Object.keys(NavigationData.gameObjects["characters"]);
 
+    // Audio and Music namespaces
     if (prefix === "renpy.music." || prefix === "renpy.audio.") {
         const cleanPrefix = prefix.replace("renpy.", "").trim();
         const list = NavigationData.renpyAutoComplete.filter((item) => {
             if (typeof item.label === "string") {
-                item.label.startsWith(cleanPrefix);
+                return item.label.startsWith(cleanPrefix);
             }
+            return false;
         });
         for (const item of list) {
             if (typeof item.label === "string") {
@@ -124,23 +136,24 @@ export function getAutoCompleteList(prefix: string, parent = "", context = ""): 
             }
         }
         return newList;
-    } else if (prefix === "persistent") {
-        // get list of persistent definitions
+    }
+
+    //  Persistent store variables
+    else if (prefix === "persistent") {
         const gameObjects = NavigationData.data.location["persistent"];
         for (const key in gameObjects) {
             newList.push(new CompletionItem(key, CompletionItemKind.Value));
         }
         return newList;
-    } else if (prefix === "store") {
-        // get list of default variables
-        const defaults = NavigationData.gameObjects["define_types"];
-        const filtered = Object.keys(defaults).filter((key) => defaults[key].define === "default");
-        for (const key of filtered) {
-            newList.push(new CompletionItem(key, CompletionItemKind.Variable));
-        }
-        return newList;
-    } else if (channels.includes(prefix)) {
-        // get list of audio definitions
+    }
+
+    // Ren'Py default store variables
+    else if (prefix === "store") {
+        return getDefaultStoreVariables();
+    }
+
+    // Audio channels (e.g. play music ..., stop sound)
+    else if (channels.includes(prefix)) {
         if (parent && parent === "stop") {
             newList.push(new CompletionItem("fadeout", CompletionItemKind.Keyword));
         } else {
@@ -151,31 +164,70 @@ export function getAutoCompleteList(prefix: string, parent = "", context = ""): 
             }
         }
         return newList;
-    } else if (NavigationData.isClass(prefix)) {
+    }
+
+    // Direct Class references (e.g., MyClass.)
+    else if (NavigationData.isClass(prefix)) {
         const className = NavigationData.isClass(prefix);
         if (className) {
-            return NavigationData.getClassAutoComplete(className);
+            const classMembers = getClassMemberCompletions(className);
+            return classMembers.length > 0 ? classMembers : NavigationData.getClassAutoComplete(className);
         }
-    } else if (isNamedStore(prefix)) {
-        return getNamedStoreAutoComplete(prefix);
-    } else if (isCallableContainer(prefix)) {
+    }
+
+    // Custom sub-stores (e.g. rentale.)
+    else if (isNamedStore(prefix)) {
+        return getNamedStoreAutoComplete(prefix); // This is currently borked and thus will have to be overridden or just the general detection
+    }
+
+    // Callable containers (Ren'Py internal modules/functions)
+    else if (isCallableContainer(prefix)) {
         return getCallableAutoComplete(prefix);
-    } else if (isInternalClass(prefix)) {
+    }
+
+    // Internal Ren'Py classes
+    else if (isInternalClass(prefix)) {
         return getInternalClassAutoComplete(prefix);
-    } else if (context === "label" && characters.includes(parent)) {
-        // get attributes for character if we're in the context of a label
+    }
+
+    // Character attributes in dialogue/label statements
+    else if (context === "label" && characters.includes(parent)) {
         const category = NavigationData.gameObjects["attributes"][parent];
         if (category) {
             for (const key of category) {
                 newList.push(new CompletionItem(key, CompletionItemKind.Value));
             }
         }
-    } else if (isPythonType(prefix)) {
+        return newList;
+    }
+
+    // Defined Python variables and instances
+    else if (isPythonType(prefix)) {
         const defType = NavigationData.gameObjects["define_types"][prefix];
         if (defType) {
+            const rawType = defType.type || defType.baseClass || "";
+            const normalized = normalizeTypeName(rawType);
+
+            // Check if it's a standard built-in Python type (str, list, dict, int, etc.)
+            if (PYTHON_BUILTIN_METHODS[normalized]) {
+                return getBuiltinPythonMethods(normalized);
+            }
+
+            // Check if it's an instance of a user-defined class
+            if (rawType) {
+                const classMembers = getClassMemberCompletions(rawType);
+                if (classMembers.length > 0) {
+                    return classMembers;
+                }
+            }
+
+            // Fallback to legacy keyword search
             return getAutoCompleteKeywords(defType.type, "", "python");
         }
-    } else {
+    }
+
+    // General keyword auto-complete fallback
+    else {
         return getAutoCompleteKeywords(prefix, parent, context);
     }
 
@@ -650,4 +702,151 @@ function isPythonType(keyword: string): boolean {
         }
     }
     return false;
+}
+
+// Complete Built-in Python methods by data type
+// Probably not the correct way but it gives something so it's ok for now
+const PYTHON_BUILTIN_METHODS: Record<string, string[]> = {
+    int: ["as_integer_ratio", "bit_count", "bit_length", "conjugate", "from_bytes", "to_bytes"],
+    float: ["as_integer_ratio", "conjugate", "fromhex", "hex", "is_integer"],
+    str: [
+        "capitalize",
+        "casefold",
+        "center",
+        "count",
+        "encode",
+        "endswith",
+        "expandtabs",
+        "find",
+        "format",
+        "format_map",
+        "index",
+        "isalnum",
+        "isalpha",
+        "isascii",
+        "isdecimal",
+        "isdigit",
+        "isidentifier",
+        "islower",
+        "isnumeric",
+        "isprintable",
+        "isspace",
+        "istitle",
+        "isupper",
+        "join",
+        "ljust",
+        "lower",
+        "lstrip",
+        "maketrans",
+        "partition",
+        "removeprefix",
+        "removesuffix",
+        "replace",
+        "rfind",
+        "rindex",
+        "rjust",
+        "rpartition",
+        "rsplit",
+        "rstrip",
+        "split",
+        "splitlines",
+        "startswith",
+        "strip",
+        "swapcase",
+        "title",
+        "translate",
+        "upper",
+        "zfill",
+    ],
+    list: ["append", "clear", "copy", "count", "extend", "index", "insert", "pop", "remove", "reverse", "sort"],
+    dict: ["clear", "copy", "fromkeys", "get", "items", "keys", "pop", "popitem", "setdefault", "update", "values"],
+    set: [
+        "add",
+        "clear",
+        "copy",
+        "difference",
+        "difference_update",
+        "discard",
+        "intersection",
+        "intersection_update",
+        "isdisjoint",
+        "issubset",
+        "issuperset",
+        "pop",
+        "remove",
+        "symmetric_difference",
+        "symmetric_difference_update",
+        "union",
+        "update",
+    ],
+    tuple: ["count", "index"],
+    NoneType: [],
+    bool: ["as_integer_ratio", "bit_count", "bit_length", "conjugate", "from_bytes", "to_bytes"],
+};
+
+function normalizeTypeName(type: string): string {
+    const lower = type.toLowerCase().trim();
+
+    if (lower === "dictionary") {
+        return "dict";
+    }
+    if (lower === "boolean") {
+        return "bool";
+    }
+    if (lower === "number") {
+        return "int";
+    } // Defaults to int methods
+
+    return lower;
+}
+
+function getBuiltinPythonMethods(type: string): CompletionItem[] {
+    const newList: CompletionItem[] = [];
+    const normalizedType = normalizeTypeName(type);
+    const methods = PYTHON_BUILTIN_METHODS[normalizedType];
+
+    if (methods) {
+        for (const method of methods) {
+            newList.push(new CompletionItem(method, CompletionItemKind.Method));
+        }
+    }
+    return newList;
+}
+
+export function getClassMemberCompletions(className: string): CompletionItem[] {
+    const newList: CompletionItem[] = [];
+    const addedLabels = new Set<string>();
+    const prefix = `${className}.`;
+
+    // Fetch class methods from callables (excluding dunder methods)
+    const callables = NavigationData.data.location?.["callable"];
+    if (callables) {
+        for (const key of Object.keys(callables)) {
+            if (key.startsWith(prefix)) {
+                const methodName = key.substring(prefix.length);
+                if (methodName == "__init__" || methodName == "__call__") {
+                    continue;
+                }
+                if (!addedLabels.has(methodName)) {
+                    addedLabels.add(methodName);
+                    newList.push(new CompletionItem(methodName, CompletionItemKind.Method));
+                }
+            }
+        }
+    }
+
+    // Fetch class fields created via `self` (e.g. self.quantity = 0)
+    const fields = NavigationData.gameObjects?.["fields"]?.[className] || NavigationData.gameObjects?.["fields"]?.[`store.${className}`];
+    if (fields && Array.isArray(fields)) {
+        for (const field of fields) {
+            const fieldName = typeof field === "string" ? field.split(".").pop() : field.keyword?.split(".").pop();
+
+            if (fieldName && !fieldName.startsWith("__") && !addedLabels.has(fieldName)) {
+                addedLabels.add(fieldName);
+                newList.push(new CompletionItem(fieldName, CompletionItemKind.Field));
+            }
+        }
+    }
+
+    return newList;
 }

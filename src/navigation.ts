@@ -45,20 +45,27 @@ export class DataType {
         this.define = define;
         this.baseClass = baseClass;
         this.type = "";
-        if (baseClass === "True" || baseClass === "False") {
-            this.type = "boolean";
-        } else if (!isNaN(+this.baseClass)) {
-            this.type = "number";
-        } else if (baseClass === "_" || baseClass.startsWith('"') || baseClass.startsWith("`") || baseClass.startsWith("'")) {
+
+        const cleanBase = baseClass.replace(/\(.*\)$/, "").trim();
+
+        if (baseClass === "True" || baseClass === "False" || cleanBase === "bool") {
+            this.type = "bool";
+        } else if (!isNaN(+this.baseClass) || cleanBase === "int" || cleanBase === "float") {
+            this.type = "int";
+        } else if (baseClass === "_" || baseClass.startsWith('"') || baseClass.startsWith("`") || baseClass.startsWith("'") || cleanBase === "str") {
             this.type = "str";
-        } else if (baseClass.startsWith("[")) {
+        } else if (baseClass.startsWith("[") || cleanBase === "list") {
             this.type = "list";
-        } else if (baseClass.startsWith("{")) {
-            this.type = "dictionary";
-        } else if (baseClass.startsWith("(") && baseClass.endsWith(")")) {
+        } else if (baseClass.startsWith("{") || cleanBase === "dict") {
+            this.type = "dict";
+        } else if (cleanBase === "set") {
+            this.type = "set";
+        } else if ((baseClass.startsWith("(") && baseClass.endsWith(")")) || cleanBase === "tuple") {
             this.type = "tuple";
         } else if (baseClass === "store") {
             this.type = "store";
+        } else {
+            this.type = cleanBase;
         }
     }
 

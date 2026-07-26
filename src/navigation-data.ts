@@ -1191,3 +1191,50 @@ export function getStatusBarText() {
         return "";
     }
 }
+
+export function getDefaultStoreVariables(): CompletionItem[] {
+    const newList: CompletionItem[] = [];
+    const addedKeys = new Set<string>();
+
+    const namespaces = [
+        { name: "renpy", detail: "Ren'Py methods accessable via python" },
+        { name: "persistent", detail: "Ren'Py Persistent Data" },
+        { name: "config", detail: "Ren'Py Configuration Options" },
+        { name: "gui", detail: "Ren'Py GUI Customization Variables" },
+    ];
+    // Push the default renpy namespaces so users get actual intellisense
+    for (const ns of namespaces) {
+        if (!addedKeys.has(ns.name)) {
+            addedKeys.add(ns.name);
+            const item = new CompletionItem(ns.name, CompletionItemKind.Module);
+            item.detail = ns.detail;
+            newList.push(item);
+        }
+    }
+
+    // Get all variables tracked in define_types (both 'define' and 'default')
+    const defaults = NavigationData.gameObjects["define_types"];
+    if (defaults) {
+        for (const key of Object.keys(defaults)) {
+            // Exclude keys that explicitly belong to sub-stores (contain dots) # Kind of temporary but not really, works for the current approach non the less
+            if (!key.includes(".")) {
+                addedKeys.add(key);
+                newList.push(new CompletionItem(key, CompletionItemKind.Variable));
+            }
+        }
+    }
+
+    // Fallback / supplement with NavigationData.data.location["define"]
+    const defines = NavigationData.data.location["define"];
+    if (defines) {
+        for (const key of Object.keys(defines)) {
+            // Filter out internal/sub-store prefixes like 'audio.' or named stores # Kind of temporary but not really, works for the current approach non the less
+            if (!key.includes(".") && !addedKeys.has(key)) {
+                addedKeys.add(key);
+                newList.push(new CompletionItem(key, CompletionItemKind.Variable));
+            }
+        }
+    }
+
+    return newList;
+}

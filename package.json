@@ -394,7 +394,7 @@
     "@vscode/vsce": "^3.6.2",
     "chai": "^5.2.1",
     "copy-webpack-plugin": "^13.0.1",
-    "eslint": "^9.33.0",
+    "eslint": "^9.36.0",
     "eslint-plugin-import": "^2.32.0",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-unused-imports": "^4.1.4",

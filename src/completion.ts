@@ -15,7 +15,7 @@ import {
 import { Displayable } from "./displayable";
 import { getDefinitionFromFile } from "./hover";
 import { getCurrentContext } from "./navigation";
-import { getDefaultStoreVariables,NavigationData } from "./navigation-data";
+import { getDefaultStoreVariables, NavigationData } from "./navigation-data";
 
 export function registerCompletionProvider() {
     return languages.registerCompletionItemProvider(
@@ -824,7 +824,7 @@ export function getClassMemberCompletions(className: string): CompletionItem[] {
         for (const key of Object.keys(callables)) {
             if (key.startsWith(prefix)) {
                 const methodName = key.substring(prefix.length);
-                if (methodName == "__init__" || methodName == "__call__") {
+                if (methodName === "__init__" || methodName === "__call__") {
                     continue;
                 }
                 if (!addedLabels.has(methodName)) {

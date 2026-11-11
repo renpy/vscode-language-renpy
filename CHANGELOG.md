@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+* Security: in Restricted Mode (an untrusted workspace), the extension no longer
+  runs Ren'Py: not when compiling on save, and not from the run, compile, or
+  debug commands. `renpy.renpyExecutableLocation` is also now a restricted
+  configuration, so a workspace's settings can't choose the program that runs.
+  Thanks to Jorian Woltjer for reporting this.
+
 ## 805.1.0
 
 * Stable release.

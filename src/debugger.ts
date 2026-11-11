@@ -3,7 +3,7 @@ import { DebugProtocol } from "@vscode/debugprotocol";
 import { ChildProcessWithoutNullStreams } from "child_process";
 import * as vscode from "vscode";
 
-import { ExecuteRunpyRun } from "./extension";
+import { checkWorkspaceTrusted, ExecuteRunpyRun } from "./extension";
 import { logMessage } from "./logger";
 
 export class RenpyAdapterDescriptorFactory implements vscode.DebugAdapterDescriptorFactory {
@@ -19,6 +19,11 @@ class RenpyDebugSession extends DebugSession {
         this.sendEvent(new InitializedEvent());
 
         response.body = { supportTerminateDebuggee: true };
+
+        if (!checkWorkspaceTrusted()) {
+            this.sendEvent(new TerminatedEvent());
+            return;
+        }
 
         const childProcess = ExecuteRunpyRun();
         if (childProcess == null) {

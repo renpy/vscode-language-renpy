@@ -81,7 +81,7 @@ export async function activate(context: ExtensionContext): Promise<void> {
                 return;
             }
 
-            if (Configuration.compileOnDocumentSave()) {
+            if (Configuration.compileOnDocumentSave() && workspace.isTrusted) {
                 if (!NavigationData.isCompiling) {
                     ExecuteRenpyCompile();
                 }
@@ -170,6 +170,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
 
     // custom command - call renpy to run workspace
     const runCommand = commands.registerCommand("renpy.runCommand", () => {
+        if (!checkWorkspaceTrusted()) {
+            return;
+        }
+
         //EsLint recommends config be removed as it has already been declared in a previous scope
         const rpyPath = Configuration.getRenpyExecutablePath();
 
@@ -192,6 +196,10 @@ export async function activate(context: ExtensionContext): Promise<void> {
     const compileCommand = commands.registerCommand("renpy.compileNavigationData", () => {
         // check Settings has the path to Ren'Py executable
         // Call Ren'Py with the workspace folder and the json-dump argument
+        if (!checkWorkspaceTrusted()) {
+            return;
+        }
+
         const config = workspace.getConfiguration("renpy");
         if (!config) {
             logToast(LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
@@ -332,6 +340,19 @@ export function getKeywordPrefix(document: TextDocument, position: Position, ran
     return;
 }
 
+/**
+ * Reports whether the extension may launch Ren'Py on the workspace. Running Ren'Py executes the game's Python code,
+ * so it is refused in Restricted Mode (an untrusted workspace), with an error toast explaining why.
+ */
+export function checkWorkspaceTrusted(): boolean {
+    if (workspace.isTrusted) {
+        return true;
+    }
+
+    logToast(LogLevel.Error, "Ren'Py can't be run on an untrusted workspace. Trust the workspace to enable this.");
+    return false;
+}
+
 export function isValidExecutable(renpyExecutableLocation: string): boolean {
     if (!renpyExecutableLocation || renpyExecutableLocation === "") {
         return false;
@@ -366,6 +387,10 @@ export function RunWorkspaceFolder(): boolean {
 }
 
 export function ExecuteRunpyRun(): cp.ChildProcessWithoutNullStreams | null {
+    if (!workspace.isTrusted) {
+        return null;
+    }
+
     const rpyPath = Configuration.getRenpyExecutablePath();
 
     if (!isValidExecutable(rpyPath)) {
@@ -383,6 +408,10 @@ export function ExecuteRunpyRun(): cp.ChildProcessWithoutNullStreams | null {
 }
 
 function ExecuteRenpyCompile(): boolean {
+    if (!workspace.isTrusted) {
+        return false;
+    }
+
     const rpyPath = Configuration.getRenpyExecutablePath();
     if (isValidExecutable(rpyPath)) {
         const renpyPath = cleanUpPath(Uri.file(rpyPath).path);

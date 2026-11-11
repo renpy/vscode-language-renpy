@@ -31,7 +31,11 @@
   },
   "capabilities": {
     "untrustedWorkspaces": {
-      "supported": true
+      "supported": "limited",
+      "description": "In Restricted Mode, the extension does not run Ren'Py, and the Ren'Py executable location can only be set in user settings.",
+      "restrictedConfigurations": [
+        "renpy.renpyExecutableLocation"
+      ]
     }
   },
   "activationEvents": [

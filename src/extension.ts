@@ -200,19 +200,15 @@ export async function activate(context: ExtensionContext): Promise<void> {
             return;
         }
 
-        const config = workspace.getConfiguration("renpy");
-        if (!config) {
+        if (!isValidExecutable(Configuration.getRenpyExecutablePath())) {
             logToast(LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
-        } else {
-            if (isValidExecutable(config.renpyExecutableLocation)) {
-                // call renpy
-                const result = ExecuteRenpyCompile();
-                if (result) {
-                    logToast(LogLevel.Info, "Ren'Py compilation has completed.");
-                }
-            } else {
-                logToast(LogLevel.Error, "Ren'Py executable location not configured or is invalid.");
-            }
+            return;
+        }
+
+        // call renpy
+        const result = ExecuteRenpyCompile();
+        if (result) {
+            logToast(LogLevel.Info, "Ren'Py compilation has completed.");
         }
     });
     context.subscriptions.push(compileCommand);

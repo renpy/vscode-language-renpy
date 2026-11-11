@@ -49,7 +49,7 @@ export class RenpyTaskProvider implements vscode.TaskProvider {
             vscode.TaskScope.Workspace,
             definition.command,
             "renpy",
-            new vscode.ShellExecution(Configuration.getRenpyExecutablePath(), args)
+            new vscode.ShellExecution({ value: Configuration.getRenpyExecutablePath(), quoting: vscode.ShellQuoting.Strong }, args)
         );
     }
 }

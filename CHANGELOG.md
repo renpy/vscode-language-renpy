@@ -7,6 +7,8 @@
   debug commands. `renpy.renpyExecutableLocation` is also now a restricted
   configuration, so a workspace's settings can't choose the program that runs.
   Thanks to Jorian Woltjer for reporting this.
+* Tasks now quote the Ren'Py executable path, so they work when it contains
+  spaces or other characters that are special to the shell.
 
 ## 805.1.0
 

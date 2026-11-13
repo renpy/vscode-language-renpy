@@ -44,6 +44,7 @@
     "statement": {
       "patterns": [
         { "include": "#import-statement" },
+        { "include": "#type-alias-statement" },
         { "include": "#class-declaration" },
         { "include": "#function-declaration" },
         { "include": "#generator" },
@@ -182,6 +183,14 @@
           "name": "keyword.control.import.python",
           "comment": "other legal use of `as` is in an import",
           "match": "\\b(?<!\\.)as\\b"
+        },
+        {
+          "comment": "except* (Python 3.11, PEP 654)",
+          "match": "\\b(?<!\\.)(except)\\s*(\\*)",
+          "captures": {
+            "1": { "name": "keyword.control.flow.python" },
+            "2": { "name": "keyword.control.flow.python" }
+          }
         },
         {
           "name": "keyword.control.flow.python",
@@ -557,8 +566,13 @@
       "match": "(}(?!}))"
     },
     "import-statement": {
-      "comment": "Import statements used to correctly mark `from`, `import`, and `as`",
+      "comment": "Import statements used to correctly mark `lazy`, `from`, `import`, and `as`",
       "patterns": [
+        {
+          "comment": "lazy import / lazy from (Python 3.15, PEP 810); `lazy` is a soft keyword",
+          "name": "keyword.control.import.python",
+          "match": "\\b(?<!\\.)lazy(?=\\s+(?:import|from)\\b)"
+        },
         {
           "begin": "\\b(?<!\\.)(from)\\b(?=.+import)",
           "end": "$|(?=import)",
@@ -593,7 +607,7 @@
       "patterns": [
         {
           "name": "meta.class.python",
-          "begin": "\\s*(class)\\s+(?=[[:alpha:]_]\\w*\\s*(?::|\\())",
+          "begin": "\\s*(class)\\s+(?=[[:alpha:]_]\\w*\\s*(?::|\\(|\\[))",
           "end": "(:)",
           "beginCaptures": {
             "1": { "name": "storage.type.class.python" }
@@ -601,8 +615,62 @@
           "endCaptures": {
             "1": { "name": "punctuation.section.class.begin.python" }
           },
-          "patterns": [ { "include": "#class-name" }, { "include": "#class-inheritance" } ]
+          "patterns": [ { "include": "#class-name" }, { "include": "#type-parameters" }, { "include": "#class-inheritance" } ]
         }
+      ]
+    },
+    "type-alias-statement": {
+      "comment": "type X[T] = ... (Python 3.12, PEP 695); `type` is a soft keyword",
+      "begin": "\\b(?<!\\.)(type)\\s+(?!(?:and|as|assert|async|await|break|class|continue|def|del|elif|else|except|finally|for|from|global|if|import|in|is|lambda|nonlocal|not|or|pass|raise|return|try|while|with|yield|None|True|False)\\b)([[:alpha:]_]\\w*)(?=\\s*(?:\\[|=(?!=)))",
+      "end": "(?=\\s*=)|$",
+      "beginCaptures": {
+        "1": { "name": "storage.type.class.python" },
+        "2": { "name": "entity.name.type.class.python" }
+      },
+      "patterns": [ { "include": "#type-parameters" } ]
+    },
+    "type-parameters": {
+      "comment": "[T, *Ts, **P] after a def, class, or type alias name, with optional bounds and defaults (Python 3.12-3.13, PEP 695 and PEP 696)",
+      "begin": "(\\[)",
+      "end": "(\\])",
+      "beginCaptures": {
+        "1": { "name": "punctuation.definition.parameters.begin.python" }
+      },
+      "endCaptures": {
+        "1": { "name": "punctuation.definition.parameters.end.python" }
+      },
+      "patterns": [
+        {
+          "begin": "(:)",
+          "end": "(?=[,\\]=])",
+          "beginCaptures": {
+            "1": { "name": "punctuation.separator.annotation.python" }
+          },
+          "patterns": [ { "include": "#expression" } ]
+        },
+        {
+          "begin": "(=)",
+          "end": "(?=[,\\]])",
+          "beginCaptures": {
+            "1": { "name": "keyword.operator.assignment.python" }
+          },
+          "patterns": [ { "include": "#expression" } ]
+        },
+        {
+          "name": "keyword.operator.unpacking.parameter.python",
+          "match": "(\\*\\*|\\*)"
+        },
+        {
+          "name": "punctuation.separator.parameters.python",
+          "match": "(,)"
+        },
+        {
+          "name": "entity.name.type.class.python",
+          "match": "\\b([[:alpha:]_]\\w*)\\b"
+        },
+        { "include": "#comments" },
+        { "include": "#whitespace" },
+        { "include": "#new-line" }
       ]
     },
     "class-name": {
@@ -753,7 +821,7 @@
     },
     "function-declaration": {
       "name": "meta.function.python",
-      "begin": "\\s*(?:\\b(async)\\s+)?\\b(def)\\s+(?=\\w+\\s*\\()",
+      "begin": "\\s*(?:\\b(async)\\s+)?\\b(def)\\s+(?=\\w+\\s*[\\[(])",
       "end": "(:|(?=[#'\"\\n]))",
       "beginCaptures": {
         "1": { "name": "storage.type.function.async.python" },
@@ -762,7 +830,7 @@
       "endCaptures": {
         "1": { "name": "punctuation.section.function.begin.python" }
       },
-      "patterns": [ { "include": "#function-def-name" }, { "include": "#parameters" }, { "include": "#line-continuation" }, { "include": "#return-annotation" } ]
+      "patterns": [ { "include": "#function-def-name" }, { "include": "#type-parameters" }, { "include": "#parameters" }, { "include": "#line-continuation" }, { "include": "#return-annotation" } ]
     },
     "function-def-name": {
       "patterns": [
@@ -897,16 +965,21 @@
     "decorator": {
       "name": "meta.function.decorator.python",
       "begin": "(?<=^[ \\t]*)(@)\\s*(?=[[:alpha:]_]\\w*)",
-      "end": "(\\))(?:(.*?)(?=\\s*(?:\\#|$)))|(?=\\n|\\#)",
+      "end": "(?=\\n|\\#)",
       "beginCaptures": {
         "1": { "name": "entity.name.function.decorator.python" },
         "2": { "name": "punctuation.definition.decorator.python" }
       },
-      "endCaptures": {
-        "1": { "name": "punctuation.definition.arguments.end.python" },
-        "2": { "name": "invalid.illegal.decorator.python" }
-      },
-      "patterns": [ { "include": "#decorator-name" }, { "include": "#function-arguments" } ]
+      "comment": "a decorator may be any expression (Python 3.9, PEP 614)",
+      "patterns": [
+        { "include": "#decorator-name" },
+        { "include": "#function-arguments" },
+        {
+          "name": "punctuation.definition.arguments.end.python",
+          "match": "(\\))"
+        },
+        { "include": "#expression" }
+      ]
     },
     "decorator-name": {
       "patterns": [
@@ -919,14 +992,7 @@
             "1": { "name": "punctuation.separator.dot.python" }
           }
         },
-        { "include": "#line-continuation" },
-        {
-          "name": "invalid.illegal.decorator.python",
-          "match": "\\s*([^([:alpha:]\\s_\\.#\\\\].*?)(?=\\#|$)",
-          "captures": {
-            "1": { "name": "invalid.illegal.decorator.python" }
-          }
-        }
+        { "include": "#line-continuation" }
       ]
     },
     "call-wrapper-inheritance": {
@@ -2110,7 +2176,7 @@
     },
     "fstring-fnorm-quoted-single-line": {
       "name": "meta.fstring.python",
-      "begin": "(\\b[fF])([bBuU])?((['\"]))",
+      "begin": "(\\b[fFtT])([bBuU])?((['\"]))",
       "end": "(\\3)|((?<!\\\\)\\n)",
       "beginCaptures": {
         "1": { "name": "string.interpolated.python string.quoted.single.python storage.type.string.python" },
@@ -2125,7 +2191,7 @@
     },
     "fstring-normf-quoted-single-line": {
       "name": "meta.fstring.python",
-      "begin": "(\\b[bBuU])([fF])((['\"]))",
+      "begin": "(\\b[bBuU])([fFtT])((['\"]))",
       "end": "(\\3)|((?<!\\\\)\\n)",
       "beginCaptures": {
         "1": { "name": "invalid.illegal.prefix.python" },
@@ -2140,7 +2206,7 @@
     },
     "fstring-raw-quoted-single-line": {
       "name": "meta.fstring.python",
-      "begin": "(\\b(?:[rR][fF]|[fF][rR]))((['\"]))",
+      "begin": "(\\b(?:[rR][fFtT]|[fFtT][rR]))((['\"]))",
       "end": "(\\2)|((?<!\\\\)\\n)",
       "beginCaptures": {
         "1": { "name": "string.interpolated.python string.quoted.raw.single.python storage.type.string.python" },
@@ -2203,7 +2269,7 @@
     },
     "fstring-fnorm-quoted-multi-line": {
       "name": "meta.fstring.python",
-      "begin": "(\\b[fF])([bBuU])?('''|\"\"\")",
+      "begin": "(\\b[fFtT])([bBuU])?('''|\"\"\")",
       "end": "(\\3)",
       "beginCaptures": {
         "1": { "name": "string.interpolated.python string.quoted.multi.python storage.type.string.python" },
@@ -2218,7 +2284,7 @@
     },
     "fstring-normf-quoted-multi-line": {
       "name": "meta.fstring.python",
-      "begin": "(\\b[bBuU])([fF])('''|\"\"\")",
+      "begin": "(\\b[bBuU])([fFtT])('''|\"\"\")",
       "end": "(\\3)",
       "beginCaptures": {
         "1": { "name": "invalid.illegal.prefix.python" },
@@ -2233,7 +2299,7 @@
     },
     "fstring-raw-quoted-multi-line": {
       "name": "meta.fstring.python",
-      "begin": "(\\b(?:[rR][fF]|[fF][rR]))('''|\"\"\")",
+      "begin": "(\\b(?:[rR][fFtT]|[fFtT][rR]))('''|\"\"\")",
       "end": "(\\2)",
       "beginCaptures": {
         "1": { "name": "string.interpolated.python string.quoted.raw.multi.python storage.type.string.python" },

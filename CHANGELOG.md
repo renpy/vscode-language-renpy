@@ -17,6 +17,10 @@
   contain any fill character, including a quote (`f"{x:'>10}"`), a replacement
   field may span lines and contain comments, and a bad format spec no longer
   breaks highlighting on the following lines.
+* Python highlighting is updated through Python 3.15: `lazy import` and
+  `lazy from`, template strings (`t"..."`), `type` aliases, type parameter
+  lists on `def` and `class` (with bounds and defaults), `except*`, and
+  decorators that are any expression.
 * Text interpolation accepts the `!f` flag, as in `[name!f]`.
 * ATL and transform properties: `gl_texture_scaling_tex0` to `tex3`, and any
   property starting with `u_`, `gl_texture_wrap_`, or `gl_texture_scaling_`.

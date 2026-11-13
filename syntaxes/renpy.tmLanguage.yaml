@@ -984,51 +984,207 @@ repository:
         - include: source.renpy.python#expression
         - include: '#whitespace'
       - include: '#fallback-patterns'
-  layeredimage-block-tester:
+  layeredimage-name:
+    comment: An image name component, which may contain letters, digits, underscores, dashes, and non-ASCII letters.
+    name: entity.name.type.layeredimage.renpy
+    match: '[-\p{L}\p{M}\p{N}_]+'
+  layeredimage-pass:
+    match: (?<=^[ \t]*)(pass)\b
+    captures:
+      1:
+        name: keyword.control.flow.pass.renpy
+  layeredimage-when:
+    comment: >-
+      A when expression over attribute names (not Python). It ends at an operand that is not followed by 'and' or
+      'or', as Ren'Py's parser does.
+    begin: \b(?<!\.)(when)\b
+    beginCaptures:
+      1:
+        name: keyword.other.renpy
+    end: (?=[#:])|$|(?<=[^\s(])(?<!^not)(?<![\s(]not)(?<!^and)(?<![\s(]and)(?<!^or)(?<![\s(]or)(?<!^when)(?<![\s(]when)[ \t]+(?!(?:and|or)\b)(?=[^\s#:)])
+    patterns:
+    - name: keyword.operator.logical.renpy
+      match: \b(?:and|or|not)\b
+    - name: punctuation.parenthesis.begin.renpy
+      match: \(
+    - name: punctuation.parenthesis.end.renpy
+      match: \)
+    - name: entity.name.type.layeredimage.attribute.renpy
+      match: '[-\p{L}\p{M}\p{N}_]+'
+    - include: '#whitespace'
+  layeredimage-at:
+    comment: 'at <transforms>, or at transform: followed by an ATL block.'
+    match: \b(?<!\.)(at)\b(?:[ \t]+(transform)\b)?
+    captures:
+      1:
+        name: keyword.control.flow.at.renpy
+      2:
+        name: keyword.transform.renpy
+  layeredimage-layer-properties:
+    comment: Properties accepted by every layer (always, attribute, group, and if branches).
+    patterns:
+    - include: '#layeredimage-when'
+    - include: '#layeredimage-at'
+    - comment: Deprecated, replaced by when.
+      name: entity.other.attribute-name.layeredimage.renpy support.type.property-name.layeredimage.renpy
+      match: \b(?<!\.)(?:if_all|if_any|if_not)\b
+    - include: source.renpy.atl#atl-build-in-properties
+  layeredimage-base-properties:
+    comment: Properties accepted by the layeredimage statement itself.
+    patterns:
+    - include: '#layeredimage-at'
+    - include: source.renpy.atl#atl-build-in-properties
+    - comment: Position and box properties, applied to the Fixed that holds the layers.
+      name: entity.other.attribute-name.layeredimage.renpy support.type.property-name.layeredimage.renpy
+      match: \b(?<!\.)(?:anchor|xanchor|yanchor|pos|xpos|ypos|align|xalign|yalign|offset|xoffset|yoffset|maximum|xmaximum|ymaximum|minimum|xminimum|yminimum|area|clipping|xfill|yfill|xcenter|ycenter|xycenter|xsize|ysize|xysize|alt|debug|box_align|box_justify|box_layout|box_wrap|box_wrap_spacing|box_reverse|justify|order_reverse|spacing|first_spacing|fit_first|xfit|yfit)\b
+    - name: entity.other.attribute-name.layeredimage.renpy support.type.property-name.layeredimage.renpy
+      match: \b(?<!\.)(?:image_format|format_function|attribute_function|offer_screen)\b
+  layeredimage-variant-prefix:
+    comment: variant and prefix take a bare image name component, or a Python expression.
+    match: \b(?<!\.)(?:(variant)|(prefix))\b(?:[ \t]+([-\p{L}\p{M}\p{N}_]+)(?![-\p{L}\p{M}\p{N}_(.\[\x22\x27]))?
+    captures:
+      1:
+        name: keyword.variant.renpy
+      2:
+        name: keyword.other.renpy
+      3:
+        name: entity.name.type.layeredimage.variant.renpy
+  layeredimage-displayable:
+    comment: 'A displayable: an image: ATL block, or a Python expression (usually a string).'
+    patterns:
+    - match: \b(?<!\.)(image)(?=[ \t]*:)
+      captures:
+        1:
+          name: keyword.image.renpy
+    - include: source.renpy.python#expression
+  layeredimage-atl-block-tester:
+    comment: >-
+      The ATL block opened by image: (as a displayable, so not 'group image:' or 'if image:', which are valid names) or
+      at transform:. Known limitation: image as a property value at the end of an always or attribute line, as in
+      'attribute hat variant image:', still opens ATL, because Oniguruma does not allow the lookaround needed to rule it
+      out inside a look-behind.
+    contentName: meta.atl-block.renpy
+    begin: (?<=(^[ \t]*)(?:(?:(?:always|attribute[ \t]+[-\p{L}\p{M}\p{N}_]+)(?:[ \t].*)?[ \t])?image|(?:[^ \t].*[ \t])?at[ \t]+transform)[ \t]*)(:)
+    beginCaptures:
+      2:
+        name: punctuation.section.atl.begin.renpy
+    end: ^(?=(?!\1)[ \t]*[^\s#]|\1[^\s#])
+    patterns:
+    - include: source.renpy.atl
+  layeredimage-always:
+    patterns:
+    - name: meta.layeredimage.statement.renpy
+      contentName: meta.layeredimage.parameters.renpy
+      begin: (?<=^[ \t]*)(always)\b
+      beginCaptures:
+        1:
+          name: keyword.always.renpy
+      end: (?=#|:)|$
+      patterns:
+      - include: '#layeredimage-layer-properties'
+      - include: '#layeredimage-displayable'
+      - include: '#fallback-patterns'
+    - contentName: meta.layeredimage.block.renpy
+      begin: (?<=(^[ \t]*)always\b.*?)(:)
+      beginCaptures:
+        2:
+          name: punctuation.section.block.begin.renpy
+      end: ^(?=(?!\1)[ \t]*[^\s#]|\1[^\s#])
+      patterns:
+      - include: '#layeredimage-atl-block-tester'
+      - include: '#layeredimage-pass'
+      - include: '#layeredimage-layer-properties'
+      - include: '#layeredimage-displayable'
+      - include: '#fallback-patterns'
+  layeredimage-attribute-items:
+    comment: Items accepted on an attribute line or in its block.
+    patterns:
+    - include: '#layeredimage-layer-properties'
+    - include: '#layeredimage-variant-prefix'
+    - name: keyword.default.renpy
+      match: \b(?<!\.)default\b
+    - name: keyword.other.renpy
+      match: \b(?<!\.)null\b
+    - include: '#layeredimage-displayable'
+    - include: '#fallback-patterns'
+  layeredimage-attribute:
+    patterns:
+    - name: meta.layeredimage.attribute.statement.renpy
+      contentName: meta.layeredimage.attribute.parameters.renpy
+      begin: (?<=^[ \t]*)(attribute)\b(?:[ \t]+([-\p{L}\p{M}\p{N}_]+))?
+      beginCaptures:
+        1:
+          name: keyword.attribute.renpy
+        2:
+          name: entity.name.type.layeredimage.attribute.renpy
+      end: (?=#|:)|$
+      patterns:
+      - include: '#layeredimage-attribute-items'
+    - contentName: meta.layeredimage.block.renpy
+      begin: (?<=(^[ \t]*)attribute\b.*?)(:)
+      beginCaptures:
+        2:
+          name: punctuation.section.block.begin.renpy
+      end: ^(?=(?!\1)[ \t]*[^\s#]|\1[^\s#])
+      patterns:
+      - include: '#layeredimage-atl-block-tester'
+      - include: '#layeredimage-pass'
+      - include: '#layeredimage-attribute-items'
+  layeredimage-group:
+    patterns:
+    - name: meta.layeredimage.group.statement.renpy
+      contentName: meta.layeredimage.group.parameters.renpy
+      begin: (?<=^[ \t]*)(group)\b(?:[ \t]+(?:(multiple)\b|([-\p{L}\p{M}\p{N}_]+)))?
+      beginCaptures:
+        1:
+          name: keyword.group.renpy
+        2:
+          name: keyword.other.renpy
+        3:
+          name: entity.name.type.layeredimage.group.renpy
+      end: (?=#|:)|$
+      patterns:
+      - include: '#layeredimage-layer-properties'
+      - include: '#layeredimage-variant-prefix'
+      - name: keyword.auto.renpy
+        match: \b(?<!\.)auto\b
+      - name: keyword.other.renpy
+        match: \b(?<!\.)multiple\b
+      - include: source.renpy.python#expression
+      - include: '#fallback-patterns'
+    - contentName: meta.layeredimage.block.renpy
+      begin: (?<=(^[ \t]*)group\b.*?)(:)
+      beginCaptures:
+        2:
+          name: punctuation.section.block.begin.renpy
+      end: ^(?=(?!\1)[ \t]*[^\s#]|\1[^\s#])
+      patterns:
+      - include: '#layeredimage-atl-block-tester'
+      - include: '#layeredimage-attribute'
+      - include: '#layeredimage-pass'
+      - include: '#layeredimage-layer-properties'
+      - name: keyword.auto.renpy
+        match: \b(?<!\.)auto\b
+      - include: source.renpy.python#expression
+      - include: '#fallback-patterns'
+  layeredimage-if:
+    comment: if/elif/else. Each branch holds one displayable or a nested if, plus layer properties.
+    patterns:
+    - include: '#conditionals'
+    - include: '#layeredimage-if-block-tester'
+  layeredimage-if-block-tester:
     contentName: meta.layeredimage.block.renpy
-    begin: (?<=(^[ \t]*)(?:layeredimage|group|always|attribute)\b.*?)(:)
+    begin: (?<=(^[ \t]*)(?:if|elif|else)\b.*?)(:)
     beginCaptures:
       2:
         name: punctuation.section.block.begin.renpy
     end: ^(?=(?!\1)[ \t]*[^\s#]|\1[^\s#])
     patterns:
-    - name: keyword.always.renpy
-      match: \b(?:always)\b
-    - name: keyword.always.renpy
-      match: \b(?:pos)\b
-    - include: '#layeredimage-group'
-    - include: '#layeredimage-attribute'
-    - include: '#base-patterns'
-  layeredimage-group:
-    patterns:
-    - name: meta.layeredimage.group.statement.renpy
-      contentName: meta.layeredimage.group.parameters.renpy
-      begin: (?<=^[ \t]*)(group)\b
-      beginCaptures:
-        1:
-          name: keyword.group.renpy
-      end: (?=#|:)|$
-      patterns:
-      - name: entity.name.type.layeredimage..renpy
-        match: \b([[:alpha:]_]\w*)\b
-      - include: '#fallback-patterns'
-    - include: '#layeredimage-block-tester'
-  layeredimage-attribute:
-    patterns:
-    - name: meta.layeredimage.attribute.statement.renpy
-      contentName: meta.layeredimage.attribute.parameters.renpy
-      begin: (?<=^[ \t]*)(attribute)\b
-      beginCaptures:
-        1:
-          name: keyword.attribute.renpy
-      end: (?=#|:)|$
-      patterns:
-      - name: keyword.default.renpy
-        match: \b(default)\b
-      - name: entity.name.type.layeredimage.attribute.renpy
-        match: \b([[:alpha:]_]\w*)\b
-      - include: '#fallback-patterns'
-    - include: '#layeredimage-block-tester'
+    - include: '#layeredimage-atl-block-tester'
+    - include: '#layeredimage-if'
+    - include: '#layeredimage-layer-properties'
+    - include: '#layeredimage-displayable'
+    - include: '#fallback-patterns'
   layeredimage:
     patterns:
     - name: meta.layeredimage.statement.renpy
@@ -1039,10 +1195,24 @@ repository:
           name: keyword.layeredimage.renpy
       end: (?=#|:)|$
       patterns:
-      - name: entity.name.type.layeredimage.renpy
-        match: \b([[:alpha:]_]\w*)\b
+      - include: '#layeredimage-name'
       - include: '#fallback-patterns'
-    - include: '#layeredimage-block-tester'
+    - contentName: meta.layeredimage.block.renpy
+      begin: (?<=(^[ \t]*)layeredimage\b.*?)(:)
+      beginCaptures:
+        2:
+          name: punctuation.section.block.begin.renpy
+      end: ^(?=(?!\1)[ \t]*[^\s#]|\1[^\s#])
+      patterns:
+      - include: '#layeredimage-atl-block-tester'
+      - include: '#layeredimage-attribute'
+      - include: '#layeredimage-group'
+      - include: '#layeredimage-always'
+      - include: '#layeredimage-if'
+      - include: '#layeredimage-pass'
+      - include: '#layeredimage-base-properties'
+      - include: source.renpy.python#expression
+      - include: '#fallback-patterns'
   translate-block-tester:
     patterns:
     - contentName: meta.translate.block.renpy

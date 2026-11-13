@@ -3,7 +3,8 @@
     "**/*.rpyc": true,
     "**/*.rpa": true,
     "**/*.rpymc": true,
-    "**/cache/": true
+    "**/cache/": true,
+    "game/cache/": true
   },
   "editor.tokenColorCustomizations": {
     "textMateRules": [

@@ -38,6 +38,10 @@ repository:
       name: entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy
         entity.name.tag.css.atl.renpy
       match: \b(?<!\.)(?:ATL_PROPERTIES)\b
+    - comment: ATL properties that Ren'Py accepts by prefix (shader uniforms and per-sampler texture settings).
+      name: entity.other.attribute-name.atl.renpy support.type.property-name.atl.renpy
+        entity.name.tag.css.atl.renpy
+      match: \b(?<!\.)(?:u_\w+|gl_texture_(?:wrap|scaling)_\w+)\b
   atl-simple-expression:
     patterns:
     - include: source.renpy#renpy-only-expressions

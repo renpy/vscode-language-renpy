@@ -53,6 +53,10 @@ repository:
       name: entity.other.attribute-name.transform.renpy support.type.property-name.transform.renpy
       match: \b(?<!\.)(?:ATL_PROPERTIES)\b
 
+    - comment: Transform properties that Ren'Py accepts by prefix (shader uniforms and per-sampler texture settings).
+      name: entity.other.attribute-name.transform.renpy support.type.property-name.transform.renpy
+      match: \b(?<!\.)(?:u_\w+|gl_texture_(?:wrap|scaling)_\w+)\b
+
   screen-automatic-properties:
     comment: Automatically replaced with a list of properties taken from keywords.py.
     patterns: SCREEN_AUTOMATIC_PROPERTIES

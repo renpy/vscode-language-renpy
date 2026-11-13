@@ -9,6 +9,18 @@
   Thanks to Jorian Woltjer for reporting this.
 * Tasks now quote the Ren'Py executable path, so they work when it contains
   spaces or other characters that are special to the shell.
+* Ren'Py 8.6 support. The version is now 806.0.0.
+* Test language: highlight the new `while`, `for`, `break`, and `continue`
+  statements, the `text` selector (and its `expression` alias), `label`
+  conditions, and `repeat`.
+* F-strings follow PEP 701 (Python 3.12, used by Ren'Py 8.6): a format spec may
+  contain any fill character, including a quote (`f"{x:'>10}"`), a replacement
+  field may span lines and contain comments, and a bad format spec no longer
+  breaks highlighting on the following lines.
+* Text interpolation accepts the `!f` flag, as in `[name!f]`.
+* ATL and transform properties: `gl_texture_scaling_tex0` to `tex3`, and any
+  property starting with `u_`, `gl_texture_wrap_`, or `gl_texture_scaling_`.
+* Updated the Ren'Py API data and keyword lists from Ren'Py 8.6.
 
 ## 805.1.0
 

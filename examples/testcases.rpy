@@ -358,3 +358,35 @@ testsuite default:
         advance until screen "choice"
         click "Yes."
         advance until screen "tutorials"
+
+
+## Test-language syntax added in Ren'Py 8.6.
+testsuite renpy86:
+    enabled not renpy.android
+
+    testcase control_flow:
+        while not screen "main_menu":
+            click "Next"
+            pause 0.1
+
+        for (a, b) in [(1, 2), (3, 4)]:
+            run Preference("main volume", a / 10)
+            if b > 3:
+                break
+            elif label chapter1:
+                continue
+            else:
+                pass
+
+    testcase selectors:
+        click text button_name
+        click expression button_name
+        assert text dialogue_text
+        click "Start" button mouse_button
+        drag "Bar" button 1 steps step_count
+        scroll "Bar" amount scroll_amount until "Done"
+        type player_name
+        keysym key_name
+        click "Next" repeat count
+        if eval persistent.seen and not label "chapter1":
+            advance

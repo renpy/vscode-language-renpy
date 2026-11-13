@@ -245,7 +245,7 @@ repository:
         name: constant.character.format.placeholder.end.renpy
     patterns:
     - name: meta.interpolate.flags.renpy
-      match: (!)([rstiqulc]+)
+      match: (!)([rstiqulcf]+)
       captures:
         1:
           name: punctuation.definition.interpolate.flags.begin.renpy

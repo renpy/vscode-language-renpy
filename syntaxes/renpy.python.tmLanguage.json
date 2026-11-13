@@ -487,16 +487,8 @@
       "patterns": [ { "include": "#string-consume-escape" }, { "include": "#fstring-formatting" } ]
     },
     "fstring-illegal-single-brace": {
-      "comment": "it is illegal to have a multiline brace inside a single-line string",
-      "begin": "(\\{)(?=[^\\n}]*$\\n?)",
-      "end": "(\\})|(?=\\n)",
-      "beginCaptures": {
-        "1": { "name": "constant.character.format.placeholder.other.python" }
-      },
-      "endCaptures": {
-        "1": { "name": "constant.character.format.placeholder.other.python" }
-      },
-      "patterns": [ { "include": "#fstring-terminator-single" }, { "include": "#f-expression" } ]
+      "comment": "PEP 701 (Python 3.12, Ren'Py 8.6) allows a replacement field to span lines inside a single-line string, so this never matches",
+      "patterns": [ { "include": "#impossible" } ]
     },
     "fstring-illegal-multi-brace": {
       "patterns": [ { "include": "#impossible" } ]
@@ -2169,16 +2161,16 @@
       "match": "(.+?)(($\\n?)|(?=[\\\\\\}\\{]|(['\"])|((?<!\\\\)\\n)))|\\n"
     },
     "fstring-single-brace": {
-      "comment": "value interpolation using { ... }",
+      "comment": "value interpolation using { ... }; per PEP 701 it may span lines and contain comments",
       "begin": "(\\{)",
-      "end": "(\\})|(?=\\n)",
+      "end": "(\\})",
       "beginCaptures": {
         "1": { "name": "constant.character.format.placeholder.other.python" }
       },
       "endCaptures": {
         "1": { "name": "constant.character.format.placeholder.other.python" }
       },
-      "patterns": [ { "include": "#fstring-terminator-single" }, { "include": "#f-expression" } ]
+      "patterns": [ { "include": "#fstring-terminator-single" }, { "include": "#comments" }, { "include": "#f-expression" } ]
     },
     "fstring-terminator-single": {
       "patterns": [
@@ -2190,57 +2182,22 @@
           "name": "storage.type.format.python",
           "match": "(=?![rsa])(?=})"
         },
-        {
-          "match": "((?:=?)(?:![rsa])?)(:\\w?[<>=^]?[-+ ]?\\#?\\d*,?(\\.\\d+)?[bcdeEfFgGnosxX%]?)(?=})",
-          "captures": {
-            "1": { "name": "storage.type.format.python" },
-            "2": { "name": "storage.type.format.python" }
-          }
-        },
         { "include": "#fstring-terminator-single-tail" }
       ]
     },
     "fstring-terminator-single-tail": {
-      "begin": "((?:=?)(?:![rsa])?)(:)(?=.*?{)",
+      "comment": "the format spec after ':' is literal text up to '}', and may contain nested replacement fields",
+      "begin": "((?:=?)(?:![rsa])?)(:)",
       "end": "(?=})|(?=\\n)",
       "beginCaptures": {
         "1": { "name": "storage.type.format.python" },
         "2": { "name": "storage.type.format.python" }
       },
       "patterns": [
-        { "include": "#fstring-illegal-single-brace" },
         { "include": "#fstring-single-brace" },
         {
           "name": "storage.type.format.python",
-          "match": "([bcdeEfFgGnosxX%])(?=})"
-        },
-        {
-          "name": "storage.type.format.python",
-          "match": "(\\.\\d+)"
-        },
-        {
-          "name": "storage.type.format.python",
-          "match": "(,)"
-        },
-        {
-          "name": "storage.type.format.python",
-          "match": "(\\d+)"
-        },
-        {
-          "name": "storage.type.format.python",
-          "match": "(\\#)"
-        },
-        {
-          "name": "storage.type.format.python",
-          "match": "([-+ ])"
-        },
-        {
-          "name": "storage.type.format.python",
-          "match": "([<>=^])"
-        },
-        {
-          "name": "storage.type.format.python",
-          "match": "(\\w)"
+          "match": "[^{}\\n]+"
         }
       ]
     },
@@ -2306,7 +2263,7 @@
       "endCaptures": {
         "1": { "name": "constant.character.format.placeholder.other.python" }
       },
-      "patterns": [ { "include": "#fstring-terminator-multi" }, { "include": "#f-expression" } ]
+      "patterns": [ { "include": "#fstring-terminator-multi" }, { "include": "#comments" }, { "include": "#f-expression" } ]
     },
     "fstring-terminator-multi": {
       "patterns": [
@@ -2318,57 +2275,22 @@
           "name": "storage.type.format.python",
           "match": "(=?![rsa])(?=})"
         },
-        {
-          "match": "((?:=?)(?:![rsa])?)(:\\w?[<>=^]?[-+ ]?\\#?\\d*,?(\\.\\d+)?[bcdeEfFgGnosxX%]?)(?=})",
-          "captures": {
-            "1": { "name": "storage.type.format.python" },
-            "2": { "name": "storage.type.format.python" }
-          }
-        },
         { "include": "#fstring-terminator-multi-tail" }
       ]
     },
     "fstring-terminator-multi-tail": {
-      "begin": "((?:=?)(?:![rsa])?)(:)(?=.*?{)",
+      "comment": "the format spec after ':' is literal text up to '}', and may contain nested replacement fields",
+      "begin": "((?:=?)(?:![rsa])?)(:)",
       "end": "(?=})",
       "beginCaptures": {
         "1": { "name": "storage.type.format.python" },
         "2": { "name": "storage.type.format.python" }
       },
       "patterns": [
-        { "include": "#fstring-illegal-multi-brace" },
         { "include": "#fstring-multi-brace" },
         {
           "name": "storage.type.format.python",
-          "match": "([bcdeEfFgGnosxX%])(?=})"
-        },
-        {
-          "name": "storage.type.format.python",
-          "match": "(\\.\\d+)"
-        },
-        {
-          "name": "storage.type.format.python",
-          "match": "(,)"
-        },
-        {
-          "name": "storage.type.format.python",
-          "match": "(\\d+)"
-        },
-        {
-          "name": "storage.type.format.python",
-          "match": "(\\#)"
-        },
-        {
-          "name": "storage.type.format.python",
-          "match": "([-+ ])"
-        },
-        {
-          "name": "storage.type.format.python",
-          "match": "([<>=^])"
-        },
-        {
-          "name": "storage.type.format.python",
-          "match": "(\\w)"
+          "match": "[^{}]+"
         }
       ]
     }

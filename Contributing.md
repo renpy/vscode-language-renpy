@@ -84,5 +84,34 @@ https://regexr.com will be your new best friend.
 
 ### Extension Versions
 
-The version of the extensions matches the major release of Ren'Py that the extension contains support for. For
-example, version 8.5.x is intended to support Ren'Py 8.5 and later releases.
+The extension's version is derived from the Ren'Py version it supports: Ren'Py 8.6.2 becomes 806.2.N, where N counts
+releases for that Ren'Py version, starting at 0. Version 806.2.N is intended to support Ren'Py 8.6.2 and later
+releases.
+
+### Releasing
+
+Releases are made from an up-to-date, clean `master` with:
+
+```sh
+./release.sh --dry-run     # check everything; commits, pushes, and publishes nothing
+./release.sh               # release
+```
+
+The script needs:
+
+- a Ren'Py checkout at `../renpy` (or pass `--renpy DIR`); its version determines the extension version;
+- `VSCE_PAT` (Visual Studio Marketplace) and `OVSX_PAT` (Open VSX) personal access tokens for the `renpy` publisher,
+  either in the environment or in a `.env` file at the repository root (git-ignored):
+
+  ```sh
+  VSCE_PAT=...
+  OVSX_PAT=...
+  ```
+
+- the `gh` CLI, logged in;
+- Node 22 or later.
+
+It runs lint, the format check, and the tests (`--skip-tests` skips the tests), sets the version, turns the changelog's
+`## Unreleased` heading into the version, commits and tags, builds the .vsix, pushes, publishes to both registries, and
+creates a draft GitHub release with the changelog section as notes. Review and publish that draft afterwards. Pass
+`--pre-release` to publish as a pre-release.

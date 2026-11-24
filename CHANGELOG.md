@@ -33,9 +33,7 @@
 ## 805.1.0
 
 * Stable release.
-* New versioning scheme. 805 means it's for Ren'Py 8.5. Odd minor versions
-  represent stable releases, even minor versions represent development releases,
-  and patches are an index in the series.
+* New versioning scheme. 805 means it's for Ren'Py 8.5.
 
 ## 8.6.0
 

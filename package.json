@@ -410,6 +410,7 @@
     "mocha-multi-reporters": "^1.5.1",
     "mock-fs": "^5.5.0",
     "node-polyfill-webpack-plugin": "^4.1.0",
+    "ovsx": "^1.4.0",
     "prettier": "^3.6.2",
     "sinon": "^21.0.0",
     "ts-loader": "^9.5.2",

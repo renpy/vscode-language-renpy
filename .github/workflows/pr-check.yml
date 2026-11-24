@@ -9,7 +9,7 @@ on:
 
 env:
   HUSKY: 0
-  NODE_VERSION: 21
+  NODE_VERSION: 22
 
 jobs:
   lint:

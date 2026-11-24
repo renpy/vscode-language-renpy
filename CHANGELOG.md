@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 806.2.0
 
 * Security: in Restricted Mode (an untrusted workspace), the extension no longer
   runs Ren'Py: not when compiling on save, and not from the run, compile, or

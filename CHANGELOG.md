@@ -9,6 +9,10 @@
   Thanks to Jorian Woltjer for reporting this.
 * Tasks now quote the Ren'Py executable path, so they work when it contains
   spaces or other characters that are special to the shell.
+* Ren'Py tasks work without `renpy.renpyExecutableLocation` set: running one
+  explains that the setting is missing, instead of an error being logged every
+  time VS Code lists tasks. Changing the setting takes effect without
+  reloading.
 * Ren'Py 8.6 support. The version is now 806.0.0.
 * Test language: highlight the new `while`, `for`, `break`, and `continue`
   statements, the `text` selector (and its `expression` alias), `label`
